@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-09-27-short-drama-finished-episode.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-short-drama-finished-episode.md
+/agent-note-short-drama-delivery-owns-composition-and-consistent-production-evidence:
+  en: 70b5cca4cb658773
+  zh: 73834c7f57788ac1
+/agent-note-short-drama-delivery-owns-composition-and-consistent-production-evidence/problem:
+  en: 2d8deb86b5b36bb3
+  zh: b4a5492993402b38
+/agent-note-short-drama-delivery-owns-composition-and-consistent-production-evidence/decision:
+  en: 7103296ea7f2a17f
+  zh: 81adcb39208563ec
+/agent-note-short-drama-delivery-owns-composition-and-consistent-production-evidence/alternatives-considered:
+  en: 275d4f5c5db7d33b
+  zh: 45d3e1866456408b
+/agent-note-short-drama-delivery-owns-composition-and-consistent-production-evidence/validation:
+  en: 275b1d99a4c7fc20
+  zh: 15eb0a93f539a64e
+/agent-note-short-drama-delivery-owns-composition-and-consistent-production-evidence/consequences:
+  en: 507a285e4e1db0bd
+  zh: 086b6b62f6f96e17

@@ -1,0 +1,16 @@
+[
+  "sandbox allow-scripts allow-forms allow-modals allow-downloads allow-same-origin",
+  "default-src 'none'",
+  "script-src 'unsafe-inline' 'wasm-unsafe-eval' blob: $assets",
+  "style-src 'unsafe-inline' $assets",
+  "img-src data: blob: $assets",
+  "media-src data: blob: $assets",
+  "font-src data: $assets",
+  "connect-src $assets",
+  "worker-src blob: $assets",
+  "manifest-src $assets",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'self' http://127.0.0.1:* http://localhost:*"
+]

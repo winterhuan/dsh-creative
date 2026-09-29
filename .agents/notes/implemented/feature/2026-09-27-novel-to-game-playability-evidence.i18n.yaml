@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-09-27-novel-to-game-playability-evidence.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-novel-to-game-playability-evidence.md
+/agent-note-game-qa-requires-authenticated-browser-evidence:
+  en: 01b2eaab41913b5f
+  zh: 241aa23c4507fc14
+/agent-note-game-qa-requires-authenticated-browser-evidence/problem:
+  en: 5cf03ce81fa6b012
+  zh: 5a5f331cb863aad5
+/agent-note-game-qa-requires-authenticated-browser-evidence/decision:
+  en: 127d40f2a2332412
+  zh: d4c73d26acefa17a
+/agent-note-game-qa-requires-authenticated-browser-evidence/alternatives-considered:
+  en: cbbee5766491d636
+  zh: ba28e20ab72f5731
+/agent-note-game-qa-requires-authenticated-browser-evidence/validation:
+  en: bc9b6925e1bf936b
+  zh: 89a9ea5997cd447d
+/agent-note-game-qa-requires-authenticated-browser-evidence/consequences:
+  en: 7af177eb74543a2e
+  zh: 8415220cc396e4a1

@@ -1,0 +1,85 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/creative/creative/README.md
+/:
+  en: c82023bfb370ae22
+  zh: dd96c6d0159142f7
+/winterhuan-dsh-creative:
+  en: b21a00667cc848ae
+  zh: a1197f5d283b6f51
+/winterhuan-dsh-creative/summary:
+  en: 90d57e5e94d766d0
+  zh: 17546a3819ffc325
+/winterhuan-dsh-creative/table-of-contents:
+  en: 0acac2a25e915e4e
+  zh: e3d6d25c5ea76c70
+/winterhuan-dsh-creative/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/winterhuan-dsh-creative/use-this-package/install-into-a-profile:
+  en: 6ec4575ce7c1cb41
+  zh: 89690e1746bcf169
+/winterhuan-dsh-creative/use-this-package/open-the-workbench:
+  en: 321663e77bca84db
+  zh: 61480ffca99c6b87
+/winterhuan-dsh-creative/use-this-package/chapter-review:
+  en: 1ceda135db8882b9
+  zh: 34ed170816c88f1d
+/winterhuan-dsh-creative/use-this-package/deliver-and-verify:
+  en: bac8d65cf49aa38c
+  zh: 6b5b328da69e6f91
+/winterhuan-dsh-creative/use-this-package/configure-paid-production:
+  en: 798b780e27ee66b8
+  zh: 6b9bfeedb468b9af
+/winterhuan-dsh-creative/understand-the-implementation:
+  en: f402ee364a5c612f
+  zh: 0ca40644a200ad12
+/winterhuan-dsh-creative/further-exploration:
+  en: 22639544730f29fa
+  zh: d544305fc2d1463a
+/winterhuan-dsh-creative/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/winterhuan-dsh-creative/model-experience/creative-skills-and-roles:
+  en: 5fb31e5d4540a635
+  zh: b18b3e58caee4ef4
+/winterhuan-dsh-creative/model-experience/creative-skills-and-roles/what-the-model-sees:
+  en: 96a42af27071e163
+  zh: 2eb18bf39ce5313f
+/winterhuan-dsh-creative/model-experience/creative-skills-and-roles/token-effect:
+  en: 4ca49fbf25ec57f7
+  zh: 2bbd3510760c147b
+/winterhuan-dsh-creative/model-experience/creative-skills-and-roles/kv-cache-effect:
+  en: fcd7545ce099bf38
+  zh: f32c67449dbbcb77
+/winterhuan-dsh-creative/model-experience/production-projection-tool:
+  en: 57e43ee77ae7e329
+  zh: d6182ef3f4224e83
+/winterhuan-dsh-creative/model-experience/production-projection-tool/what-the-model-sees:
+  en: 8846a4045c2b16dc
+  zh: 01c7395d5976baaa
+/winterhuan-dsh-creative/model-experience/production-projection-tool/token-effect:
+  en: baf12a3482730324
+  zh: 4ea0977c70bfd729
+/winterhuan-dsh-creative/model-experience/production-projection-tool/kv-cache-effect:
+  en: cab910301ced143b
+  zh: 27b15dc0954b8ce7
+/winterhuan-dsh-creative/model-experience/production-credential-status:
+  en: 47eb28f6837c0514
+  zh: ed61c7def2ebb299
+/winterhuan-dsh-creative/model-experience/production-credential-status/what-the-model-sees:
+  en: b7a9749dc71df2e8
+  zh: f3b92d97bed90796
+/winterhuan-dsh-creative/model-experience/production-credential-status/token-effect:
+  en: c2597ca73e5c8b1d
+  zh: fcbe38ac6393bd71
+/winterhuan-dsh-creative/model-experience/production-credential-status/kv-cache-effect:
+  en: 7213cb6c89c2c284
+  zh: 990808030bda7eb2
+/winterhuan-dsh-creative/known-limitations-and-deferred-work:
+  en: 7607d892a147a5e9
+  zh: ca2a7488745efaec
+/winterhuan-dsh-creative/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 1e863c74506416b0

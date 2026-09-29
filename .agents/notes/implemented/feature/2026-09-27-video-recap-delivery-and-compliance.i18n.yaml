@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-09-27-video-recap-delivery-and-compliance.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-video-recap-delivery-and-compliance.md
+/agent-note-video-recap-separates-executable-delivery-evidence-from-release-approval:
+  en: 951f90d5ad6e855e
+  zh: 509369437dabe258
+/agent-note-video-recap-separates-executable-delivery-evidence-from-release-approval/problem:
+  en: 84e8042f23958f6f
+  zh: a303df255208d848
+/agent-note-video-recap-separates-executable-delivery-evidence-from-release-approval/decision:
+  en: 16f2c575879261eb
+  zh: a6447bf6e691b276
+/agent-note-video-recap-separates-executable-delivery-evidence-from-release-approval/alternatives-considered:
+  en: 9fa7e0e1a22be763
+  zh: 771589fec8c6006b
+/agent-note-video-recap-separates-executable-delivery-evidence-from-release-approval/validation:
+  en: 40922e3e0dc84643
+  zh: 52aa3e63ceefa641
+/agent-note-video-recap-separates-executable-delivery-evidence-from-release-approval/consequences:
+  en: 939fb0c04c172f71
+  zh: 5c521caf63dfe3ce

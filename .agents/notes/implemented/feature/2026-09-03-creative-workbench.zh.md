@@ -1,0 +1,153 @@
+# Agent Note: Creative 工作台、内置知识库与技能查看器
+
+Status: implemented
+
+[English](2026-09-03-creative-workbench.md) | 中文
+
+## 问题
+
+小说、短剧、互动游戏和视频解说工作流共享素材、项目文件与付费制作，但它们原来的工具各自假定独立的运行时和 Dashboard。各自实现无法可靠共享 DSH 的权限、Session 历史、取消机制和项目身份。工作台还必须区分未保存草稿与磁盘状态、准备请求与正在执行的作业、仅供人浏览的技能与模型可见的技能加载。
+
+## 决策
+
+Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、工具、文件系统、设置和作业之上，界面放在右侧 Sidebar。另有一个独立、可选的只读技能查看器，用来查看 Session 的技能组合，不调用工具，也不恢复 Agent。
+
+<a id="composition-and-knowledge"></a>
+### 组合与知识库
+
+[`dsh-creative`](../../../../packages/creative/creative/README.zh.md) 只注入 `skills`、`subagents` 和 `tools`；`/creative` 路由注册在独立的 `webServer` 加 `typert` 作用域里，因此无头组合也保留 Skill、Role 和生产工具，而不需要 Web 服务。注册随插件释放。插件不发布运行时不变量伴生项：文件、请求和作业检查都在它们所授权的操作内部执行。
+
+`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，同时共用一个发布版本和工作台。每份 `SKILL.md` 拥有自己的描述和完整正文；provider 只在前面加上共享的 DSH 集成说明，这些说明把工作流名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
+
+七个小说 Role 通过 `creative_role` 作为 spawn 出的子 Agent 运行：`maxDepth: 1`，使用宿主拥有的模型选项，工具为按 Role 设定的白名单与调用方可见工具的交集。[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md) 负责经过校验的 Role 模型覆盖；frontmatter 不授予工具或权限。Role 使用调用方提供的项目路径，通过封闭的 `creative_bundled_reference` 工具读取打包参考，工作区 Skill 无法遮蔽这个工具。`creative_role` 只接受 Role 枚举：工作流阶段是 Skill，普通 `subagent` 委派会让子 Agent 去加载它。章节重试在提示词里携带具体反馈，而不是切换模型。
+
+小说 Skill 共用 `knowledge/story/scripts/` 下的一套打包脚本运行时，各 Skill 通过自己目录里的入口文件调用。JavaScript 以 ESM 运行；可执行文件缺失、检查结果格式错误或退出码不一致都会阻断章节交付，而不是算作检查通过。因此单独复制一个小说 Skill 目录不会带上这套运行时，共享视频脚本从 `knowledge/video-recap/runtime/` 复制，并逐字节检查一致性。剧集合成和媒体复核需要包内的视频树。作者记忆回执、章节追踪、必需参考和质量检查仍属于写作工作流。
+
+知识库 manifest 是 Skill、Role 和可选说明的描述性目录。它不包含提交固定值、schema 计数、生成时间、逐文件哈希或变更分类；加载直接读取打包文件，内容历史由 Git 负责。
+
+研究使用原生 Web 工具，依赖浏览器的来源交还给调用方，而不要求固定的调试端口。`browser-cdp` 用 `agent-browser --engine lightpanda` 做交互，用 `lightpanda fetch` 做一次性读取，每个任务使用具名会话并在结束后清理。Lightpanda 既不提供用户的 Chrome 配置，也不提供游戏 QA 需要的画面渲染。封面生成要求真实可用的图像或带认证的 HTTP 能力，不能虚构生产入口。
+
+<a id="workspace-and-sidebar"></a>
+### 工作区与 Sidebar
+
+一个 Session 级 `creative` 页面把自己的主体贡献给 `sidebar.right.pane.tab`。右侧 Sidebar 负责位置、缩放、分栏、浮动、全屏和显隐；Conversation 保留对话记录和输入框。即使工作区为空，引导也会提供 Creative，但创建项目文件不会自动打开它。`creative-file` 重定向标签只接管可识别的 Creative 文本和媒体文件的 Session 文件资源，并把自己替换成 `creative` 页面；其他路径（包括按行跳转）仍使用普通预览。导航通过 Sidebar 参数和 revision 传递，Session 注入面每个标签 revision 只消费一次，因此重新挂载不会覆盖用户之后的选择。
+
+持久化的 `creative.workbench.v2` store 保存缓冲区、冲突、选择和生产草稿。完整列表会移除已删除文件的干净缓冲区，但保留脏缓冲区，包括文件已经不存在的草稿；不完整的列表不能证明删除。读取跟随文件版本，并保留草稿最后一次确认的 CAS 版本。迟到的响应和失败不能写进另一个 Session。进行中的保存锁限定在 Session 内、不持久化，在请求结算前跨标签重新挂载保持有效；持久化记录必须使用当前的 store 字段。
+
+游戏和视频预览在进入对应领域时加载，重新挂载后可能重启。项目的第一个视频会填充空的预览，之后的版本需要用户选择。关闭页面既不取消生产，也不丢弃草稿。样式通过 Client 模块只加载一次。
+
+<a id="project-and-file-ownership"></a>
+### 项目与文件归属
+
+[共享解析器](../../../../packages/creative/creative/src/project-path.ts)在支持的发现深度内识别根项目、直接的书目录、`长篇|短篇/<book>`、独立短篇，以及游戏和视频入口。元数据、选择、草稿和素材过滤都用完整的项目与剧集路径寻址，因此 `EP001`、`SHOT-001` 这类重复名称永远不是全局身份。章节正文、必需大纲和追踪文件必须属于同一项目。短篇从第一份标准文档起就可见，编辑器对章节目录和独立短篇都优先展示正文和大纲。写入后的追踪提醒是记入日志、模型可见的上下文。
+
+工作区请求只接受回环地址或加载时配置并校验过的 `trustedHosts`。Host 操作强制执行扩展名白名单和解析后的文件系统包含关系，包括符号链接。文本保存使用 `FsVersion` compare-and-swap。列表最多统计 1,000 个符合条件的创作文件，只有在看到下一个符合条件的文件后才设置 `truncated`，所以恰好 1,000 个文件仍算完整；这个警告不提供分页。依赖目录、Python 缓存、隐藏目录和视频工作区既不占用这个上限，也不影响游戏预览的新鲜度。
+
+Session 文件系统 provider 拥有媒体字节。Host 直接流式读取要求 provider 在 Host realpath 解析前后都明确映射根目录和文件，并检查包含关系和大小；仅仅路径字符串和大小相同并不够。否则通过 provider 读取，每个媒体文件上限 256 MiB，并支持 RFC 9110 字节范围请求。游戏预览运行在只允许脚本的沙箱里，受 CSP 约束并使用独立的回环源，其 QA 记录只有经过认证的浏览器运行和匹配的构建、证据字节才能显示为 Current。
+
+Creative 保留这些 HTTP 路由，因为通用的 `workspaceFiles` Remote 没有 CAS 写入，也覆盖不了按领域过滤的文件清单、项目摘要、编辑器上限、Range 媒体、视频预检和 CSP 隔离的游戏预览。实时工具参数投影仍用于结算前的编辑器预览；文件观察只能替代之后的失效信号。
+
+<a id="production-requests-and-jobs"></a>
+### 生产请求与作业
+
+`creative_production` 投影工作台意图，并且并发安全；它从不编辑创作文档，也不授权付费生成。卡片的 `ProductionRequestId`、准备消息的 `SessionRequestId` 和执行的框架 `JobId` 保持相互独立，绑定要求一个真实的、属于该 Session 的作业及其 `startedAt` epoch。合成使用已确认的 `episode-compose` adapter 及其返回的后台绑定。Native 结果在 metadata 和紧凑 JSON 中保留绑定，PTC 在其 dispatch 事件中保留 JSON，Conversation 投影读取这些已记录的结果，不需要新的历史流或 Session 格式。
+
+Client 从 DSH 当前的投影读取这些状态。`productionQueueFromInbox` 只折叠待处理的 `next-turn` Inbox 消息，因为准备请求使用 `queue` 投递；卡片只按精确的 `SessionRequestId`（取自用户来源的 `rpcId`）关联到队列项，撤回也只移除该队列项，永远不会作用于 `next-step` 引导消息。注入面按请求保存 `beginSubmission()` 返回的完整 `SubmissionHandle`：卡片在派发前持久化；当 Session 查找、序列化或传输在提示词结算前抛出异常时，`sendProductionPrompt` 调用 `abandon()`，不留下本地回显，而 `RemoteResult` 拒绝属于正常结算。`creative.workbench.v2` 用一个单调的 `productionIntentSeq` 游标记录已消费的生产结果：首次物化按 Session 顺序应用导航和 sequence 意图，之后只应用游标之上的结果；带有已退役 call-id 账本的记录会被拒绝，不做迁移。活动工具根通过 `isRunningTool` 从正式 Chat 节点得出，按锚点 sequence 排序，永远不读 `ChatSnapshot.legacy.runningCalls`。
+
+执行状态只来自 DSH `jobs` store 中该 Session 的行，通过 `jobs.watchRows` 监听；监听开始前，作业卡片显示加载中。历史上未绑定的请求仍然只是请求；Host 重启后找不到的已绑定作业显示为不可用，而不是完成或自动重启。一张卡片可以拥有多个作业，已结束作业的数量、Turn、文件或估算百分比都不能证明计划的产出已经成功。前台结果分别保留退出码、超时、信号和有界输出；退出码非零或未知时生产失败。
+
+停止路由要求作业属于当前 Session，并核对精确的 `jobId` 和 `startedAt`，引用过期时拒绝，然后调用 `jobs.kill`。已接纳但还没有作业的请求没有停止操作。停止既不取消对话，也不消费输出；框架的 kill 语义把终止投递标记为已报告，不注入模型可见的结果，这条控制流由 [后台作业展示决定](../../../../upstream/.agents/notes/implemented/feature/2026-08-08-web-background-job-display.md) 负责。
+
+[短剧成片决策](2026-09-27-short-drama-finished-episode.zh.md)拥有一致文档快照、Python 结构诊断、媒体验证和输出清单。[游戏证据决策](2026-09-27-novel-to-game-playability-evidence.zh.md)拥有 Chrome QA 与认证；[视频交付决策](2026-09-27-video-recap-delivery-and-compliance.zh.md)拥有本地草稿、交付度量证据和共享媒体运行时。
+
+<a id="production-and-credentials"></a>
+### 付费生产与凭据
+
+`creative_produce_run` 通过 DSH shell 执行一组封闭的入口：短剧、配音、视频解说、游戏 QA、诊断和朱雀检测，并负责参数引用、工作区解析和沙箱策略。因为调用可能花钱，它不是并发安全的；缺少执行服务时在调用时失败。短剧要求一个已准备、已明确确认的 `job_id` 和匹配的 adapter；替换 job JSON 和额外参数都会被拒绝，只有恰好 `argv: ["--selftest"]` 会选择离线诊断，且诊断不接受 job、stdin 或生产绑定。前台和后台调用共用同一个执行器：在项目锁内，`production_tool.py` 检查 job 及其未使用的回执，快照已确认的输入，在调用提供方之前消耗确认，校验暂存输出，发布产出并写入档案。准备和确认共用按文档区分的 `CREATOR_SOURCE_ENTRIES` 映射，因此分镜 `SHOT-` 图片任务仍然有效，而跨模态绑定会失败。
+
+Agnes 与其他 adapter 使用相同的执行器、确认和设置。它的视频模型在未设置或为空时解析为免费的 `agnes-video-2.5-flash`，显式配置可以选择计费的 `agnes-video-2.5`。在消耗回执或写入尝试之前，执行器先用 adapter 的请求编译器编译已确认的快照，因此本地的模型、参数和参考错误会保留诊断和未消耗的确认。提供方子进程会再编译一次同一份快照，以保留 adapter 的 stdin 格式，代价是多一次有界读取。提交、轮询和下载失败仍遵守一次性规则。
+
+视频入口在 Skill 强制的创作者确认下，用一个轮换后的密钥环境运行一个脚本，不使用短剧的回执和档案；视频解说调用可执行的 `recap.py`。解说入口也派发显式的本地草稿与有界的短剧媒体复核；付费图片分析需要创作者确认。完整视频理解仍没有单独入口。`story-zhuque` 入口把一章发送到腾讯 EdgeOne Makers 做 AIGC 检测，返回文本或 JSON，并可以写出 JSON 报告；它从不修改章节，只接收 `MAKERS_API_KEY`，也不需要生产确认。
+
+`creative-produce` profile 保存六个生产提供方的凭据引用、一个单独的朱雀引用和非敏感的运行设置；密钥明文存放在凭据库里。引用在每次调用时解析为 adapter 的规范变量，所以名为 `AGNES_POOL` 的引用也能提供 `AGNES_API_KEY`。密钥只通过子进程环境和私有的密钥池 stdin 传递，从不出现在命令文本、模型参数或全局 `process.env` 中，普通 `bash` 也拿不到。逗号分隔的引用和换行分隔的已存密钥组成密钥池。每次调用轮换起始密钥；一次短剧运行最多使用十六个不同的密钥，只有在同一 URL 的首次提交返回 HTTP 401、403 或 429 并标记为 `submission_rejected` 时才切换。已被接受的请求、轮询、下载和结果不确定的失败都不会自动重新提交，执行器用自己的超时限制尝试次数和等待时间。
+
+`creative_produce_status` 使用与执行相同的 profile 和凭据查找，报告非敏感的提供方与朱雀凭据是否存在，不启动子进程，也不消耗确认。经过凭据清理的 shell 看不到凭据库，因此 Skill 用这个工具检查缺失的密钥，并通过带 `adapter: agnes-image` 的 `creative_produce_run` 运行已配置的 Agnes 图片任务。生产设置卡片把非敏感的修改一起暂存，一次读取全部七个凭据引用，并让每条响应对应它描述的引用，因此重命名引用不会发布旧结果。密钥草稿初始为空，空值表示不写入，批量密钥文本在保存前只留在对话框里。插件配置作为 profile 的初始值，用户设置覆盖它，高级视频调参留在经过校验的环境变量选项中。
+
+<a id="adaptation-and-source-material"></a>
+### 改编与来源记录
+
+Skill 把小说改短剧路由到导出包，把小说改游戏路由到小说分析，把短剧转视频路由到从 `制作成果/` 复制到 `sources/`；独立短篇直接读取。导出器把按数字排序的章节正文写入 `原著.txt`，并写出 `章节映射.json`，其中包含从零开始的 `[start, end)` 行范围、源路径和 SHA-256 哈希。重复编号、非章节文件、缺少标题和编号不一致都会失败，而不是悄悄破坏引用。导出只包含正文和映射，不透传没有消费者的文风或追踪数据。
+
+`改编谱系.jsonl` 是位于工作区根目录的只追加账本，在改编接入时记录来源指纹和决策。文件按字节计算哈希，目录按排序后的路径与哈希清单计算；目标可以尚不存在，纯交付复制可以不带决策。账本放在流水线自有的 `SOURCE_BIBLE` 之外，从而保持游戏 QA 证据不可变。没有短剧改游戏的接入：同一 IP 的改编共用原著小说，而不是把压缩过的剧本当作游戏设计的来源。
+
+<a id="read-only-skill-viewer"></a>
+### 只读技能查看器
+
+[`dsh-skill-viewer`](../../../../packages/skill/skill-viewer/README.zh.md) 拥有按 Session 寻址的 `skillViewer` Remote 命名空间。`listDetails` 返回用户可调用的条目及其来源和 provider 元数据，并把不完整的 provider 观察标记为 `stale`；`get` 返回原样加载的正文和 JSON 安全的资源基址。解析使用 `sessionQuery`：活动 Agent 的 preset 作用域注册表，或冷 Session 记录的 preset 作用域，并回退到全局。不会恢复任何 Agent，这些仅供人看的读取也不写入 Session 事件或模型上下文。
+
+[`dsh-client-ui-skill-viewer`](../../../../packages/client/ui-skill-viewer/README.zh.md) 提供侧栏底部入口和模态框，按 Session 缓存成功的读取，并合并同时发出的请求。切换 preset 或重置连接会使缓存失效；切换 Session 会选择该 Session 的数据。`@winterhuan/dsh-skill-viewer` 包会安装这两个插件；由于 `dsh-api-remotes` 只挂载 harness 命名空间，客户端插件自己挂载生成的 `skillViewer` Remote 贡献。输入框的 `skills` 命名空间保持不变。查看器没有监听，所以重新打开不会刷新已变化的内容，Session 回放也不会重建浏览过程。
+
+查看器占满可用的视口高度：宽屏时可搜索的列表放在阅读区旁边，窄屏时只显示一栏并固定返回按钮。打开时选中第一个匹配的技能，元数据保持展开。只有列表和阅读区滚动，顶部保持可见，切换技能或参考文件时阅读区回到开头。provider `references/` 目录下的本地文件在同一个阅读区打开，不经过模型工具。Host 读取拒绝路径穿越、隐藏路径、链接和非文本内容，可配置的条目数和字节预算会报告截断。离开参考文件视图时取消其读取，而技能正文和列表保留各自的 Session 缓存。
+
+<a id="localization"></a>
+### 本地化
+
+工作台界面使用带类型的 `creative` locale 命名空间，中英文片段的键完全一致，并显式传入翻译器 props；插件设置文案属于 `settings.plugins`，客户端 i18n 检查对 Creative 没有豁免。生产诊断使用消息键和参数。视频阶段、产物标签和预览角色按代码翻译，未知的视频阶段回退到 Host 提供的标签。
+
+工作区名称、创作协议标识符和生产提示词始终保持简体中文，不随浏览器语言变化。在稳定的错误码体系支持渲染时翻译之前，路由操作错误和运行时失败也保持简体中文。纯解析器不对结果做本地化。
+
+## 考虑过的替代方案
+
+**按领域拆包、沿用上游 Dashboard 或独立的 Role 运行时。** 每一种都会重复发布、路由、权限、Session 和取消的归属，而改编本身跨越领域。领域生命周期状态增长时拆分 store slice，一张卡片不够用时拆分设置命名空间；两者都不需要四个应用或另一个服务器。
+
+**运行时改写 Skill，或生成替代工作流。** 多个指令所有者会让文件修改失效，而共享的集成说明已经足够，不必削弱专业分工、产物格式或质量要求。共享媒体代码由单一运行时拥有，并校验分发副本；跨树的剧集合成需要完整包。
+
+**哈希清单、manifest 生成器、整树 fork 标签或 Cordis vendoring 规则。** 它们都不能在运行时校验打包知识，要么重复 Git，要么把少量本地差异藏在整树标签后面。删掉目录又会丢失有用的 Skill 与 Role 清单。将来的外部下载器需要自己的完整性记录。
+
+**第二套 Conversation 工作区、按文件或按领域拆分 Creative 页面，或重挂 Chat DOM。** 自动打开和保留预览 DOM 能带来连续性，但需要另一套布局、断点和生命周期策略。独立页面会重复项目协调状态，接管 DOM 会绕过插槽挂载、滚动和无障碍支持。连续性由持久化草稿提供，而不是不间断的预览。
+
+**持久化保存锁，或在挂载时重置锁。** 持久化无法证明请求在刷新后仍然存在，挂载时重置又会放进重复写入。限定在 Session 内的临时锁与真实的操作生命周期一致。
+
+**无界扫描、由客户端推断上限，或只按词法检查文件。** 递归发现会让每次刷新都变成昂贵的遍历，返回计数又会在客户端重复这条上限。符号链接和远程与 Host 路径同名的情况，无论解析或列表是否完整，都需要明确授权。
+
+**另建队列镜像，或通过 Conversation composer 服务提交生产。** 持久化的 Inbox 投影已经携带标准 QueueDock 使用的、由 Host 寻址的待处理队列项，镜像只会恢复重复状态。工作台必须在派发前持久化自己的 `ProductionRequestId` 和提示词，而 composer 负责编辑器草稿和附件；共享 Session 的提交生命周期就足够了。
+
+**持久化 call-id 集合，或从时间线、拷贝来的旧版构建器重建运行中调用。** Session sequence 已经提供单调游标，而 call-id 集合会随历史无限增长。正式 Chat 工具节点已经携带组装好的运行中或已结算树，再做一次推导会增加第三种工具生命周期表示。
+
+**第二个调度器，或从文本、Turn、文件、百分比推断执行。** 并发请求和后台工作会让这些观察含糊不清，重复的运行状态表还会凭空发明重启恢复。已记录的绑定加上 DSH 作业注册表能保留意图，而不宣称并不存在的执行。
+
+**只靠提示词约束短剧确认、以投影充当授权，或重试整个运行。** 这些做法都无法把花费原子地绑定到已确认的输入和经过校验的发布上，而在请求被接受后重启可能重复花钱。跳过 SHOT 确认会去掉创作者的检查点，在图片提示词文件里重复关键帧会分裂来源真相，把执行器复制成垫片又会掩盖共享的文档与模态规则。
+
+**强制选择免费模型，或只在准备阶段校验模型。** 免费默认值让只配置密钥就能使用 Agnes，同时让付费选择保持显式。单独的准备阶段看不到 DSH 的执行配置，而运行时检查能同时看到解析后的模型和已确认的字节；如果只在消耗确认之后检查，回执就会浪费在一个根本到不了提供方的输入上。
+
+**把密钥放在设置、shell 前缀或进程级环境里。** 设置是共享且会被渲染的，命令文本会被记录，修改全局环境会在多个 Session 之间竞争并破坏凭据清理。显式引用加上按调用转发，能让归属留在发起生产的那次调用上。
+
+**让短剧索引器接收分片、猜测非数字章节顺序，或在 `SOURCE_BIBLE` 里加入谱系。** 导出保留了索引器的单文件范围模型和可独立引用的章节。猜测序章或番外的顺序会破坏引用，应当改用显式的顺序清单。文风透传需要有消费者，流水线来源的不可变性也不能依赖改编记账。
+
+**扩展输入框命名空间、通过 `skill` 工具浏览，或在客户端读取 Host 文件。** 输入框的消费者不需要查看器的数据，用工具读取会为仅供人看的浏览写入模型可见的日志。直接读文件会绕过 preset 分层、自定义 provider 和调用策略，并暴露 Host 路径。如果将来需要监听或从查看器直接调用，也应放在查看器命名空间里。
+
+**保留 i18n 豁免，或把模型提示词和 Host 错误当作界面文案翻译。** 豁免会让文案无人负责，按浏览器语言翻译提示词会改变模型行为。翻译 Host 错误需要稳定的错误码，而不是去猜协议文本的含义。
+
+## 验证
+
+[Creative 测试](../../../../packages/creative/creative/tests/)覆盖 provider 正文、内置知识库的宿主引用检查、共享脚本、项目分类、符号链接与媒体 provider 隔离、精确的列表上限、草稿协调和释放。[Loader 组合测试](../../../../packages/creative/creative/tests/loader-composition.spec.ts)证明无头组合在没有 Web 服务时也能注册。视频预检测试覆盖探测映射、Python 回退和 30 秒缓存；native-hook 测试固定了正文写入成功后记录的追踪提醒，以及写入失败或被拒绝时不出现提醒。
+
+[生产执行器测试](../../../../packages/creative/creative/tests/produce-contract.spec.ts)用离线 fixture 运行内置的 Python 路径，检查规范凭据、确认、不可变输入、重试和产出发布。Agnes 视频用例覆盖免费默认值、显式的付费选择、三张参考图，以及本地拒绝后确认保持不变、没有尝试也没有网络调用。导出器自测能重建章节范围并拒绝无效输入，与 `novel_index.py` 的 20 章交叉核对保留了全部 20 章；谱系自测覆盖往返和六种无效输入。分镜确认另有记录在案的证据：一个 SHOT、IMG、MOTION 与图片、视频组合的六例矩阵和一次真实的准备到确认运行，但这个矩阵不是已提交的回归测试。
+
+聚焦的 Client 测试覆盖 Inbox 映射、`next-turn` 中的精确 `rpcId` 关联、排除 `next-step`、投影缺失、撤回只作用于精确队列项、抛出与被拒绝的提示词派发、sequence 顺序、首次只应用一次、游标之上的增量应用、重新挂载不重复导航、拒绝已退役的持久化字段、一个请求对应多个作业，以及从 Chat 节点推导运行中根调用，包括嵌套 PTC 修改、快速结算和隐藏行。
+
+[查看器 Host 测试](../../../../packages/skill/skill-viewer/tests/)包含真实的 Loader 组合与释放，[客户端测试](../../../../packages/client/ui-skill-viewer/tests/)覆盖注册、面板和按 Session 的请求缓存。locale 检查验证词典一致，并确认 Creative 没有豁免。
+
+一次记录在案的 macOS x86_64 冒烟运行使用 `agent-browser 0.37.0` 和 `Lightpanda 1.0.0-nightly.9231+b21ec6085`，覆盖 Markdown 提取、快照、中文输入、点击、选择器等待、stdin 与 base64 JavaScript、跨页面保留 Cookie 与 localStorage，以及关闭后重新打开得到全新状态。HTTPS 提取成功，带 `--fail-on-http-error` 的 HTTP 404 以 22 退出，Chrome 配置会被拒绝。`agent-browser 0.26.0` 连接同一引擎时超时，所以能识别 `--engine` 并不能证明兼容。
+
+本仓库没有录制会话快照，也没有 Web 端到端测试设施。代表性的技能加载、工作台交互、生产绑定、刷新、定向停止和 Host 重启都还没有在浏览器中验证。
+
+## 影响
+
+Creative 使用同一套 DSH 组合和既有的 Session 格式。模型可见的 Skill、Role、工具和写入后提醒都记入日志；仅供人看的查看器读取有意不记录。内置知识库增大了克隆和包体积，按需分发仍可在不改变 provider 发现机制的前提下实现。
+
+远程文件系统读取不会把打包脚本放进远程 shell，部署时必须挂载或复制这些资源。Sidebar 标签的生命周期不保留预览运行时。被取消或中断的短剧运行可能留下已消耗的回执和未结束的运行档案状态；这个回执和未匹配的进程内作业都不会被自动复用或重启。
+
+Inbox 行以 JSON 安全数据跨过 Remote，需要与当前 Conversation 消费者相同的窄类型断言；精确的 `source.kind` 和 `rpcId` 检查让撤回不会作用于无关消息。用已退役字段写入的工作台记录不会恢复，这些请求需要重新准备。隐藏的运行中调用仍在对话记录中显示，但不再贡献工作台修改。
+
+视频仍使用 Skill 强制的确认，而不是短剧的回执和档案。非数字章节顺序、文风透传和查看器监听仍然缺失。在标准 Workspace Files API 能完整接管某项职责、且不丢失 CAS、上限、远程文件系统行为或预览安全之前，Creative 继续保留自己的读取与失效代码。Provider fixture 和 Session 回放不能证明线上可用性、计费行为、特定网站的浏览器兼容性或生成媒体的质量。

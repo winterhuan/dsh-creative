@@ -1,0 +1,67 @@
+{
+  "episode": "剧集/EP001",
+  "documents": {
+    "剧本.md": "# 剧本\n## EP001-SC001\n江辰来到旧门。\n",
+    "视觉设定.md": "# 视觉设定\n\n## 人物 · 江辰\n- ID：VISUAL-JIANGCHEN\n- 画面代称：Jiang Chen\n\n## 地点 · 旧门\n- ID：VISUAL-DOOR\n- 画面代称：old door\n",
+    "图片提示词.md": "# 图片提示词\n\n## IMG-JIANGCHEN · 江辰\n- 参考：无\n\n### 可复制提示词\n> Jiang Chen in a blue coat.\n",
+    "分镜.md": "# 分镜\n\n## SHOT-EP001-001 · 门前\n- 来源：EP001-SC001\n- 时长：4s\n- 图片提示词项：IMG-JIANGCHEN《江辰》（控制：外观）\n- 输入参考图：无（创作者已明确选择文生视频）\n- 视觉依据：《视觉设定.md》·人物「江辰」（控制：外观）；地点「旧门」（控制：地理）\n\n### 冻结关键帧提示词\n> Jiang Chen at the old door.\n",
+    "视频提示词.md": "# 视频提示词\n\n## MOTION-EP001-001 · 门前\n- 分镜：SHOT-EP001-001\n- 输入参考图：无（创作者已明确选择文生视频）\n- 生成方式：文生视频\n- 静态视觉锚点：Jiang Chen at the old door.\n\n### 可复制提示词\n> Jiang Chen at the old door. He raises his hand.\n"
+  },
+  "available_paths": [],
+  "cases": [
+    {
+      "name": "missing visual ID",
+      "document": "视觉设定.md",
+      "from": "- ID：VISUAL-JIANGCHEN\n",
+      "to": "",
+      "diagnostic": "VISUAL",
+      "visualTargets": [
+        "VISUAL-DOOR"
+      ]
+    },
+    {
+      "name": "duplicate visual ID",
+      "document": "视觉设定.md",
+      "from": "VISUAL-DOOR",
+      "to": "VISUAL-JIANGCHEN",
+      "diagnostic": "ID 重复",
+      "visualTargets": [
+        "VISUAL-JIANGCHEN",
+        "VISUAL-JIANGCHEN"
+      ]
+    },
+    {
+      "name": "unknown image reference",
+      "document": "分镜.md",
+      "from": "IMG-JIANGCHEN《江辰》",
+      "to": "IMG-UNKNOWN《江辰》",
+      "diagnostic": "IMG 标题不存在",
+      "visualTargets": [
+        "VISUAL-JIANGCHEN",
+        "VISUAL-DOOR"
+      ]
+    },
+    {
+      "name": "malformed shot heading",
+      "document": "分镜.md",
+      "from": "## SHOT-EP001-001",
+      "to": "## SHOT EP001 001",
+      "diagnostic": "没有 SHOT",
+      "visualTargets": [
+        "VISUAL-JIANGCHEN",
+        "VISUAL-DOOR"
+      ]
+    },
+    {
+      "name": "invalid reference syntax",
+      "document": "分镜.md",
+      "from": "无（创作者已明确选择文生视频）",
+      "to": "REF-BAD picture.png",
+      "diagnostic": "完整 REF 语法",
+      "visualTargets": [
+        "VISUAL-JIANGCHEN",
+        "VISUAL-DOOR"
+      ]
+    }
+  ]
+}

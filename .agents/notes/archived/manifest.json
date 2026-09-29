@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "files": {
+    "feature/2026-09-04-creative-workbench-presence.i18n.yaml": "sha256:6f712693e86c59535b0a14d5e712ecf0ab7cc1cf8f36fe62175b436825d6219e",
+    "feature/2026-09-04-creative-workbench-presence.md": "sha256:7fb9bb9d01e9bf82baede98f454572038b3b0f2d25c08c5c5ebf807657d6224f",
+    "feature/2026-09-04-creative-workbench-presence.zh.md": "sha256:56ab085df92690310f727b3d375f72d0bcaa65a402a7cef8f94cfc48a351cb1c"
+  }
+}

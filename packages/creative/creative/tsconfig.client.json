@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "client-build-environment"]
+  },
+  "include": ["src/client/**/*", "src/project-path.ts", "src/production-binding.ts", "src/production-intent.ts"]
+}

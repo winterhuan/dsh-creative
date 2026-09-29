@@ -1,0 +1,61 @@
+{
+  "scope": "Small public-domain and synthetic regression corpus; not an estimate of authorship or literary quality. Synthetic cases are not human web-fiction evidence.",
+  "cases": [
+    {
+      "id": "luxun-kongyiji-dialogue",
+      "kind": "public-domain",
+      "source": "鲁迅《孔乙己》，1919；收入《呐喊》，1923。https://zh.wikisource.org/wiki/孔乙己",
+      "text": "孔乙己睁大眼睛说，‘你怎么这样凭空污人清白……’‘什么清白？我前天亲眼见你偷了何家的书，吊着打。’孔乙己便涨红了脸，额上的青筋条条绽出，争辩道，‘窃书不能算偷……窃书！……读书人的事，能算偷么？’",
+      "expected": []
+    },
+    {
+      "id": "luxun-madman-opening",
+      "kind": "public-domain",
+      "source": "鲁迅《狂人日记》，1918；收入《呐喊》，1923。https://zh.wikisource.org/wiki/狂人日記",
+      "text": "今天晚上，很好的月光。我不见他，已是三十多年；今天见了，精神分外爽快。才知道以前的三十多年，全是发昏；然而须十分小心。不然，那赵家的狗，何以看我两眼呢？我怕得有理。",
+      "expected": []
+    },
+    {
+      "id": "zhuzhiqing-back-dialogue",
+      "kind": "public-domain",
+      "source": "朱自清《背影》，1925；收入同名散文集，1928。https://zh.wikisource.org/wiki/背影",
+      "text": "我说道，‘爸爸，你走吧。’他望车外看了看说，‘我买几个橘子去。你就在此地，不要走动。’",
+      "expected": []
+    },
+    {
+      "id": "dialogue-pauses",
+      "kind": "synthetic",
+      "source": "Repository-authored dialogue fixture, not a human-prose sample.",
+      "text": "“别过来——我还没说完……”\n她攥住门框。\n「那你说，我听着……」",
+      "expected": []
+    },
+    {
+      "id": "planted-contrast",
+      "kind": "synthetic",
+      "source": "Planted lexical pattern.",
+      "text": "这不是归途，而是牢笼。",
+      "expected": ["not-is-comparison"]
+    },
+    {
+      "id": "synonym-contrast",
+      "kind": "synthetic",
+      "source": "Synonym evasion variant of planted-contrast.",
+      "text": "这并非归途，而是牢笼。",
+      "expected": ["not-is-comparison"]
+    },
+    {
+      "id": "meaning-contrast",
+      "kind": "synthetic",
+      "source": "Longer negation variant of planted-contrast.",
+      "text": "这并不意味着自由，而是另一种囚禁。",
+      "expected": ["not-is-comparison"]
+    },
+    {
+      "id": "repeated-sentence-links",
+      "kind": "synthetic",
+      "source": "Planted repeated sentence links; a rhetorical device, not automatically a defect.",
+      "text": "她看见一座木桥。木桥尽头站着老人。老人手里攥着钥匙。钥匙打开了仓门。",
+      "expected": ["repeated-sentence-link"]
+    }
+  ]
+}
