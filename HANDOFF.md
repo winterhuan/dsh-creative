@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-09-27。
+最后更新：2026-09-29。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -25,23 +25,39 @@
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
-- 依赖 npm 上发布的 DSH `0.1.7-rc.2`（npm dist-tag `next`），像普通第三方插件一样安装到 DSH 里。
+- 依赖 npm 上发布的 DSH `0.2.0-rc.2`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
 - 4 个包都改到 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
 
-截至 2026-09-27 的验证结果：
+截至 2026-09-29 的验证结果：
 
 | 检查 | 结果 |
 |---|---|
-| `pnpm run typecheck` | 通过 |
-| `pnpm run build`（从 `pnpm run clean` 之后开始） | 通过 |
-| `pnpm test` | 47 个测试文件、515 个测试全部通过 |
-| DSH 0.1.7-rc.2 中 `dsh plugin add` 两个 bundle | 合成配置里出现 `@winterhuan/dsh-creative`（3 行）和 `@winterhuan/dsh-skill-viewer`（2 行）两层 |
-| web 启动 | 无报错；页面加载 3 个 `@winterhuan/*` 浏览器 bundle，请求均返回 HTTP 200 |
-| 浏览器内实际操作界面 | **未验证** |
+| upstream | master 的 `639ed01539`，对应 `dsh-v0.2.0-rc.2`；子模块源码无改动 |
+| `pnpm install` | 通过；72 处 DSH 依赖声明和锁文件均为目标版本，typert 补丁已应用 |
+| `pnpm install --frozen-lockfile --offline` | 通过，锁文件可复用 |
+| `pnpm run typecheck`、`pnpm run build` | 从清理后的构建产物开始通过；游戏空状态修复后再次通过 |
+| `pnpm test` | 50 个文件、556 项全部通过，包含游戏空状态的中英文回归用例 |
+| `pnpm run doc-sync`、`pnpm run hygiene` | 文档 16 项与代码规范 3 项全部通过，含归档完整性 |
+| DSH 0.2.0-rc.2 插件安装 | 临时 profile 的合成配置包含 Creative 的 3 行与 Skill Viewer 的 2 行 |
+| 浏览器验证 | Chrome 中加载三个客户端 bundle；技能列表、生产设置保存与重载、小说编辑保存与预览、四种模式及工作区切换、游戏空状态的浅色/深色与键盘操作通过，无页面脚本异常 |
 
-仓库没有配置 git remote，也没有 push。
+仓库远程为 `git@github.com:winterhuan/dsh-creative.git`。
+
+本次接口核对基于 `dsh-v0.1.7-rc.2..dsh-v0.2.0-rc.2`：
+
+| 插件接入点 | 上游变化与适配结论 |
+|---|---|
+| 右侧栏 | 内部改由所选会话和已登记的 store 驱动；移除了旧的 `SidebarRightBinding`。插件未使用该内部接口，仍使用 `sidebarRightTabs.register` 与标签自身的 `actions.openTab` |
+| 会话输入 | `submit` 增加可选来源参数，`fork` 增加可选回调；现有调用不需要改变 |
+| 工具卡片 | 增加限时问答面板接口，现有 `ToolCallViewProps` 保持兼容 |
+| Remote、设置与密钥 | 外部 `skillViewer` 仍需自行挂载；生成器仍不识别 npm 协议包，保留补丁；设置 Remote 仍需显式导入类型 |
+| 客户端构建工具 | 第 8 节的 7 个上游文件在该版本区间没有变化，保留现有副本和本地适配 |
+
+游戏页在没有项目时显示空状态，并保留鼠标及键盘切换其他模式的入口。
+
+上游新增功能的使用说明由上游维护：[自动化任务](upstream/packages/experimental/schedule-bundle/README.zh.md)默认禁用，[限时提问](upstream/packages/interaction/tool-ask-user/README.zh.md)需显式选择 timed 模式；本次版本适配不改变 Creative 的默认生产流程。
 
 ## 2. 仓库结构
 
@@ -66,7 +82,7 @@ dsh-creative/
 │   └── vitest-upstream-client.ts      仅测试用：从 upstream/ 读取 DSH 客户端源码（本仓库自有）
 ├── types/client-build-environment/    客户端构建期 process.env 的环境声明（上游拷贝）
 ├── patches/                           typert 生成器补丁（pnpm patchedDependencies）
-├── upstream/                          子模块，固定在 dsh-v0.1.7-rc.2；只读
+├── upstream/                          子模块，固定在 dsh-v0.2.0-rc.2；只读
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
@@ -176,10 +192,10 @@ pnpm run clean                # 删除 packages/*/*/lib
 
 ## 5. 在 DSH 中安装、调试和移除
 
-下面的步骤在 DSH 0.1.7-rc.2 上验证过：
+下面的步骤已在 DSH `0.2.0-rc.2` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
 
 ```sh
-npm install -g @deepseek-ai/dsh@next   # 0.1.7-rc.2；npm 的 latest 标签仍指向 0.1.5-rc.3
+# 使用已安装的 DSH 0.2.0-rc.2
 cd ~/dsh-creative && pnpm run build
 
 # 从 web 模板创建 profile，--dump-config 使它只创建、不启动
@@ -190,7 +206,7 @@ dsh plugin --profile creative add ~/dsh-creative/packages/skill/skill-viewer
 # 确认合成配置里有两层 @winterhuan
 dsh --profile creative --dump-config | grep -E '^# == @winterhuan|name: .@winterhuan'
 
-dsh --profile creative   # 启动 web，终端打印带 token 的地址
+dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，终端打印带 token 的地址
 ```
 
 注意事项：
@@ -209,12 +225,13 @@ dsh --profile creative   # 启动 web，终端打印带 token 的地址
 
 ## 6. 依赖策略
 
-- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.1.7-rc.2`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
-- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.4`，`cordis-plugin-loader` 写 `~1.0.5`，`cordis-plugin-include` 写 `~1.0.9`，`schemastery` 写 `~3.18.4`，与 DSH 0.1.7-rc.2 自己声明的范围一致。
+- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.0-rc.2`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
+- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.4`，`cordis-plugin-loader` 写 `~1.0.5`，`cordis-plugin-include` 写 `~1.0.9`，`schemastery` 写 `~3.18.4`，与 DSH `0.2.0-rc.2` 声明的范围一致。
 - **分类**：沿用上游的分类，上游已用 `package-dependency-policy` 检查过。
   - 需要与宿主共享实例的 DSH 包同时放进 `peerDependencies` 和 `devDependencies`。运行时 peer 由正在运行的 dsh 安装提供，devDependencies 只给类型检查和测试用。
   - 无状态工具放 `dependencies`。这是 DSH 发布文档（`upstream/docs/user/develop/basic/publish.md`）的规则。
 - **仓库内部包**之间用 `workspace:*`。
+- **新发布版本**：pnpm 11 为本次选定的 89 个 DSH 包自动记录了精确到 `0.2.0-rc.2` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
 - **根 `package.json` 的 devDependencies** 分三类：
   1. 工具链：`typescript` ^6.0.3、`tsdown` ^0.22.2、`vitest` ^4.1.8、`jsdom` 29.1.1、`lightningcss`、`@types/node`、`@testing-library/dom`、`@testing-library/react`，以及 `@deepseek-ai/dsh-typert-generator`。
   2. DSH 平台模块在 Node 里要用、却没有声明的依赖（浏览器里由 web 前端打包提供）：
@@ -258,7 +275,7 @@ dsh --profile creative   # 启动 web，终端打印带 token 的地址
   - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
 
   从 npm 安装时，协议包在 `node_modules` 里，两个条件都不满足，skill-viewer 的 `@Remote` 方法被忽略。这是生成器只考虑 monorepo 场景造成的缺口。
-- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.1.7-rc.2.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
+- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.0-rc.2.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
 
   ```diff
            if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
@@ -363,7 +380,7 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 
 ## 8. 从上游复制的文件及本地改动
 
-这些文件的第一行都是 `// Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.`
+下面 7 个文件的第一行记录原始复制版本 `dsh-v0.1.7-rc.2`。已比较该版本到 `dsh-v0.2.0-rc.2` 的对应上游文件，没有变化，因此保留复制版本标注和现有本地改动。
 
 | 本仓库文件 | 上游来源 | 本地改动 |
 |---|---|---|
@@ -393,14 +410,7 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 ## 9. 升级 DSH 版本清单
 
 1. 确认目标版本：`npm view @deepseek-ai/dsh dist-tags`，下面以 `NEW` 表示。
-2. 替换版本号：
-
-   ```sh
-   NEW=0.1.8   # 示例
-   grep -rl '0\.1\.7-rc\.2' package.json packages/*/*/package.json | xargs perl -pi -e "s/0\.1\.7-rc\.2/$NEW/g"
-   ```
-
-   注意 `ui-settings-creative-produce` 自己的 `version` 字段目前也是 `0.1.7-rc.2`，替换前先把包版本改成插件自己的版本号，或者替换后改回来。
+2. 只更新根及 `packages/*/*/package.json` 的 dependencies、peerDependencies、devDependencies 中 `@deepseek-ai/dsh-*` 的版本，保留各插件自己的 `version`；不要对所有版本字符串作全局替换。
 3. 核对 cordis 系列范围：`npm view @deepseek-ai/dsh-session@$NEW peerDependencies`。
 4. 移动子模块：
 
@@ -415,12 +425,12 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
    - 上游已支持 npm 安装的协议包：删除 `patches/` 下的旧补丁，以及 `pnpm-workspace.yaml` 里对应的 `patchedDependencies` 项。
    - 仍未支持：删除旧版本的补丁项，然后执行 `pnpm patch @deepseek-ai/dsh-typert-generator@$NEW --edit-dir /tmp/typert-patch`，重新加上[问题 5](#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods) 的判断，再 `pnpm patch-commit /tmp/typert-patch`。
 7. 检查发布版 `api-remotes` 是否仍只把各 Remote 包列为 devDependencies（[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)），以及 `dsh-client-test-runtime` 是否仍导入未发布的 `src` 文件（[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-8. 依次运行 `pnpm install`、`pnpm run typecheck`、`pnpm run build`、`pnpm test`，再按[第 5 节](#5-在-dsh-中安装调试和移除)在真实 dsh 里安装验证。
+8. 依次运行 `pnpm install`、`pnpm run clean`、`pnpm run typecheck`、`pnpm run build`、`pnpm test`，再按[第 5 节](#5-在-dsh-中安装调试和移除)在真实 dsh 里安装验证。
 9. 阅读上游的变更，重点看插件依赖的接口：slot `sidebar.right.pane.tab`、`tool.call.toolview`，`sidebarRightTabs.register`，typert 协议（`TypertRemoteService`、`@Remote`、`ctx.remote.$mount`），settings / credentials Remote，Session controller 的客户端接口。
 
 ## 10. 已知限制与待办
 
-- **浏览器内交互未验证**：Skill Viewer 面板、Creative 工作台、生产设置页、从 Chat 打开 Creative 文件的重定向。重定向内容组件没有单元测试覆盖。
+- **浏览器验证范围**：新版已验证技能列表、生产设置、小说读写与模式/工作区切换。此次没有调用模型、付费生产或实际媒体生成；从 Chat 打开文件的重定向尚未单独复验，重定向内容组件也没有单元测试覆盖。
 - **录制会话快照与 web e2e 未配置**：本仓库目前没有快照或 e2e 测试设施；浏览器内交互仍需手动验证。
 - **版本号继承自 DSH**：`creative`、`skill-viewer`、`ui-skill-viewer` 是 `0.1.5-rc.2`，`ui-settings-creative-produce` 是 `0.1.7-rc.2`。发布前改成插件自己的版本号；发布到 npm 的 `@winterhuan` scope 需要对应的 npm 账号。
 - **`exports` 里的 `"./src/*"`** 沿用上游写法，但 `files` 不包含 `src`，发布后这个导出无效。
@@ -432,7 +442,6 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
   2. `api-remotes` 只把各 Remote 包列为 devDependencies，外部拿不到类型合并（[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
   3. `dsh-client-test-runtime` 导入未发布的 `src` 文件；平台模块不声明第三方依赖（[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
   4. `clientBundle()` 客户端打包预设没有发布（[问题 8](#问题-8客户端打包工具没有发布)）。
-- **没有 git remote**：`package.json` 的 `repository` 写的是 `github.com/winterhuan/dsh-creative`，但仓库还没有配置 remote，也没有 push。
 
 ## 11. 排障速查
 
@@ -456,3 +465,8 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 - 全局 dsh：卸载 0.1.5-rc.3，在 nvm 的 Node v22.22.2 下执行 `npm install -g @deepseek-ai/dsh@next`，装上 0.1.7-rc.2。
 - 旧的全局配置：`~/.dsh` 整体移到 `~/.dsh.backup-0.1.5-rc.3-20260927`，里面有 `.credentials.yaml`（API key）、`sessions/`、`storages/`、`settings.yaml` 和 `web` profile。新的 `~/.dsh` 是空的，需要重新配置 API key，或者把备份里的 `.credentials.yaml` 拷回来。确认不再需要后可以删除备份。
 - 验证时用的临时目录 `/tmp/dsh-0.1.7`、`/tmp/dsh-home-creative` 已删除。
+
+2026-09-29：
+
+- 读取本机全局 DSH 的 `package.json`，版本已为 `0.2.0-rc.2`；本轮未修改全局安装或用户 profile。
+- 联网后安装了仓库的目标依赖，并在临时 `DSH_HOME` 和临时项目中完成浏览器验证。临时设置与项目内容不写入用户 profile。

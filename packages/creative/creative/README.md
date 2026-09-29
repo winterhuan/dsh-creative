@@ -58,7 +58,7 @@ Long-form chapters follow outline readiness, a compact scene plan and a reader-v
 
 Short-drama production can compose confirmed clips, timed dialogue, music and subtitles with the `episode-compose` adapter. The workbench checks one coherent episode revision and associates published media through hashed production manifests. Unsaved or invalid episode documents block preparation.
 
-Game templates include state, save/load, restart and QA hooks. The `game-qa` entry runs real Chrome with Studio preview restrictions; the preview shows the authenticated result. Strategy and independent blind-play reports remain design feedback.
+Game templates include state, save/load, restart and QA hooks. The `game-qa` entry runs real Chrome with Studio preview restrictions; the preview shows the authenticated result. Strategy and independent blind-play reports remain design feedback. Without a game project, the Game tab shows an empty state and keeps navigation to the other workbenches available.
 
 Video recap supports an explicit local draft with degraded stages recorded in `draft_status.json`. Drafts remain visibly separate from final output. Delivery evidence measures narration coverage, source reuse, declared rights and framing without granting platform approval.
 

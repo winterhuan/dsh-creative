@@ -230,24 +230,27 @@ function GameStudio({
   useEffect(() => {
     if (project !== undefined && project.id !== gameProjectId) onGameProject(project.id)
   }, [gameProjectId, onGameProject, project])
-  if (project === undefined) return <main ref={studioRef} className="oh-game-studio" hidden={hidden}><div className="oh-game-design-empty">{t('game.studio.loading')}</div></main>
+  const workbenchNavigation = <div className="creative-workbench-cluster">
+    {workbenches.length > 1 && <div className="oh-game-mode-tabs" role="tablist" aria-label={t('workbench.tablist')}>
+      {workbenches.map(mode => <button
+        type="button"
+        role="tab"
+        key={mode}
+        aria-selected={mode === 'game'}
+        tabIndex={mode === 'game' ? 0 : -1}
+        onKeyDown={(event) => { handleTabKey(event, workbenches, 'game', onWorkbench) }}
+        onClick={() => { onWorkbench(mode) }}
+      >{t(WORKBENCH_LABEL_KEYS[mode])}</button>)}
+    </div>}
+  </div>
+  if (project === undefined) return <main ref={studioRef} className="oh-game-studio" hidden={hidden}>
+    <header className="oh-game-toolbar">{workbenchNavigation}</header>
+    <div className="oh-game-design-empty">{t('game.preview.empty.title')}</div>
+  </main>
   const tabKeys = ['preview', 'design'] as const
   return <main ref={studioRef} className="oh-game-studio" data-source={project.source} hidden={hidden}>
     <header className="oh-game-toolbar">
-      <div className="creative-workbench-cluster">
-        {workbenches.length > 1 && <div className="oh-game-mode-tabs" role="tablist" aria-label={t('workbench.tablist')}>
-          {workbenches.map(mode => <button
-            type="button"
-            role="tab"
-            key={mode}
-            aria-selected={mode === 'game'}
-            tabIndex={mode === 'game' ? 0 : -1}
-            onKeyDown={(event) => { handleTabKey(event, workbenches, 'game', onWorkbench) }}
-            onClick={() => { onWorkbench(mode) }}
-          >{t(WORKBENCH_LABEL_KEYS[mode])}</button>)}
-        </div>}
-
-      </div>
+      {workbenchNavigation}
       <label className="oh-game-project" title={t('game.project.switchHint')}><span>{t('game.project.label')}</span><select aria-label={t('game.project.selectAria')} value={project.id} onChange={(event) => { onGameProject(event.target.value) }}>
         {workspace.games.length > 0 && <optgroup label={t('game.project.mine')}>{workspace.games.map(item => <option value={item.id} key={item.id}>{t('game.project.mineOption', { title: item.title })}</option>)}</optgroup>}
       </select></label>
