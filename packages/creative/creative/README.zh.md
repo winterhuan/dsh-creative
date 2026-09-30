@@ -46,7 +46,7 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 ### 章节评审
 
-长篇章节提交前先检查细纲就绪、生成紧凑场景计划并完成读者价值评审。评审将原文引句绑定到最终正文哈希，追踪保留紧凑续写摘要。打包 Role 的 `agent_options` 可选择审查模型，不增加由调用方控制的工具参数；无效选项在加载时失败。AI 模式和朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`，归一叙述标点时保留引号内对话。参见[读者价值决策](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.zh.md)和[章节工作流](../story/knowledge/story/skills/story-long-write/references/workflow-chapter.md)。
+长篇章节提交前先检查细纲就绪、生成紧凑场景计划并完成读者价值评审。评审将原文引句绑定到最终正文哈希，追踪保留紧凑续写摘要。打包 Role 的 `agent_options` 可选择审查模型，不增加由调用方控制的工具参数；无效选项在加载时失败。AI 模式和朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`，归一叙述标点时保留引号内对话。参见[读者价值决策](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.zh.md)和[章节工作流](../story/knowledge/story/references/writing/long/workflow-chapter.md)。
 
 ### 交付与验证
 
@@ -97,11 +97,11 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 #### 模型看到什么
 
-技能通过 `ctx.skills` 发现，用 `skill` 加载。[四个 provider](src/skill-provider.ts) 从 `SKILL.md` 读取描述和完整正文，并在前面加上共享的调用说明和领域集成说明：工作流名称（包括 `$name` 和 `/name` 引用）指向 Skill；`creative_role` 只委派七个内置的小说专家；委派某个阶段时使用 `subagent`，并给出让子代理加载对应 Skill 的自包含任务。Role 通过 `creative_bundled_reference` 读取打包参考（[决策](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md#composition-and-knowledge)）。
+技能通过 `ctx.skills` 发现，用 `skill` 加载。[四个 provider](src/skill-provider.ts) 从 `SKILL.md` 读取描述和完整正文，并在前面加上共享的调用说明和领域集成说明：工作流名称（包括 `$name` 和 `/name` 引用）指向 Skill；`creative_role` 只委派七个内置的小说专家；委派某个阶段时使用 `subagent`，并给出让子代理加载对应 Skill 的自包含任务。小说技能使用 DSH 资源路径提示，Role 获得固定的包内参考路径，两者都通过原生 `read` 按需读取（[决策](../../../.agents/notes/implemented/simplification/2026-09-30-story-skills-native-resources.zh.md)）。
 
 #### Token 影响
 
-发现阶段只提供简短描述；全部 37 个条目都在默认 500 字符的目录上限之内。`skill` 加载把正文作为工具结果加入，不替换目录消息，也不预加载其他正文；`creative_role` 在子轮次中加入所选 Role 的 persona。
+发现阶段只提供简短描述；全部 29 个条目都在默认 500 字符的目录上限之内。`skill` 加载把正文作为工具结果加入，不替换目录消息，也不预加载其他正文；`creative_role` 在子轮次中加入所选 Role 的 persona。
 
 #### KV Cache 影响
 
@@ -141,7 +141,7 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 - **运行错误文本保持简体中文**：工作台界面通过 `creative` locale 命名空间渲染，而服务端错误正文、运行时诊断和抛出的错误在工作区路由提供稳定错误码之前保持简体中文。
 - **知识库随包分发**：`knowledge/` 目录增大克隆和包体积；尚未实现按需获取。
-- **浏览器自动化依赖外部程序**：`browser-cdp` 需要执行环境中有兼容的 `agent-browser` 和 Lightpanda，两者都不随包提供；不复用 Chrome 配置，游戏 QA 则另需 Chrome 与 Node 22+ 来提供截图和交互证据。
+- **浏览器自动化依赖外部程序**：小说浏览器参考需要执行环境中有兼容的 `agent-browser` 和 Lightpanda，两者都不随包提供；不复用 Chrome 配置，游戏 QA 则另需 Chrome 与 Node 22+ 来提供截图和交互证据。
 - **作业只存在于进程内**：Host 重启后，没有对应活动作业的绑定显示为不可用，且永远不会自动重启。没有真实绑定的历史 `track_job` 记录仍只是请求，不是执行证据。
 - **预览运行时跟随独立标签挂载** — 重新打开游戏或视频工作台会重建预览，不恢复进程内运行状态。
 - **远程执行需要挂载资源**：通过 provider 读取的媒体每个文件最多 256 MiB，远程 shell 需要把打包脚本挂载或复制到自己的文件系统。

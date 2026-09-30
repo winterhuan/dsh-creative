@@ -1,14 +1,7 @@
-import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { ToolExecution, ToolRunContext, ToolRuntime } from '@deepseek-ai/dsh-tools'
+import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
 import { describe, expect, it, vi } from 'vitest'
 import { createCreativeRoleTool, CREATIVE_ROLE_TOOL_NAME, roleToolFilter, type CreativeRoleSubagents } from '../src/role-tool.js'
-import {
-  bundledReferenceGuard,
-  createCreativeReferenceTool,
-  CREATIVE_REFERENCE_TOOL_NAME,
-} from '../src/reference-tool.js'
 
 function roleSubagents(start: unknown): CreativeRoleSubagents {
   return { start } as CreativeRoleSubagents
@@ -23,7 +16,7 @@ describe('native Creative Role tool', () => {
     })
     expect(roleToolFilter('story-explorer')).toEqual({ allow: ['read', 'glob', 'grep'] })
     expect(roleToolFilter('narrative-writer')).toEqual({
-      allow: [CREATIVE_REFERENCE_TOOL_NAME, 'read', 'glob', 'grep', 'write', 'edit', 'bash'],
+      allow: ['read', 'glob', 'grep', 'write', 'edit', 'bash'],
     })
     expect(roleToolFilter('story-researcher')).toEqual({
       allow: ['read', 'glob', 'grep', 'bash', 'write', 'web_search', 'web_fetch'],
@@ -74,7 +67,7 @@ describe('native Creative Role tool', () => {
       label: 'creative:narrative-writer',
       parent: agent,
       persona: expect.stringContaining('CREATIVE_DSH_ROLE:narrative-writer'),
-      toolFilter: { allow: [CREATIVE_REFERENCE_TOOL_NAME, 'read', 'glob', 'grep', 'write', 'edit', 'bash'] },
+      toolFilter: { allow: ['read', 'glob', 'grep', 'write', 'edit', 'bash'] },
       maxDepth: 1,
       signal,
     }))
@@ -85,7 +78,7 @@ describe('native Creative Role tool', () => {
     expect(dispose).toHaveBeenCalledOnce()
   })
 
-  it('removes unavailable bundled-reference access instead of promising unreadable Role references', async () => {
+  it('excludes read when the caller cannot access the native read tool', async () => {
     const dispose = vi.fn(async () => {})
     const start = vi.fn(async () => ({
       id: 'role-run-no-reference',
@@ -99,7 +92,7 @@ describe('native Creative Role tool', () => {
       options: {},
       session: { requestHeader: () => undefined },
       ctx: {
-        tools: { get: (name: string) => name === CREATIVE_REFERENCE_TOOL_NAME ? undefined : {} },
+        tools: { get: (name: string) => name === 'read' ? undefined : {} },
       },
     } as Agent
     const callId = 'call-no-reference' as ToolRunContext['callId']
@@ -117,26 +110,9 @@ describe('native Creative Role tool', () => {
       concludeTurn: vi.fn(),
     })
     expect(start).toHaveBeenCalledWith('spawn', expect.objectContaining({
-      toolFilter: { allow: ['read', 'glob', 'grep', 'write', 'edit', 'bash'] },
+      toolFilter: { allow: ['glob', 'grep', 'write', 'edit', 'bash'] },
     }))
     expect(dispose).toHaveBeenCalledOnce()
-  })
-
-  it('reads only pinned references and rejects path escape or scoped shadowing', async () => {
-    const storySetupRoot = resolve(import.meta.dirname, '../../story/knowledge/story/skills/story-setup')
-    const definition = await createCreativeReferenceTool(storySetupRoot)
-    const reference = 'story-setup/references/agent-references/writing-craft.md'
-    const result = await definition.execute({ reference }, {} as ToolRunContext) as { readonly reference: string; readonly content: string }
-    expect(result.reference).toBe(reference)
-    expect(result.content).toBe(await readFile(resolve(storySetupRoot, 'references/agent-references/writing-craft.md'), 'utf8'))
-    await expect(definition.execute({ reference: 'story-setup/references/agent-references/../../SKILL.md' }, {} as ToolRunContext))
-      .rejects.toThrow(/must be one of/u)
-
-    const shadow = { ...definition }
-    const guard = bundledReferenceGuard(definition, { get: (_name: string) => shadow } as ToolRuntime)
-    expect(guard({ name: CREATIVE_REFERENCE_TOOL_NAME, agent: {} } as ToolExecution)).toMatch(/shadowed/u)
-    const pinnedGuard = bundledReferenceGuard(definition, { get: (_name: string) => definition } as ToolRuntime)
-    expect(pinnedGuard({ name: CREATIVE_REFERENCE_TOOL_NAME, agent: {} } as ToolExecution)).toBeUndefined()
   })
 
   it.each([
@@ -212,6 +188,17 @@ describe('native Creative Role tool', () => {
         ? { provider: 'request-provider', model: 'request-model', reasoningEffort: 'medium' }
         : { provider: 'parent-provider', model: 'parent-model', reasoningEffort: 'high' },
     })
+    const [rendered] = tool.output.render({}, result)
+    if (rendered?.type !== 'text') throw new Error('Role result did not render text')
+    const [metadata, ...body] = rendered.text.split('\n')
+    expect(JSON.parse(metadata!)).toEqual({
+      role: 'story-architect',
+      runId: 'role-run-review',
+      resolvedAgent: hasLocalAgent
+        ? { provider: 'request-provider', model: 'request-model', reasoningEffort: 'medium' }
+        : { provider: 'parent-provider', model: 'parent-model', reasoningEffort: 'high' },
+    })
+    expect(body.join('\n')).toBe('\n审查结果')
     expect(tool.parameters).not.toHaveProperty('properties.model')
   })
 })

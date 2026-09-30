@@ -4,7 +4,7 @@ description: |
   故事项目结构化查询 agent（只读）。响应关于角色状态、伏笔进度、设定出现位置、
   时间线节点、写作进度的查询。使用 grep + read 从项目文件系统中检索信息，
   返回结构化 JSON 摘要。
-  被 story-long-write（日更 Step 1 上下文加载）、story-review（审查时查设定）、
+  被 story-write（续写上下文加载）、story-review（审查时查设定）、
   story 路由（用户自然提问时）调用。
   不做任何创作判断或修改。
 ---
@@ -147,7 +147,7 @@ description: |
 
 1. **解析输入**：项目目录 + 本章情绪/基调 + （可选）本章爽点类型 + （可选）本章目标字数
 2. **主对标书选择**：
-   - 先按项目目录名、`.active-book` 与本书设定识别当前作品；`拆文库/{当前书}/` 是 story-import 的本书分析，不是对标候选。历史误建的 `对标/{当前书}/` 也必须排除，并返回 `gaps.self_benchmark_ignored: true`
+   - 先按项目目录名、`.active-book` 与本书设定识别当前作品；`拆文库/{当前书}/` 是 当前作品的本书分析，不是对标候选。历史误建的 `对标/{当前书}/` 也必须排除，并返回 `gaps.self_benchmark_ignored: true`
    - `read 设定/题材定位.md`，提取 `主对标书` 字段
    - 若有且不是当前作品 → 用该书；若字段指向当前作品 → 忽略该字段并设置 `gaps.self_benchmark_ignored: true`
    - **路径一律用字段值逐字拼接**：不添加《》等任何装饰、不改一字——拼错时 Glob 只会静默返回空，与「书不存在」无法区分
@@ -158,11 +158,11 @@ description: |
 4. **读情绪模块（权威）**：
    - 优先 `read {对标书路径}/剧情/情绪模块.md`
    - 存在 → 从「读者需求 / 情绪引擎」「可复现模块」或模块卡片中，按本章情绪/爽点类型选择 1 条 `selected_emotion_module`，并写入 `module_source_path`
-   - 不存在 → 返回 `gaps.missing_primary_contract: true`、`gaps.module_missing: true`、`gaps.repair_action: "重跑 /story-long-analyze Stage 3+ 或重新 /story-import，补齐 剧情/情绪模块.md"`；不要从摘要或文风伪造权威模块
+   - 不存在 → 返回 `gaps.missing_primary_contract: true`、`gaps.module_missing: true`、`gaps.repair_action: "用 /story-analyze 分析指定对标书，补齐 剧情/情绪模块.md"`；不要从摘要或文风伪造权威模块
 5. **读节奏索引（权威）**：
    - 优先 `read {对标书路径}/剧情/节奏.md`
    - 存在 → 从关键信息推进表、情绪触动点、爆发节奏/冷却段中选择 1 条 `rhythm_reference`，并写入 `rhythm_source_path`
-   - 不存在 → 返回 `gaps.missing_primary_contract: true`、`gaps.rhythm_missing: true`、`gaps.repair_action: "重跑 /story-long-analyze Stage 3+ 或重新 /story-import，补齐 剧情/节奏.md"`；不要从摘要或故事线伪造权威节奏
+   - 不存在 → 返回 `gaps.missing_primary_contract: true`、`gaps.rhythm_missing: true`、`gaps.repair_action: "用 /story-analyze 分析指定对标书，补齐 剧情/节奏.md"`；不要从摘要或故事线伪造权威节奏
    - 若任一权威文件缺失（`gaps.missing_primary_contract: true`），保留已读到的来源信息后直接返回结构化 JSON；调用方必须停止本章准备，不进入文风/章节匹配/正文写作。
    - 若两个权威文件都存在但对同一章节/模块的读者情绪或爆发点描述互相矛盾，保留两条原文摘要，并返回 `gaps.module_rhythm_conflict: true` 与 `gaps.conflict: "..."`；调用方按两个权威文件优先于 `拆文报告.md` / `故事线.md` 的规则处理，禁止自行改写
 6. **读文风**：
@@ -350,7 +350,7 @@ description: |
 
 ## 被调用协议
 
-调用方通过 DSH 的 `creative_role` 调用你，`role` 为 `story-explorer`（如 story-long-write、story-review、story 路由等）。
+调用方通过 DSH 的 `creative_role` 调用你，`role` 为 `story-explorer`（如 story-write、story-review、story 路由等）。
 
 你收到的 prompt 会包含：
 - `项目目录`：书籍项目目录路径

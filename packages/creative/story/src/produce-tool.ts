@@ -13,7 +13,7 @@ declare module '@deepseek-ai/dsh-jobs' {
   interface JobKindMap { 'produce': 'produce' }
 }
 
-const scripts = {"story-zhuque": "story/skills/story-polish/scripts/zhuque_detect.py"} as const
+const scripts = {"story-zhuque": "story/scripts/zhuque_detect.py"} as const
 
 function quote(value: string): string { return `'${value.replaceAll("'", "'\"'\"'")}'` }
 

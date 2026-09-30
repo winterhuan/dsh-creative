@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { resolve } from 'node:path'
+import { isAbsolute, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CREATIVE_ROLE_NAMES, loadBundledRole, loadBundledRoleDefinition } from '../src/role-provider.js'
 
@@ -21,10 +21,23 @@ describe('bundled Creative roles', () => {
   it('adapts the same exact role body for native DSH tool execution', async () => {
     const persona = await loadBundledRole('narrative-writer', resolve(import.meta.dirname, '../../story/knowledge/creative/roles'), 'native-tools')
     expect(persona).toContain('current DSH workspace and visible tool set')
-    expect(persona).toContain('call creative_bundled_reference with the exact story-setup/references/agent-references path')
-    expect(persona).toContain('Never call the generic skill tool')
-    expect(persona).toContain('fall back to a legacy platform path')
+    expect(persona).toContain('Read references with the native read tool')
+    expect(persona).toContain('bypass DSH filesystem permissions')
+    expect(persona).not.toContain('creative_bundled_reference')
     expect(persona).not.toContain('do not call tools')
+  })
+
+  it('resolves every Role reference against the shipped package resource base', async () => {
+    for (const name of CREATIVE_ROLE_NAMES) {
+      const persona = await loadBundledRole(name, undefined, 'native-tools')
+      const base = /^Bundled resource base directory: (.+)$/mu.exec(persona)?.[1]
+      expect(base).toBe(resolve(import.meta.dirname, '../../story/knowledge/story'))
+      expect(isAbsolute(base!)).toBe(true)
+      for (const [, reference] of persona.matchAll(/`(references\/[^`]+\.md)`/gu)) {
+        await expect(readFile(resolve(base!, reference!), 'utf8'), `${name}: ${reference}`)
+          .resolves.toMatch(/\S/u)
+      }
+    }
   })
 
   it('keeps the updated benchmark-book failure distinction', async () => {

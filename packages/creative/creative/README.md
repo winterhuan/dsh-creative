@@ -46,7 +46,7 @@ Select the project workspace in a Session, then open Fiction, Short-drama, Game 
 
 ### Chapter review
 
-Long-form chapters follow outline readiness, a compact scene plan and a reader-value review before submission. Reviews bind quoted evidence to the final body hash, and tracking retains a compact continuation summary. Packaged Role `agent_options` select review models without adding caller-controlled tool parameters; malformed options fail at load. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration` for quoted-dialogue-safe normalization. See the [reader-value decision](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.md) and [chapter workflow](../story/knowledge/story/skills/story-long-write/references/workflow-chapter.md).
+Long-form chapters follow outline readiness, a compact scene plan and a reader-value review before submission. Reviews bind quoted evidence to the final body hash, and tracking retains a compact continuation summary. Packaged Role `agent_options` select review models without adding caller-controlled tool parameters; malformed options fail at load. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration` for quoted-dialogue-safe normalization. See the [reader-value decision](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.md) and [chapter workflow](../story/knowledge/story/references/writing/long/workflow-chapter.md).
 
 ### Deliver and verify
 
@@ -97,11 +97,11 @@ Stable domain row IDs prevent duplicate registration alongside individual instal
 
 #### What the model sees
 
-Skills are discovered through `ctx.skills` and loaded with `skill`. The [four providers](src/skill-provider.ts) read descriptions and complete bodies from `SKILL.md` and prepend shared invocation and domain integration instructions: workflow names, including `$name` and `/name` references, identify Skills; `creative_role` delegates only the seven bundled novel specialists; a delegated stage uses `subagent` with a self-contained task that loads the named Skill. Roles read packaged references through `creative_bundled_reference` ([decision](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md#composition-and-knowledge)).
+Skills are discovered through `ctx.skills` and loaded with `skill`. The [four providers](src/skill-provider.ts) read descriptions and complete bodies from `SKILL.md` and prepend shared invocation and domain integration instructions: workflow names, including `$name` and `/name` references, identify Skills; `creative_role` delegates only the seven bundled novel specialists; a delegated stage uses `subagent` with a self-contained task that loads the named Skill. Story Skills use DSH resource hints, and Roles receive fixed package reference paths; both load them on demand with native `read` ([decision](../../../.agents/notes/implemented/simplification/2026-09-30-story-skills-native-resources.md)).
 
 #### Token effect
 
-Discovery supplies concise descriptions; all 37 entries fit the default catalog limit of 500 characters. A `skill` load adds that body as a tool result without replacing the catalog message or preloading other bodies; `creative_role` adds the selected Role persona in a child turn.
+Discovery supplies concise descriptions; all 29 entries fit the default catalog limit of 500 characters. A `skill` load adds that body as a tool result without replacing the catalog message or preloading other bodies; `creative_role` adds the selected Role persona in a child turn.
 
 #### KV Cache effect
 
@@ -141,7 +141,7 @@ Status follows normal logged tool history. Each new check resolves current crede
 
 - **Operational failures use zh-Hans** — each workbench owns its locale namespace; Host diagnostics remain Chinese.
 - **Knowledge is bundled** — the `knowledge/` tree increases clone and package size; on-demand fetching is not implemented.
-- **Browser automation uses external binaries** — `browser-cdp` needs compatible `agent-browser` and Lightpanda binaries in the execution environment; neither is bundled, Chrome profiles are not reused, while game QA separately requires Chrome and Node 22+ for screenshots and interaction evidence.
+- **Browser automation uses external binaries** — The story browser reference needs compatible `agent-browser` and Lightpanda binaries in the execution environment; neither is bundled, Chrome profiles are not reused, while game QA separately requires Chrome and Node 22+ for screenshots and interaction evidence.
 - **Jobs are process-local** — after a Host restart, bindings without a matching live job show as unavailable and never restart. Historical `track_job` records without real bindings remain requests, not execution evidence.
 - **Preview runtimes follow their domain tabs** — reopening a game or video page rebuilds its preview instead of restoring in-memory execution state.
 - **Remote execution needs mounted resources** — provider-backed media reads accept at most 256 MiB per file, and a remote shell needs the packaged scripts mounted or copied into its own filesystem.

@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Write and review fiction with fourteen Skills, seven specialist Roles and a dedicated editor. Drafts remain in the current DSH Session, and saves use observed file versions. Install this bundle on its own or through Creative.
+Write and review fiction with six Skills, seven specialist Roles and a dedicated editor. Drafts remain in the current DSH Session, and saves use observed file versions. Install this bundle on its own or through Creative.
 
 ## Table of Contents
 
@@ -32,6 +32,8 @@ Open **Fiction workbench** from the right sidebar. The plugin uses the current D
 
 The fiction workbench treats the current Session directory as the project root. It lists that directory’s direct `正文/`, `大纲/`, `设定/` and other standard roots, plus standalone story documents. Opening their parent directory does not discover child projects; open the novel directory itself. Nested volumes inside a recognized root remain visible.
 
+The six entries are `story` (project setup, existing novels, research and preferences), `story-write` (long and short fiction), `story-analyze` (analysis), `story-review` (review), `story-polish` (local editing and explicitly requested Zhuque detection) and `story-cover` (covers). Existing projects continue directly; raw-text intake does not require full-book analysis.
+
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
@@ -40,9 +42,11 @@ The fiction workbench treats the current Session directory as the project root. 
 
 The [patch](cordis.patch.yml) mounts the domain row, the `creative-produce` configuration row and its existing settings page. Repeated configuration row IDs resolve through DSH Loader composition. `editorMaxBytes` defaults to 2097152; `trustedHosts` extends the default loopback authority list. The `/story` API limits document access to this domain's project paths.
 
-The writing guards and specialist Roles belong to this package. Zhuque detection sends the selected chapter to Tencent EdgeOne Makers; it receives only the configured MAKERS_API_KEY.
+The writing guards and specialist Roles belong to this package. Explicitly requested Zhuque detection sends the selected chapter to Tencent EdgeOne Makers; it receives only the configured MAKERS_API_KEY.
 
 The package has no dependency on the Creative aggregate or another domain plugin. Required helper scripts ship as package resources. The [aggregate](../creative/README.md) preserves legacy tool names and routes without a separate browser page.
+
+The six Skills share the packaged `knowledge/story` resource base. DSH supplies resource hints, and Skills and Roles read references on demand with native `read`; scripts live in that directory’s `scripts/` folder.
 
 </details>
 
@@ -57,7 +61,7 @@ The domain catalog exposes only its own Skill descriptions. Loading a Skill supp
 
 #### Token effect
 
-Skill bodies load on demand. Execution adds ordinary tool results without loading unrelated domain catalogs.
+Skill bodies load on demand. The six entries do not preload references, and the dedicated reference tool and its path enum add no catalog cost. DSH’s fixed character-density heuristic estimates novel catalog lines at 531 tokens before and 137 after; the removed tool definition was approximately 1169 tokens. These are comparable text estimates, not provider billing measurements.
 
 #### KV Cache effect
 

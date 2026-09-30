@@ -5,11 +5,6 @@ import type { SubagentRuntime } from '@deepseek-ai/dsh-subagent'
 import { isJsonValue, type JsonValue } from '@deepseek-ai/dsh-util-values'
 import { defineTool, type ToolDefinition } from '@deepseek-ai/dsh-tools'
 import {
-  bundledReferenceGuard,
-  createCreativeReferenceTool,
-  CREATIVE_REFERENCE_TOOL_NAME,
-} from './reference-tool.js'
-import {
   CREATIVE_ROLE_NAMES,
   loadBundledRoleDefinition,
   type BundledCreativeRole,
@@ -23,10 +18,10 @@ export type CreativeRoleSubagents = Pick<SubagentRuntime, 'start'>
 
 const roleTools: Readonly<Record<CreativeRoleName, readonly string[]>> = {
   'chapter-extractor': ['read', 'glob', 'grep'],
-  'character-designer': [CREATIVE_REFERENCE_TOOL_NAME, 'read', 'glob', 'grep', 'write', 'edit'],
-  'consistency-checker': [CREATIVE_REFERENCE_TOOL_NAME, 'read', 'glob', 'grep'],
-  'narrative-writer': [CREATIVE_REFERENCE_TOOL_NAME, 'read', 'glob', 'grep', 'write', 'edit', 'bash'],
-  'story-architect': [CREATIVE_REFERENCE_TOOL_NAME, 'read', 'glob', 'grep', 'write', 'edit'],
+  'character-designer': ['read', 'glob', 'grep', 'write', 'edit'],
+  'consistency-checker': ['read', 'glob', 'grep'],
+  'narrative-writer': ['read', 'glob', 'grep', 'write', 'edit', 'bash'],
+  'story-architect': ['read', 'glob', 'grep', 'write', 'edit'],
   'story-explorer': ['read', 'glob', 'grep'],
   'story-researcher': ['read', 'glob', 'grep', 'bash', 'write', 'web_search', 'web_fetch'],
 }
@@ -131,7 +126,10 @@ export async function createCreativeRoleTool(subagents?: CreativeRoleSubagents):
           content: { type: 'array', required: true, items: { type: 'json' } },
         },
       },
-      render: (_args, value) => [{ type: 'text', text: resultText(value.content) }],
+      render: (_args, value) => [{
+        type: 'text',
+        text: `${JSON.stringify({ role: value.role, runId: value.runId, resolvedAgent: value.resolvedAgent })}\n\n${resultText(value.content)}`,
+      }],
     },
     isConcurrencySafe: () => true,
     async execute(args, exec) {
@@ -175,17 +173,11 @@ export async function createCreativeRoleTool(subagents?: CreativeRoleSubagents):
 }
 
 /**
- * Register the bundled reference tool plus its shadow guard, and mount
- * `creative_role` only while the `spawn` subagent provider is present.
+ * Mount `creative_role` only while the `spawn` subagent provider is present.
  * @param context - the plugin context holding tools and subagent services.
  */
 export async function registerCreativeRoleTool(context: Context): Promise<void> {
-  const [definition, referenceDefinition] = await Promise.all([
-    createCreativeRoleTool(context.subagents),
-    createCreativeReferenceTool(),
-  ])
-  context.tools.register(referenceDefinition)
-  context.tools.guard(bundledReferenceGuard(referenceDefinition, context.tools))
+  const definition = await createCreativeRoleTool(context.subagents)
   let dispose: (() => void) | undefined
   const mount = (): void => { dispose ??= context.tools.register(definition) }
   const unmount = (): void => { dispose?.(); dispose = undefined }

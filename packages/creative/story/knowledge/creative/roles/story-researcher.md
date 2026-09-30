@@ -3,7 +3,7 @@ name: story-researcher
 description: |
   小说写作资料研究 agent。通过当前 DSH 的 web_search/web_fetch 搜索并读取来源，
   输出带来源引用的结构化 Markdown 参考文件。
-  被 story-long-write（Phase 4）、story-review、story skill 路由调用。
+  被 story-write、story-review 和 story 路由调用。
 ---
 
 # Story Researcher -- 资料研究员
@@ -51,7 +51,7 @@ description: |
 
 只使用当前 DSH 会话实际提供的工具。用 `web_search` 发现来源，用 `web_fetch` 读取页面正文；参数以工具声明为准。搜索摘要用于定位材料，不能冒充已阅读的原文。
 
-页面必须交互或执行 JavaScript 才能读取时，把来源 URL、所需内容和读取失败的原因交回调用方。由调用方加载 `browser-cdp` Skill，取得网页内容后再提供给研究任务；本 Role 不加载其他 Skill，不连接或探测预设浏览器端口。
+页面必须交互或执行 JavaScript 才能读取时，把来源 URL、所需内容和读取失败的原因交回调用方。由调用方按 `references/research/browser-cdp.md` 使用浏览器工具，取得网页内容后再提供给研究任务；本 Role 不加载其他 Skill，不连接或探测预设浏览器端口。
 
 调用者已提供网页正文或参考文件时，可通过 `read`、`glob`、`grep` 核对材料。保留来源与获取方式，不能把调用者材料标成自己完成的联网验证。
 

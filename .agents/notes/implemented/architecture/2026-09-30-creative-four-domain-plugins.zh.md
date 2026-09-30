@@ -14,7 +14,7 @@ Status: implemented
 
 Creative 组合四个包，并保留旧路由与生产别名。它没有聚合页面、浏览器入口或合并状态 store。领域 provider 只在所属包注册。Bundle 行使用稳定 ID，单独 bundle 与 Creative 同时安装不会重复注册。已有生产设置页和命名空间继续共用；拆分不新增公共运行时包。
 
-小说拥有十四个技能、七个角色、写作钩子和 `story_zhuque`。短剧拥有十个技能、`creative_production`、确认处理、投影和 `drama_produce_run`。游戏拥有七个技能、模板、经认证的 `game_qa` 和预览。视频拥有六个技能、交付度量、播放和 `video_produce_run`。聚合保留 `creative_produce_run` 与 `creative_produce_status`；独立技能桥接说明使用各领域工具名。
+小说拥有六个技能、七个角色、写作钩子和 `story_zhuque`。短剧拥有十个技能、`creative_production`、确认处理、投影和 `drama_produce_run`。游戏拥有七个技能、模板、经认证的 `game_qa` 和预览。视频拥有六个技能、交付度量、播放和 `video_produce_run`。聚合保留 `creative_produce_run` 与 `creative_produce_status`；独立技能桥接说明使用各领域工具名。
 
 各路由保留 Session 查找、可信请求、解析后路径包含检查和文件预算；编辑器保留版本化写入。领域列表和读取拒绝其他领域文档。短剧回放同时接受自己的生产结果和旧聚合结果。跨领域改编通过项目文件和来源身份交换数据，不读取其他插件的私有状态。
 

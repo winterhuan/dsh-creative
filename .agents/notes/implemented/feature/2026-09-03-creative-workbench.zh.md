@@ -21,13 +21,13 @@ Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、
 
 `story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，通过 Creative 聚合；各 provider 属于对应的独立领域包。每份 `SKILL.md` 拥有自己的描述和完整正文；provider 只在前面加上共享的 DSH 集成说明，这些说明把工作流名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
 
-七个小说 Role 通过 `creative_role` 作为 spawn 出的子 Agent 运行：`maxDepth: 1`，使用宿主拥有的模型选项，工具为按 Role 设定的白名单与调用方可见工具的交集。[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md) 负责经过校验的 Role 模型覆盖；frontmatter 不授予工具或权限。Role 使用调用方提供的项目路径，通过封闭的 `creative_bundled_reference` 工具读取打包参考，工作区 Skill 无法遮蔽这个工具。`creative_role` 只接受 Role 枚举：工作流阶段是 Skill，普通 `subagent` 委派会让子 Agent 去加载它。章节重试在提示词里携带具体反馈，而不是切换模型。
+七个小说 Role 通过 `creative_role` 作为 spawn 出的子 Agent 运行：`maxDepth: 1`，使用宿主拥有的模型选项，工具为按 Role 设定的白名单与调用方可见工具的交集。[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md) 负责经过校验的 Role 模型覆盖；frontmatter 不授予工具或权限。Role 使用调用方提供的项目路径，通过原生 `read` 读取固定包路径下的参考资料；[六技能与原生资源决策](../simplification/2026-09-30-story-skills-native-resources.zh.md) 取代专用参考工具，保留对工作区同名技能的隔离。`creative_role` 只接受 Role 枚举：工作流阶段是 Skill，普通 `subagent` 委派会让子 Agent 去加载它。章节重试在提示词里携带具体反馈，而不是切换模型。
 
 小说 Skill 共用 `knowledge/story/scripts/` 下的一套打包脚本运行时，各 Skill 通过自己目录里的入口文件调用。JavaScript 以 ESM 运行；可执行文件缺失、检查结果格式错误或退出码不一致都会阻断章节交付，而不是算作检查通过。因此单独复制一个小说 Skill 目录不会带上这套运行时，共享视频脚本从 `knowledge/video-recap/runtime/` 复制，并逐字节检查一致性。剧集合成和媒体复核需要包内的视频树。作者记忆回执、章节追踪、必需参考和质量检查仍属于写作工作流。
 
 知识库 manifest 是 Skill、Role 和可选说明的描述性目录。它不包含提交固定值、schema 计数、生成时间、逐文件哈希或变更分类；加载直接读取打包文件，内容历史由 Git 负责。
 
-研究使用原生 Web 工具，依赖浏览器的来源交还给调用方，而不要求固定的调试端口。`browser-cdp` 用 `agent-browser --engine lightpanda` 做交互，用 `lightpanda fetch` 做一次性读取，每个任务使用具名会话并在结束后清理。Lightpanda 既不提供用户的 Chrome 配置，也不提供游戏 QA 需要的画面渲染。封面生成要求真实可用的图像或带认证的 HTTP 能力，不能虚构生产入口。
+研究使用原生 Web 工具，依赖浏览器的来源交还给调用方，而不要求固定的调试端口。内部浏览器参考用 `agent-browser --engine lightpanda` 做交互，用 `lightpanda fetch` 做一次性读取，每个任务使用具名会话并在结束后清理。Lightpanda 既不提供用户的 Chrome 配置，也不提供游戏 QA 需要的画面渲染。封面生成要求真实可用的图像或带认证的 HTTP 能力，不能虚构生产入口。
 
 <a id="workspace-and-sidebar"></a>
 ### 工作区与 Sidebar

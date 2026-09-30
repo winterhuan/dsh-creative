@@ -16,7 +16,6 @@ export { registerWorkspaceRoute } from './workspace-route.ts'
 export * from './native-hooks.ts'
 export * from './role-provider.ts'
 export * from './role-tool.ts'
-export * from './reference-tool.ts'
 
 export const name = 'story'
 export const inject = ['skills', 'tools', 'subagents']

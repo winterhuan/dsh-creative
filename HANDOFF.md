@@ -32,6 +32,8 @@
 
 2026-09-30 四领域拆分验证：清理构建产物后 `typecheck`、`build` 通过；全量 59 个文件、577 项测试通过。文档 16 项、规范 3 项通过，归档完整性通过。四个领域均有独立包与侧栏；Creative 聚合页面已移除；通过聚合包安装的小说保存、短剧生产页、视频播放和游戏独立入口在临时 web profile 验证，无页面脚本异常。三个新包的压缩包安装、浏览器检查与 16 项包内资源检查通过；已有设置包尚未发布到 npm，压缩包验证用临时 profile 的 pnpm override 指向它的本地压缩包。游戏此前的独立包、压缩包、聚合与三种模板 Chrome QA 已通过。未修改用户 profile。
 
+2026-09-30 小说技能精简验证：清理构建产物后的 `typecheck`、`build` 通过；全量 59 个文件、575 项测试通过（删除旧脚本 wrapper 的重复轮次）。文档 16 项、规范 3 项及归档完整性通过。临时 web profile 的 Chrome 验证了六个小说技能、每个入口的参考文件预览和空工作台 `/story` 提示，无页面脚本错误。未调用真实模型或外部检测。
+
 截至 2026-09-29 的验证结果：
 
 | 检查 | 结果 |
@@ -141,6 +143,12 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 ### 设置与密钥
 
 `ui-settings-creative-produce` 编辑 `creative-produce` 设置命名空间。6 个提供商密钥通过 `ctx.remote.credentials` 写入；这个 Remote 由 DSH 内置的 `@deepseek-ai/dsh-api-settings-controller` 提供，由 `api-remotes` 挂载，插件只需要它的类型（见[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
+
+### 小说技能与资源
+
+小说包提供 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish`、`story-cover` 六个入口。长短篇流程按需读取；已有工程直接继续，原始文本接入不要求先拆全书。普通润色不调用朱雀，检测需要用户明确请求。
+
+六个技能的 `resourceBase` 均指向 `knowledge/story`，参考资料集中在 `references/`、脚本在 `scripts/`，DSH 原生 `read` 负责模型侧读取。Role persona 提供固定包路径。脚本移动后需保留 `storyctl.py` 与 `wordcount_core.py`、`tracking_commit.py` 同目录；`produce-tool.ts` 和 `sync-video-runtime.py` 使用新的脚本位置。
 
 ### 小说项目发现
 

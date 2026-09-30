@@ -51,14 +51,14 @@ describe('Creative headless Loader composition', () => {
     expect((await context.skills.list()).map(skill => skill.name)).toEqual(expect.arrayContaining([
       'story', 'short-drama', 'novel-to-game', 'video-recap',
     ]))
-    const source = await readFile(new URL('../../story/knowledge/story/skills/story-long-write/SKILL.md', import.meta.url), 'utf8')
-    expect(await context.skills.get('story-long-write')).toMatchObject({
+    const source = await readFile(new URL('../../story/knowledge/story/skills/story-write/SKILL.md', import.meta.url), 'utf8')
+    expect(await context.skills.get('story-write')).toMatchObject({
       content: expect.stringContaining(source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/u, '').trim()),
     })
-    expect(await context.skills.list()).toHaveLength(37)
+    expect(await context.skills.list()).toHaveLength(29)
     expect(context.tools.get('game_qa')).toBeDefined()
     expect(context.tools.get('creative_produce_run')).toBeDefined()
     expect(context.tools.get('creative_production')).toBeDefined()
-    expect(context.tools.get('creative_bundled_reference')).toBeDefined()
+    expect(context.tools.get('creative_bundled_reference')).toBeUndefined()
   })
 })

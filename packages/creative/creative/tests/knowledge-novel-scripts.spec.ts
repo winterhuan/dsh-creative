@@ -8,8 +8,6 @@ import { describe, expect, it, type TestContext } from 'vitest'
 
 const knowledge = resolve(import.meta.dirname, '../../story/knowledge/story')
 const python = process.platform === 'win32' ? 'python' : 'python3'
-const qualitySkills = ['story-deslop', 'story-long-write', 'story-polish', 'story-review', 'story-short-write']
-const trackingSkills = ['story-import', 'story-long-write', 'story-review']
 const cleanProse = '她推开木门，把篮子放在桌边。\n'
 const validLongOutline = `- 核心事件：主角必须亲自取回账册
 - 字数目标：500
@@ -50,8 +48,8 @@ const validLongOutline = `- 核心事件：主角必须亲自取回账册
 | 1 | 主角用签押打开库门 | 主角选择 | 不新增帮手或幕后揭示 |
 `
 
-function script(skill: string, filename: string): string {
-  return join(knowledge, 'skills', skill, 'scripts', filename)
+function script(filename: string): string {
+  return join(knowledge, 'scripts', filename)
 }
 
 async function workspace(context: TestContext): Promise<string> {
@@ -90,7 +88,7 @@ describe('bundled novel executable scripts', () => {
       const file = join(cwd, `${sample.id}.md`)
       await writeFile(file, sample.text)
       const result = await run(context, cwd, process.execPath, [
-        script('story-long-write', 'check-ai-patterns.js'), '--json', '--fail-on=blocking', file,
+        script('check-ai-patterns.js'), '--json', '--fail-on=blocking', file,
       ])
       expect(result.exitCode, result.stderr).toBe(0)
       const report = JSON.parse(result.stdout) as {
@@ -122,7 +120,7 @@ describe('bundled novel executable scripts', () => {
     const body = join(cwd, '正文.md')
     const prose = '她停住——门还开着。\n“等等……别关门——”\n'
     await writeFile(body, prose)
-    const entry = script('story-long-write', 'normalize-punctuation.js')
+    const entry = script('normalize-punctuation.js')
     expect((await run(context, cwd, process.execPath, [entry, body])).exitCode).toBe(0)
     expect(await readFile(body, 'utf8')).toBe(prose)
     const multiline = '“他低声说：‘别——’\n---\n我还在……这里。”\n<!-- “ -->\n她停下——推开门。\n'
@@ -136,105 +134,100 @@ describe('bundled novel executable scripts', () => {
     expect(await readFile(body, 'utf8')).toBe(prose)
   })
 
-  it('runs compatible entrypoints from a relocated novel knowledge bundle', async (context) => {
+  it('runs shared entrypoints from a relocated novel knowledge bundle', async (context) => {
     const cwd = await workspace(context)
     const bundled = join(cwd, 'knowledge/story')
     await cp(knowledge, bundled, { recursive: true })
     await writeFile(join(cwd, 'package.json'), '{"type":"module"}\n')
     await writeFile(join(cwd, '正文.md'), cleanProse)
     const checked = await run(context, cwd, process.execPath, [
-      join(bundled, 'skills/story-short-write/scripts/check-ai-patterns.js'), '--check', '--json', '正文.md',
+      join(bundled, 'scripts/check-ai-patterns.js'), '--check', '--json', '正文.md',
     ])
     expect(checked.exitCode, checked.stderr).toBe(0)
     expect(JSON.parse(checked.stdout)).toMatchObject({ findings: [] })
     const initialized = await run(context, cwd, python, [
-      '-B', join(bundled, 'skills/story-review/scripts/author_memory_commit.py'), 'init', '--workspace', cwd,
+      '-B', join(bundled, 'scripts/author_memory_commit.py'), 'init', '--workspace', cwd,
     ])
     expect(initialized.exitCode, initialized.stderr).toBe(0)
     expect(JSON.parse(initialized.stdout)).toMatchObject({ ok: true })
   })
 
-  for (const skill of qualitySkills) {
-    for (const [filename, blockedProse] of [
-      ['check-ai-patterns.js', '这不是归途，而是牢笼。\n'],
-      ['check-degeneration.js', 'TODO：补完这一段。\n'],
-    ] as const) {
-      it(`${skill}/${filename} distinguishes clean prose, findings, and unreadable input`, async (context) => {
-        const cwd = await workspace(context)
-        const body = join(cwd, '正文.md')
-        const args = [script(skill, filename), '--check', '--json', '--fail-on=blocking', body]
-        await writeFile(body, cleanProse)
-        const clean = await run(context, cwd, process.execPath, args)
-        expect(clean.exitCode, clean.stderr).toBe(0)
-        expect(JSON.parse(clean.stdout)).toMatchObject({ findings: [] })
-        await writeFile(body, blockedProse)
-        const blocked = await run(context, cwd, process.execPath, args)
-        expect(blocked.exitCode, blocked.stderr).toBe(filename === 'check-ai-patterns.js' ? 0 : 1)
-        expect(JSON.parse(blocked.stdout).findings).toEqual(expect.arrayContaining([
-          expect.objectContaining({ severity: filename === 'check-ai-patterns.js' ? 'advisory' : 'blocking' }),
-        ]))
-        expect(await readFile(body, 'utf8')).toBe(blockedProse)
-        await rm(body)
-        const missing = await run(context, cwd, process.execPath, args)
-        expect(missing.exitCode).toBe(2)
-      })
-    }
-
-    it(`${skill} checks punctuation without writing, then normalizes it through the same entrypoint`, async (context) => {
+  for (const [filename, blockedProse] of [
+    ['check-ai-patterns.js', '这不是归途，而是牢笼。\n'],
+    ['check-degeneration.js', 'TODO：补完这一段。\n'],
+  ] as const) {
+    it(`${filename} distinguishes clean prose, findings, and unreadable input`, async (context) => {
       const cwd = await workspace(context)
       const body = join(cwd, '正文.md')
-      const original = '她停下——推开门。\n'
-      const entry = script(skill, 'normalize-punctuation.js')
-      await mkdir(join(cwd, '设定'))
-      await writeFile(join(cwd, '设定/写作检查.json'), JSON.stringify({ punctuation: 'normalize-narration' }))
-      await writeFile(body, original)
-      const checked = await run(context, cwd, process.execPath, [entry, '--project', cwd, '--check', body])
-      expect(checked.exitCode, checked.stderr).toBe(1)
-      expect(await readFile(body, 'utf8')).toBe(original)
-      const normalized = await run(context, cwd, process.execPath, [entry, '--project', cwd, body])
-      expect(normalized.exitCode, normalized.stderr).toBe(0)
-      expect(await readFile(body, 'utf8')).not.toContain('——')
-      const clean = await run(context, cwd, process.execPath, [entry, '--project', cwd, '--check', body])
+      const args = [script(filename), '--check', '--json', '--fail-on=blocking', body]
+      await writeFile(body, cleanProse)
+      const clean = await run(context, cwd, process.execPath, args)
       expect(clean.exitCode, clean.stderr).toBe(0)
-
-      const dialogue = '“别过来——我还没说完……”\n她停下——推开门。\n'
-      await writeFile(body, dialogue)
-      const dialogueNormalized = await run(context, cwd, process.execPath, [entry, '--project', cwd, body])
-      expect(dialogueNormalized.exitCode, dialogueNormalized.stderr).toBe(0)
-      expect(await readFile(body, 'utf8')).toBe('“别过来——我还没说完……”\n她停下，推开门。\n')
-    })
-  }
-
-  for (const skill of ['story-long-write', 'story-short-write']) {
-    it(`${skill} keeps outline-copy findings separate from read failures`, async (context) => {
-      const cwd = await workspace(context)
-      const body = join(cwd, '正文.md')
-      const outline = join(cwd, '小节大纲.md')
-      const prose = '远处的老人背着竹篓沿着河岸慢慢走了过来。\n'
-      await writeFile(body, prose)
-      await writeFile(outline, prose)
-      const args = [script(skill, 'check-outline-copy.js'), '--outline', outline, body]
-      const overlap = await run(context, cwd, process.execPath, args)
-      expect(overlap.exitCode, overlap.stderr).toBe(1)
-      expect(overlap.stdout).toContain('细纲照搬检测')
-      await rm(outline)
+      expect(JSON.parse(clean.stdout)).toMatchObject({ findings: [] })
+      await writeFile(body, blockedProse)
+      const blocked = await run(context, cwd, process.execPath, args)
+      expect(blocked.exitCode, blocked.stderr).toBe(filename === 'check-ai-patterns.js' ? 0 : 1)
+      expect(JSON.parse(blocked.stdout).findings).toEqual(expect.arrayContaining([
+        expect.objectContaining({ severity: filename === 'check-ai-patterns.js' ? 'advisory' : 'blocking' }),
+      ]))
+      expect(await readFile(body, 'utf8')).toBe(blockedProse)
+      await rm(body)
       const missing = await run(context, cwd, process.execPath, args)
       expect(missing.exitCode).toBe(2)
-      expect(missing.stderr).toContain('ENOENT')
-      const optional = await run(context, cwd, process.execPath, [script(skill, 'check-outline-copy.js'), body])
-      expect(optional.exitCode, optional.stderr).toBe(0)
     })
   }
 
-  for (const [skill, filename, args] of [
-    ['story-import', 'check-outline-contract.js', ['--json', 'missing.md']],
-    ['story-long-write', 'check-outline-contract.js', ['--json', 'missing.md']],
-    ['story-short-write', 'check-phase2-contract.js', ['--json']],
-    ['story-short-write', 'check-delivery-contract.js', ['--json', '--min-chars', '1', '--max-chars', '20', '--sections', '1']],
+  it('checks punctuation without writing, then normalizes it through the same entrypoint', async (context) => {
+    const cwd = await workspace(context)
+    const body = join(cwd, '正文.md')
+    const original = '她停下——推开门。\n'
+    const entry = script('normalize-punctuation.js')
+    await mkdir(join(cwd, '设定'))
+    await writeFile(join(cwd, '设定/写作检查.json'), JSON.stringify({ punctuation: 'normalize-narration' }))
+    await writeFile(body, original)
+    const checked = await run(context, cwd, process.execPath, [entry, '--project', cwd, '--check', body])
+    expect(checked.exitCode, checked.stderr).toBe(1)
+    expect(await readFile(body, 'utf8')).toBe(original)
+    const normalized = await run(context, cwd, process.execPath, [entry, '--project', cwd, body])
+    expect(normalized.exitCode, normalized.stderr).toBe(0)
+    expect(await readFile(body, 'utf8')).not.toContain('——')
+    const clean = await run(context, cwd, process.execPath, [entry, '--project', cwd, '--check', body])
+    expect(clean.exitCode, clean.stderr).toBe(0)
+
+    const dialogue = '“别过来——我还没说完……”\n她停下——推开门。\n'
+    await writeFile(body, dialogue)
+    const dialogueNormalized = await run(context, cwd, process.execPath, [entry, '--project', cwd, body])
+    expect(dialogueNormalized.exitCode, dialogueNormalized.stderr).toBe(0)
+    expect(await readFile(body, 'utf8')).toBe('“别过来——我还没说完……”\n她停下，推开门。\n')
+  })
+
+  it('keeps outline-copy findings separate from read failures', async (context) => {
+    const cwd = await workspace(context)
+    const body = join(cwd, '正文.md')
+    const outline = join(cwd, '小节大纲.md')
+    const prose = '远处的老人背着竹篓沿着河岸慢慢走了过来。\n'
+    await writeFile(body, prose)
+    await writeFile(outline, prose)
+    const args = [script('check-outline-copy.js'), '--outline', outline, body]
+    const overlap = await run(context, cwd, process.execPath, args)
+    expect(overlap.exitCode, overlap.stderr).toBe(1)
+    expect(overlap.stdout).toContain('细纲照搬检测')
+    await rm(outline)
+    const missing = await run(context, cwd, process.execPath, args)
+    expect(missing.exitCode).toBe(2)
+    expect(missing.stderr).toContain('ENOENT')
+    const optional = await run(context, cwd, process.execPath, [script('check-outline-copy.js'), body])
+    expect(optional.exitCode, optional.stderr).toBe(0)
+  })
+
+  for (const [filename, args] of [
+    ['check-outline-contract.js', ['--json', 'missing.md']],
+    ['check-phase2-contract.js', ['--json']],
+    ['check-delivery-contract.js', ['--json', '--min-chars', '1', '--max-chars', '20', '--sections', '1']],
   ] as const) {
-    it(`${skill}/${filename} runs as an ESM CLI and remains importable`, async (context) => {
+    it(`${filename} runs as an ESM CLI and remains importable`, async (context) => {
       const cwd = await workspace(context)
-      const entry = script(skill, filename)
+      const entry = script(filename)
       const result = await run(context, cwd, process.execPath, [entry, ...args])
       expect(result.exitCode, result.stderr).toBe(1)
       expect(JSON.parse(result.stdout)).toMatchObject({ ok: false })
@@ -247,32 +240,80 @@ describe('bundled novel executable scripts', () => {
     })
   }
 
-  it('shares author memory across every skill-local CLI', async (context) => {
+  it('accepts a free short story and rejects contradictory paywall markers', async (context) => {
     const cwd = await workspace(context)
-    const initialized = await run(context, cwd, python, [
-      '-B', script('story', 'author_memory_commit.py'), 'init', '--workspace', cwd,
-    ])
-    expect(initialized.exitCode, initialized.stderr).toBe(0)
-    for (const skill of ['story', ...qualitySkills]) {
-      const checked = await run(context, cwd, python, [
-        '-B', script(skill, 'author_memory_commit.py'), 'check', '--workspace', cwd,
-      ])
-      expect(checked.exitCode, checked.stderr).toBe(0)
-      expect(JSON.parse(checked.stdout)).toMatchObject({ ok: true, command: 'check' })
+    const settings = `目标平台：通用短篇
+题材参考：references/writing/short/genre-styles/悬疑.md
+核心招式：选择后果
+反派设计：不适用（冲突来自主角的错误判断）
+反转类型：无反转
+反转位置：不适用（读者随主角确认事实）
+付费点：不适用（免费发布/未选择付费平台）
+目标字数：1000
+`
+    const outline = `| 结构段/五段功能 | 主事件 | 情节推进 | 情绪 | 人物/关系变化 | 因果/逻辑链 | 读者新获知什么 | 结尾承接/钩子 | 伏笔/物件 | 场景形态 | 对白作用 | 目标字数 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 结局 | 主角找到钥匙 | 主角打开抽屉{发现} | 释然 | 主角向姐姐道歉 | 抽屉藏着失物 | 钥匙未被偷走 | 姐妹和解 | 钥匙 | 家中 | 道歉 | 1000 |
+`
+    const settingsPath = join(cwd, '设定.md')
+    const outlinePath = join(cwd, '小节大纲.md')
+    await writeFile(settingsPath, settings)
+    await writeFile(outlinePath, outline)
+    const args = [script('check-phase2-contract.js'), '--json', cwd]
+    const free = await run(context, cwd, process.execPath, args)
+    expect(free.exitCode, `${free.stdout}\n${free.stderr}`).toBe(0)
+    expect(JSON.parse(free.stdout)).toMatchObject({ ok: true, failures: [] })
+
+    for (const emptyPlatform of ['', '  \t']) {
+      await writeFile(settingsPath, settings.replace('通用短篇', emptyPlatform))
+      const missingPlatform = await run(context, cwd, process.execPath, args)
+      expect(missingPlatform.exitCode, missingPlatform.stderr).toBe(1)
+      expect(JSON.parse(missingPlatform.stdout)).toMatchObject({
+        ok: false, failures: [expect.objectContaining({ id: 'phase2.platform-declared' })],
+      })
     }
+    await writeFile(settingsPath, settings)
+
+    await writeFile(outlinePath, outline.replace('姐妹和解', '姐妹和解（付费点）'))
+    const contradictory = await run(context, cwd, process.execPath, args)
+    expect(contradictory.exitCode, contradictory.stderr).toBe(1)
+    expect(JSON.parse(contradictory.stdout)).toMatchObject({
+      ok: false, failures: [expect.objectContaining({ id: 'phase2.paywall-in-both' })],
+    })
+
+    await writeFile(settingsPath, settings.replace('不适用（免费发布/未选择付费平台）', '第1节末'))
+    const paid = await run(context, cwd, process.execPath, args)
+    expect(paid.exitCode, `${paid.stdout}\n${paid.stderr}`).toBe(0)
+    await writeFile(settingsPath, settings.replace('不适用（免费发布/未选择付费平台）', '第2节末'))
+    const mismatch = await run(context, cwd, process.execPath, args)
+    expect(mismatch.exitCode, mismatch.stderr).toBe(1)
+    expect(JSON.parse(mismatch.stdout)).toMatchObject({
+      ok: false, failures: [expect.objectContaining({ id: 'phase2.paywall-in-both' })],
+    })
   })
 
-  it('loads wordcount through each compatible Python module path', async (context) => {
+  it('initializes and checks author memory through the shared CLI', async (context) => {
     const cwd = await workspace(context)
-    for (const skill of trackingSkills) {
-      const result = await run(context, cwd, python, ['-B', '-c', [
-        'import json, runpy, sys',
-        'module = runpy.run_path(sys.argv[1])',
-        'print(json.dumps(module["measure_wordcount"]("甲乙。"), ensure_ascii=False))',
-      ].join('\n'), script(skill, 'wordcount_core.py')])
-      expect(result.exitCode, result.stderr).toBe(0)
-      expect(JSON.parse(result.stdout)).toMatchObject({ metric: 'visible_chars_v1', actual: 3, status: 'measured' })
-    }
+    const initialized = await run(context, cwd, python, [
+      '-B', script('author_memory_commit.py'), 'init', '--workspace', cwd,
+    ])
+    expect(initialized.exitCode, initialized.stderr).toBe(0)
+    const checked = await run(context, cwd, python, [
+      '-B', script('author_memory_commit.py'), 'check', '--workspace', cwd,
+    ])
+    expect(checked.exitCode, checked.stderr).toBe(0)
+    expect(JSON.parse(checked.stdout)).toMatchObject({ ok: true, command: 'check' })
+  })
+
+  it('loads wordcount through the shared Python module path', async (context) => {
+    const cwd = await workspace(context)
+    const result = await run(context, cwd, python, ['-B', '-c', [
+      'import json, runpy, sys',
+      'module = runpy.run_path(sys.argv[1])',
+      'print(json.dumps(module["measure_wordcount"]("甲乙。"), ensure_ascii=False))',
+    ].join('\n'), script('wordcount_core.py')])
+    expect(result.exitCode, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout)).toMatchObject({ metric: 'visible_chars_v1', actual: 3, status: 'measured' })
   })
 
   it('runs storyctl chapter checks through shared tracking and real Node checkers', async (context) => {
@@ -285,22 +326,21 @@ describe('bundled novel executable scripts', () => {
       context: { position: { volume: '第一卷', volume_start_chapter: 1, story_time: '清晨', scene: '村口' } },
     }))
     const initialized = await run(context, cwd, python, [
-      '-B', script('story-import', 'tracking_commit.py'), 'init', '--project', cwd, '--input', input,
+      '-B', script('tracking_commit.py'), 'init', '--project', cwd, '--input', input,
     ])
     expect(initialized.exitCode, initialized.stderr).toBe(0)
-    for (const skill of trackingSkills) {
-      const checked = await run(context, cwd, python, [
-        '-B', script(skill, 'tracking_commit.py'), 'check', '--project', cwd,
-      ])
-      expect(checked.exitCode, checked.stderr).toBe(0)
-      expect(JSON.parse(checked.stdout)).toEqual({ last_committed_chapter: 0, state_revision: 0 })
-    }
+    const checked = await run(context, cwd, python, [
+      '-B', script('tracking_commit.py'), 'check', '--project', cwd,
+    ])
+    expect(checked.exitCode, checked.stderr).toBe(0)
+    expect(JSON.parse(checked.stdout)).toEqual({ last_committed_chapter: 0, state_revision: 0 })
+
     await mkdir(join(cwd, '大纲'))
     await mkdir(join(cwd, '正文'))
     await writeFile(join(cwd, '大纲/细纲_第1章.md'), validLongOutline)
     const body = join(cwd, '正文/第1章.md')
     await writeFile(body, cleanProse)
-    const args = ['-B', script('story-long-write', 'storyctl.py'), 'chapter', 'check', '--project', cwd, '--chapter', '1']
+    const args = ['-B', script('storyctl.py'), 'chapter', 'check', '--project', cwd, '--chapter', '1']
     const clean = await run(context, cwd, python, args)
     expect(clean.exitCode, clean.stderr).toBe(0)
     expect(JSON.parse(clean.stdout)).toMatchObject({
@@ -327,7 +367,7 @@ describe('bundled novel executable scripts', () => {
       context: { position: { volume: '第一卷', volume_start_chapter: 1, story_time: '清晨', scene: '库房外' } },
     }))
     expect((await run(context, cwd, python, [
-      '-B', script('story-import', 'tracking_commit.py'), 'init', '--project', cwd, '--input', initial,
+      '-B', script('tracking_commit.py'), 'init', '--project', cwd, '--input', initial,
     ])).exitCode).toBe(0)
     await mkdir(join(cwd, '大纲'))
     await mkdir(join(cwd, '正文'))
@@ -377,7 +417,7 @@ describe('bundled novel executable scripts', () => {
     }
     await writeFile(transactionPath, JSON.stringify(transaction))
     const command = [
-      '-B', script('story-long-write', 'storyctl.py'), 'chapter', action,
+      '-B', script('storyctl.py'), 'chapter', action,
       '--project', cwd, '--chapter', '1', '--input', transactionPath,
     ]
     const missing = await run(context, cwd, python, command)
@@ -447,7 +487,7 @@ describe('bundled novel executable scripts', () => {
   it('rejects launch, runtime, and malformed-output errors instead of treating them as prose findings', async (context) => {
     const cwd = await workspace(context)
     const result = await run(context, cwd, python, [
-      '-B', resolve(import.meta.dirname, 'fixtures/knowledge-novel-quality.py'), script('story-long-write', 'storyctl.py'),
+      '-B', resolve(import.meta.dirname, 'fixtures/knowledge-novel-quality.py'), script('storyctl.py'),
     ])
     expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
     expect(result.stderr).toContain('Ran 10 tests')
@@ -457,7 +497,7 @@ describe('bundled novel executable scripts', () => {
     const cwd = await workspace(context)
     const result = await run(context, cwd, python, [
       '-B', '-W', 'error::ResourceWarning', resolve(import.meta.dirname, 'fixtures/knowledge-zhuque-detect.py'),
-      script('story-polish', 'zhuque_detect.py'),
+      script('zhuque_detect.py'),
     ])
     expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
     expect(result.stderr).toContain('Ran 12 tests')

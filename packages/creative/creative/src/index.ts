@@ -15,7 +15,6 @@ export { createCreativeRoleTool, CREATIVE_ROLE_TOOL_NAME, registerCreativeRoleTo
 export { createCreativeProduceRunTool, createCreativeProduceStatusTool, DRAMA_ADAPTERS, CREATIVE_PRODUCE_RUN_TOOL_NAME, CREATIVE_PRODUCE_STATUS_TOOL_NAME, PRODUCE_ENTRIES, dramaScriptFor, registerCreativeProduceRunTool, type DramaAdapter, type ProduceEntry } from './produce-tool.ts'
 export { createCreativeProductionTool, registerCreativeProductionTool } from './production-tool.ts'
 export { CREATIVE_PRODUCTION_TOOL_NAME, validateProductionIntent, type ProductionIntentArgs } from './production-intent.ts'
-export { bundledReferenceGuard, createCreativeReferenceTool, CREATIVE_REFERENCE_TOOL_NAME } from './reference-tool.ts'
 export { registerWorkspaceRoute } from './workspace-route.ts'
 export { registerCreativeHooks } from './native-hooks.ts'
 

@@ -12,6 +12,7 @@ interface RoleContextTopology {
   readonly agent: Agent
   readonly guard: ReturnType<typeof vi.fn>
   readonly registeredDefinition: () => ToolDefinition | undefined
+  readonly registeredNames: () => readonly string[]
 }
 
 function completedRoleStart(runId: string): RoleStart {
@@ -28,7 +29,7 @@ function completedRoleStart(runId: string): RoleStart {
 async function createRoleContextTopology(start?: RoleStart): Promise<RoleContextTopology> {
   const root = new Context()
   const guard = vi.fn((_guard: ToolGuard) => () => {})
-  let definition: ToolDefinition | undefined
+  const definitions = new Map<string, ToolDefinition>()
   let agentContext: Context | undefined
 
   await root.plugin({
@@ -36,8 +37,8 @@ async function createRoleContextTopology(start?: RoleStart): Promise<RoleContext
     apply(context) {
       context.provide('tools', {
         register(value: ToolDefinition) {
-          definition = value
-          return () => { definition = undefined }
+          definitions.set(value.name, value)
+          return () => { definitions.delete(value.name) }
         },
         get: (_name: string) => ({}),
         guard: (value: ToolGuard) => guard(value),
@@ -68,7 +69,8 @@ async function createRoleContextTopology(start?: RoleStart): Promise<RoleContext
     root,
     agent: { ctx: agentContext } as Agent,
     guard,
-    registeredDefinition: () => definition,
+    registeredDefinition: () => definitions.get(CREATIVE_ROLE_TOOL_NAME),
+    registeredNames: () => [...definitions.keys()],
   }
 }
 
@@ -108,7 +110,8 @@ describe('creative_role Cordis Context contract', () => {
       })
       const definition = topology.registeredDefinition()
       if (definition === undefined) throw new Error('role tool did not register')
-      expect(topology.guard).toHaveBeenCalledOnce()
+      expect(topology.registeredNames()).toEqual([CREATIVE_ROLE_TOOL_NAME])
+      expect(topology.guard).not.toHaveBeenCalled()
 
       await expect(executeStoryArchitect(definition, topology.agent, 'call-plugin'))
         .resolves.toMatchObject({ role: 'story-architect', runId: 'role-run-plugin' })

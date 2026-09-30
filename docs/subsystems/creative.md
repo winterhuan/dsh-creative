@@ -8,7 +8,7 @@ Source: [`packages/creative/creative/src/index.ts`](../../packages/creative/crea
 
 ## The four seams
 
-**Skill and Role supply.** Four `SkillProvider`s serve the bundled `knowledge/` trees and prepend a DSH bridge to every Skill body, so no workflow starts another creator UI, Agent runtime, or transport. `creative_role` runs the seven Roles as spawned children with host-owned per-Role model options and tool allowlists, and `creative_bundled_reference` is the only reader for packaged reference files.
+**Skill and Role supply.** Four `SkillProvider`s serve the bundled `knowledge/` trees and prepend a DSH bridge to every Skill body, so no workflow starts another creator UI, Agent runtime, or transport. `creative_role` runs the seven Roles as spawned children with host-owned per-Role model options and tool allowlists, while Story Skills and Roles use native `read` with DSH resource hints and fixed package paths, respectively.
 
 **Paid production.** `story_zhuque`, `drama_produce_run` and `video_produce_run`, plus the aggregate compatibility alias `creative_produce_run`, are the paths from a model to the bundled Python production scripts and their provider keys. Keys live in the credentials store; the settings namespace holds references and non-secret profile fields; the tool resolves references per call and forwards them as explicit child environment variables, because every other subprocess starts from a scrubbed environment. Drama runs consume a single-use creator confirmation, and contract verdicts drive bounded key rotation.
 

@@ -16,7 +16,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-// 权威模板：references/workflow-setup.md「细纲（全书每章）」
+// 权威模板：references/writing/long/workflow-setup.md「细纲（全书每章）」
 const FIELDS = [
   '核心事件', '字数目标', '字数口径', '阶段位置', '单元ID/位置', '目标情绪',
   '读者期待', '主角目标', '主要阻碍', '关键选择', '代价或后果', '局部兑现', '章尾问题',
@@ -55,7 +55,7 @@ function makeCheck(id, ok, file, evidence, expected, repair) {
     file,
     evidence,
     expected,
-    references: ['references/workflow-setup.md', 'references/artifact-protocols.md'],
+    references: ['references/writing/long/workflow-setup.md', 'references/writing/long/artifact-protocols.md'],
     repair,
   }
 }

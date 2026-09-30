@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过十四个 Skill、七个专家 Role 和独立编辑器写作与审查小说。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 可以独立安装，也可以通过 Creative 安装。
 
 ## 目录
 
@@ -32,6 +32,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 小说工作台只把当前会话的工作目录作为项目根目录，读取其直属 `正文/`、`大纲/`、`设定/` 等目录及独立短篇文件。打开小说所在的父目录不会自动发现子项目；请直接打开具体小说目录。正文目录内部的分卷等层级仍会递归显示。
 
+六个入口分别是 `story`（工程准备、已有小说接入、选题与偏好）、`story-write`（长短篇写作）、`story-analyze`（拆解）、`story-review`（审稿）、`story-polish`（本地润色及明确请求的朱雀检测）和 `story-cover`（封面）。已有工程直接继续；原始文本接入不要求先拆全书。
+
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
@@ -40,9 +42,11 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 [补丁](cordis.patch.yml)挂载领域行、`creative-produce` 配置行和已有设置页。重复配置行 ID 通过 DSH Loader 组合解析。`editorMaxBytes` 默认为 2097152；`trustedHosts` 扩展默认回环地址列表。`/story` API 将文档访问限定在本领域项目路径中。
 
-写作守卫与专家 Role 属于此包。朱雀检测会将选定章节发送到腾讯 EdgeOne Makers，只接收配置的 MAKERS_API_KEY。
+写作守卫与专家 Role 属于此包。用户明确要求的朱雀检测会将选定章节发送到腾讯 EdgeOne Makers，只接收配置的 MAKERS_API_KEY。
 
 此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
+
+六个技能共用包内 `knowledge/story` 资源根目录。DSH 提供资源路径提示，技能与 Role 用原生 `read` 按需读取参考；脚本集中在该目录的 `scripts/`。
 
 </details>
 
@@ -57,7 +61,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 #### Token 影响
 
-Skill 正文按需加载。执行添加普通工具结果，不加载无关领域目录。
+Skill 正文按需加载。六个入口不预加载参考资料，专用参考工具及其路径枚举不再进入工具目录。按 DSH 固定字符密度估算，小说目录行约从 531 降至 137 token；移除的工具定义约 1169 token。这是相同文本口径的估算，不是模型供应商计费数据。
 
 #### KV Cache 影响
 

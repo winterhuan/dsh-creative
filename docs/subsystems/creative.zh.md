@@ -8,7 +8,7 @@
 
 ## 四个接缝
 
-**Skill 与 Role 供给。** 四个 `SkillProvider` 提供内置的 `knowledge/` 目录，并在每份 Skill 正文前加上 DSH 桥接说明，因此任何工作流都不会另起创作界面、Agent 运行时或传输通道。`creative_role` 以 spawn 子 Agent 的方式运行七个 Role，每个 Role 使用宿主拥有的模型选项和各自的工具白名单；`creative_bundled_reference` 是读取打包参考文件的唯一途径。
+**Skill 与 Role 供给。** 四个 `SkillProvider` 提供内置的 `knowledge/` 目录，并在每份 Skill 正文前加上 DSH 桥接说明，因此任何工作流都不会另起创作界面、Agent 运行时或传输通道。`creative_role` 以 spawn 子 Agent 的方式运行七个 Role，每个 Role 使用宿主拥有的模型选项和各自的工具白名单；小说技能使用 DSH 的资源路径提示，Role 使用固定的包内路径，两者均通过原生 `read` 按需读取参考文件。
 
 **付费生产。** `story_zhuque`、`drama_produce_run`、`video_produce_run` 及聚合兼容入口 `creative_produce_run` 是模型接触内置 Python 生产脚本及其提供方密钥的唯一途径。密钥存放在凭据库；设置命名空间只保存引用和非敏感配置字段；工具在每次调用时解析引用，并作为显式的子进程环境变量转发，因为其他所有子进程都从清理过的环境启动。短剧运行会消耗一次性的创作者确认，契约结论驱动有界的密钥轮换。
 

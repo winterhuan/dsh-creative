@@ -23,18 +23,18 @@ description: |
 
 项目材料通过当前 DSH 可见的 `read`、`glob`、`grep` 读取，以调用方的 workspace 与项目路径定位，不通过 Git 猜根目录。只有明确要求且工具允许时才写文件。脚本仅使用调用方提供的路径；缺工具或路径就报告缺口，不猜部署位置。
 
-内置参考通过 `creative_bundled_reference` 读取，下表路径作为完整 `reference` 参数；不调用通用 `skill`，不探测其他安装目录。只把工具实际返回的内容视为已读。必需项目材料不可用时报告准确路径，停止依赖它的任务。
+内置参考使用 persona 中的资源基目录解析下表路径，再用原生 `read` 按需读取；长文件可用 `offset` 和 `limit` 分段读取。只把工具实际返回的内容视为已读。必需材料不可用时报告准确路径与诊断，停止依赖它的任务。
 
 默认输入只含本章细纲、执行计划、短题材卡、一个选定情绪模块、一条节奏参考和相关原文例句。材料已足够时直接写作，不为完成阅读清单预加载技法库。
 
 | 需要解决的问题 | 按需读取的参考 |
 |---|---|
-| 提纲像摘要，场景缺少动作或因果 | `story-setup/references/agent-references/writing-craft.md` |
-| 开篇承诺不清楚 | `story-setup/references/agent-references/opening-design.md` |
-| 选择与情绪后果脱节 | `story-setup/references/agent-references/emotional-arc-design.md` |
-| 对话声线相同、潜台词不足 | `story-setup/references/agent-references/dialogue-mastery.md` |
-| 调用方尚未给题材卡 | `story-setup/references/agent-references/genre-prose-cards.md`，按索引只读对应单卡；无匹配再用 `story-setup/references/agent-references/style-genre-modules.md` |
-| 指定段落有套话、重复或解释腔 | `story-setup/references/agent-references/anti-ai-writing.md`；需定位词例时才读 `story-setup/references/agent-references/banned-words.md` |
+| 提纲像摘要，场景缺少动作或因果 | `references/agent-references/writing-craft.md` |
+| 开篇承诺不清楚 | `references/agent-references/opening-design.md` |
+| 选择与情绪后果脱节 | `references/agent-references/emotional-arc-design.md` |
+| 对话声线相同、潜台词不足 | `references/agent-references/dialogue-mastery.md` |
+| 调用方尚未给题材卡 | `references/agent-references/genre-prose-cards.md`，按索引只读对应单卡；无匹配再用 `references/agent-references/style-genre-modules.md` |
+| 指定段落有套话、重复或解释腔 | `references/agent-references/anti-ai-writing.md`；需定位词例时才读 `references/agent-references/banned-words.md` |
 
 参考中的固定事件密度、章节百分比、物件三次出现、钩子公式和禁词表均为备选技法，不是逐项验收条件。按场景问题选用，不将原有强制措辞带进正文要求。
 
@@ -48,7 +48,7 @@ description: |
 
 ### 长篇长度与改写
 
-父流程将批准事件分成两组时，先写前组临时 segment，等它返回一次 `storyctl.py wordcount checkpoint` 的 `actual / remaining_user_range` 后再写后组。不心算配额、不用 `wc -c` 替代口径。完成批准事件即停，不为不足添剧情。
+父流程将批准事件分成两组时，在同一次调用内完成两组：先写前组临时文件，通过可见的 `bash` 执行一次 `<资源根>/scripts/storyctl.py wordcount checkpoint --file <临时文件> --target <目标> --chapter <章号>`（使用已确认的 Python 3 解释器），读取 `actual / remaining_user_range` 后继续后组并合成完整正文。`creative_role` 只在任务结束时向父流程返回，不能中途等待父流程补发计数。脚本或执行工具不可用时返回实际错误和已写路径，由父流程接续，不虚构计数或把半章报为完成。不心算配额、不用 `wc -c` 替代口径。完成批准事件即停，不为不足添剧情。
 
 长度由父流程 `chapter check` 测量；收到 `compress-once` 时只净删一次，保留事件、因果、选择、兑现和章尾期待。其他修订只解决指定内容问题；每次改正文后都通知调用方重新评审、计数与提交，不复用旧哈希的评审。
 
@@ -56,4 +56,4 @@ description: |
 
 先指出原文的具体问题，再决定删除、保留或改写。功能性的重复、比喻、破折号、省略号和情绪直写可保留，不以词表清零或朱雀分数作为完成条件。标点默认保留；项目选用 `normalize-narration` 时也不改引号内停顿。不要凭空增加口癖、错别字、随机断句或身体反应来追求“像真人”。
 
-交付指定正文文件或局部改动，简短说明仍未解决的细纲问题及受影响路径，不附自评分或全文检查清单。`story-review` 负责读者价值证据，`consistency-checker` 负责事实、角色和伏笔；计数、退化检查、标点检查和追踪由父流程工具执行，写手不自签提交结论。
+交付指定正文文件或局部改动，简短说明仍未解决的细纲问题及受影响路径，不附自评分或全文检查清单。`story-review` 负责读者价值证据，`consistency-checker` 负责事实、角色和伏笔；中途 checkpoint 由当前写手执行，最终计数、退化检查、标点检查和追踪由父流程工具执行，写手不自签提交结论。

@@ -82,6 +82,7 @@ function createBundledSkillProvider(
   bridge: string,
 ): SkillProvider {
   const root = resolve(skillRoot)
+  const resourceBase = { kind: 'directory' as const, path: dirname(root) }
   return {
     name: providerName,
     async list(): Promise<readonly SkillCandidate[]> {
@@ -99,7 +100,7 @@ function createBundledSkillProvider(
           invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
           provider: providerName,
           source: 'bundled',
-          resourceBase: { kind: 'directory', path: join(root, directory) },
+          resourceBase,
           rank: BUNDLED_SKILL_RANK,
           locator: pathToFileURL(path),
           path,
@@ -121,7 +122,7 @@ function createBundledSkillProvider(
         invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
         provider: providerName,
         source: 'bundled',
-        resourceBase: { kind: 'directory', path: join(root, parsed.name) },
+        resourceBase,
         path,
         content: `${bridge}\n\n${parsed.content}`,
       }

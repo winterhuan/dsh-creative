@@ -5,6 +5,7 @@ import type { AgentOptions } from '@deepseek-ai/dsh-agent'
 import { ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import { load } from 'js-yaml'
 import { z } from 'zod'
+import { defaultStorySkillRoot } from './skill-provider.js'
 
 /** The seven upstream Creative Roles bundled with the plugin, in load order. */
 export const CREATIVE_ROLE_NAMES = [
@@ -105,8 +106,9 @@ export async function loadBundledRoleDefinition(
     : [
       'You are running as a native creative-dsh specialist. The current DSH workspace and visible tool set are your complete authority boundary.',
       'This exact pinned Role is already active; it needs no project-local agent files or deployment markers.',
-      'Bundled story-setup references are pinned plugin resources, not project files or project Skills. When the upstream Role marks one mandatory, call creative_bundled_reference with the exact story-setup/references/agent-references path, then use only the returned content.',
-      'If creative_bundled_reference or a required bundled reference is unavailable, report the missing reference to the caller. Never call the generic skill tool, fall back to a legacy platform path, or claim that an unread reference was used.',
+      `Bundled resource base directory: ${dirname(defaultStorySkillRoot())}`,
+      'Resolve references/ and scripts/ paths in this Role against that package directory. Read references with the native read tool, loading only the material needed for the task; use offset and limit for large files. Project paths remain relative to the caller\'s workspace.',
+      'If read or a required resource is unavailable, report the exact missing resource and diagnostic to the caller. Do not substitute a project Skill or another installation, bypass DSH filesystem permissions, or claim that an unread reference was used.',
       'Use only the tools actually visible to you. Mutate files only when the caller explicitly requests it and your visible DSH tools permit it; otherwise return findings to the caller.',
     ]
   const result: BundledCreativeRole = {

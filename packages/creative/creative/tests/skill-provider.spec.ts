@@ -11,7 +11,7 @@ const gameRoot = resolve(import.meta.dirname, '../../novel-to-game/knowledge/ski
 const videoRoot = resolve(import.meta.dirname, '../../video-recap/knowledge/video-recap/skills')
 
 describe.each([
-  { name: 'story', create: createStorySkillProvider, root: skillRoot, skillName: 'story', count: 14 },
+  { name: 'story', create: createStorySkillProvider, root: skillRoot, skillName: 'story', count: 6 },
   { name: 'short-drama', create: createDramaSkillProvider, root: dramaRoot, skillName: 'short-drama', count: 10 },
   { name: 'novel-to-game', create: createNovelToGameSkillProvider, root: gameRoot, skillName: 'novel-to-game', count: 7 },
   { name: 'video-recap', create: createVideoRecapSkillProvider, root: videoRoot, skillName: 'video-recap', count: 6 },
@@ -66,80 +66,54 @@ describe.each([
     const updated = await provider.get(candidates[0]!, {})
     expect(updated?.description).toBe('updated description')
     expect(updated?.content).toBe(original?.content.replace('# Original instructions\n', '# Updated instructions\n'))
-    expect(updated?.resourceBase).toEqual({ kind: 'directory', path: directory })
+    expect(updated?.resourceBase).toEqual({ kind: 'directory', path: skillName === 'story' ? dirname(temporaryRoot) : directory })
   })
 })
 
 describe('Novel bundled skill provider', () => {
-  it('publishes the complete capability catalog with shared DSH context', async () => {
+  it('publishes exactly six entrypoints without compatibility aliases', async () => {
     const provider = createStorySkillProvider(skillRoot)
-    const listed = await provider.list({})
-    if (!Array.isArray(listed)) throw new Error('Expected a complete bundled catalog.')
-    const candidates = listed
-    expect(candidates).toHaveLength(14)
-    expect(candidates.map(candidate => candidate.name)).toContain('story-long-write')
+    const candidates = await provider.list({})
+    if (!Array.isArray(candidates)) throw new Error('Expected a complete bundled catalog.')
+    expect(candidates.map(candidate => candidate.name)).toEqual([
+      'story', 'story-analyze', 'story-cover', 'story-polish', 'story-review', 'story-write',
+    ])
     expect(candidates.every(candidate => candidate.source === 'bundled' && candidate.invocation.modelInvocable)).toBe(true)
-    const selected = candidates.find(candidate => candidate.name === 'story-long-write')
-    expect(selected).toBeDefined()
-    const skill = await provider.get(selected!, {})
-    expect(skill?.content).toContain('# story-long-write')
-    expect(skill?.content).toContain('creative_role')
-    expect(skill?.content).toContain('DSH owns the workspace, model, preset, permissions, Session Log')
-    for (const platformPath of ['.claude/agents', '.codex/agents', '.opencode/agents', '.agents/agents', 'invoke_subagent']) {
-      expect(skill?.content).not.toContain(platformPath)
+    for (const candidate of candidates) {
+      const skill = await provider.get(candidate, {})
+      expect(skill?.content).toContain('DSH owns the workspace, model, preset, permissions, Session Log')
+      for (const obsolete of ['.claude/agents', '.codex/agents', '.opencode/agents', '.agents/agents', 'invoke_subagent', 'creative_bundled_reference']) {
+        expect(skill?.content).not.toContain(obsolete)
+      }
     }
-    const writingSource = await readFile(resolve(skillRoot, 'story-long-write/SKILL.md'), 'utf8')
-    expect(skill?.content).toContain(writingSource.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/u, '').trim())
-    const workflowSetup = await readFile(resolve(skillRoot, 'story-long-write/references/workflow-setup.md'), 'utf8')
-    expect(workflowSetup).toContain('| # | 情节点（谁做了什么） | 功能标签 | 执行边界 |')
-    expect(skill?.content.startsWith('---')).toBe(false)
-    const setupCandidate = candidates.find(candidate => candidate.name === 'story-setup')
-    const setup = await provider.get(setupCandidate!, {})
-    expect(setup?.content).toContain('只初始化或校验当前 DSH workspace')
-    expect(setup?.content).not.toContain('merge-codex-hooks.py')
-    expect(setup?.resourceBase).toEqual({ kind: 'directory', path: resolve(skillRoot, 'story-setup') })
+  })
+
+  it('exposes shared references and scripts through DSH native resource hints', async () => {
+    const provider = createStorySkillProvider(skillRoot)
+    const candidates = await provider.list({})
+    if (!Array.isArray(candidates)) throw new Error('Expected a complete bundled catalog.')
+    const resourceBase = resolve(skillRoot, '..')
+    for (const candidate of candidates) {
+      expect(candidate.resourceBase).toEqual({ kind: 'directory', path: resourceBase })
+      const skill = await provider.get(candidate, {})
+      expect(skill?.resourceBase).toEqual(candidate.resourceBase)
+      const rendered = renderSkillContent(skill!)
+      expect(rendered).toContain('<skill_resources>')
+      expect(rendered).toContain(`Base directory for this skill: ${resourceBase}`)
+      const paths = [...skill!.content.matchAll(/`((?:references|scripts)\/[^`<>*]+\.(?:md|py|js))`/gu)]
+      expect(paths.length, `${candidate.name} needs discoverable resources`).toBeGreaterThan(0)
+      for (const match of paths) {
+        await expect(readFile(resolve(resourceBase, match[1]!), 'utf8'), `${candidate.name}: ${match[1]}`)
+          .resolves.toMatch(/\S/u)
+      }
+    }
     for (const reference of ['character-basics.md', 'long-quality.md', 'short-quality.md', 'writing-craft.md', 'outline-methods.md']) {
-      await expect(readFile(resolve(skillRoot, 'story-setup/references/agent-references', reference), 'utf8'))
+      await expect(readFile(resolve(resourceBase, 'references/agent-references', reference), 'utf8'))
         .resolves.toMatch(/\S/u)
     }
-    const renderedSetup = renderSkillContent(setup!)
-    expect(renderedSetup).toContain('<skill_resources>')
-    expect(renderedSetup).toContain(`Base directory for this skill: ${resolve(skillRoot, 'story-setup')}`)
-    const routeCandidate = candidates.find(candidate => candidate.name === 'story')
-    const route = await provider.get(routeCandidate!, {})
-    expect(route?.content).toContain('小说文件通过"小说"视图查看')
-    expect(route?.content).toContain('跨域改编')
-    expect(route?.content).toContain('story-polish')
-    const polishCandidate = candidates.find(candidate => candidate.name === 'story-polish')
-    const polish = await provider.get(polishCandidate!, {})
-    expect(polishCandidate?.description).toContain('朱雀')
-    expect(polish?.content).toContain('"entry": "story-zhuque"')
-    expect(polish?.content).toContain('MAKERS_API_KEY')
-    expect(polish?.content).toContain('不用对抗手段过检测')
-    expect(polish?.resourceBase).toEqual({ kind: 'directory', path: resolve(skillRoot, 'story-polish') })
-    await expect(readFile(resolve(skillRoot, 'story-polish/scripts/zhuque_detect.py'), 'utf8')).resolves.toContain('story-zhuque-detect/v1')
-    const importCandidate = candidates.find(candidate => candidate.name === 'story-import')
-    const imported = await provider.get(importCandidate!, {})
-    expect(imported?.content).toContain('export_novel_txt.py')
-    expect(imported?.content).toContain('record_lineage.py')
-    expect(routeCandidate?.description).toContain('记住我的写作习惯')
-    expect(route?.content).toContain('scripts/author_memory_commit.py')
-    await expect(readFile(resolve(skillRoot, 'story/scripts/author_memory_commit.py'), 'utf8')).resolves.toMatch(/\S/u)
-    expect(route?.content).not.toContain('dashboard-server.mjs')
-    const browserCandidate = candidates.find(candidate => candidate.name === 'browser-cdp')
-    const browser = await provider.get(browserCandidate!, {})
-    expect(browser?.description).toContain('Lightpanda')
-    expect(browser?.content).toContain('--engine lightpanda')
-    expect(browser?.content).toContain('--session "$BROWSER_SESSION"')
-    expect(browser?.content).not.toContain('setup-cdp-chrome.js')
-    for (const name of ['story-long-scan', 'story-short-scan']) {
-      const candidate = candidates.find(value => value.name === name)
-      const scan = await provider.get(candidate!, {})
-      expect(scan?.content).toContain('browser-cdp')
-      expect(scan?.content).toContain('当前 DSH Preset 可见的网页工具')
-      expect(scan?.content).not.toContain('rank-scraper.js')
-      expect(scan?.content).not.toContain('WebFetch')
-      expect(scan?.content).not.toContain('Bearer token')
+    await expect(readFile(resolve(resourceBase, 'references/research/browser-cdp.md'), 'utf8')).resolves.toMatch(/\S/u)
+    for (const script of ['author_memory_commit.py', 'export_novel_txt.py', 'record_lineage.py', 'zhuque_detect.py']) {
+      await expect(readFile(resolve(resourceBase, 'scripts', script), 'utf8')).resolves.toMatch(/\S/u)
     }
   })
 
@@ -156,7 +130,7 @@ describe('Novel bundled skill provider', () => {
   it('rejects candidate paths outside the packaged skill root', async () => {
     const provider = createStorySkillProvider(skillRoot)
     await expect(provider.get({
-      name: 'story-long-write',
+      name: 'story-write',
       description: 'invalid external candidate',
       invocation: { modelInvocable: true, userInvocable: true },
       provider: 'story',
