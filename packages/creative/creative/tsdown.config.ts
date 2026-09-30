@@ -1,3 +1,12 @@
-import { clientBundle } from '../../../scripts/tsdown.client.ts'
+import { defineConfig } from 'tsdown'
 
-export default clientBundle('@winterhuan/dsh-creative', ['lib/types/index.js', 'lib/types/produce-settings-entry.js'])
+export default defineConfig(({ env }) => ({
+  entry: env?.DSH_BUILD_FACE === 'client' ? '' : ['lib/types/index.js', 'lib/types/produce-settings-entry.js'],
+  outDir: 'lib',
+  format: ['esm'],
+  platform: 'node',
+  target: 'es2024',
+  fixedExtension: false,
+  dts: false,
+  clean: false,
+}))

@@ -9,9 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-Creative 为 DeepSeek Harness 提供小说、短剧、互动游戏与视频解说工作流。内置 Skill 与专家 Role 使用 DSH 的工作区、Session、模型、工具和权限；Web profile 还在右侧 Sidebar 提供编辑器、媒体预览与生产卡片。
-
-一个 Creative 页面让混合工作区可以使用全部四个域。跨域工作流共享项目文件和生产设置，无需另开应用（[决策](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md)）。
+Creative 一次安装小说、短剧、游戏和视频解说四个独立工作台，并保留旧生产工具与 HTTP 接口。右侧栏由四个领域插件提供；Creative 自身没有聚合页面或浏览器入口。
 
 ## 目录
 
@@ -29,7 +27,7 @@ Creative 为 DeepSeek Harness 提供小说、短剧、互动游戏与视频解�
 
 ### 安装到 profile
 
-`dsh plugin add` 把本 bundle 安装到 profile，其 [profile 补丁](cordis.patch.yml)挂载 `creative`、`creative-produce` 设置命名空间和设置页。插件注册四个 Skill 提供方（`story`、`short-drama`、`novel-to-game`、`video-recap`）、`creative_role` 专家 Role 和生产工具。这些注册只需要技能、子代理和工具注册表；当 `webServer` 和 `typert` 也可用时，才注册 Session 级 `/creative` API。
+`dsh plugin add` 把本 bundle 安装到 profile，其 [profile 补丁](cordis.patch.yml)挂载 `story`、`short-drama`、`novel-to-game`、`video-recap`、`creative`、`creative-produce` 设置命名空间和设置页。bundle 组合四个 Skill 提供方（`story`、`short-drama`、`novel-to-game`、`video-recap`）、`creative_role` 专家 Role 和生产工具。这些注册只需要技能、子代理和工具注册表；当 `webServer` 和 `typert` 也可用时，才注册 Session 级 `/creative` API。
 
 ```yaml
 - id: creative
@@ -44,21 +42,17 @@ Creative 为 DeepSeek Harness 提供小说、短剧、互动游戏与视频解�
 
 ### 打开工作台
 
-在 Session 中展开右侧 Sidebar，在引导页选择 **Creative 工作台**；空工作区也可以使用。从 Chat 打开受支持的 Creative 文件会显示同一个工作台，其他文件链接仍使用 Sidebar 的文件预览。创建项目文件不会自动打开面板。
-
-小说面板识别位于工作区根目录、`<book>/`、`长篇/<book>/` 或 `短篇/<book>/` 下的项目。只要存在 `设定.md`、`小节大纲.md` 或 `正文.md`，短篇就会出现；默认文档依次是正文、大纲、其他 Markdown 文件。
-
-编辑器草稿和冲突在刷新和切换标签后保留。完整列表可以把草稿对应的文件标记为已缺失，但不会丢弃未保存的文字；被截断的列表不能证明文件已删除。保存使用最后确认的文件版本，因此磁盘上的并发修改需要解决冲突，而不是直接覆盖。
+在会话中选择项目工作区，然后从右侧栏分别打开小说、短剧、游戏或视频解说工作台。各页面使用独立状态。已保存的项目文件直接可用；旧聚合页面的未保存草稿不迁移。
 
 ### 章节评审
 
-长篇章节提交前先检查细纲就绪、生成紧凑场景计划并完成读者价值评审。评审将原文引句绑定到最终正文哈希，追踪保留紧凑续写摘要。打包 Role 的 `agent_options` 可选择审查模型，不增加由调用方控制的工具参数；无效选项在加载时失败。AI 模式和朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`，归一叙述标点时保留引号内对话。参见[读者价值决策](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.zh.md)和[章节工作流](knowledge/story/skills/story-long-write/references/workflow-chapter.md)。
+长篇章节提交前先检查细纲就绪、生成紧凑场景计划并完成读者价值评审。评审将原文引句绑定到最终正文哈希，追踪保留紧凑续写摘要。打包 Role 的 `agent_options` 可选择审查模型，不增加由调用方控制的工具参数；无效选项在加载时失败。AI 模式和朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`，归一叙述标点时保留引号内对话。参见[读者价值决策](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.zh.md)和[章节工作流](../story/knowledge/story/skills/story-long-write/references/workflow-chapter.md)。
 
 ### 交付与验证
 
 短剧生产通过 `episode-compose` adapter 合成已确认的片段、定时对白、音乐和字幕。工作台检查同一版本的整集文档，并用带哈希的生产清单关联已发布媒体。未保存或不合法的剧集文档会阻止准备。
 
-游戏模板提供状态、保存/读取、重开与 QA hook。`game-qa` 入口在 Studio 预览限制下运行真实 Chrome，预览旁显示经过认证的结果。策略报告与独立盲玩报告仍是设计反馈。没有游戏项目时，游戏标签页显示空状态，并保留切换到其他工作台的入口。
+游戏模板提供状态、保存/读取、重开与 QA hook。游戏插件的 `game_qa` 工具（保留兼容 `game-qa` 入口）在 Studio 预览限制下运行真实 Chrome，预览旁显示经过认证的结果。策略报告与独立盲玩报告仍是设计反馈。没有游戏项目时，游戏工作台显示空状态。
 
 视频解说支持显式本地草稿，降级阶段记入 `draft_status.json`。草稿在界面中与最终成片区分。交付证据测量旁白覆盖、原片复用、声明的授权与画幅，不代表平台批准。
 
@@ -76,25 +70,11 @@ Creative 为 DeepSeek Harness 提供小说、短剧、互动游戏与视频解�
 ## 理解实现
 
 <details>
-<summary>实现细节：点击展开</summary>
+<summary>实现细节 — 点击展开</summary>
 
-| 文件 | 作用 |
-|---|---|
-| `src/skill-provider.ts` | 四个内置 `SkillProvider` 实现，负责注入 DSH 桥接说明。 |
-| `src/role-provider.ts`、`src/role-tool.ts` | 内置 Role persona，以及带逐角色工具过滤的 `creative_role` 子代理委派。 |
-| `src/reference-tool.ts` | 读取 `story-setup` Agent 参考文件的固定内置读取器。 |
-| `src/production-tool.ts` | `creative_production` 投影意图。 |
-| `src/produce-tool.ts`、`src/produce-settings.ts` | `creative_produce_run`、`creative_produce_status` 和凭据引用配置。 |
-| `src/workspace-route.ts` | Session 级 `/creative` HTTP API，负责创作文件、媒体、视频预检、游戏预览和停止作业。 |
-| `src/native-hooks.ts` | 长篇正文不变量的工具瀑布守卫。 |
-| `src/client/index.ts` | 浏览器插件入口；`workbench.tsx` 负责工作台 UI 与注册。 |
-| `knowledge/` | 内置 Skill、Role 和脚本：`story/`、`drama/`、`novel-to-game/`、`video-recap/` 和共用的 `creative/roles/`。 |
+[安装补丁](cordis.patch.yml) 组合四个领域包及已有生产设置页。各领域包拥有技能、资源和浏览器入口。Creative 的 [Host 入口](src/index.ts) 只注册旧生产工具及 `/creative` 兼容接口；既不构建浏览器 bundle，也不保存合并页面状态。
 
-Creative 注册 `creative` 页面类型及其 `sidebar.right.pane.tab` 主体。[右侧 Sidebar](../../../upstream/packages/client/ui-sidebar-right/README.md) 负责布局，并通过参数和 revision 传递文件导航。`creative.workbench.v2` store 保存编辑器缓冲区、冲突、选择和生产草稿，进行中的保存锁放在 Session 不持久化的注入面里；[编辑器对账](src/client/editor-buffer.ts)让内容读取绑定到观察到的文件版本（[决策](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md#workspace-and-sidebar)）。
-
-Host 和 Client 共用 [project-path.ts](src/project-path.ts) 处理项目根目录、相对路径、领域和文件角色，因此剧集和镜头都按完整项目路径寻址。Host 读写强制执行扩展名白名单和解析后的包含关系，包括符号链接目标。媒体归 Session 的文件系统 provider 所有，Host 直接流式读取要求该 provider 把 Host 路径映射到相同的文件（[归属](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md#project-and-file-ownership)）。
-
-生产卡片持久化的是请求草稿，不是执行状态。任务板从 Session 的 `inbox` 投影取得排队的准备请求，从 Conversation 投影取得持久结果和作业绑定，从 Session 的 DSH 作业行取得运行状态，从正式 Chat 节点取得实时文件活动。停止通过 `/creative/job/stop`，它在调用 `jobs.kill` 之前核对 Session 归属和精确的作业引用（[生产请求](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md#production-requests-and-jobs)）。
+安装时使用相同领域行 ID，避免与单独安装的插件重复注册。编辑器和生产界面的实现参见各领域包；已有磁盘项目无需迁移。
 
 </details>
 
@@ -163,7 +143,7 @@ Host 和 Client 共用 [project-path.ts](src/project-path.ts) 处理项目根目
 - **知识库随包分发**：`knowledge/` 目录增大克隆和包体积；尚未实现按需获取。
 - **浏览器自动化依赖外部程序**：`browser-cdp` 需要执行环境中有兼容的 `agent-browser` 和 Lightpanda，两者都不随包提供；不复用 Chrome 配置，游戏 QA 则另需 Chrome 与 Node 22+ 来提供截图和交互证据。
 - **作业只存在于进程内**：Host 重启后，没有对应活动作业的绑定显示为不可用，且永远不会自动重启。没有真实绑定的历史 `track_job` 记录仍只是请求，不是执行证据。
-- **预览运行时跟随标签挂载**：离开 Creative 可能卸载游戏和视频预览；回来时恢复编辑器状态并重新加载预览，但不恢复其内存中的运行状态。
+- **预览运行时跟随独立标签挂载** — 重新打开游戏或视频工作台会重建预览，不恢复进程内运行状态。
 - **远程执行需要挂载资源**：通过 provider 读取的媒体每个文件最多 256 MiB，远程 shell 需要把打包脚本挂载或复制到自己的文件系统。
 - **视频生产的保护弱于短剧**：视频入口依靠 Skill 强制的创作者确认，而不是短剧执行器的一次性回执和档案，只在调用之间轮换密钥，并且只提供完整解说、配音和诊断，以及显式的短剧媒体复核。本地草稿需要 ffmpeg；本地转录和语音需要已安装的引擎，或者显式的转录豁免与时序占位音。
 - **已被接受的短剧提交不会重试**：只有首次提交被拒绝并标记为 `submission_rejected` 时才轮换密钥；轮询、下载和结果不确定的失败都会结束这次运行。

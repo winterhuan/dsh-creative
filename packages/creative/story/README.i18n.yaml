@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/creative/story/README.md
+/:
+  en: b73b5024db70e023
+  zh: c33356cc8147ff2e
+/winterhuan-dsh-story:
+  en: d19bdbfc2c721ccd
+  zh: 6bd37beb909bcfd1
+/winterhuan-dsh-story/summary:
+  en: e4c1cbc7c2e754de
+  zh: e7e8041d66189932
+/winterhuan-dsh-story/table-of-contents:
+  en: 122f0d41696980b1
+  zh: 2fbbbbaa6e40af5b
+/winterhuan-dsh-story/use-this-package:
+  en: 43b4b52043ec0c48
+  zh: 9d3626643f672960
+/winterhuan-dsh-story/understand-the-implementation:
+  en: c797f77332ad3f5a
+  zh: 5c36b6fe161f29b4
+/winterhuan-dsh-story/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/winterhuan-dsh-story/model-experience/domain-skills-and-execution:
+  en: 481ca4b8602496c6
+  zh: 85aa1719dce8e112
+/winterhuan-dsh-story/model-experience/domain-skills-and-execution/what-the-model-sees:
+  en: 4596037b20965eb0
+  zh: 020817a50c339115
+/winterhuan-dsh-story/model-experience/domain-skills-and-execution/token-effect:
+  en: 828169f0df1e18ef
+  zh: 5e59eadf53378ce3
+/winterhuan-dsh-story/model-experience/domain-skills-and-execution/kv-cache-effect:
+  en: 65b3f2ce63f658cc
+  zh: 7cfad7b73d7dd314
+/winterhuan-dsh-story/known-limitations-and-deferred-work:
+  en: 4c33aa3feae6bb7b
+  zh: 4dfa9bf16fdaceb8
+/winterhuan-dsh-story/known-limitations-and-deferred-work/dev-note:
+  en: a36a09d94e445b4d
+  zh: 18f6c6aa6c55bb0d

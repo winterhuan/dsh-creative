@@ -69,7 +69,7 @@ export async function apply(context: Context): Promise<void> {
     'root = Path(sys.argv[2])',
     'preview = prepare_job(root, root / "job.json")',
     'confirm_job(root, job_id="PREFLIGHT-001", confirmation=preview["confirmation"])',
-  ].join('\n'), resolve(import.meta.dirname, '../../knowledge/drama/skills/short-drama-produce/scripts'), project], { timeout: 30_000 })
+  ].join('\n'), resolve(import.meta.dirname, '../../../short-drama/knowledge/drama/skills/short-drama-produce/scripts'), project], { timeout: 30_000 })
   context.effect(() => context.tools.register(createCreativeProduceRunTool({ entry: profile })))
   context.effect(() => context.tools.register(createCreativeProduceStatusTool({ entry: profile })))
 }

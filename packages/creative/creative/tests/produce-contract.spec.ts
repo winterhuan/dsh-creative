@@ -14,7 +14,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createCreativeProduceRunTool } from '../src/produce-tool.ts'
 import { resolveProduceEnvs, type ProduceConfig } from '../src/produce-settings.ts'
 
-const scripts = fileURLToPath(new URL('../knowledge/drama/skills/short-drama-produce/scripts/', import.meta.url))
+const scripts = fileURLToPath(new URL('../../short-drama/knowledge/drama/skills/short-drama-produce/scripts/', import.meta.url))
 const script = join(scripts, 'production_tool.py')
 const imageBytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
 const videoBytes = await readFile(new URL('./fixtures/production-video.mp4', import.meta.url))

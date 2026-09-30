@@ -64,7 +64,7 @@ async function runSelftest(context: TestContext, args: string[]) {
 describe('bundled drama offline selftests', () => {
   for (const skill of skills) {
     it(`runs ${skill} with isolated temporary files and no network`, async (context) => {
-      const entry = resolve(import.meta.dirname, '../knowledge/drama/skills', skill, 'scripts/selftest.py')
+      const entry = resolve(import.meta.dirname, '../../short-drama/knowledge/drama/skills', skill, 'scripts/selftest.py')
       const result = await runSelftest(context, [entry])
       expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
       expect(result.stdout.trim()).toMatch(/^\d+ self-tests passed$/u)

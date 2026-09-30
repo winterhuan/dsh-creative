@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-09-29。
+最后更新：2026-09-30。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -27,8 +27,10 @@
 
 - 依赖 npm 上发布的 DSH `0.2.0-rc.2`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-- 4 个包都改到 `@winterhuan` scope 下。
+- 8 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
+
+2026-09-30 四领域拆分验证：清理构建产物后 `typecheck`、`build` 通过；全量 59 个文件、577 项测试通过。文档 16 项、规范 3 项通过，归档完整性通过。四个领域均有独立包与侧栏；Creative 聚合页面已移除；通过聚合包安装的小说保存、短剧生产页、视频播放和游戏独立入口在临时 web profile 验证，无页面脚本异常。三个新包的压缩包安装、浏览器检查与 16 项包内资源检查通过；已有设置包尚未发布到 npm，压缩包验证用临时 profile 的 pnpm override 指向它的本地压缩包。游戏此前的独立包、压缩包、聚合与三种模板 Chrome QA 已通过。未修改用户 profile。
 
 截至 2026-09-29 的验证结果：
 
@@ -66,7 +68,11 @@ dsh-creative/
 ├── packages/                          与上游相同的 packages/<组>/<包> 两层布局
 │   ├── creative/
 │   │   ├── README.md                  creative 分组说明
-│   │   └── creative/                  @winterhuan/dsh-creative（Host + Client）
+│   │   ├── story/                     @winterhuan/dsh-story（Host + Client）
+│   │   ├── short-drama/               @winterhuan/dsh-short-drama（Host + Client）
+│   │   ├── video-recap/               @winterhuan/dsh-video-recap（Host + Client）
+│   │   ├── novel-to-game/             @winterhuan/dsh-novel-to-game（Host + Client）
+│   │   └── creative/                  @winterhuan/dsh-creative（安装组合 + Host 兼容）
 │   ├── skill/
 │   │   └── skill-viewer/              @winterhuan/dsh-skill-viewer（Host，skillViewer Remote）
 │   └── client/
@@ -97,9 +103,9 @@ dsh-creative/
 
 包之间的关系：
 
-- `creative` 的 `dependencies` 包含 `ui-settings-creative-produce`，安装 creative bundle 时会带上设置页。
+- `creative` 依赖四个领域包和已有生产设置页；四个领域包均可独立安装，不依赖 Creative 或其他业务插件。没有新增公共运行时包。
 - `skill-viewer` 的 `dependencies` 包含 `ui-skill-viewer`；`ui-skill-viewer` 的 `devDependencies` 包含 `skill-viewer`，用它的 `/types` 和 `/remote`。这个结构沿用上游，所以 `pnpm install` 会提示 `There are cyclic workspace dependencies`，这是预期的。
-- `creative` 同时有 Host 和 Client 两个编译面：`packages/creative/creative/tsconfig.host.json` 和 `tsconfig.client.json`，`packages/creative/creative/tsconfig.json` 只做引用。
+- `creative` 仅构建 Host 兼容入口；四个领域包各自构建 Host 和 Client，聚合包不导出 `/client`。
 - 包路径固定为（`packages/creative/creative`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
 
 ## 3. 与 DSH 的集成方式
@@ -110,6 +116,10 @@ dsh-creative/
 
 | bundle | 行 id | 加载的模块 | 作用 |
 |---|---|---|---|
+| creative / story | `story` | `@winterhuan/dsh-story` | 小说技能、角色、写作检查与编辑器 |
+| creative / short-drama | `short-drama` | `@winterhuan/dsh-short-drama` | 短剧技能、确认生产与剧集工作台 |
+| creative / video-recap | `video-recap` | `@winterhuan/dsh-video-recap` | 解说技能、视频交付与工作台 |
+| creative / novel-to-game | `novel-to-game` | `@winterhuan/dsh-novel-to-game` | 游戏技能、QA、路由与独立侧边栏 |
 | creative | `creative` | `@winterhuan/dsh-creative` | 主插件（`lib/index.js`） |
 | creative | `creative-produce` | `@winterhuan/dsh-creative/produce` | Loader 行，它的 Config 声明就是 `creative-produce` 设置命名空间（`lib/produce-settings-entry.js`） |
 | creative | `ui-settings-creative-produce` | `@winterhuan/dsh-client-ui-settings-creative-produce` | 设置页的 Node 入口，负责登记浏览器 bundle |
@@ -134,11 +144,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 ### 从 Chat 打开文件
 
-发布版 DSH 没有可供外部插件依赖的 `conversation/open-file` waterfall 事件。插件使用重定向标签类型，代码在 `packages/creative/creative/src/client/file-redirect.tsx`：
-
-- 注册 `creative-file` 标签类型，id 为 `@winterhuan/dsh-creative/file-redirect`，匹配 `dsh-resource://file/session/**`，`canOpen` 只接受 Creative 的文本和媒体文件。
-- 它的内容组件挂载后立即用 `creative` 工作台标签替换自己，并带上 `params.creativeFile`，所以所有文件都在同一个工作台里打开。
-- 其它文件 `canOpen` 返回 false，交给 DSH 自带的文件预览。
+小说和短剧通过各自的 `src/client/file-redirect.tsx` 注册文件跳转，使用 `story-file`、`drama-file` 标签类型。它们匹配 `dsh-resource://file/session/**`，只接管对应领域支持的文件，再通过 `params.creativeFile` 打开 `story` 或 `short-drama` 页面。其他文件交给 DSH 自带预览；Creative 聚合包不注册文件跳转或页面。
 
 ## 4. 开发命令与构建流程
 
@@ -166,14 +172,16 @@ pnpm run clean                # 删除 packages/*/*/lib
    - `tsc -b tsconfig.host.json` 编译 skill-viewer 和 creative 的 host 面，输出 `lib/types/*.js` 与 `*.d.ts`。
    - `tsdown --env.DSH_BUILD_FACE host`：根 `tsdown.config.ts` 把各包的 `lib/types/index.js` 打成 `lib/index.js`，并由 `typertPlugin({ mode: 'workspace', faces: ['host'] })` 生成 skill-viewer 的 `lib/typert.host.{js,d.ts}` 和 `lib/typert.remote-client.{js,d.ts}`。
 2. `build:client`：
-   - `tsc -b tsconfig.client.json` 编译 3 个客户端编译面。`ui-skill-viewer` 要用第 1 步生成的 `@winterhuan/dsh-skill-viewer/remote` 声明，所以 client 面必须排在 host 构建之后，`typecheck` 也因此先跑 `build:host`。
-   - `tsdown --env.DSH_BUILD_FACE client`：3 个客户端包各自的 `tsdown.config.ts` 调用 `scripts/tsdown.client.ts` 的 `clientBundle()`，产出 Node 入口和浏览器 bundle。
+   - `tsc -b tsconfig.client.json` 编译四个领域工作台和两个独立 UI 包的客户端编译面。`ui-skill-viewer` 要用第 1 步生成的 `@winterhuan/dsh-skill-viewer/remote` 声明，所以 client 面必须排在 host 构建之后，`typecheck` 也因此先跑 `build:host`。
+   - `tsdown --env.DSH_BUILD_FACE client`：客户端包各自的 `tsdown.config.ts` 调用 `scripts/tsdown.client.ts` 的 `clientBundle()`，产出 Node 入口和浏览器 bundle。
 
 构建产物：
 
 | 包 | 产物 |
 |---|---|
-| creative | `lib/index.js`、`lib/produce-settings-entry.js`、`lib/client.js` |
+| creative | `lib/index.js`、`lib/produce-settings-entry.js` |
+| story / short-drama / video-recap | `lib/index.js`、`lib/produce-settings-entry.js`、`lib/client.js` |
+| novel-to-game | `lib/index.js`、`lib/client.js` |
 | skill-viewer | `lib/index.js`、`lib/typert.host.{js,d.ts}`、`lib/typert.remote-client.{js,d.ts}` |
 | ui-skill-viewer | `lib/index.js`、`lib/client.js` |
 | ui-settings-creative-produce | `lib/index.js`、`lib/client.js` |
@@ -430,6 +438,7 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 
 ## 10. 已知限制与待办
 
+- **四领域插件拆分**：方案见[Agent Note](.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。四个领域包已提取；游戏包拥有技能、随包原著辅助脚本、`game_qa`、独立 `/novel-to-game` 路由和侧边栏；Creative 保留安装组合和 Host 兼容入口。小说、视频、短剧也已拥有各自技能、工具、路由和侧栏；聚合页面已移除，四个侧栏独立保存状态，不迁移旧聚合草稿。`scripts/sync-video-runtime.py` 同步视频运行时、短剧媒体副本及小说导出/溯源辅助脚本。
 - **浏览器验证范围**：新版已验证技能列表、生产设置、小说读写与模式/工作区切换。此次没有调用模型、付费生产或实际媒体生成；从 Chat 打开文件的重定向尚未单独复验，重定向内容组件也没有单元测试覆盖。
 - **录制会话快照与 web e2e 未配置**：本仓库目前没有快照或 e2e 测试设施；浏览器内交互仍需手动验证。
 - **版本号继承自 DSH**：`creative`、`skill-viewer`、`ui-skill-viewer` 是 `0.1.5-rc.2`，`ui-settings-creative-produce` 是 `0.1.7-rc.2`。发布前改成插件自己的版本号；发布到 npm 的 `@winterhuan` scope 需要对应的 npm 账号。

@@ -1,8 +1,23 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/client/ui-skill-viewer" },
-    { "path": "./packages/client/ui-settings-creative-produce" },
-    { "path": "./packages/creative/creative/tsconfig.client.json" }
+    {
+      "path": "packages/creative/story/tsconfig.client.json"
+    },
+    {
+      "path": "packages/creative/video-recap/tsconfig.client.json"
+    },
+    {
+      "path": "packages/creative/short-drama/tsconfig.client.json"
+    },
+    {
+      "path": "./packages/creative/novel-to-game/tsconfig.client.json"
+    },
+    {
+      "path": "./packages/client/ui-skill-viewer"
+    },
+    {
+      "path": "./packages/client/ui-settings-creative-produce"
+    }
   ]
 }

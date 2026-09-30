@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-09-30-creative-four-domain-plugins.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.md
+/agent-note-four-independently-enabled-creative-domain-plugins:
+  en: e0e5912e1ceb6102
+  zh: 94bf1022e868ccef
+/agent-note-four-independently-enabled-creative-domain-plugins/problem:
+  en: 3e938c0321df5771
+  zh: 60712c5a7d358c5c
+/agent-note-four-independently-enabled-creative-domain-plugins/decision:
+  en: 20ae182ee0ac2b75
+  zh: 65eddcf6fde9e14b
+/agent-note-four-independently-enabled-creative-domain-plugins/alternatives-considered:
+  en: 0d9c9e61236a31f2
+  zh: f13fced4fc5e996d
+/agent-note-four-independently-enabled-creative-domain-plugins/consequences:
+  en: 618c7a7225c1b6f8
+  zh: ae749568d793d359
+/agent-note-four-independently-enabled-creative-domain-plugins/consequences/related-decisions:
+  en: 7a33d183ce73f44b
+  zh: 9b351b7aff6fb7b9

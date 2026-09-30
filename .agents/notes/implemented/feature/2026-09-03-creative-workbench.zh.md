@@ -12,12 +12,14 @@ Status: implemented
 
 Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、工具、文件系统、设置和作业之上，界面放在右侧 Sidebar。另有一个独立、可选的只读技能查看器，用来查看 Session 的技能组合，不调用工具，也不恢复 Agent。
 
+[四领域插件提案](../../implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)重新讨论包与页面组合，同时保留本记录的 DSH 归属、授权和项目文件契约。
+
 <a id="composition-and-knowledge"></a>
 ### 组合与知识库
 
 [`dsh-creative`](../../../../packages/creative/creative/README.zh.md) 只注入 `skills`、`subagents` 和 `tools`；`/creative` 路由注册在独立的 `webServer` 加 `typert` 作用域里，因此无头组合也保留 Skill、Role 和生产工具，而不需要 Web 服务。注册随插件释放。插件不发布运行时不变量伴生项：文件、请求和作业检查都在它们所授权的操作内部执行。
 
-`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，同时共用一个发布版本和工作台。每份 `SKILL.md` 拥有自己的描述和完整正文；provider 只在前面加上共享的 DSH 集成说明，这些说明把工作流名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
+`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，通过 Creative 聚合；各 provider 属于对应的独立领域包。每份 `SKILL.md` 拥有自己的描述和完整正文；provider 只在前面加上共享的 DSH 集成说明，这些说明把工作流名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
 
 七个小说 Role 通过 `creative_role` 作为 spawn 出的子 Agent 运行：`maxDepth: 1`，使用宿主拥有的模型选项，工具为按 Role 设定的白名单与调用方可见工具的交集。[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md) 负责经过校验的 Role 模型覆盖；frontmatter 不授予工具或权限。Role 使用调用方提供的项目路径，通过封闭的 `creative_bundled_reference` 工具读取打包参考，工作区 Skill 无法遮蔽这个工具。`creative_role` 只接受 Role 枚举：工作流阶段是 Skill，普通 `subagent` 委派会让子 Agent 去加载它。章节重试在提示词里携带具体反馈，而不是切换模型。
 
@@ -30,9 +32,11 @@ Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、
 <a id="workspace-and-sidebar"></a>
 ### 工作区与 Sidebar
 
-一个 Session 级 `creative` 页面把自己的主体贡献给 `sidebar.right.pane.tab`。右侧 Sidebar 负责位置、缩放、分栏、浮动、全屏和显隐；Conversation 保留对话记录和输入框。即使工作区为空，引导也会提供 Creative，但创建项目文件不会自动打开它。`creative-file` 重定向标签只接管可识别的 Creative 文本和媒体文件的 Session 文件资源，并把自己替换成 `creative` 页面；其他路径（包括按行跳转）仍使用普通预览。导航通过 Sidebar 参数和 revision 传递，Session 注入面每个标签 revision 只消费一次，因此重新挂载不会覆盖用户之后的选择。
+四个独立领域页面向 `sidebar.right.pane.tab` 提供界面。右侧栏负责位置、缩放、分栏、浮动、全屏和显隐；Conversation 保留对话与输入框。小说和短剧拥有各自文件跳转；其他文件使用普通预览。Creative 只组合安装，不提供聚合页面。
 
-持久化的 `creative.workbench.v2` store 保存缓冲区、冲突、选择和生产草稿。完整列表会移除已删除文件的干净缓冲区，但保留脏缓冲区，包括文件已经不存在的草稿；不完整的列表不能证明删除。读取跟随文件版本，并保留草稿最后一次确认的 CAS 版本。迟到的响应和失败不能写进另一个 Session。进行中的保存锁限定在 Session 内、不持久化，在请求结算前跨标签重新挂载保持有效；持久化记录必须使用当前的 store 字段。
+`creative-game` 页面由游戏插件拥有，使用独立的 `creative.game.v1` Session store。
+
+小说和短剧各自保存编辑缓冲区、冲突与选择，短剧另存生产准备。完整列表可移除已删除文件的干净缓冲区，但保留脏草稿；不完整列表不能证明删除。保存使用最后确认的 CAS 版本。旧合并状态不迁移也不读取。
 
 游戏和视频预览在进入对应领域时加载，重新挂载后可能重启。项目的第一个视频会填充空的预览，之后的版本需要用户选择。关闭页面既不取消生产，也不丢弃草稿。样式通过 Client 模块只加载一次。
 
@@ -52,7 +56,7 @@ Creative 保留这些 HTTP 路由，因为通用的 `workspaceFiles` Remote 没�
 
 `creative_production` 投影工作台意图，并且并发安全；它从不编辑创作文档，也不授权付费生成。卡片的 `ProductionRequestId`、准备消息的 `SessionRequestId` 和执行的框架 `JobId` 保持相互独立，绑定要求一个真实的、属于该 Session 的作业及其 `startedAt` epoch。合成使用已确认的 `episode-compose` adapter 及其返回的后台绑定。Native 结果在 metadata 和紧凑 JSON 中保留绑定，PTC 在其 dispatch 事件中保留 JSON，Conversation 投影读取这些已记录的结果，不需要新的历史流或 Session 格式。
 
-Client 从 DSH 当前的投影读取这些状态。`productionQueueFromInbox` 只折叠待处理的 `next-turn` Inbox 消息，因为准备请求使用 `queue` 投递；卡片只按精确的 `SessionRequestId`（取自用户来源的 `rpcId`）关联到队列项，撤回也只移除该队列项，永远不会作用于 `next-step` 引导消息。注入面按请求保存 `beginSubmission()` 返回的完整 `SubmissionHandle`：卡片在派发前持久化；当 Session 查找、序列化或传输在提示词结算前抛出异常时，`sendProductionPrompt` 调用 `abandon()`，不留下本地回显，而 `RemoteResult` 拒绝属于正常结算。`creative.workbench.v2` 用一个单调的 `productionIntentSeq` 游标记录已消费的生产结果：首次物化按 Session 顺序应用导航和 sequence 意图，之后只应用游标之上的结果；带有已退役 call-id 账本的记录会被拒绝，不做迁移。活动工具根通过 `isRunningTool` 从正式 Chat 节点得出，按锚点 sequence 排序，永远不读 `ChatSnapshot.legacy.runningCalls`。
+小说和短剧各自保存编辑缓冲区、冲突与选择，短剧另存生产准备。完整列表可移除已删除文件的干净缓冲区，但保留脏草稿；不完整列表不能证明删除。保存使用最后确认的 CAS 版本。旧合并状态不迁移也不读取。
 
 执行状态只来自 DSH `jobs` store 中该 Session 的行，通过 `jobs.watchRows` 监听；监听开始前，作业卡片显示加载中。历史上未绑定的请求仍然只是请求；Host 重启后找不到的已绑定作业显示为不可用，而不是完成或自动重启。一张卡片可以拥有多个作业，已结束作业的数量、Turn、文件或估算百分比都不能证明计划的产出已经成功。前台结果分别保留退出码、超时、信号和有界输出；退出码非零或未知时生产失败。
 

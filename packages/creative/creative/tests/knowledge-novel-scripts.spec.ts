@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { execa } from 'execa'
 import { describe, expect, it, type TestContext } from 'vitest'
 
-const knowledge = resolve(import.meta.dirname, '../knowledge/story')
+const knowledge = resolve(import.meta.dirname, '../../story/knowledge/story')
 const python = process.platform === 'win32' ? 'python' : 'python3'
 const qualitySkills = ['story-deslop', 'story-long-write', 'story-polish', 'story-review', 'story-short-write']
 const trackingSkills = ['story-import', 'story-long-write', 'story-review']

@@ -1,0 +1,7 @@
+- insert:
+    - id: video-recap
+      name: '@winterhuan/dsh-video-recap'
+    - id: creative-produce
+      name: '@winterhuan/dsh-video-recap/produce'
+    - id: ui-settings-creative-produce
+      name: '@winterhuan/dsh-client-ui-settings-creative-produce'

@@ -1,0 +1,7 @@
+- insert:
+    - id: short-drama
+      name: '@winterhuan/dsh-short-drama'
+    - id: creative-produce
+      name: '@winterhuan/dsh-short-drama/produce'
+    - id: ui-settings-creative-produce
+      name: '@winterhuan/dsh-client-ui-settings-creative-produce'

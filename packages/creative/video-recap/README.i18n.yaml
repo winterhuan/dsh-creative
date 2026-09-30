@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/creative/video-recap/README.md
+/:
+  en: 2645b360fcc8af67
+  zh: d6bc48305fd3a0a3
+/winterhuan-dsh-video-recap:
+  en: 4d4acfbbc1fae2ca
+  zh: b2843b4e1fffa76a
+/winterhuan-dsh-video-recap/summary:
+  en: 169d4bfc940500fd
+  zh: 50742e5b724c482c
+/winterhuan-dsh-video-recap/table-of-contents:
+  en: 122f0d41696980b1
+  zh: 2fbbbbaa6e40af5b
+/winterhuan-dsh-video-recap/use-this-package:
+  en: 077ef31d0a27dc13
+  zh: c98d1bed4d6baaee
+/winterhuan-dsh-video-recap/understand-the-implementation:
+  en: d15d48c1b76ddf0a
+  zh: 548c3535e978e014
+/winterhuan-dsh-video-recap/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/winterhuan-dsh-video-recap/model-experience/domain-skills-and-execution:
+  en: 481ca4b8602496c6
+  zh: 85aa1719dce8e112
+/winterhuan-dsh-video-recap/model-experience/domain-skills-and-execution/what-the-model-sees:
+  en: 480e8e18e963e487
+  zh: 84a9b9f106f05874
+/winterhuan-dsh-video-recap/model-experience/domain-skills-and-execution/token-effect:
+  en: 828169f0df1e18ef
+  zh: 5e59eadf53378ce3
+/winterhuan-dsh-video-recap/model-experience/domain-skills-and-execution/kv-cache-effect:
+  en: 65b3f2ce63f658cc
+  zh: 7cfad7b73d7dd314
+/winterhuan-dsh-video-recap/known-limitations-and-deferred-work:
+  en: a7898a6c1b106ceb
+  zh: f517bd4551a25654
+/winterhuan-dsh-video-recap/known-limitations-and-deferred-work/dev-note:
+  en: a36a09d94e445b4d
+  zh: 18f6c6aa6c55bb0d

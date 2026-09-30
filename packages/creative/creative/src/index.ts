@@ -4,10 +4,6 @@ import type {} from '@deepseek-ai/dsh-skill'
 import type {} from '@deepseek-ai/dsh-subagent'
 import type {} from '@deepseek-ai/dsh-tools'
 import z from '@deepseek-ai/schemastery'
-import { createDramaSkillProvider, createNovelToGameSkillProvider, createStorySkillProvider, createVideoRecapSkillProvider } from './skill-provider.ts'
-import { registerCreativeHooks } from './native-hooks.ts'
-import { registerCreativeRoleTool } from './role-tool.ts'
-import { registerCreativeProductionTool } from './production-tool.ts'
 import { registerCreativeProduceRunTool } from './produce-tool.ts'
 import { ProduceSettingsSchema, type ProduceConfig } from './produce-settings.ts'
 import { registerWorkspaceRoute } from './workspace-route.ts'
@@ -50,14 +46,7 @@ export const Config = z.object({
 export async function apply(context: Context, config: Config = {}): Promise<void> {
   const trustedHosts = config.trustedHosts ?? []
   for (const entry of trustedHosts) assertTrustedWorkspaceAuthority(entry)
-  context.effect(() => context.skills.registerProvider(() => createStorySkillProvider()), 'creative: story skills')
-  context.effect(() => context.skills.registerProvider(() => createDramaSkillProvider()), 'creative: drama skills')
-  context.effect(() => context.skills.registerProvider(() => createNovelToGameSkillProvider()), 'creative: novel-to-game skills')
-  context.effect(() => context.skills.registerProvider(() => createVideoRecapSkillProvider()), 'creative: video-recap skills')
-  registerCreativeHooks(context)
-  registerCreativeProductionTool(context)
   registerCreativeProduceRunTool(context, { entry: config.produce ?? {} })
-  await registerCreativeRoleTool(context)
   context.inject(['webServer', 'typert'], (webContext) => {
     registerWorkspaceRoute(webContext, { maxBytes: config.editorMaxBytes ?? 2_097_152, trustedHosts, produce: config.produce ?? {} })
   })

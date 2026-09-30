@@ -5,10 +5,10 @@ import { renderSkillContent } from '@deepseek-ai/dsh-skill'
 import { describe, expect, it, onTestFinished } from 'vitest'
 import { createDramaSkillProvider, createNovelToGameSkillProvider, createStorySkillProvider, createVideoRecapSkillProvider, parseBundledSkill } from '../src/skill-provider.ts'
 
-const skillRoot = resolve(import.meta.dirname, '../knowledge/story/skills')
-const dramaRoot = resolve(import.meta.dirname, '../knowledge/drama/skills')
-const gameRoot = resolve(import.meta.dirname, '../knowledge/novel-to-game/skills')
-const videoRoot = resolve(import.meta.dirname, '../knowledge/video-recap/skills')
+const skillRoot = resolve(import.meta.dirname, '../../story/knowledge/story/skills')
+const dramaRoot = resolve(import.meta.dirname, '../../short-drama/knowledge/drama/skills')
+const gameRoot = resolve(import.meta.dirname, '../../novel-to-game/knowledge/skills')
+const videoRoot = resolve(import.meta.dirname, '../../video-recap/knowledge/video-recap/skills')
 
 describe.each([
   { name: 'story', create: createStorySkillProvider, root: skillRoot, skillName: 'story', count: 14 },
@@ -25,8 +25,9 @@ describe.each([
       const source = parseBundledSkill(await readFile(resolve(root, candidate.name, 'SKILL.md'), 'utf8'))
       const skill = await provider.get(candidate, {})
       expect(skill?.description).toBe(source.description)
-      expect(skill?.content).toContain('load each one with the skill tool')
-      expect(skill?.content).toContain('creative_role accepts only the novel specialist names in its role enum')
+      expect(skill?.content).toContain(skillName === 'novel-to-game' ? 'using the DSH skill tool' : 'load each one with the skill tool')
+      if (skillName !== 'story') expect(skill?.content).not.toContain('creative_role')
+      else expect(skill?.content).toContain('creative_role accepts only the novel specialist names in its role enum')
       expect(candidate.description.length).toBeLessThanOrEqual(500)
       expect(skill?.content.replace(/^<[\w-]+-dsh-integration>[\s\S]*?<\/[\w-]+-dsh-integration>\n\n/u, ''))
         .toBe(source.content)

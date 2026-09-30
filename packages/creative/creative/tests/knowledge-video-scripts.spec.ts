@@ -55,7 +55,7 @@ describe('bundled video-recap offline selftests', () => {
     it(`runs ${skill} with isolated temporary files and no network`, async (context) => {
       const entry = resolve(
         import.meta.dirname,
-        '../knowledge/video-recap/skills',
+        '../../video-recap/knowledge/video-recap/skills',
         skill,
         'scripts/selftest.py',
       )

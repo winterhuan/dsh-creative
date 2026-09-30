@@ -1,4 +1,12 @@
 - insert:
+    - id: story
+      name: '@winterhuan/dsh-story'
+    - id: video-recap
+      name: '@winterhuan/dsh-video-recap'
+    - id: short-drama
+      name: '@winterhuan/dsh-short-drama'
+    - id: novel-to-game
+      name: '@winterhuan/dsh-novel-to-game'
     - id: creative
       name: '@winterhuan/dsh-creative'
     - id: creative-produce

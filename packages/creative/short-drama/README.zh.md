@@ -1,0 +1,73 @@
+---
+description: "短剧工作台，可独立安装技能、工具与浏览器界面。"
+kind: "package-bundle"
+---
+
+# @winterhuan/dsh-short-drama
+
+[English](README.md) | 中文
+
+## 摘要
+
+通过十个 Skill、剧集编辑器和生产看板创作短剧。确认后的作业通过 DSH 工具生产媒体与合成剧集。此 bundle 可以独立安装，也可以通过 Creative 安装。
+
+## 目录
+
+- [使用本包](#use-this-package)
+- [理解实现](#understand-the-implementation)
+- [模型体验](#model-experience)
+- [已知限制与后续工作](#known-limitations-and-deferred-work)
+- [开发笔记](#dev-note)
+
+<a id="use-this-package"></a>
+## 使用本包
+
+构建仓库后，将本地 bundle 安装到 web profile：
+
+```sh
+dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/short-drama
+```
+
+从右侧栏打开**短剧工作台**。插件使用当前 DSH Session、文件系统、模型和权限。生产设置仍位于已有的 Creative 生产设置页；密钥保留在 DSH 凭据库。
+
+<a id="understand-the-implementation"></a>
+## 理解实现
+
+<details>
+<summary>实现细节 — 点击展开</summary>
+
+[补丁](cordis.patch.yml)挂载领域行、`creative-produce` 配置行和已有设置页。重复配置行 ID 通过 DSH Loader 组合解析。`editorMaxBytes` 默认为 2097152；`trustedHosts` 扩展默认回环地址列表。`/short-drama` API 将文档与媒体访问限定在本领域项目路径中。
+
+生产只消费一次已准备作业的确认。此包携带成片与媒体审查所需的视频运行脚本，不安装视频工作流插件。
+
+此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
+
+</details>
+
+<a id="model-experience"></a>
+## 模型体验
+
+### 领域技能与执行
+
+#### 模型看到什么
+
+领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`drama_produce_run` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
+
+#### Token 影响
+
+Skill 正文按需加载。执行添加普通工具结果，不加载无关领域目录。
+
+#### KV Cache 影响
+
+插件使用 DSH 工具和 Skill 历史，不重写此前消息，也不维护独立模型会话。
+
+## 已知限制与后续工作
+
+<a id="known-limitations-and-deferred-work"></a>
+
+- Python 脚本需要 Python 3.9+；媒体操作还需要 ffmpeg 与 ffprobe。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
+
+<a id="dev-note"></a>
+### 开发笔记
+
+未引入独立公共运行时包。

@@ -1,0 +1,46 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/creative/novel-to-game/README.md
+/:
+  en: c71aca37c6561bde
+  zh: 58a006a0fcc60424
+/winterhuan-dsh-novel-to-game:
+  en: 2f7d40c4ceee21ff
+  zh: 4c3b14223c1b3996
+/winterhuan-dsh-novel-to-game/summary:
+  en: be4fcf48c9e74187
+  zh: 656b96c663526294
+/winterhuan-dsh-novel-to-game/table-of-contents:
+  en: 23386452a66b2fbd
+  zh: 461461296f3823f6
+/winterhuan-dsh-novel-to-game/use-this-package:
+  en: de3e08cd281bb054
+  zh: 08115b9c72fd3bb9
+/winterhuan-dsh-novel-to-game/understand-the-implementation:
+  en: 85f66c63c4b13d60
+  zh: 6961f29c59df2510
+/winterhuan-dsh-novel-to-game/further-exploration:
+  en: 7fd999002d6a1f1c
+  zh: 301115f3b15ca4b7
+/winterhuan-dsh-novel-to-game/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/winterhuan-dsh-novel-to-game/model-experience/skills-and-qa:
+  en: a5c429fbb1bd22c6
+  zh: 53aa4f0c1ae2f7ee
+/winterhuan-dsh-novel-to-game/model-experience/skills-and-qa/what-the-model-sees:
+  en: 4c106647cded7c42
+  zh: 7c7a7756c1bf47d4
+/winterhuan-dsh-novel-to-game/model-experience/skills-and-qa/token-effect:
+  en: ccf78c85b10eebc1
+  zh: 15dd735ffb5838d3
+/winterhuan-dsh-novel-to-game/model-experience/skills-and-qa/kv-cache-effect:
+  en: 46320892806954d3
+  zh: 0855bc5314286fae
+/winterhuan-dsh-novel-to-game/known-limitations-and-deferred-work:
+  en: cd17ce9d2e1cc41c
+  zh: 37dc9761cea1dc81
+/winterhuan-dsh-novel-to-game/known-limitations-and-deferred-work/dev-note:
+  en: 54bf7345e83c1421
+  zh: 39d031628e44d5a8

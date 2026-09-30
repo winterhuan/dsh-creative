@@ -3,3 +3,11 @@
 - name: '@deepseek-ai/dsh-skill'
 - name: '@deepseek-ai/dsh-subagent'
 - name: '@winterhuan/dsh-creative'
+- id: novel-to-game
+  name: '@winterhuan/dsh-novel-to-game'
+- id: story
+  name: '@winterhuan/dsh-story'
+- id: short-drama
+  name: '@winterhuan/dsh-short-drama'
+- id: video-recap
+  name: '@winterhuan/dsh-video-recap'

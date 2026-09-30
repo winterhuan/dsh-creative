@@ -9,9 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Creative adds fiction, short-drama, interactive-game, and video-recap workflows to DeepSeek Harness. Bundled Skills and specialist Roles work through DSH's workspace, Session, models, tools and permissions; the Web profile also provides an editor, media previews and production cards in the right Sidebar.
-
-One Creative page keeps all four domains available in mixed workspaces. Cross-domain workflows share project files and production settings without requiring separate applications ([decision](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md)).
+Creative installs the fiction, short-drama, game and video-recap workbenches together and retains legacy production tools and HTTP APIs. The four domain plugins provide the sidebar pages; Creative has no aggregate page or browser entry.
 
 ## Table of Contents
 
@@ -29,7 +27,7 @@ One Creative page keeps all four domains available in mixed workspaces. Cross-do
 
 ### Install into a profile
 
-`dsh plugin add` installs this bundle into a profile; its [profile patch](cordis.patch.yml) mounts `creative`, the `creative-produce` settings namespace and the settings page. The plugin registers four Skill providers (`story`, `short-drama`, `novel-to-game`, `video-recap`), the `creative_role` specialist Roles and the production tools. These need only the skill, subagent and tool registries; the Session-scoped `/creative` API registers when `webServer` and `typert` are also available.
+`dsh plugin add` installs this bundle into a profile; its [profile patch](cordis.patch.yml) mounts `story`, `short-drama`, `novel-to-game`, `video-recap`, `creative`, the `creative-produce` settings namespace and the settings page. The bundle composes four Skill providers (`story`, `short-drama`, `novel-to-game`, `video-recap`), the `creative_role` specialist Roles and the production tools. These need only the skill, subagent and tool registries; the Session-scoped `/creative` API registers when `webServer` and `typert` are also available.
 
 ```yaml
 - id: creative
@@ -42,23 +40,19 @@ One Creative page keeps all four domains available in mixed workspaces. Cross-do
 | `trustedHosts` | `[]` | Additional `host[:port]` authorities allowed to reach the workbench API beyond loopback. |
 | `produce` | `{}` | Initial production profile and credential references; the `creative-produce` settings namespace supplies user overrides. |
 
-### Open the workbench
+### Open the workbenches
 
-In a Session, expand the right Sidebar and choose **Creative workbench** on its guide page; it is available even in an empty workspace. Opening a supported Creative file from Chat reveals the same workbench, while other file links keep the Sidebar's file preview. Creating project files does not open the panel.
-
-The fiction pane recognizes projects at the workspace root, under `<book>/`, or under `长篇/<book>/` and `短篇/<book>/`. A short story appears as soon as `设定.md`, `小节大纲.md` or `正文.md` exists, and the default document is prose, then an outline, then another Markdown file.
-
-Editor drafts and conflicts survive refresh and tab changes. A complete listing can mark a draft's file as missing but never discards the unsaved text, and a truncated listing is not evidence of deletion. Saves use the last acknowledged file version, so a concurrent disk change requires conflict resolution rather than an overwrite.
+Select the project workspace in a Session, then open Fiction, Short-drama, Game or Video-recap from the right sidebar. Each page has independent state. Saved project files remain directly usable; unsaved drafts from the retired aggregate page are not migrated.
 
 ### Chapter review
 
-Long-form chapters follow outline readiness, a compact scene plan and a reader-value review before submission. Reviews bind quoted evidence to the final body hash, and tracking retains a compact continuation summary. Packaged Role `agent_options` select review models without adding caller-controlled tool parameters; malformed options fail at load. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration` for quoted-dialogue-safe normalization. See the [reader-value decision](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.md) and [chapter workflow](knowledge/story/skills/story-long-write/references/workflow-chapter.md).
+Long-form chapters follow outline readiness, a compact scene plan and a reader-value review before submission. Reviews bind quoted evidence to the final body hash, and tracking retains a compact continuation summary. Packaged Role `agent_options` select review models without adding caller-controlled tool parameters; malformed options fail at load. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration` for quoted-dialogue-safe normalization. See the [reader-value decision](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.md) and [chapter workflow](../story/knowledge/story/skills/story-long-write/references/workflow-chapter.md).
 
 ### Deliver and verify
 
 Short-drama production can compose confirmed clips, timed dialogue, music and subtitles with the `episode-compose` adapter. The workbench checks one coherent episode revision and associates published media through hashed production manifests. Unsaved or invalid episode documents block preparation.
 
-Game templates include state, save/load, restart and QA hooks. The `game-qa` entry runs real Chrome with Studio preview restrictions; the preview shows the authenticated result. Strategy and independent blind-play reports remain design feedback. Without a game project, the Game tab shows an empty state and keeps navigation to the other workbenches available.
+Game templates include state, save/load, restart and QA hooks. The game plugin’s `game_qa` tool (also available as the legacy `game-qa` entry) runs real Chrome with Studio preview restrictions; the preview shows the authenticated result. Strategy and independent blind-play reports remain design feedback. Without a game project, the game workbench shows its empty state.
 
 Video recap supports an explicit local draft with degraded stages recorded in `draft_status.json`. Drafts remain visibly separate from final output. Delivery evidence measures narration coverage, source reuse, declared rights and framing without granting platform approval.
 
@@ -78,23 +72,9 @@ Agnes video uses the free `agnes-video-2.5-flash` model when no model is configu
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-| File | Role |
-|---|---|
-| `src/skill-provider.ts` | Four bundled `SkillProvider` implementations with DSH bridge injection. |
-| `src/role-provider.ts`, `src/role-tool.ts` | Bundled Role personas and `creative_role` subagent delegation with per-role tool filtering. |
-| `src/reference-tool.ts` | Pinned bundled reference reader for `story-setup` agent references. |
-| `src/production-tool.ts` | `creative_production` projection intents. |
-| `src/produce-tool.ts`, `src/produce-settings.ts` | `creative_produce_run`, `creative_produce_status` and the credential-reference profile. |
-| `src/workspace-route.ts` | Session-scoped `/creative` HTTP API for creative files, media, video preflight, game preview and job stop. |
-| `src/native-hooks.ts` | Tool waterfall guards for long-form prose invariants. |
-| `src/client/index.ts` | Browser plugin entry; `workbench.tsx` owns the workbench UI and registration. |
-| `knowledge/` | Bundled Skills, Roles and scripts: `story/`, `drama/`, `novel-to-game/`, `video-recap/` and the shared `creative/roles/`. |
+The [bundle patch](cordis.patch.yml) composes four domain packages and the existing production settings page. Domain packages own Skills, resources and browser entries. Creative's [Host entry](src/index.ts) registers legacy production tools and the `/creative` compatibility API; it builds no browser bundle and owns no combined page state.
 
-Creative registers the `creative` page type and its `sidebar.right.pane.tab` body. The [right Sidebar](../../../upstream/packages/client/ui-sidebar-right/README.md) owns layout and carries file navigation through its parameters and revision. The `creative.workbench.v2` store keeps editor buffers, conflicts, selections and production drafts, while in-flight save locks live in the Session's nonpersistent inject face; [editor reconciliation](src/client/editor-buffer.ts) ties content reads to observed file versions ([decision](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md#workspace-and-sidebar)).
-
-Host and Client share [project-path.ts](src/project-path.ts) for project roots, relative paths, domains and file roles, so episodes and shots are addressed by full project paths. Host reads and writes enforce extension allowlists and resolved containment, including symlink targets. Media belongs to the Session's filesystem provider, and direct Host streaming requires that provider to map the Host paths to the same files ([ownership](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md#project-and-file-ownership)).
-
-Production cards persist request drafts, not execution state. The task board takes queued preparations from the Session's `inbox` projection, durable results and job bindings from the Conversation projection, running state from the Session's DSH job rows, and live file activity from formal Chat nodes. Stopping goes through `/creative/job/stop`, which checks the Session owner and exact job reference before `jobs.kill` ([production requests](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md#production-requests-and-jobs)).
+Stable domain row IDs prevent duplicate registration alongside individual installs. Domain packages own editor and production views; existing on-disk projects need no migration.
 
 </details>
 
@@ -159,11 +139,11 @@ Status follows normal logged tool history. Each new check resolves current crede
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **Operational failure text stays zh-Hans** — workbench chrome renders through the `creative` locale namespace, while server error bodies, runtime diagnostics and thrown errors remain zh-Hans until the workspace route ships stable error codes.
+- **Operational failures use zh-Hans** — each workbench owns its locale namespace; Host diagnostics remain Chinese.
 - **Knowledge is bundled** — the `knowledge/` tree increases clone and package size; on-demand fetching is not implemented.
 - **Browser automation uses external binaries** — `browser-cdp` needs compatible `agent-browser` and Lightpanda binaries in the execution environment; neither is bundled, Chrome profiles are not reused, while game QA separately requires Chrome and Node 22+ for screenshots and interaction evidence.
 - **Jobs are process-local** — after a Host restart, bindings without a matching live job show as unavailable and never restart. Historical `track_job` records without real bindings remain requests, not execution evidence.
-- **Preview runtimes follow tab mounting** — leaving Creative can unmount game and video previews; returning restores editor state and reloads previews, not their in-memory runtime.
+- **Preview runtimes follow their domain tabs** — reopening a game or video page rebuilds its preview instead of restoring in-memory execution state.
 - **Remote execution needs mounted resources** — provider-backed media reads accept at most 256 MiB per file, and a remote shell needs the packaged scripts mounted or copied into its own filesystem.
 - **Video production is less guarded than drama** — video entries rely on Skill-enforced creator confirmation instead of the drama runner's single-use receipt and ledger, rotate keys only between calls, and expose full recap, voiceover and diagnostics and explicit short-drama media review. Local drafts need ffmpeg; local transcription and speech need installed engines or an explicit transcript waiver and timing stand-in.
 - **Accepted drama submissions are never retried** — key rotation happens only after an initial-submission rejection marked `submission_rejected`; polling, download and uncertain failures end the run.

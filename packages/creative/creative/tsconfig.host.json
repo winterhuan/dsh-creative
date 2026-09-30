@@ -5,6 +5,24 @@
     "outDir": "lib/types",
     "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/client/**/*"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/client/**/*"
+  ],
+  "references": [
+    {
+      "path": "../novel-to-game/tsconfig.host.json"
+    },
+    {
+      "path": "../story/tsconfig.host.json"
+    },
+    {
+      "path": "../video-recap/tsconfig.host.json"
+    },
+    {
+      "path": "../short-drama/tsconfig.host.json"
+    }
+  ]
 }

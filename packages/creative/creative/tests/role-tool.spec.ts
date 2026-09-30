@@ -123,7 +123,7 @@ describe('native Creative Role tool', () => {
   })
 
   it('reads only pinned references and rejects path escape or scoped shadowing', async () => {
-    const storySetupRoot = resolve(import.meta.dirname, '../knowledge/story/skills/story-setup')
+    const storySetupRoot = resolve(import.meta.dirname, '../../story/knowledge/story/skills/story-setup')
     const definition = await createCreativeReferenceTool(storySetupRoot)
     const reference = 'story-setup/references/agent-references/writing-craft.md'
     const result = await definition.execute({ reference }, {} as ToolRunContext) as { readonly reference: string; readonly content: string }

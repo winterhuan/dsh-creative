@@ -10,8 +10,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 PACKAGE = Path(__file__).resolve().parents[2]
-VIDEO = PACKAGE / 'knowledge/video-recap/skills'
-DRAMA = PACKAGE / 'knowledge/drama/skills'
+VIDEO = PACKAGE.parent / 'video-recap/knowledge/video-recap/skills'
+DRAMA = PACKAGE.parent / 'short-drama/knowledge/drama/skills'
 sys.path[:0] = [str(VIDEO / name / 'scripts') for name in ('video-recap', 'video-assemble', 'video-voiceover', 'video-understanding')]
 sys.path[:0] = [str(DRAMA / name / 'scripts') for name in ('short-drama-produce', 'short-drama', 'short-drama-review')]
 from lib import CONFIG

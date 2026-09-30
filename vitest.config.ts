@@ -4,6 +4,18 @@ import { standardDecoratorPlugin, vitestExecArgv } from './scripts/vitest-shared
 import { upstreamClientSource } from './scripts/vitest-upstream-client.ts'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@winterhuan/dsh-story/client': new URL('./packages/creative/story/src/client/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-story': new URL('./packages/creative/story/src/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-short-drama/client': new URL('./packages/creative/short-drama/src/client/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-short-drama': new URL('./packages/creative/short-drama/src/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-video-recap/client': new URL('./packages/creative/video-recap/src/client/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-video-recap': new URL('./packages/creative/video-recap/src/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-novel-to-game/client': new URL('./packages/creative/novel-to-game/src/client/index.ts', import.meta.url).pathname,
+      '@winterhuan/dsh-novel-to-game': new URL('./packages/creative/novel-to-game/src/index.ts', import.meta.url).pathname,
+    },
+  },
   plugins: [standardDecoratorPlugin(), upstreamClientSource()],
   test: {
     include: ['packages/*/*/tests/**/*.spec.{ts,tsx}'],

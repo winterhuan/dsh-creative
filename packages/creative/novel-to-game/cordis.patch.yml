@@ -1,0 +1,3 @@
+- insert:
+    - id: novel-to-game
+      name: '@winterhuan/dsh-novel-to-game'
