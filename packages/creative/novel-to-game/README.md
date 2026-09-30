@@ -58,7 +58,7 @@ The [browser entry](src/client/index.ts) registers a game-only sidebar with inde
 
 #### What the model sees
 
-Seven Skill descriptions appear in the DSH catalog. Loading a Skill supplies its packaged instructions and local helper paths. `game_qa` exposes a project path, optional background execution and timeout; it returns process output or a job ID.
+Seven Skill descriptions appear in the DSH catalog. Loading a Skill supplies its packaged instructions and local helper paths. `game_qa` exposes a project path, optional background execution and timeout; it returns process output or a job ID. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
 
 #### Token effect
 

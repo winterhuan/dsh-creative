@@ -9,7 +9,7 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-typert-registry'
 import { isTrustedWorkspaceRequest } from './workspace-request-trust.js'
 import {
-  BOOK_CONTAINERS, CREATIVE_DIRECTORIES, STORY_DIRECTORIES,
+  CREATIVE_DIRECTORIES,
   PROJECT_FILES, creativeMediaMimeType, isCreativeTextPath, parseCreativePath, projectPath,
   type CreativeProjectPath, type CreativeProjectSummary,
 } from './project-path.ts'
@@ -87,7 +87,7 @@ function safeRelativePath(path: string): boolean {
 
 function editablePath(path: string): boolean {
   const parsed = parseCreativePath(path)
-  if (parsed?.domain !== 'story') return false
+  if (parsed?.domain !== 'story' || parsed.projectRoot !== '') return false
   return parsed !== undefined && isCreativeTextPath(parsed)
 }
 
@@ -107,7 +107,7 @@ function assertCreativePath(path: string, kind: 'text' | 'media'): CreativeProje
     throw new WorkspaceHttpError(403, '文件路径不在创作工作台中。')
   }
   const parsed = parseCreativePath(path)
-  if (parsed?.domain !== 'story') {
+  if (parsed?.domain !== 'story' || parsed.projectRoot !== '') {
     throw new WorkspaceHttpError(403, '文件路径不在创作工作台中。')
   }
   return parsed
@@ -187,29 +187,23 @@ function skipWorkspaceDirectory(path: string): boolean {
 }
 
 /**
- * Walk every creative directory under the realm root and collect editable and
- * media files, including the book layouts the story skills actually write
- * (`<book>/<leaf>/…`, `长篇|短篇/<book>/<leaf>/…`, short-story single files).
- * A project may contain creative directories or standalone project documents;
- * short-story settings and outlines are visible before prose exists.
- * The walk keeps going past the file limit
- * only until it observes one further eligible file, so `truncated` stays
- * false for a workspace that holds exactly the limit. Dependency directories,
- * Python caches, hidden directories, and video working areas are not traversed.
- * @param realm - the session's workspace realm supplying the filesystem view.
- * @returns the complete or truncated listing in workspace-relative paths.
+ * List the opened novel project's standard directories and standalone documents.
+ * Nested book directories are separate projects and are not discovered here.
+ * Recursion within 正文, 大纲 and the other recognized roots preserves volumes.
+ * A listing is truncated only when another eligible file exceeds FILE_LIMIT.
+ * @param realm - the Session's project directory and filesystem.
+ * @returns the complete or truncated project-relative listing.
  */
 async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
   const files: WorkspaceFile[] = []
   // Returns true when the listing is truncated: an eligible file appeared once
   // `files` already held the limit.
-  const walk = async (path: string, directory: FsTarget, project: FsTarget = realm.root): Promise<boolean> => {
+  const walk = async (path: string, directory: FsTarget): Promise<boolean> => {
     for (const entry of await realm.fs.listDir(directory)) {
-      if (entry.name.startsWith('.') || !realm.fs.contains(project, entry.target)) continue
+      if (entry.name.startsWith('.') || !realm.fs.contains(realm.root, entry.target)) continue
       const childPath = `${path}/${entry.name}`
       if (entry.type === 'directory') {
-        const owner = project
-        if (!skipWorkspaceDirectory(childPath) && await walk(childPath, entry.target, owner)) return true
+        if (!skipWorkspaceDirectory(childPath) && await walk(childPath, entry.target)) return true
       }
       else if (entry.type === 'file' && editablePath(childPath)) {
         const info = entry.version === undefined || entry.size === undefined ? await realm.fs.stat(entry.target) : undefined
@@ -242,60 +236,7 @@ async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
       files.push({ path, bytes: info.size ?? 0, version: info.version, kind: 'text' })
     }
   }
-  if (!truncated) truncated = await listBookFiles(realm, walk, files)
   return { files: files.sort((left, right) => left.path.localeCompare(right.path, 'zh-Hans-CN')), truncated }
-}
-
-/**
- * Collect creative files from book directories below the workspace root.
- * Only immediate children (and `长篇/`/`短篇/` grandchildren) are probed with
- * one directory listing each, so a code checkout never pays a full-tree walk.
- * @param realm - the session's workspace realm supplying the filesystem view.
- * @param walk - the shared recursive collector reporting truncation.
- * @param files - the listing under construction, already holding root-level files.
- * @returns whether an eligible file appeared past the file limit.
- */
-async function listBookFiles(
-  realm: WorkspaceRealm,
-  walk: (path: string, directory: FsTarget, project: FsTarget) => Promise<boolean>,
-  files: WorkspaceFile[],
-): Promise<boolean> {
-  const creativeRoots = new Set<string>(CREATIVE_DIRECTORIES)
-  const candidates: { readonly prefix: string; readonly target: FsTarget }[] = []
-  for (const entry of await realm.fs.listDir(realm.root)) {
-    if (skipWorkspaceDirectory(entry.name) || !realm.fs.contains(realm.root, entry.target)) continue
-    if (creativeRoots.has(entry.name)) continue
-    if (entry.type !== 'directory') continue
-    if (BOOK_CONTAINERS.some(container => container === entry.name)) {
-      for (const book of await realm.fs.listDir(entry.target)) {
-        if (skipWorkspaceDirectory(`${entry.name}/${book.name}`) || book.type !== 'directory' || !realm.fs.contains(realm.root, book.target)) continue
-        candidates.push({ prefix: `${entry.name}/${book.name}`, target: book.target })
-      }
-      continue
-    }
-    candidates.push({ prefix: entry.name, target: entry.target })
-  }
-  for (const { prefix, target } of candidates) {
-    const children = await realm.fs.listDir(target)
-    const visible = children.filter(child => !child.name.startsWith('.') && realm.fs.contains(target, child.target))
-    for (const leaf of STORY_DIRECTORIES) {
-      const child = visible.find(item => item.name === leaf && item.type === 'directory')
-      if (child === undefined) continue
-      if (await walk(`${prefix}/${leaf}`, child.target, target)) return true
-    }
-    for (const name of PROJECT_FILES) {
-      const child = visible.find(item => item.name === name && item.type === 'file')
-      if (child === undefined) continue
-      if (files.length >= FILE_LIMIT) return true
-      const childPath = `${prefix}/${name}`
-      const info = child.version === undefined || child.size === undefined ? await realm.fs.stat(child.target) : undefined
-      const version = child.version ?? info?.version
-      if (version !== undefined) {
-        files.push({ path: childPath, bytes: child.size ?? info?.size ?? 0, version, kind: 'text' })
-      }
-    }
-  }
-  return false
 }
 
 async function metadata(

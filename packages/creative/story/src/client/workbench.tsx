@@ -155,6 +155,6 @@ export function apply(context: Context): void {
   registerFileRedirect(context, 'story')
   context.slots.inject('tool.call.toolview', () => context.slots.register({ name: 'tool.call.toolview', key: 'creative_role', locale: NS }, RoleToolView))
   const t = context.locale.bind(NS)
-  context.effect(() => context.sidebarRightTabs.register({ id: '@winterhuan/dsh-story', kind: 'story', title: () => t('workbench.title'), guide: [{ id: 'story', order: 19, title: () => t('workbench.title'), description: () => t('workbench.description'), icon: IconEditOutlineRegular }] }), 'story: sidebar')
+  context.effect(() => context.sidebarRightTabs.register({ id: '@winterhuan/dsh-story', kind: 'story', title: () => t('workbench.title'), guide: [{ id: 'story', order: 21, title: () => t('workbench.title'), description: () => t('workbench.description'), icon: IconEditOutlineRegular }] }), 'story: sidebar')
   context.slots.inject('sidebar.right.pane.tab', () => context.slots.register({ name: 'sidebar.right.pane.tab', key: '@winterhuan/dsh-story', locale: NS, store: createStoryStore }, StoryEditor))
 }

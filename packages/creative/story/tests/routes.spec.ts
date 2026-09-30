@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { registerWorkspaceRoute } from '../src/workspace-route.ts'
 
 // The fixture includes nested books so discovery cannot hide a cross-domain read.
-function fixture() {
+function fixture(cwd = '/ws') {
   const directories: Record<string, string[]> = {
     '/ws': ['正文', 'book', 'game-adaptations', 'video-recaps'],
     '/ws/正文': ['chapter.md', 'poster.png'],
@@ -14,6 +14,15 @@ function fixture() {
     '/ws/book/剧集': ['EP001'],
     '/ws/book/剧集/EP001': ['剧本.md'],
     '/ws/game-adaptations': [], '/ws/video-recaps': [],
+    '/collection': ['book', '长篇', '短篇'],
+    '/collection/book': ['正文'],
+    '/collection/book/正文': ['第一卷'],
+    '/collection/book/正文/第一卷': ['chapter.md'],
+    '/collection/长篇': ['书甲'],
+    '/collection/长篇/书甲': ['正文'],
+    '/collection/长篇/书甲/正文': ['chapter.md'],
+    '/collection/短篇': ['书乙'],
+    '/collection/短篇/书乙': ['正文.md'],
   }
   const target = (displayPath: string) => ({ displayPath, targetKey: displayPath })
   const fs = {
@@ -23,7 +32,7 @@ function fixture() {
     listDir: vi.fn(async ({ displayPath }: { displayPath: string }) => (directories[displayPath] ?? []).map(name => ({ name, target: target(`${displayPath}/${name}`), type: directories[`${displayPath}/${name}`] ? 'directory' : 'file' }))),
     readBytes: vi.fn(),
   }
-  const agent = { session: { id: randomUUID(), header: { cwd: '/ws' } }, ctx: { get: (name: string) => name === 'fs' ? fs : {} } }
+  const agent = { session: { id: randomUUID(), header: { cwd } }, ctx: { get: (name: string) => name === 'fs' ? fs : {} } }
   let handler: Parameters<Context['webServer']['register']>[0]['handler'] | undefined
   const dispose = vi.fn()
   let cleanup: (() => void) | undefined
@@ -50,10 +59,35 @@ describe('standalone story routes', () => {
     const { request, fs } = fixture()
     const reply = await request('workspace')
     expect(reply.status).toBe(200)
-    expect(reply.body.files.map((file: { path: string }) => file.path).sort()).toEqual(['book/正文/chapter.md', '正文/chapter.md'])
+    expect(reply.body.files.map((file: { path: string }) => file.path).sort()).toEqual(['正文/chapter.md'])
     expect(reply.body).not.toHaveProperty('games')
     expect(reply.body).not.toHaveProperty('videos')
-    expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).not.toContain('/ws/book/剧集')
+    expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).toEqual(['/ws/正文'])
+    expect(fs.readBytes).not.toHaveBeenCalled()
+  })
+
+  it('does not discover books from their parent directory or named containers', async () => {
+    const { request, fs } = fixture('/collection')
+    const reply = await request('workspace')
+    expect(reply.status).toBe(200)
+    expect(reply.body.files).toEqual([])
+    expect(reply.body.projects).toEqual([])
+    expect(fs.listDir).not.toHaveBeenCalled()
+  })
+  it.each([
+    ['/collection/book', '正文/第一卷/chapter.md'],
+    ['/collection/长篇/书甲', '正文/chapter.md'],
+    ['/collection/短篇/书乙', '正文.md'],
+  ])('discovers the project opened directly at %s', async (cwd, file) => {
+    const { request } = fixture(cwd)
+    const reply = await request('workspace')
+    expect(reply.status).toBe(200)
+    expect(reply.body.files.map((value: { path: string }) => value.path)).toEqual([file])
+    expect(reply.body.projects.map((value: { root: string }) => value.root)).toEqual([''])
+  })
+  it('rejects a direct file request to a nested book', async () => {
+    const { request, fs } = fixture()
+    expect((await request('file', 'book/正文/chapter.md')).status).toBe(415)
     expect(fs.readBytes).not.toHaveBeenCalled()
   })
   it.each(['book/剧集/EP001/剧本.md', 'game-adaptations/demo/design/GAME_DESIGN.md', 'video-recaps/demo/work/plan.json'])('rejects another domain before reading %s', async path => {

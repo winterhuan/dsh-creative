@@ -30,6 +30,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 Open **Fiction workbench** from the right sidebar. The plugin uses the current DSH Session, filesystem, model and permissions. Production settings remain in the existing Creative production settings page; secrets stay in the DSH credential store.
 
+The fiction workbench treats the current Session directory as the project root. It lists that directory’s direct `正文/`, `大纲/`, `设定/` and other standard roots, plus standalone story documents. Opening their parent directory does not discover child projects; open the novel directory itself. Nested volumes inside a recognized root remain visible.
+
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
@@ -51,7 +53,7 @@ The package has no dependency on the Creative aggregate or another domain plugin
 
 #### What the model sees
 
-The domain catalog exposes only its own Skill descriptions. Loading a Skill supplies its full instructions and packaged helper paths. `story_zhuque` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`.
+The domain catalog exposes only its own Skill descriptions. Loading a Skill supplies its full instructions and packaged helper paths. `story_zhuque` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
 
 #### Token effect
 

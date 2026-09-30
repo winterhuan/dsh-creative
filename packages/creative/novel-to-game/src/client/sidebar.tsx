@@ -58,7 +58,7 @@ export function apply(context: Context): void {
     id: '@winterhuan/dsh-creative/game',
     kind: 'creative-game',
     title: () => t('game.sidebar.title'),
-    guide: [{ id: 'game', order: 21, title: () => t('game.sidebar.title'), description: () => t('game.sidebar.description'), icon: IconPlayOutlineRegular }],
+    guide: [{ id: 'game', order: 23, title: () => t('game.sidebar.title'), description: () => t('game.sidebar.description'), icon: IconPlayOutlineRegular }],
   }), 'creative: game sidebar')
   context.slots.inject('sidebar.right.pane.tab', () => context.slots.register({
     name: 'sidebar.right.pane.tab',

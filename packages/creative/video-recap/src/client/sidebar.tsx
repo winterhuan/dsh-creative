@@ -57,7 +57,7 @@ export function apply(context: Context): void {
     id: '@winterhuan/dsh-video-recap',
     kind: 'video-recap',
     title: () => t('workbench.title'),
-    guide: [{ id: 'video', order: 21, title: () => t('workbench.title'), description: () => t('video.connecting'), icon: IconPlayOutlineRegular }],
+    guide: [{ id: 'video', order: 24, title: () => t('workbench.title'), description: () => t('video.connecting'), icon: IconPlayOutlineRegular }],
   }), 'creative: video sidebar')
   context.slots.inject('sidebar.right.pane.tab', () => context.slots.register({
     name: 'sidebar.right.pane.tab',

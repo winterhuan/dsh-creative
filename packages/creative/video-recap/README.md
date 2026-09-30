@@ -51,7 +51,7 @@ The package has no dependency on the Creative aggregate or another domain plugin
 
 #### What the model sees
 
-The domain catalog exposes only its own Skill descriptions. Loading a Skill supplies its full instructions and packaged helper paths. `video_produce_run` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`.
+The domain catalog exposes only its own Skill descriptions. Loading a Skill supplies its full instructions and packaged helper paths. `video_produce_run` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
 
 #### Token effect
 

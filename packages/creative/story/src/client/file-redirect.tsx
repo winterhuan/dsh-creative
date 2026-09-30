@@ -30,7 +30,7 @@ function creativeFileOf(context: ClientContext, address: string): { readonly ses
   const sessionId = file.sessionId as SessionId
   const cwd = context.sessions.list.getSnapshot().byId[sessionId]?.cwd
   const parsed = parseCreativePath(file.path, cwd)
-  if (parsed?.domain !== 'story' || (!isCreativeTextPath(parsed) && creativeMediaMimeType(parsed.path) === undefined)) return undefined
+  if (parsed?.domain !== 'story' || parsed.projectRoot !== '' || (!isCreativeTextPath(parsed) && creativeMediaMimeType(parsed.path) === undefined)) return undefined
   return { sessionId, path: parsed.path }
 }
 

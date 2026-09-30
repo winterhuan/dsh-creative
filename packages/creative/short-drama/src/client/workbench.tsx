@@ -839,7 +839,7 @@ export function apply(context: ClientContext): void {
     guide: [{
       id: 'workbench',
       icon: IconPlayOutlineRegular,
-      order: 20,
+      order: 22,
       title: () => translate('workbench.title'),
       description: () => translate('workbench.description'),
     }],

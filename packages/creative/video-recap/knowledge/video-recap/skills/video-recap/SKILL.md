@@ -46,7 +46,7 @@ REVISION 开始前先明确“本轮修改项”和“冻结项”。表达、�
 
 ## 3. 环境与脚本路径
 
-每个项目位于 `video-recaps/<project>/`：素材导入 `sources/`，工作产物位于 `work/`。来自短剧的成片从 `剧集/<EP>/制作成果/` 复制，保留带 `SHOT-` / `VISUAL-` 的文件名，并通过 `story-import` 的 `scripts/record_lineage.py` 在工作区根目录追加交付谱系。
+每个项目位于 `video-recaps/<project>/`：素材导入 `sources/`，工作产物位于 `work/`。来自短剧的成片从 `剧集/<EP>/制作成果/` 复制，保留带 `SHOT-` / `VISUAL-` 的文件名，并用 DSH 集成指引 `Source lineage` 指定的本插件 `record_lineage.py` 在工作区根目录追加交付谱系，无需安装或加载小说插件。
 
 带凭据的处理只通过 `video_produce_run`，在 `argv` 中传脚本选项，不传脚本路径或环境变量。凭据由 `creative-produce` 配置和凭据存储解析；不把密钥写入项目、可见工具参数或对话，不通过 bash 导出。ffmpeg 与 Python 使用当前 DSH 执行环境，安装或升级依赖必须取得用户明确许可。
 

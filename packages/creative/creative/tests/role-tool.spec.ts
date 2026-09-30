@@ -139,11 +139,14 @@ describe('native Creative Role tool', () => {
     expect(pinnedGuard({ name: CREATIVE_REFERENCE_TOOL_NAME, agent: {} } as ToolExecution)).toBeUndefined()
   })
 
-  it('fails closed and still disposes an incomplete role run', async () => {
+  it.each([
+    { stopReason: 'max-tokens' as const, diagnostic: 'truncated' },
+    { stopReason: 'error' as const, diagnostic: '401 Invalid token' },
+  ])('preserves the $stopReason diagnostic and disposes an incomplete role run', async ({ stopReason, diagnostic }) => {
     const dispose = vi.fn(async () => {})
     const start = vi.fn(async () => ({
       id: 'role-run-2',
-      result: Promise.resolve({ output: [], stopReason: 'max-tokens' as const, diagnostic: 'truncated' }),
+      result: Promise.resolve({ output: [], stopReason, diagnostic }),
       dispose,
     }))
     const agent = {
@@ -166,7 +169,7 @@ describe('native Creative Role tool', () => {
       token: Symbol('tool') as ToolRunContext['token'],
       deferContext: vi.fn(),
       concludeTurn: vi.fn(),
-    })).rejects.toThrow(/max-tokens.*truncated/u)
+    })).rejects.toThrow(`ended with ${stopReason}: ${diagnostic}`)
     expect(start).toHaveBeenCalledWith('spawn', expect.objectContaining({ toolFilter: { allow: [] } }))
     expect(dispose).toHaveBeenCalledOnce()
   })

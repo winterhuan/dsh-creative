@@ -1,6 +1,6 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { renderSkillContent } from '@deepseek-ai/dsh-skill'
 import { describe, expect, it, onTestFinished } from 'vitest'
 import { createDramaSkillProvider, createNovelToGameSkillProvider, createStorySkillProvider, createVideoRecapSkillProvider, parseBundledSkill } from '../src/skill-provider.ts'
@@ -16,6 +16,21 @@ describe.each([
   { name: 'novel-to-game', create: createNovelToGameSkillProvider, root: gameRoot, skillName: 'novel-to-game', count: 7 },
   { name: 'video-recap', create: createVideoRecapSkillProvider, root: videoRoot, skillName: 'video-recap', count: 6 },
 ])('$name skill source', ({ create, root, skillName, count }) => {
+  it('resolves local Markdown links in its packaged knowledge', async () => {
+    const knowledge = resolve(root, skillName === 'novel-to-game' ? '..' : '../..')
+    for (const file of await readdir(knowledge, { recursive: true })) {
+      if (!file.endsWith('.md')) continue
+      const path = resolve(knowledge, file)
+      const source = await readFile(path, 'utf8')
+      for (const match of source.matchAll(/\]\(([^)]+)\)/gu)) {
+        const link = match[1]!
+        if (!/^(?:\.\.?\/|references\/|scripts\/|templates\/)/u.test(link) || /[<{*]/u.test(link)) continue
+        const target = link.split('#')[0]!
+        await expect(access(resolve(dirname(path), target)), `${file}: ${link}`).resolves.toBeUndefined()
+      }
+    }
+  })
+
   it('serves every file body unchanged after shared integration context', async () => {
     const provider = create(root)
     const candidates = await provider.list({})
@@ -199,7 +214,7 @@ describe('Drama Skills bundled provider', () => {
     expect(production?.content).toContain('剧集/<EP>/制作成果/')
     const novelCandidate = listed.find(candidate => candidate.name === 'short-drama-novel-analyze')
     const novel = await provider.get(novelCandidate!, {})
-    expect(novel?.content).toContain('scripts/export_novel_txt.py')
+    expect(novel?.content).toContain('source-tools/export_novel_txt.py')
     expect(novel?.content).toContain('章节映射')
     expect(novel?.content).toContain('record_lineage.py')
     expect(novel?.content).toContain('正文.md')

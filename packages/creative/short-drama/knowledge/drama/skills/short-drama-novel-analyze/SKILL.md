@@ -29,9 +29,9 @@ python3 {技能目录}/scripts/novel_index.py index <原著.txt> --out <chapter-
 
 ## 小说工程交接
 
-长篇来自 story 工作区时，先由 `story-import` 的 `scripts/export_novel_txt.py` 导出 `原著.txt` 和 `章节映射.json`，本技能读取导出包，不自行拼接工作区章节；分析 span 通过章节映射引用回原章节文件。短篇直接读取其 `正文.md`，不要求不存在的导出包。用户直接提供原始小说时按下文建立索引。
+长篇来自小说工作区时，先用本插件自带的 `export_novel_txt.py` 导出 `原著.txt` 和 `章节映射.json`；脚本绝对路径见 DSH 集成指引的 `Novel export`，无需安装或加载 `story-import`。本技能读取导出包，不自行拼接工作区章节；分析 span 通过章节映射引用回原章节文件。短篇直接读取其 `正文.md`，不要求不存在的导出包。用户直接提供原始小说时按下文建立索引。
 
-接收改编输入后，用 `story-import` 的 `scripts/record_lineage.py` 在工作区根目录追加 `改编谱系.jsonl`，记录来源、目标和源指纹；不覆盖已有谱系。
+接收改编输入后，用 DSH 集成指引 `Source lineage` 指定的本插件 `record_lineage.py` 在工作区根目录追加 `改编谱系.jsonl`，记录来源、目标和源指纹；不覆盖已有谱系。
 
 ## 材料前提
 

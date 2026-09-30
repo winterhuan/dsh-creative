@@ -19,6 +19,8 @@ const DSH_SKILL_BRIDGE = [
   'DSH owns the workspace, model, preset, permissions, Session Log, tools, subagents, cancellation, resume, and Agent UI.',
   'Never start another Agent runtime, session transport, creator UI, SSE stream, polling loop, or model configuration.',
   ...DSH_SKILL_ROUTING,
+  'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
+  'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'Roles do not require project-local platform files or deployment markers.',
   'Use only DSH-visible tools. DSH sandbox and permission policy remain authoritative.',
   '</creative-dsh-integration>',

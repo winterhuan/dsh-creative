@@ -142,6 +142,10 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 `ui-settings-creative-produce` 编辑 `creative-produce` 设置命名空间。6 个提供商密钥通过 `ctx.remote.credentials` 写入；这个 Remote 由 DSH 内置的 `@deepseek-ai/dsh-api-settings-controller` 提供，由 `api-remotes` 挂载，插件只需要它的类型（见[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
 
+### 小说项目发现
+
+小说工作台仅识别当前会话工作目录中的直属创作目录和独立短篇文件，不扫描子项目或 `长篇/<书名>`、`短篇/<书名>` 容器。打开 `~/workspace` 不会列出其中的小说；需直接打开具体小说目录。创作目录内部的分卷仍递归展示。
+
 ### 从 Chat 打开文件
 
 小说和短剧通过各自的 `src/client/file-redirect.tsx` 注册文件跳转，使用 `story-file`、`drama-file` 标签类型。它们匹配 `dsh-resource://file/session/**`，只接管对应领域支持的文件，再通过 `params.creativeFile` 打开 `story` 或 `short-drama` 页面。其他文件交给 DSH 自带预览；Creative 聚合包不注册文件跳转或页面。

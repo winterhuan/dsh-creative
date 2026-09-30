@@ -30,6 +30,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 从右侧栏打开**小说工作台**。插件使用当前 DSH Session、文件系统、模型和权限。生产设置仍位于已有的 Creative 生产设置页；密钥保留在 DSH 凭据库。
 
+小说工作台只把当前会话的工作目录作为项目根目录，读取其直属 `正文/`、`大纲/`、`设定/` 等目录及独立短篇文件。打开小说所在的父目录不会自动发现子项目；请直接打开具体小说目录。正文目录内部的分卷等层级仍会递归显示。
+
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
@@ -51,7 +53,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 #### 模型看到什么
 
-领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`story_zhuque` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
+领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`story_zhuque` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 

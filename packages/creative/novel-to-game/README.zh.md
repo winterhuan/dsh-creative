@@ -58,7 +58,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 
 #### 模型看到什么
 
-DSH 目录展示七个 Skill 描述。加载 Skill 时提供随包指令和本地辅助脚本路径。`game_qa` 接受项目路径、可选后台执行和超时参数，返回进程输出或作业 ID。
+DSH 目录展示七个 Skill 描述。加载 Skill 时提供随包指令和本地辅助脚本路径。`game_qa` 接受项目路径、可选后台执行和超时参数，返回进程输出或作业 ID。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 
