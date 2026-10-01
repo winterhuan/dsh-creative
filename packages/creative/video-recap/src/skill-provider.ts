@@ -9,24 +9,19 @@ import {
 } from '@deepseek-ai/dsh-skill'
 
 const VIDEO_PROVIDER_NAME = 'video-recap'
-const DSH_SKILL_ROUTING = [
-  'Workflow stages are Skills: load each one with the skill tool and its exact catalog name in the name argument. For a $name or /name reference, omit the prefix. Loading supplies instructions to the current Agent.',
-]
 const DSH_VIDEO_BRIDGE = [
   '<video-recap-dsh-integration>',
   'This Skill is a native contribution to the current DeepSeek Harness session.',
   'DSH owns the workspace, model, preset, permissions, Session Log, tools, approvals, cancellation, resume, Todo, Chat, and the 视频 preview Studio.',
-  ...DSH_SKILL_ROUTING,
+  'Load video-recap or video-script with the skill tool using its exact name. Media stages are references, not additional Skills. Resolve references/ and skills/ paths against the provided resource base and read only needed material with native read.',
   'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
   'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'Never start a second Agent runtime, creator UI, session transport, web server, polling loop, or model configuration.',
-  'Use the six bundled Skills. Put each project under video-recaps/<project>/, source media under sources/, and use work/ as work_dir so the Studio can discover authoritative manifests and outputs.',
+  'Put each project under video-recaps/<project>/, source media under sources/, and use work/ as work_dir so the Studio can discover authoritative manifests and outputs.',
   'Short-drama production outputs are ready recap sources: copy files from 剧集/<EP>/制作成果/ into the recap project sources/ preserving filenames (SHOT-/VISUAL- ids are the identity), then run the normal pipeline. Record deliveries with this plugin\'s record_lineage.py at the Source lineage path below.',
   'The Video Studio is a preview and artifact surface, not a nonlinear editor. Do not invent a second project-state format, timeline truth, or render queue; recap_run_manifest.json, recap_phase.json, timeline.json, assembly_manifest.json, and the documented pipeline artifacts remain authoritative.',
-  'MIMO_API_KEY, FISH_API_KEY, and voice credentials resolve from the creative-produce profile and the credential store. Never write secrets into project files, tool arguments shown to the browser, or chat output. Run credentialed production only through video_produce_run (entries video-voiceover, video-recap, video-doctor): subprocess children start credential-scrubbed, so invoking them through bash never receives the configured keys.',
-  'When video_recap_produce_status is visible, use it to inspect credential presence before reporting a missing key. An ordinary shell environment is not a view of the DSH credential store; never ask the creator to paste keys into chat.',
+  'MIMO_API_KEY, FISH_API_KEY, and voice credentials resolve from the creative-produce profile and credential store. Run credentialed production only through video_produce_run; ordinary bash children do not receive those configured keys. Never put secrets in project files, visible arguments, or chat.',
   'Use only DSH-visible tools and approvals. Run Python and ffmpeg through the current DSH execution world, preserve cancellation, and do not install or upgrade system dependencies without explicit user approval.',
-  'When a new edited or final video is ready, tell the user that Video Studio can load it; never interrupt playback by replacing the currently loaded video silently.',
   '</video-recap-dsh-integration>',
 ].join('\n')
 
@@ -89,10 +84,11 @@ function createBundledSkillProvider(
   return {
     name: providerName,
     async list(): Promise<readonly SkillCandidate[]> {
-      const directories = (await readdir(root, { withFileTypes: true }))
-        .filter(entry => entry.isDirectory())
-        .map(entry => entry.name)
-        .sort()
+      const entries = await readdir(root, { withFileTypes: true })
+      const directories = (await Promise.all(entries.filter(entry => entry.isDirectory()).map(async (entry) => {
+        const files = await readdir(join(root, entry.name), { withFileTypes: true })
+        return files.some(file => file.isFile() && file.name === 'SKILL.md') ? entry.name : undefined
+      }))).filter((name): name is string => name !== undefined).sort()
       return Promise.all(directories.map(async (directory): Promise<SkillCandidate> => {
         const path = join(root, directory, 'SKILL.md')
         const parsed = parseBundledSkill(await readFile(path, 'utf8'))
@@ -103,7 +99,7 @@ function createBundledSkillProvider(
           invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
           provider: providerName,
           source: 'bundled',
-          resourceBase: { kind: 'directory', path: join(root, directory) },
+          resourceBase: { kind: 'directory', path: dirname(root) },
           rank: BUNDLED_SKILL_RANK,
           locator: pathToFileURL(path),
           path,
@@ -125,7 +121,7 @@ function createBundledSkillProvider(
         invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
         provider: providerName,
         source: 'bundled',
-        resourceBase: { kind: 'directory', path: join(root, parsed.name) },
+        resourceBase: { kind: 'directory', path: dirname(root) },
         path,
         content: `${bridge}\n\n${parsed.content}`,
       }

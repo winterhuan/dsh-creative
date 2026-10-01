@@ -204,7 +204,7 @@
 
 默认 master 不重复 `purpose_ref` 或 `coverage_scope`：镜头目的、场次计划与原文覆盖从准确
 `shot_ref` 及其上游读取。只有 pickup/alternate 才按
-[motion-recipe.md](../references/motion-recipe.md) 增加 `coverage_scope`，记录相对母版的补充、保留与去向。
+[motion-recipe.md](../../../references/video-prompts/motion-recipe.md) 增加 `coverage_scope`，记录相对母版的补充、保留与去向。
 `boundary_refs` 只保留结构校验需要的 duration/start/end/next-start 精确字段投影，不再重复镜头目的、
 场次计划或原文职责；删除它前必须先让 timing 与 continuity 校验器能从 `shot_ref` 安全解析同一快照。
 

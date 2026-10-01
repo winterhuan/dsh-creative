@@ -34,6 +34,11 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 六个入口分别是 `story`（工程准备、已有小说接入、选题与偏好）、`story-write`（长短篇写作）、`story-analyze`（拆解）、`story-review`（审稿）、`story-polish`（本地润色及明确请求的朱雀检测）和 `story-cover`（封面）。已有工程直接继续；原始文本接入不要求先拆全书。
 
+<a id="specialist-agents"></a>
+### 专业 Agent
+
+需要独立专家时使用当前可见的原生 `subagent`，任务说明专业身份、Role 文件绝对路径和资源根，由实际子 Agent 用原生 `read` 读取指令。用户明确要求 Agent Teams 时使用 `spawn_teammate`，再以 `send_message` 复用成员。参见[委派说明](knowledge/story/references/project/delegation.md)。Role 不是额外工具或 Skill，调用方读取它也不构成独立评审。
+
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
@@ -61,7 +66,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 #### Token 影响
 
-Skill 正文按需加载。六个入口不预加载参考资料，专用参考工具及其路径枚举不再进入工具目录。按 DSH 固定字符密度估算，小说目录行约从 531 降至 137 token；移除的工具定义约 1169 token。这是相同文本口径的估算，不是模型供应商计费数据。
+Skill 正文和专业指令按需加载。委派只读取所选 Role 及必要参考；初始目录不增加专用 Role 工具 schema 或整套专家正文。
 
 #### KV Cache 影响
 
@@ -71,6 +76,7 @@ Skill 正文按需加载。六个入口不预加载参考资料，专用参考�
 
 <a id="known-limitations-and-deferred-work"></a>
 
+- 原生 Team 工具需要显式启用团队组合和持久 Session。专业指令进入任务上下文，不由插件覆盖系统 persona。审稿输出普通意见；章节脚本校验机械条件，不认证文学质量或评审模型元数据。
 - Python 脚本需要 Python 3.9+；章节检查还需要 Node。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
 
 <a id="dev-note"></a>

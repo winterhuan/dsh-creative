@@ -34,6 +34,11 @@ The fiction workbench treats the current Session directory as the project root. 
 
 The six entries are `story` (project setup, existing novels, research and preferences), `story-write` (long and short fiction), `story-analyze` (analysis), `story-review` (review), `story-polish` (local editing and explicitly requested Zhuque detection) and `story-cover` (covers). Existing projects continue directly; raw-text intake does not require full-book analysis.
 
+<a id="specialist-agents"></a>
+### Specialist Agents
+
+Use the visible native `subagent` tool for independent specialists. Its task names the professional identity, absolute Role file and resource root; the actual child reads those instructions with native `read`. When the user explicitly requests Agent Teams, use `spawn_teammate` and reuse the member through `send_message`. See the [delegation guide](knowledge/story/references/project/delegation.md). Roles are not separate tools or Skills; reading one in the caller does not create an independent reviewer.
+
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
@@ -61,7 +66,7 @@ The domain catalog exposes only its own Skill descriptions. Loading a Skill supp
 
 #### Token effect
 
-Skill bodies load on demand. The six entries do not preload references, and the dedicated reference tool and its path enum add no catalog cost. DSH’s fixed character-density heuristic estimates novel catalog lines at 531 tokens before and 137 after; the removed tool definition was approximately 1169 tokens. These are comparable text estimates, not provider billing measurements.
+Skill bodies and specialist instructions load on demand. Delegation reads only the selected Role and needed references; no custom Role tool schema or complete expert library enters the initial catalog.
 
 #### KV Cache effect
 
@@ -71,6 +76,7 @@ The plugin uses DSH tool and Skill history. It does not rewrite previous message
 
 <a id="known-limitations-and-deferred-work"></a>
 
+- Native Team tools require an explicitly enabled Team composition and persistent Sessions. Specialist instructions enter task context, not a plugin-owned system persona. Review returns ordinary findings; chapter scripts validate mechanical conditions, not literary approval or reviewer model metadata.
 - Python scripts require Python 3.9+; chapter checks also require Node. Paid services require creator authorization and configured credentials. Independent sidebars own their state; old aggregate drafts are not migrated.
 
 <a id="dev-note"></a>

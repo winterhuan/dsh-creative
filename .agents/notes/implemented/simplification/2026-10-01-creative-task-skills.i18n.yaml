@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-01-creative-task-skills.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-01-creative-task-skills.md
+/agent-note-task-based-drama-game-and-video-skills:
+  en: 7dccf10ae3c46653
+  zh: 6fabadca2ddbab75
+/agent-note-task-based-drama-game-and-video-skills/problem:
+  en: a50da1d975b8da09
+  zh: bcdf301357bef043
+/agent-note-task-based-drama-game-and-video-skills/decision:
+  en: bcc9ef497e858985
+  zh: f1990f97569dd9fc
+/agent-note-task-based-drama-game-and-video-skills/alternatives-considered:
+  en: a07060b0e346b686
+  zh: fa3491ea2c18ad9f
+/agent-note-task-based-drama-game-and-video-skills/consequences:
+  en: a2b4f171a489a296
+  zh: 4fafb058c95d682c

@@ -3,6 +3,7 @@ packages:
 
 allowBuilds:
   esbuild: true
+  koffi: false
 
 minimumReleaseAgeExclude:
   - '@deepseek-ai/dsh-agent-default-model@0.2.0-rc.2'

@@ -18,15 +18,15 @@ import {
 import { parseCreativePath } from '../../project-path.ts'
 import { endpoint } from '../workbench-ui.js'
 import type { WorkspacePayload } from '../workspace-client.ts'
-import type { EditorDomain, WorkbenchStoreProps } from './types.ts'
+import type { PropsStore, TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
+import type { NS } from '../locales/index.ts'
+import type { createWorkbenchStore } from '../workbench-store.ts'
 
 /** The short-drama workbench domain. */
-export const dramaDomain: EditorDomain<'drama'> = {
-  mode: 'drama',
-  surface: 'editor',
+export const dramaDomain = {
   groupOrder: ['项目', '输入', '项目开发', '设定集', '剧集', '审查', '创作者决策', '交付'],
-  treeLabelKey: 'tree.drama.files',
-  Empty: ({ t }) => <>{t('editor.empty.drama.prefix')} <code>{t('editor.empty.drama.command')}</code>{t('editor.empty.drama.suffix')}</>,
+  treeLabelKey: 'tree.drama.files' as const,
+  Empty: ({ t }: { readonly t: TranslateNS<typeof NS> }) => <>{t('editor.empty.drama.prefix')} <code>{t('editor.empty.drama.command')}</code>{t('editor.empty.drama.suffix')}</>,
 }
 
 /** Episode documents a production `open_section` or `focus_target` result opens, in preference order. */
@@ -51,7 +51,7 @@ export interface DramaProduction {
 }
 
 /** Inputs of {@link useDramaProduction}. */
-export interface DramaProductionOptions extends WorkbenchStoreProps {
+export interface DramaProductionOptions extends PropsStore<ReturnType<typeof createWorkbenchStore>> {
   readonly sessionId: string
   readonly workspace: WorkspacePayload | undefined
   readonly selected: string | undefined

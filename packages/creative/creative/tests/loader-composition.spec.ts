@@ -55,7 +55,7 @@ describe('Creative headless Loader composition', () => {
     expect(await context.skills.get('story-write')).toMatchObject({
       content: expect.stringContaining(source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/u, '').trim()),
     })
-    expect(await context.skills.list()).toHaveLength(29)
+    expect(await context.skills.list()).toHaveLength(17)
     expect(context.tools.get('game_qa')).toBeDefined()
     expect(context.tools.get('creative_produce_run')).toBeDefined()
     expect(context.tools.get('creative_production')).toBeDefined()

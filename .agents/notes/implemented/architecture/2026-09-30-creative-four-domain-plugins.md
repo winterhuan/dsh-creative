@@ -14,7 +14,7 @@ Four independently installable bundles own their Host tools, Skills, resources, 
 
 Creative composes the four packages and retains legacy routes and production aliases. It has no aggregate page, browser entry or combined state store. Domain providers register only in their owning packages. Stable bundle row IDs prevent duplicate registrations. The existing production settings page and namespace remain shared; the split adds no common runtime package.
 
-Story owns six Skills, seven Roles, writing hooks and `story_zhuque`. Drama owns ten Skills, `creative_production`, confirmation handling, projection and `drama_produce_run`. Game owns seven Skills, templates, authenticated `game_qa` and previews. Video owns six Skills, delivery measurements, playback and `video_produce_run`. The aggregate retains `creative_produce_run` and `creative_produce_status`; standalone Skill bridges name their domain tools.
+Story owns six Skills, seven Roles, writing hooks and `story_zhuque`. Drama owns five Skills, `creative_production`, confirmation handling, projection and `drama_produce_run`. Game owns four Skills, templates, authenticated `game_qa` and previews. Video owns two Skills, delivery measurements, playback and `video_produce_run`. The aggregate retains `creative_produce_run` and `creative_produce_status`; standalone Skill bridges name their domain tools.
 
 Each route preserves Session lookup, trusted requests, resolved-path containment and file budgets; editors preserve versioned writes. Domain listings and reads reject unrelated domain documents. Drama replay accepts both its own producer results and legacy aggregate results. Cross-domain adaptation exchanges project files and source identities, never another plugin's private store.
 
@@ -41,3 +41,5 @@ Standalone registration/disposal tests and Loader composition tests cover domain
 ### Related decisions
 
 The [Creative workbench decision](../feature/2026-09-03-creative-workbench.md) remains active for DSH ownership, production authorization, Session projections and file safety. This decision supersedes only its single-package rationale. Reader-value, game-evidence, finished-episode and video-delivery decisions retain their business contracts. No archived note or archive manifest changes.
+
+[Task-based Skills](../simplification/2026-10-01-creative-task-skills.md) owns the domain catalogs and conditional workflow resources.

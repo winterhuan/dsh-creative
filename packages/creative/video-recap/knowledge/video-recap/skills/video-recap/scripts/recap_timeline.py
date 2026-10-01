@@ -463,7 +463,7 @@ def _write_multi_source_clip_brief(work_dir, source_records, args):
         "",
         "## 创作决定",
         "",
-        "先判断创作控制模式：CREATE 比较至少两个可行剪辑假设；DIRECTED 落实用户指定结构；REVISION 只改最新反馈点并冻结未点名内容。然后写或更新 `recap_story_plan.json` 与 `visual_audio_board.json`。前者记录观众承诺、POV、戏剧问题、选定主线及 change-based beats；后者记录每拍的具体画面/反应、入点/出点、原声锚点、`audio_owner` 与 `narration_job`。",
+        "先判断创作控制模式：CREATE 只在真实方向分歧影响结果时比较方案；DIRECTED 落实用户指定结构；REVISION 只改最新反馈点并冻结未点名内容。然后写或更新 `recap_story_plan.json` 与 `visual_audio_board.json`。前者记录观众承诺、POV、戏剧问题、选定主线及 change-based beats；后者记录每拍的具体画面/反应、入点/出点、原声锚点、`audio_owner` 与 `narration_job`。",
         "",
         "多视频不是把每个来源各做一段小总结。每个来源片段都必须服务同一条主线，并用 `source_id` 保留证据归属。这两份计划是 Agent 与建议型评审使用的工作记录，不是 CLI 渲染门禁。",
         "",

@@ -52,7 +52,7 @@ Existing records remain valid: consumers fall through unknown source kinds to th
 <a id="verification"></a>
 ## Verification
 
-pnpm exec vitest run packages/creative/creative/tests/native-hooks.spec.ts: 13 tests passed, covering the post-write reminder's source declaration and waterfall integration.
+pnpm exec vitest run packages/creative/story/tests/native-hooks.spec.ts: 13 tests passed, covering the post-write reminder's source declaration and waterfall integration.
 
 <a id="dev-note"></a>
 ## Dev Note

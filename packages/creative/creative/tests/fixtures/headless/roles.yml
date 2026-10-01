@@ -1,0 +1,17 @@
+- name: role-test-dependencies
+- name: role-test-persistence
+- name: role-test-query
+- name: role-test-loop
+  config:
+    agents: []
+- name: role-test-subagents
+- name: role-test-spawn
+  config:
+    providerName: spawn
+- name: role-test-fs
+- name: role-test-fs-tools
+- id: role-native-delegate
+  name: role-test-delegate
+  config:
+    provider: spawn
+    enableRunInBackground: false

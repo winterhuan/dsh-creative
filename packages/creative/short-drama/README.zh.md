@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过十个 Skill、剧集编辑器和生产看板创作短剧。确认后的作业通过 DSH 工具生产媒体与合成剧集。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过五个 Skill、剧集编辑器和生产看板创作短剧。确认后的作业通过 DSH 工具生产媒体与合成剧集。此 bundle 可以独立安装，也可以通过 Creative 安装。
 
 ## 目录
 
@@ -51,7 +51,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/shor
 
 #### 模型看到什么
 
-领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`drama_produce_run` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
+领域目录只展示自己的 Skill 描述。五个入口为 `short-drama`（项目、开发与按需原著分析）、`short-drama-write`、`short-drama-visual`（视觉设定、图片提示词、分镜与视频提示词）、`short-drama-produce` 和 `short-drama-review`。加载入口时提供任务指令与 `knowledge/drama` 原生资源基目录，通过普通 `read` 按需读取参考。脚本和模板目录保留为随包资源，不额外注册 Skill。`drama_produce_run` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 

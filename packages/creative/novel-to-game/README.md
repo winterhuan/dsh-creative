@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Turn a novel into a playable browser game with seven workflow Skills, Chrome QA and a dedicated Game Studio sidebar. Install this bundle independently or through Creative. The plugin uses the current DSH Session, workspace and permissions; Chrome and Python are required for QA.
+Turn a novel into a playable browser game with four task-oriented Skills, Chrome QA and a dedicated Game Studio sidebar. Install this bundle independently or through Creative. The plugin uses the current DSH Session, workspace and permissions; Chrome and Python are required for QA.
 
 ## Table of Contents
 
@@ -30,6 +30,13 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 ```
 
 Open **Game Studio** in the right sidebar. Start with `/novel-to-game quick`; projects live under `game-adaptations/<project>/`, with a browser entry at `build/app/index.html`. `game_qa` accepts that relative project root as `project` and runs in the current Session workspace. Background runs return a DSH job ID for `job_output` and `job_kill`.
+
+| Request | Skill |
+|---|---|
+| Novel intake, source evidence or adaptation orchestration | `novel-to-game` |
+| Gameplay, systems, levels, narrative or visual direction | `game-design` |
+| Implement a design or test a specific risk with a whitebox | `game-build` |
+| Independently verify the actual browser build | `game-qa` |
 
 The bundle mounts one `novel-to-game` row. Its optional `editorMaxBytes` defaults to 2097152; `trustedHosts` defaults to an empty list and extends the loopback-only API authority list. It does not install story, drama or video tools.
 
@@ -58,7 +65,7 @@ The [browser entry](src/client/index.ts) registers a game-only sidebar with inde
 
 #### What the model sees
 
-Seven Skill descriptions appear in the DSH catalog. Loading a Skill supplies its packaged instructions and local helper paths. `game_qa` exposes a project path, optional background execution and timeout; it returns process output or a job ID. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
+Four Skill descriptions appear in the DSH catalog. Loading a Skill supplies its packaged instructions and native DSH resource directory for reading task references, plus local helper paths. `game_qa` exposes a project path, optional background execution and timeout; it returns process output or a job ID. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
 
 #### Token effect
 

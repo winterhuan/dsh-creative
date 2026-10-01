@@ -1,7 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-skill'
-import type {} from '@deepseek-ai/dsh-subagent'
 import type {} from '@deepseek-ai/dsh-tools'
 import z from '@deepseek-ai/schemastery'
 import { registerCreativeProduceRunTool } from './produce-tool.ts'
@@ -10,8 +9,6 @@ import { registerWorkspaceRoute } from './workspace-route.ts'
 import { assertTrustedWorkspaceAuthority } from './workspace-request-trust.ts'
 
 export { createDramaSkillProvider, createNovelToGameSkillProvider, createStorySkillProvider, createVideoRecapSkillProvider, parseBundledSkill } from './skill-provider.ts'
-export { CREATIVE_ROLE_NAMES, loadBundledRole } from './role-provider.ts'
-export { createCreativeRoleTool, CREATIVE_ROLE_TOOL_NAME, registerCreativeRoleTool, roleToolFilter, type CreativeRoleSubagents } from './role-tool.ts'
 export { createCreativeProduceRunTool, createCreativeProduceStatusTool, DRAMA_ADAPTERS, CREATIVE_PRODUCE_RUN_TOOL_NAME, CREATIVE_PRODUCE_STATUS_TOOL_NAME, PRODUCE_ENTRIES, dramaScriptFor, registerCreativeProduceRunTool, type DramaAdapter, type ProduceEntry } from './produce-tool.ts'
 export { createCreativeProductionTool, registerCreativeProductionTool } from './production-tool.ts'
 export { CREATIVE_PRODUCTION_TOOL_NAME, validateProductionIntent, type ProductionIntentArgs } from './production-intent.ts'
@@ -19,7 +16,7 @@ export { registerWorkspaceRoute } from './workspace-route.ts'
 export { registerCreativeHooks } from './native-hooks.ts'
 
 export const name = 'creative'
-export const inject = ['skills', 'subagents', 'tools']
+export const inject = ['skills', 'tools']
 
 /** DSH owns models, providers, presets, permissions, roots, runs, and sessions. */
 export interface Config {
@@ -39,7 +36,7 @@ export const Config = z.object({
 
 /**
  * Mount domain contributions and attach workspace routes when Web services exist.
- * @param context - Skill, subagent, and tool registries.
+ * @param context - Skill and tool registries.
  * @param config - workspace limits, trusted hosts, and production settings.
  */
 export async function apply(context: Context, config: Config = {}): Promise<void> {

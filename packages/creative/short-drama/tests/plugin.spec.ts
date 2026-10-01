@@ -16,7 +16,10 @@ describe('short-drama independent ownership', () => {
     await ctx.plugin(SubagentRuntime)
     const fiber = ctx.plugin(plugin)
     await fiber.await()
-    expect(await ctx.skills.list()).toHaveLength(10)
+    expect((await ctx.skills.list()).map(skill => skill.name).sort()).toEqual([
+      'short-drama', 'short-drama-produce', 'short-drama-review',
+      'short-drama-visual', 'short-drama-write',
+    ])
     expect(ctx.tools.get('drama_produce_run')).toBeDefined()
     expect(ctx.tools.get('game_qa')).toBeUndefined()
     expect(ctx.tools.get('creative_produce_run')).toBeUndefined()

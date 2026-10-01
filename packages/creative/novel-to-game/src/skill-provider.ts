@@ -16,7 +16,7 @@ const DSH_GAME_BRIDGE = [
   'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
   'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'The 游戏 tab is the playable Game Studio. Never start a second Agent runtime, creator UI, session transport, or model configuration.',
-  'Write game adaptation artifacts under game-adaptations/<project>/ using the seven bundled Skills and their artifact requirements.',
+  'Write game adaptation artifacts under game-adaptations/<project>/ using the task-relevant Skills and their artifact requirements.',
   'For a web target, keep the authoritative playable entry at build/app/index.html so Game Studio can preview it. Do not silently replace a requested non-web runtime with a web build.',
   'Use only DSH-visible tools and approvals. qa/verification.json remains the sole machine QA truth and must cover launch, render, input, coreLoop, outcome, and restart with real execution evidence.',
   'Adapt games from the novel (a story workspace or novel text), never from short-drama documents: screenplay density cannot support system design, and same-IP dual adaptation shares the novel upstream, not the drama. Record the adaptation edge with the packaged record_lineage.py when intaking from a novel workspace or export package.',

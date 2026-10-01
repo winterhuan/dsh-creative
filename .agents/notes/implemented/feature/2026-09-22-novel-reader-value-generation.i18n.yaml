@@ -6,35 +6,35 @@
   en: e59597b238306801
   zh: 526b1e51e2d21829
 /agent-note-novel-generation-must-optimize-reader-value/problem:
-  en: 095140135457dedf
-  zh: af800856b4ba88c2
+  en: 5b24f07c0aaa6d37
+  zh: 199edf2e08630a59
 /agent-note-novel-generation-must-optimize-reader-value/decision:
   en: a15c7c13f167e5ac
   zh: 63bcc2ef60c2f344
-/agent-note-novel-generation-must-optimize-reader-value/decision/reader-value-evidence-controls-chapter-submission:
-  en: 430958b98d377325
-  zh: 13da7ecb0abf5332
+/agent-note-novel-generation-must-optimize-reader-value/decision/reader-value-guidance-belongs-to-review:
+  en: 30751e92e513b671
+  zh: 3997ef4cc1820159
 /agent-note-novel-generation-must-optimize-reader-value/decision/outlines-precede-scene-execution:
   en: 9c1c511e7c1f473b
   zh: 48a89c0239bdb607
 /agent-note-novel-generation-must-optimize-reader-value/decision/writing-continuity-and-review-have-separate-owners:
   en: 83e2c4cba54d6f04
   zh: bf4e67ddbada1658
-/agent-note-novel-generation-must-optimize-reader-value/decision/roles-declare-model-options:
-  en: e4d3b4ddcd85ab9c
-  zh: 823ff6f347066226
+/agent-note-novel-generation-must-optimize-reader-value/decision/review-configuration-is-recorded:
+  en: 8a0fa96567661add
+  zh: 82e47e677b649c46
 /agent-note-novel-generation-must-optimize-reader-value/decision/pattern-and-detector-results-are-advisory:
-  en: 61b7767d329e0787
-  zh: 5cbf6a1908e06550
-/agent-note-novel-generation-must-optimize-reader-value/decision/continuation-stores-compact-review-evidence:
-  en: 45c852aa83cbbe3f
-  zh: 5650434e289d1ff2
+  en: d4735df30290b53b
+  zh: d6557ae3094fb37e
+/agent-note-novel-generation-must-optimize-reader-value/decision/continuation-retains-story-facts:
+  en: 9544dd6c6922e552
+  zh: 347a8662e5efdecd
 /agent-note-novel-generation-must-optimize-reader-value/alternatives-considered:
   en: 95f6f3f2c9c30ab9
   zh: aa9ce5f75122d218
 /agent-note-novel-generation-must-optimize-reader-value/testing:
-  en: 0bc191b54d421d38
-  zh: a25bdae64e9e28aa
+  en: 4b806f0370e4a248
+  zh: fbe5d51cfbed4147
 /agent-note-novel-generation-must-optimize-reader-value/consequences:
-  en: 7e1b08e5ae797585
-  zh: 7233d683e245ce3d
+  en: 5eb9af8b0d7e66b5
+  zh: 4a177caa2224ee3a

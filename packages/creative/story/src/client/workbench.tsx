@@ -12,7 +12,6 @@ import { useEffect, useRef, useState } from 'react'
 import { IconEditOutlineRegular, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { registerFileRedirect } from './file-redirect.tsx'
-import { RoleToolView } from './tool-views.tsx'
 import { NS, zh, en } from './locales/index.ts'
 import { endpoint } from './workbench-ui.ts'
 import { json, useWorkspace } from './workspace-client.ts'
@@ -153,7 +152,6 @@ export const inject = ['slots', 'sessions', 'locale', 'sidebarRightTabs']
 export function apply(context: Context): void {
   context.effect(() => context.locale.register(NS, { zh, en }), 'story: locales')
   registerFileRedirect(context, 'story')
-  context.slots.inject('tool.call.toolview', () => context.slots.register({ name: 'tool.call.toolview', key: 'creative_role', locale: NS }, RoleToolView))
   const t = context.locale.bind(NS)
   context.effect(() => context.sidebarRightTabs.register({ id: '@winterhuan/dsh-story', kind: 'story', title: () => t('workbench.title'), guide: [{ id: 'story', order: 21, title: () => t('workbench.title'), description: () => t('workbench.description'), icon: IconEditOutlineRegular }] }), 'story: sidebar')
   context.slots.inject('sidebar.right.pane.tab', () => context.slots.register({ name: 'sidebar.right.pane.tab', key: '@winterhuan/dsh-story', locale: NS, store: createStoryStore }, StoryEditor))

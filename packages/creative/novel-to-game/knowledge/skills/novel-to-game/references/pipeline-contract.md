@@ -29,7 +29,7 @@ JSON/YAML。设计理由仍由 `GAME_DESIGN.md` 拥有，运行状态与动作�
 
 | 检查 | 成立条件 |
 |---|---|
-| `scope` | brief、source bible 和三份设计交接存在；范围、原作事实、目标运行形态、`targetFinish` 与 `experienceProfile` 不冲突 |
+| `scope` | brief、source bible 与本次适用的设计交接存在；范围、原作事实、目标运行形态、`targetFinish` 与 `experienceProfile` 不冲突 |
 | `playable` | `qa/verification.json` 的 `launch`、`render`、`input`、`coreLoop`、`outcome`、`restart` 均有真实运行证据 |
 
 `_progress.md` 只记录来源、模式、当前阶段、未确认假设、回流和这两项结果。详细测试状态留在
@@ -40,11 +40,10 @@ JSON/YAML。设计理由仍由 `GAME_DESIGN.md` 拥有，运行状态与动作�
 
 ## 证据角色
 
-`qa/verification.json` 是唯一 QA 事实源。schema v3 只写整体状态、权威命令、一次 complete run、
-六项游戏效果 checks 和包含 `scope` / `reason` 的 limitations。目标运行环境与实际环境不同就如实
+`qa/verification.json` 是唯一 QA 事实源，字段与认证规则由 `game-qa` 的 QA 合同和驱动维护，不在编排阶段重写记录。目标运行环境与实际环境不同就如实
 记录，不能用替代运行结果冒充目标平台通过。
 
-构建只准备候选与 verify 入口，QA 只运行一次完整路径；不要求真人试玩、逐项人工批准、重复机器
+构建只准备候选与 verify 入口，QA 对当前候选运行完整路径；未改变候选时不重复整套验证；不要求真人试玩、逐项人工批准、重复机器
 证据对象或第二份 QA 报告。
 
 白盒试玩是设计回流，不是第七道顶层 QA 门。反馈至少记录观察位置、玩家输入、预期与实际差异、受影响

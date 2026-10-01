@@ -27,7 +27,7 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 ### 安装到 profile
 
-`dsh plugin add` 把本 bundle 安装到 profile，其 [profile 补丁](cordis.patch.yml)挂载 `story`、`short-drama`、`novel-to-game`、`video-recap`、`creative`、`creative-produce` 设置命名空间和设置页。bundle 组合四个 Skill 提供方（`story`、`short-drama`、`novel-to-game`、`video-recap`）、`creative_role` 专家 Role 和生产工具。这些注册只需要技能、子代理和工具注册表；当 `webServer` 和 `typert` 也可用时，才注册 Session 级 `/creative` API。
+`dsh plugin add` 把本 bundle 安装到 profile，其 [profile 补丁](cordis.patch.yml)挂载 `story`、`short-drama`、`novel-to-game`、`video-recap`、`creative`、`creative-produce` 设置命名空间和设置页。bundle 组合四个 Skill 提供方（`story`、`short-drama`、`novel-to-game`、`video-recap`）、打包的专业指令 和生产工具。这些注册只需要技能和工具注册表；当 `webServer` 和 `typert` 也可用时，才注册 Session 级 `/creative` API。
 
 ```yaml
 - id: creative
@@ -46,7 +46,7 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 ### 章节评审
 
-长篇章节提交前先检查细纲就绪、生成紧凑场景计划并完成读者价值评审。评审将原文引句绑定到最终正文哈希，追踪保留紧凑续写摘要。打包 Role 的 `agent_options` 可选择审查模型，不增加由调用方控制的工具参数；无效选项在加载时失败。AI 模式和朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`，归一叙述标点时保留引号内对话。参见[读者价值决策](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.zh.md)和[章节工作流](../story/knowledge/story/references/writing/long/workflow-chapter.md)。
+长篇章节提交前检查细纲就绪、准备紧凑场景计划并处理重要审稿问题。审稿返回带原文依据的普通意见，不要求固定证明或模型记录。章节脚本保留当前字数哈希、状态修订号和原子追踪写入；机械提交成功不代表文学质量通过。AI 模式与朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`。参见[章节流程](../story/knowledge/story/references/writing/long/workflow-chapter.md)。
 
 ### 交付与验证
 
@@ -97,15 +97,15 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 #### 模型看到什么
 
-技能通过 `ctx.skills` 发现，用 `skill` 加载。[四个 provider](src/skill-provider.ts) 从 `SKILL.md` 读取描述和完整正文，并在前面加上共享的调用说明和领域集成说明：工作流名称（包括 `$name` 和 `/name` 引用）指向 Skill；`creative_role` 只委派七个内置的小说专家；委派某个阶段时使用 `subagent`，并给出让子代理加载对应 Skill 的自包含任务。小说技能使用 DSH 资源路径提示，Role 获得固定的包内参考路径，两者都通过原生 `read` 按需读取（[决策](../../../.agents/notes/implemented/simplification/2026-09-30-story-skills-native-resources.zh.md)）。
+技能通过 `ctx.skills` 发现，用 `skill` 加载。[四个 provider](src/skill-provider.ts) 提供任务指令和原生资源提示。独立专家使用 DSH 普通委派或显式启用的 Team 工具，由实际子 Agent 读取所选 Role 文件，参见[专业 Agent](../story/README.zh.md#specialist-agents)。Creative 不增加 Role 执行器、工具别名或模型选择层。
 
 #### Token 影响
 
-发现阶段只提供简短描述；全部 29 个条目都在默认 500 字符的目录上限之内。`skill` 加载把正文作为工具结果加入，不替换目录消息，也不预加载其他正文；`creative_role` 在子轮次中加入所选 Role 的 persona。
+发现阶段提供简短描述，17 个 Skill 条目均在默认 500 字符的目录上限内。Skill 加载和原生读取只将所需指令加入实际使用它们的 Agent 上下文。
 
 #### KV Cache 影响
 
-本包本身不直接影响提示词。`skill` 目录消息和工具结果是持久上下文；通过 `creative_role` 委派子代理会增加一个嵌套轮次，其 KV 条目只属于该子代理。
+原生 Skill、读取和委派记录保存在 DSH Session 历史中。Creative 不重写既有消息，也不维护独立专家会话。
 
 ### 生产投影工具
 

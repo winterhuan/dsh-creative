@@ -12,11 +12,11 @@ Status: implemented
 
 公开入口是 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish` 和 `story-cover`。长短篇流程作为任务内按需读取的独立参考保留。`story` 负责工程准备、市场研究、作者偏好和已有文本接入；已有工程直接继续，原始文本接入不要求全书分析。浏览器操作改为内部指引。移除的技能名称没有注册别名。
 
-六个技能均使用包内 `knowledge/story` 资源根目录。每份参考在 story 包内只有一个权威副本，脚本集中在相邻目录。技能使用 DSH 资源提示与原生 `read`；Role persona 提供固定的包内绝对路径，工作区技能不能替换参考来源。读取遵守原生文件权限检查。专用参考工具、枚举和遮蔽 guard 均已移除。
+六个技能使用包内 knowledge/story 资源根目录。工作流与受委派的专业 Agent 均使用原生资源提示和 read，任务提供所选 Role 文件与资源根。原生文件权限继续有效；专用参考工具、枚举和遮蔽 guard 保持移除。
 
 本决策部分取代[工作台决策](../feature/2026-09-03-creative-workbench.zh.md#composition-and-knowledge)中的专用读取方式。原记录继续负责 Role 权限、生产和工作台归属。[四领域决策](../architecture/2026-09-30-creative-four-domain-plugins.zh.md)继续约束插件独立打包；story 内部共用资料不构成跨领域运行时依赖。
 
-写作保留[读者价值决策](../feature/2026-09-22-novel-reader-value-generation.zh.md)中的正式细纲就绪、读者价值证据、正文哈希和原子追踪事务。审稿选择一次适合范围的检查。正式章节优先使用审稿 Role；明确 solo 或无法委派时，主会话进入单独评审阶段并记录 `role=solo`，不宣称独立性。短篇局部交付不要求完成整篇。风格配额和检测分数不决定验收。朱雀仅在明确要求检测时运行。
+写作保留细纲就绪、当前字数哈希与原子追踪事务。[原生协作决策](../feature/2026-10-01-creative-role-agents.zh.md) 移除固定评审 JSON 和模型元数据，普通审稿仍按任务范围进行，自审不宣称独立性。短篇局部交付不要求完成整篇。风格配额和检测分数不决定验收，朱雀需明确请求。
 
 ## Alternatives considered
 

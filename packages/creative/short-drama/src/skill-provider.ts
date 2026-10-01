@@ -10,7 +10,8 @@ import {
 
 const DRAMA_PROVIDER_NAME = 'short-drama'
 const DSH_SKILL_ROUTING = [
-  'Workflow stages are Skills: load each one with the skill tool and its exact catalog name in the name argument. For a $name or /name reference, omit the prefix. Loading supplies instructions to the current Agent.',
+  'Skills are task entry points. Load an exact catalog name with the skill tool; use native read for the relevant mode references under the supplied resource directory. Resource directories are not additional Skills.',
+  'In reference documents, resolve Markdown links relative to the document; references/ and skills/ command paths are relative to the supplied resource directory.',
 ]
 const DSH_DRAMA_BRIDGE = [
   '<short-drama-dsh-integration>',
@@ -20,12 +21,11 @@ const DSH_DRAMA_BRIDGE = [
   'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
   'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'The 短剧 tab is the creator workspace. Never start another web server, creator UI, Agent runtime, session transport, or model configuration.',
-  'Drama Skills use one creator-first contract: each episode keeps only the requested documents, up to five creator-facing sources at 剧集/<EP>/剧本.md, 视觉设定.md, 分镜.md, 图片提示词.md, and 视频提示词.md. Never precreate empty documents, backfill nominal stages, or start work the creator did not request. Persisted reviews use creator-readable Markdown under 审查/; an oral review writes nothing.',
-  'Never create a parallel JSON/JSONL lifecycle truth, indexes, fingerprints, coverage tables, or QA records merely because maintenance scripts and templates remain bundled.',
+  'Keep only requested creator documents under 剧集/<EP>/ and preserve their stable IDs. Do not backfill nominal stages or create a parallel lifecycle merely because maintenance resources remain bundled.',
   'Use only tools visible in the current DSH preset and preserve project ownership, freshness, review, and explicit production-confirmation contracts.',
   'Use creative_production only for semantic production-view intents (open/focus, explicit shot order, or tracking a job that this Agent is actually executing). Cosmetic canvas layout remains creator-controlled. The tool changes only the Session projection: it does not edit creator documents, generate media, or authorize production.',
   'Production credentials remain outside project files. Never treat a prior acceptance, preview, continuation request, or budget discussion as confirmation for a paid production run.',
-  'Use drama_produce_status to check configured production adapters when that tool is visible. Ordinary bash os.environ checks do not inspect the DSH credential store. For Agnes images use drama_produce_run with entry drama and adapter agnes-image after job confirmation. Never request API keys in chat or read credential files; missing credentials are configured in Settings > Plugins > Creative production.',
+  'Use drama_produce_status for adapter configuration and drama_produce_run for confirmed production. DSH owns credentials; never request API keys in chat or read credential files.',
   '</short-drama-dsh-integration>',
 ].join('\n')
 
@@ -85,13 +85,16 @@ function createBundledSkillProvider(
   bridge: string,
 ): SkillProvider {
   const root = resolve(skillRoot)
+  const resourceRoot = dirname(root)
   return {
     name: providerName,
     async list(): Promise<readonly SkillCandidate[]> {
-      const directories = (await readdir(root, { withFileTypes: true }))
+      const resourceDirectories = (await readdir(root, { withFileTypes: true }))
         .filter(entry => entry.isDirectory())
         .map(entry => entry.name)
         .sort()
+      const contents = await Promise.all(resourceDirectories.map(directory => readdir(join(root, directory))))
+      const directories = resourceDirectories.filter((_, index) => contents[index]?.includes('SKILL.md'))
       return Promise.all(directories.map(async (directory): Promise<SkillCandidate> => {
         const path = join(root, directory, 'SKILL.md')
         const parsed = parseBundledSkill(await readFile(path, 'utf8'))
@@ -102,7 +105,7 @@ function createBundledSkillProvider(
           invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
           provider: providerName,
           source: 'bundled',
-          resourceBase: { kind: 'directory', path: join(root, directory) },
+          resourceBase: { kind: 'directory', path: resourceRoot },
           rank: BUNDLED_SKILL_RANK,
           locator: pathToFileURL(path),
           path,
@@ -124,7 +127,7 @@ function createBundledSkillProvider(
         invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
         provider: providerName,
         source: 'bundled',
-        resourceBase: { kind: 'directory', path: join(root, parsed.name) },
+        resourceBase: { kind: 'directory', path: resourceRoot },
         path,
         content: `${bridge}\n\n${parsed.content}`,
       }

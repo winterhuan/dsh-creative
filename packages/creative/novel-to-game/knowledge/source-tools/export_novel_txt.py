@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Export a sharded story workspace into one citable novel text.
 
-`short-drama-novel-analyze` and `novel-game-analyze` read a single 原著.txt
+Short-drama and game adaptation analysis read a single 原著.txt
 plus the index they build over it, while the story pipeline writes one file
 per chapter under 正文/. Hand-concatenating chapters drops chapter boundaries
 and breaks every span the analysis cites. This script emits 原著.txt with one

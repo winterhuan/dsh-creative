@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-01-creative-role-agents.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-01-creative-role-agents.md
+/agent-note-creative-specialists-use-native-collaboration:
+  en: fb99877097cd99bd
+  zh: 82dd5829a86ea871
+/agent-note-creative-specialists-use-native-collaboration/problem:
+  en: 2224b7f40e1e5215
+  zh: 8ea8c8045d844294
+/agent-note-creative-specialists-use-native-collaboration/decision:
+  en: e0174b4e08cf1ab5
+  zh: 01cc3af3edba4636
+/agent-note-creative-specialists-use-native-collaboration/alternatives-considered:
+  en: 098bdf6d4ce18f7a
+  zh: c7bfbb73ac93fbcd
+/agent-note-creative-specialists-use-native-collaboration/consequences:
+  en: b314032a7691a9bf
+  zh: 1d86481309288759

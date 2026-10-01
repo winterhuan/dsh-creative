@@ -10,7 +10,6 @@ serializes concurrent writers before revision and wordcount checks.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import copy
 import importlib.util
 import json
@@ -126,75 +125,6 @@ def clean_string_list(
     if maximum is not None:
         require(len(values) <= maximum, f"{label} may contain at most {maximum} items")
     return [clean_text(item, f"{label}[{index}]", max_bytes=item_max_bytes) for index, item in enumerate(values)]
-
-
-def normalize_reader_value(
-    value: object,
-    label: str = "reader_value",
-    *,
-    expected_body_sha256: str | None = None,
-    body_text: str | None = None,
-) -> dict[str, Any]:
-    review = as_mapping(value, label)
-    evidence_fields = (
-        "opening_hook", "chapter_promise", "main_conflict", "protagonist_choice",
-        "state_change", "local_payoff", "next_page_question",
-    )
-    require_known_keys(
-        review,
-        {"schema_version", "verdict", "body_sha256", "reviewer", "evidence", "summary"},
-        label,
-    )
-    require(review.get("schema_version") == 1, f"{label}.schema_version is unsupported")
-    require(review.get("verdict") == "approve", f"{label}.verdict must be approve before chapter commit")
-    digest = clean_text(review.get("body_sha256"), f"{label}.body_sha256", max_bytes=64)
-    require(re.fullmatch(r"[0-9a-f]{64}", digest) is not None, f"{label}.body_sha256 is invalid")
-    if expected_body_sha256 is not None:
-        require(digest == expected_body_sha256, f"{label} is stale for the current chapter body")
-
-    reviewer = as_mapping(review.get("reviewer"), f"{label}.reviewer")
-    require_known_keys(reviewer, {"role", "provider", "model", "reasoning_effort"}, f"{label}.reviewer")
-    normalized_reviewer = {
-        "role": clean_text(reviewer.get("role"), f"{label}.reviewer.role", max_bytes=80),
-        "provider": clean_text(reviewer.get("provider"), f"{label}.reviewer.provider", max_bytes=120),
-        "model": clean_text(reviewer.get("model"), f"{label}.reviewer.model", max_bytes=160),
-        "reasoning_effort": clean_text(
-            reviewer.get("reasoning_effort"), f"{label}.reviewer.reasoning_effort", max_bytes=80
-        ),
-    }
-
-    evidence = as_mapping(review.get("evidence"), f"{label}.evidence")
-    require_known_keys(evidence, set(evidence_fields), f"{label}.evidence")
-    normalized_evidence: dict[str, dict[str, str]] = {}
-    for field in evidence_fields:
-        item = as_mapping(evidence.get(field), f"{label}.evidence.{field}")
-        require_known_keys(item, {"summary", "location", "quote"}, f"{label}.evidence.{field}")
-        quote = clean_text(item.get("quote"), f"{label}.evidence.{field}.quote", max_bytes=600)
-        if body_text is not None:
-            require(quote in body_text, f"{label}.evidence.{field}.quote is absent from the current chapter body")
-        normalized_evidence[field] = {
-            "summary": clean_text(item.get("summary"), f"{label}.evidence.{field}.summary", max_bytes=360),
-            "location": clean_text(item.get("location"), f"{label}.evidence.{field}.location", max_bytes=180),
-            "quote": quote,
-        }
-
-    summary = as_mapping(review.get("summary"), f"{label}.summary")
-    summary_fields = (
-        "fulfilled_promise", "protagonist_action", "state_change", "open_expectation", "largest_remaining_risk",
-    )
-    require_known_keys(summary, set(summary_fields), f"{label}.summary")
-    normalized_summary = {
-        field: clean_text(summary.get(field), f"{label}.summary.{field}", max_bytes=300)
-        for field in summary_fields
-    }
-    return {
-        "schema_version": 1,
-        "verdict": "approve",
-        "body_sha256": digest,
-        "reviewer": normalized_reviewer,
-        "evidence": normalized_evidence,
-        "summary": normalized_summary,
-    }
 
 
 def safe_file_component(value: object, label: str) -> str:
@@ -645,14 +575,6 @@ def render_context(state: dict[str, Any]) -> str:
         f"目标：{state['characters'][name]['goal']}"
         for name in context["active_character_names"]
     ]
-    reader_value = state["reader_value_records"].get(str(state["last_committed_chapter"]))
-    reader_carryover = [] if reader_value is None else [
-        f"上章兑现：{reader_value['fulfilled_promise']}",
-        f"主角行动：{reader_value['protagonist_action']}",
-        f"状态变化：{reader_value['state_change']}",
-        f"未偿还期待：{reader_value['open_expectation']}",
-        f"最大剩余风险：{reader_value['largest_remaining_risk']}",
-    ]
     sections: list[tuple[str, list[str]]] = [
         (
             "## 当前位置",
@@ -667,7 +589,7 @@ def render_context(state: dict[str, Any]) -> str:
         ("## 核心角色状态", character_lines),
         ("## 活跃伏笔", active_foreshadow_lines(state["foreshadow"])),
         ("## 近三章速记", [f"第{item['chapter']}章｜{item['summary']}" for item in context["recent_chapters"]]),
-        ("## 下一章承诺", context["next_chapter_commitments"] + reader_carryover),
+        ("## 下一章承诺", context["next_chapter_commitments"]),
         ("## 连贯性风险", context["continuity_risks"]),
     ]
     lines = [
@@ -772,7 +694,6 @@ def render_delta(
     title: str,
     delta: dict[str, Any],
     core_names: set[str],
-    reader_value: dict[str, Any] | None,
 ) -> str:
     lines = [
         f"# 第{chapter:03d}章 · {title}",
@@ -818,19 +739,6 @@ def render_delta(
         # 退役条目在此留档，续写状态卡收缩后仍可回查当初撤下了什么。
         lines.extend(["", "## 本章退役登记"])
         lines.extend(f"- {item}" for item in retired)
-    if reader_value is not None:
-        summary = reader_value["summary"]
-        reviewer = reader_value["reviewer"]
-        lines.extend([
-            "",
-            "## 读者价值",
-            f"- 已兑现承诺：{summary['fulfilled_promise']}",
-            f"- 主角行动：{summary['protagonist_action']}",
-            f"- 状态变化：{summary['state_change']}",
-            f"- 未偿还期待：{summary['open_expectation']}",
-            f"- 最大剩余风险：{summary['largest_remaining_risk']}",
-            f"- 审查模型：{reviewer['provider']}/{reviewer['model']}（{reviewer['reasoning_effort']}）",
-        ])
     payload = "\n".join(lines) + "\n"
     size = byte_size(payload)
     require(size <= DELTA_MAX_BYTES, f"chapter delta is {size} bytes; hard cap is {DELTA_MAX_BYTES}")
@@ -846,54 +754,6 @@ def normalize_wordcount_records(value: object, last_chapter: int) -> dict[str, d
         chapter = int(raw_chapter)
         require(chapter <= last_chapter, "wordcount record exceeds last committed chapter")
         normalized[raw_chapter] = wordcount_value(wordcount_core.normalize_wordcount_record, raw_record)
-    return normalized
-
-
-def normalize_reader_value_records(value: object, last_chapter: int) -> dict[str, dict[str, Any]]:
-    records = as_mapping(value, "tracking state.reader_value_records")
-    normalized: dict[str, dict[str, Any]] = {}
-    for raw_chapter, raw_record in records.items():
-        require(isinstance(raw_chapter, str) and re.fullmatch(r"[1-9]\d*", raw_chapter) is not None,
-                "reader value record chapter key is invalid")
-        chapter = int(raw_chapter)
-        require(chapter <= last_chapter, "reader value record exceeds last committed chapter")
-        record = as_mapping(raw_record, f"tracking state.reader_value_records.{raw_chapter}")
-        require_known_keys(
-            record,
-            {
-                "body_sha256", "reviewer", "fulfilled_promise", "protagonist_action",
-                "state_change", "open_expectation", "largest_remaining_risk",
-            },
-            f"tracking state.reader_value_records.{raw_chapter}",
-        )
-        reviewer = as_mapping(record.get("reviewer"), f"tracking state.reader_value_records.{raw_chapter}.reviewer")
-        require_known_keys(
-            reviewer, {"role", "provider", "model", "reasoning_effort"},
-            f"tracking state.reader_value_records.{raw_chapter}.reviewer",
-        )
-        normalized_record = {
-            "body_sha256": clean_text(
-                record.get("body_sha256"), f"reader value record {raw_chapter}.body_sha256", max_bytes=64
-            ),
-            "reviewer": {
-                key: clean_text(
-                    reviewer.get(key), f"reader value record {raw_chapter}.reviewer.{key}", max_bytes=160
-                )
-                for key in ("role", "provider", "model", "reasoning_effort")
-            },
-            **{
-                field: clean_text(record.get(field), f"reader value record {raw_chapter}.{field}", max_bytes=300)
-                for field in (
-                    "fulfilled_promise", "protagonist_action", "state_change",
-                    "open_expectation", "largest_remaining_risk",
-                )
-            },
-        }
-        require(
-            re.fullmatch(r"[0-9a-f]{64}", normalized_record["body_sha256"]) is not None,
-            f"reader value record {raw_chapter}.body_sha256 is invalid",
-        )
-        normalized[raw_chapter] = normalized_record
     return normalized
 
 
@@ -931,7 +791,6 @@ def normalize_state(document: object) -> dict[str, Any]:
         require(not timeline, "a chapter-0 project cannot have established timeline facts")
     state_revision = as_int(root.get("state_revision"), "tracking state.state_revision")
     wordcount_records = normalize_wordcount_records(root.get("wordcount_records", {}), last_chapter)
-    reader_value_records = normalize_reader_value_records(root.get("reader_value_records", {}), last_chapter)
     return {
         "schema_version": TRACKING_SCHEMA_VERSION,
         "book_title": clean_text(root.get("book_title"), "tracking state.book_title", max_bytes=240),
@@ -943,7 +802,8 @@ def normalize_state(document: object) -> dict[str, Any]:
         "foreshadow": foreshadow,
         "timeline": timeline,
         "wordcount_records": wordcount_records,
-        "reader_value_records": reader_value_records,
+        # Preserve historical review data without interpreting it as current approval.
+        **({"reader_value_records": root["reader_value_records"]} if "reader_value_records" in root else {}),
     }
 
 
@@ -998,7 +858,6 @@ def normalize_initial_document(document: object) -> dict[str, Any]:
             "foreshadow": foreshadow,
             "timeline": timeline,
             "wordcount_records": {},
-            "reader_value_records": {},
         }
     )
 
@@ -1043,19 +902,6 @@ def normalize_transaction(project: Path, state: dict[str, Any], document: object
         wordcount = wordcount_value(
             wordcount_core.validate_current_wordcount_record, project, chapter, wordcount_input
         )
-    reader_value_input = root.get("reader_value")
-    require(wordcount is None or reader_value_input is not None,
-            "reader_value review evidence is required with a chapter wordcount record")
-    body_text = None
-    if reader_value_input is not None:
-        body_path = wordcount_value(wordcount_core.find_chapter_file, project / "正文", chapter, outline=False)
-        body_bytes = body_path.read_bytes()
-        body_text = body_bytes.decode("utf-8")
-    reader_value = None if reader_value_input is None else normalize_reader_value(
-        reader_value_input,
-        expected_body_sha256=hashlib.sha256(body_bytes).hexdigest(),
-        body_text=body_text,
-    )
     return {
         "mode": mode,
         "chapter": chapter,
@@ -1064,7 +910,6 @@ def normalize_transaction(project: Path, state: dict[str, Any], document: object
         "context": context,
         "snapshots": snapshots,
         "wordcount": wordcount,
-        "reader_value": reader_value,
     }
 
 
@@ -1087,14 +932,6 @@ def merge_transaction(state: dict[str, Any], transaction: dict[str, Any]) -> dic
     next_state["characters"].update(transaction["snapshots"])
     if transaction["wordcount"] is not None:
         next_state["wordcount_records"][str(chapter)] = transaction["wordcount"]
-    if transaction["reader_value"] is not None:
-        summary = transaction["reader_value"]["summary"]
-        next_state["reader_value_records"][str(chapter)] = {
-            "body_sha256": transaction["reader_value"]["body_sha256"],
-            "reviewer": transaction["reader_value"]["reviewer"],
-            **summary,
-        }
-
     next_context = transaction["context"]
     # 退役说的是「从此刻起离开当前状态」，只有 append 的逐章记录代表此刻；
     # 修订记录属于被改写的旧章，落在那里会谎报退役发生的章节。
@@ -1248,7 +1085,6 @@ def _apply_transaction_locked(project: Path, document: object) -> dict[str, Any]
         transaction["delta"],
         # 本章退役的角色在 next_state 里已被删除，但本章记录里仍应标为核心。
         set(next_state["characters"]) | set(transaction["delta"]["retired_characters"]),
-        transaction["reader_value"],
     )
     views = render_views(next_state)
     next_state_payload = json_payload(next_state)

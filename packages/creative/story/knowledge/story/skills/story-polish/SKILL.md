@@ -21,5 +21,5 @@ description: "小说润色与去 AI 腔：根据原文问题改善表达、对�
 脚本位于 DSH 资源根目录的 `scripts/`，参考资料用原生 `read` 按需读取。
 
 - `scripts/check-degeneration.js` 检查复读、截断、占位符等缺陷；`scripts/check-ai-patterns.js` 只提供表达复核线索。
-- 改过正式章节正文后，旧的 reader-value 哈希证据失效。需要重新验收或提交时加载 `story-review`，按 `references/writing/long/workflow-revision.md` 重评并通过唯一追踪工具提交修订。
+- 改过正式章节正文后，复核受影响内容；需要重新提交时按 `references/writing/long/workflow-revision.md` 重新检查，并通过追踪工具提交修订。
 - 仅完成表达修改时说明尚未重新验收，不把润色本身冒充章节发布。检测记录放在 `.story-polish/`，不写成小说事实。

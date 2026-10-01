@@ -8,7 +8,7 @@
 
 ## 四个接缝
 
-**Skill 与 Role 供给。** 四个 `SkillProvider` 提供内置的 `knowledge/` 目录，并在每份 Skill 正文前加上 DSH 桥接说明，因此任何工作流都不会另起创作界面、Agent 运行时或传输通道。`creative_role` 以 spawn 子 Agent 的方式运行七个 Role，每个 Role 使用宿主拥有的模型选项和各自的工具白名单；小说技能使用 DSH 的资源路径提示，Role 使用固定的包内路径，两者均通过原生 `read` 按需读取参考文件。
+**Skill 与 Role 供给。** 四个 `SkillProvider` 提供打包工作流及原生资源提示。专业 Agent 通过 DSH 委派或显式启用的 Team 工具工作，用原生 `read` 读取打包指令；Creative 不拥有专家执行器或独立模型、权限、协作系统。
 
 **付费生产。** `story_zhuque`、`drama_produce_run`、`video_produce_run` 及聚合兼容入口 `creative_produce_run` 是模型接触内置 Python 生产脚本及其提供方密钥的唯一途径。密钥存放在凭据库；设置命名空间只保存引用和非敏感配置字段；工具在每次调用时解析引用，并作为显式的子进程环境变量转发，因为其他所有子进程都从清理过的环境启动。短剧运行会消耗一次性的创作者确认，契约结论驱动有界的密钥轮换。
 
@@ -16,7 +16,7 @@
 
 **工作台路由。** `/creative` 是 Session 级 HTTP API，只信任回环地址或 `trustedHosts`，提供扩展名白名单、解析后路径的包含检查、`FsVersion` compare-and-swap 写入、分段媒体流、视频预检、CSP 隔离的游戏预览，以及核对归属后的作业停止。浏览器工作台只通过普通审批流程发送对话提示词来发起生产。
 
-独立的 `creative-game` 侧边栏拥有仅含游戏状态的 Session store，读取 `/novel-to-game` API。游戏包提供全部七个技能、原著辅助脚本、`game_qa` 和隔离预览。Creative 没有浏览器页面，保留兼容 QA 与预览别名，不自行注册游戏 provider。
+独立的 `creative-game` 侧边栏拥有仅含游戏状态的 Session store，读取 `/novel-to-game` API。游戏包提供四个任务技能、原著辅助脚本、`game_qa` 和隔离预览。Creative 没有浏览器页面，保留兼容 QA 与预览别名，不自行注册游戏 provider。
 
 四个领域插件独立安装。Creative 只组合安装并保留 Host 工具和路由兼容，不再提供聚合页面或读取旧草稿。详见[拆分决策](../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。
 

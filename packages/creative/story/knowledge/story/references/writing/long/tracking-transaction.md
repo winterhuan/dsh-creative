@@ -6,7 +6,7 @@
 
 | 层级 | 文件 | 语义 |
 |---|---|---|
-| 唯一权威 | `_tracking-state.json` | schema、最后提交章、导入截止章、状态修订号、上下文结构、角色/伏笔/时间线、已提交章节的简短字数记录，以及读者价值摘要 |
+| 唯一权威 | `_tracking-state.json` | schema、最后提交章、导入截止章、状态修订号、上下文结构、角色/伏笔/时间线、已提交章节的简短字数记录 |
 | 章节记录 | `逐章记录/第NNN章.md` | 本章对未来连续性有用的紧凑变化；目标 ≤1536 字节，硬上限 3072 字节；导入范围内修订写成覆盖记录 |
 | 派生视图 | `上下文.md`、`角色状态/{角色名}.md`、`伏笔.md`、`时间线/作者真相.md`、`时间线/读者已知.md` | 完全从 `_tracking-state.json` 生成；禁止手改，不作为程序输入 |
 
@@ -29,13 +29,13 @@ Markdown 只负责给作者和 Agent 阅读，工具不再反向解析 Markdown�
 - `init`：只在 `_tracking-state.json` 不存在时执行，绝不覆盖已初始化项目。
 - `wordcount checkpoint`：纯测量；返回当前实际字数、用户带与剩余用户区间，不写正文、不写 tracking、不做语义判断。每章最多调用一次。
 - `chapter check`：重新读取当前正文与细纲目标，返回细纲就绪、确定性长度状态、现有 blocking quality、`state_revision` 和当前可执行动作，不保存 approval。`under` 不提供自动补写；`over` 额外返回一次净删型 `compress-once` 及进入内带/用户带所需的机器删除区间。
-- `chapter commit`：再次读取当前文件、重新计数并校验与正文哈希绑定的读者价值证据；只接受用户带内章节，把简短字数记录、读者价值摘要与逐章事务一起原子提交。
-- `chapter accept-current-length`：只接受带外但 quality pass 的章节，同样必须提交读者价值证据；接受动作发生时重新读取、重新计数并立即原子提交，不保存可陈旧的历史决议。
+- `chapter commit`：再次读取当前文件、重新计数；只接受用户带内章节，将与正文哈希绑定的字数记录和逐章事务原子提交。
+- `chapter accept-current-length`：只接受带外但 quality pass 的章节，接受动作发生时重新读取、重新计数并立即原子提交，不保存可陈旧的历史决议。
 - `check`：严格验证 state schema、逐章记录连续性/规范名/体积、固定 7 栏、角色快照硬上限、派生文件集合，以及所有派生视图与 state 的逐字一致性。
 
 每本书由 `追踪/.tracking-commit.lock` 串行写事务，`expected_state_revision` 再拒绝基于旧状态构造的 stale transaction。两个不同事务并发时至多一个修订成功。字数记录也在锁内对当前正文和目标重新验证，正文或目标变化会让预先构造的记录直接失败。
 
-事务 JSON 在成功前必须保留；含完整 `reader_value` 引句的逐章事务在成功后继续保存供追溯，放在项目的评审资料目录中，不混入正文或派生追踪。初始化临时文件和正文片段可在验证成功后清理。若文件写入失败，`_tracking-state.json` 尚未推进；修正环境后直接重跑**同一份** `commit`。append 重跑只接受内容完全相同的既有逐章记录，不维护 `dirty/pending/repair` 状态机。
+事务 JSON 在成功前必须保留；审稿意见留在原生会话或按用户需要交付的 Markdown 中，不混入故事事实追踪。初始化临时文件和正文片段可在验证成功后清理。若文件写入失败，`_tracking-state.json` 尚未推进；修正环境后直接重跑**同一份** `commit`。append 重跑只接受内容完全相同的既有逐章记录，不维护 `dirty/pending/repair` 状态机。
 
 校验失败与写入失败处理方式不同：校验失败（字段非法、退役结构、容量超限）要按报错改事务本身，重跑同一份结果不变。派生视图被手改或外部改动导致 `check` 报 `derived view differs from _tracking-state.json` 时，重新提交**该章**的 `mode=revision` 事务让工具整份重建，`expected_state_revision` 取 `追踪/_tracking-state.json` 的 `state_revision` 字段——`check` 失败时只往 stderr 打 ERROR，不输出 JSON；不手改派生文件，也不删 `_tracking-state.json` 重来。手写出的逐章记录会让同章 `append` 永久报 `chapter delta N already exists with different content`——删掉那个手写文件后重跑原事务即可。
 
@@ -71,7 +71,7 @@ Markdown 只负责给作者和 Agent 阅读，工具不再反向解析 Markdown�
 
 导入初始化时直接传入当前核心角色快照、伏笔当前行、时间线事件和固定 7 栏状态输入。阶段/卷级回看按需查询正文，不作为每章强一致追踪产物。
 
-调用方的逐章 JSON 不写 `wordcount`，但必须写 `reader_value`；正式入口在提交当下生成并注入字数记录，并校验 `reader_value.body_sha256` 与当前正文一致。最终 state 为已提交章节保留 `metric / target / actual / status / resolution / body_sha256`，以及 `reader_value_records` 中的 reviewer 实际模型和五项紧凑摘要，不保存完整证据原文、MEASURE/RESOLVE 事件、ID 链、policy fingerprint 或独立 chapter state。
+调用方的逐章 JSON 不写 `wordcount`，也不需要评审字段；正式入口在提交当下生成并注入字数记录。state 为已提交章节保留 `metric / target / actual / status / resolution / body_sha256`，不认证文学质量。续写只消费既有事实、近章摘要、下一章承诺与连续性风险。
 
 ## 逐章事务
 
@@ -168,6 +168,6 @@ Markdown 只负责给作者和 Agent 阅读，工具不再反向解析 Markdown�
 
 其中活跃角色最多 6 人、活跃伏笔确定性选取最多 8 条、近章只保留 3 章。这些是下一章热上下文容量，不是完整角色状态的容量限制。
 
-## 读者价值记录版本
+## 旧记录兼容
 
-tracking state 写入版本 5，读取版本 4 时保留既有角色、时间线和字数记录，并以空 `reader_value_records` 继续；下一次事务写出版本 5。旧章不伪造评审，正式修订须重新提供证据。完整评审保留在逐章事务 JSON；state 只存当前正文哈希、评审模型与五项摘要，最后提交章的摘要派生到续写状态卡「下一章承诺」。摘要属于评审意见，不新增故事事实。
+tracking state 继续写版本 5，并读取版本 4。已有 `reader_value_records` 原值保留为历史数据，不验证或投影成当前批准；新工程与新章节不生成该字段。旧事务的 `reader_value` 可被接收但不参与提交判断。既有事务文件和历史 Markdown 不批量改写。

@@ -63,8 +63,7 @@
 }
 
 .creative-brand,
-.creative-editor header,
-.creative-role summary {
+.creative-editor header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -77,8 +76,7 @@
 .creative-kind { flex: none; padding: 1px 6px; border-radius: 5px; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-button-ghost-active-fill); font-size: 11px; line-height: 16px; font-weight: 500; }
 
 .creative-brand button,
-.creative-save,
-.creative-role button {
+.creative-save {
   border: 0.5px solid var(--dsw-alias-border-l2);
   border-radius: 999px; corner-shape: round;
   color: var(--dsw-alias-label-secondary);
@@ -90,14 +88,12 @@
 
 .creative-brand button { display: grid; width: 28px; height: 28px; place-items: center; border: 0; padding: 0; background: transparent; font-size: 16px; }
 .creative-brand button:hover,
-.creative-save:hover:not(:disabled),
-.creative-role button:hover { color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover); }
+.creative-save:hover:not(:disabled) { color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover); }
 .creative-brand button:focus-visible,
 .creative-save:focus-visible,
 .creative-mode-tabs button:focus-visible,
 .creative-editor-tabs button:focus-visible,
-.creative-tree nav button:focus-visible,
-.creative-role button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: -2px; }
+.creative-tree nav button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: -2px; }
 .creative-save:disabled { opacity: .48; cursor: default; }
 
 .creative-mode-tabs { display: flex; margin: 0 4px 8px; padding: 2px; border: 1px solid var(--os-border); border-radius: 7px; background: var(--dsw-alias-bg-layer-1); }
@@ -343,15 +339,6 @@
 .creative-empty { margin: auto; max-width: 480px; padding: 30px; color: var(--os-muted); line-height: 1.7; text-align: center; }
 .creative-error { margin: 8px; padding: 8px 10px; border-radius: 8px; color: var(--dsw-alias-state-error-primary); background: var(--dsw-specific-tip); font-size: 12px; }
 
-.creative-role { display: flex; flex-direction: column; margin: 0; overflow: hidden; }
-.creative-role summary { min-height: 24px; padding: 0; cursor: pointer; list-style: none; font-size: 14px; line-height: 24px; }
-.creative-role summary::-webkit-details-marker { display: none; }
-.creative-role summary span { color: var(--dsw-alias-state-business-primary); }
-.creative-role summary strong { margin-right: auto; color: var(--dsw-alias-label-secondary); font-weight: 500; }
-.creative-role summary em { color: var(--dsw-alias-label-caption); font-style: normal; font-size: 12px; }
-.creative-role[data-state="error"] summary em { color: var(--dsw-alias-state-error-primary); }
-.creative-role pre { max-height: 260px; overflow: auto; margin: 4px 0 4px 4px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-border-l1); border-radius: 12px; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-markdown-code-block); white-space: pre-wrap; font: var(--dsw-font-markdown-code-block-small); }
-.creative-role > button { align-self: flex-start; margin: 4px 0 2px 4px; font-size: 11px; }
 
 /* Short-drama production views are projections of the creator Markdown and
    DSH Session state. They intentionally use only DSH semantic tokens. */

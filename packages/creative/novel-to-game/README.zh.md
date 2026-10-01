@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过七个工作流 Skill、Chrome QA 和独立游戏工作台侧边栏，将小说改编为可试玩的浏览器游戏。此 bundle 可以独立安装，也可以通过 Creative 安装。插件使用当前 DSH Session、工作区和权限；QA 需要 Chrome 与 Python。
+通过四个按任务划分的 Skill、Chrome QA 和独立游戏工作台侧边栏，将小说改编为可试玩的浏览器游戏。此 bundle 可以独立安装，也可以通过 Creative 安装。插件使用当前 DSH Session、工作区和权限；QA 需要 Chrome 与 Python。
 
 ## 目录
 
@@ -30,6 +30,13 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 ```
 
 在右侧栏打开**游戏工作台**。通过 `/novel-to-game quick` 开始；项目位于 `game-adaptations/<project>/`，浏览器入口为 `build/app/index.html`。`game_qa` 的 `project` 参数接受该相对项目根路径，在当前 Session 工作区执行。后台运行返回 DSH 作业 ID，可通过 `job_output` 和 `job_kill` 查看或停止。
+
+| 请求 | 技能 |
+|---|---|
+| 接入原著、来源取证或编排改编 | `novel-to-game` |
+| 玩法、系统、关卡、叙事或美术方向 | `game-design` |
+| 实现设计或用白盒验证具体风险 | `game-build` |
+| 独立验证实际浏览器构建 | `game-qa` |
 
 此 bundle 挂载一行 `novel-to-game`。可选配置 `editorMaxBytes` 默认为 2097152；`trustedHosts` 默认为空列表，用于扩展默认仅允许回环地址的 API 主机列表。它不安装小说、短剧或视频工具。
 
@@ -58,7 +65,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 
 #### 模型看到什么
 
-DSH 目录展示七个 Skill 描述。加载 Skill 时提供随包指令和本地辅助脚本路径。`game_qa` 接受项目路径、可选后台执行和超时参数，返回进程输出或作业 ID。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
+DSH 目录展示四个 Skill 描述。加载 Skill 时提供随包指令、供原生 read 读取任务资料的 DSH 资源目录，以及本地辅助脚本路径。`game_qa` 接受项目路径、可选后台执行和超时参数，返回进程输出或作业 ID。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 

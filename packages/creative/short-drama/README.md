@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Develop short dramas with ten Skills, an episode editor and a production board. Confirmed jobs produce media and composed episodes through DSH tools. Install this bundle on its own or through Creative.
+Develop short dramas with five Skills, an episode editor and a production board. Confirmed jobs produce media and composed episodes through DSH tools. Install this bundle on its own or through Creative.
 
 ## Table of Contents
 
@@ -51,7 +51,7 @@ The package has no dependency on the Creative aggregate or another domain plugin
 
 #### What the model sees
 
-The domain catalog exposes only its own Skill descriptions. Loading a Skill supplies its full instructions and packaged helper paths. `drama_produce_run` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
+The domain catalog exposes only its own Skill descriptions. The five entries are `short-drama` (project, development and optional source analysis), `short-drama-write`, `short-drama-visual` (visual settings, image prompts, storyboard and video prompts), `short-drama-produce`, and `short-drama-review`. Loading an entry supplies task instructions and a shared native resource base at `knowledge/drama`; normal `read` loads only the needed references. Script and template directories remain package resources, not additional registered Skills. `drama_produce_run` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
 
 #### Token effect
 

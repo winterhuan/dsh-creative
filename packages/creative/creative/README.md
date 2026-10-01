@@ -27,7 +27,7 @@ Creative installs the fiction, short-drama, game and video-recap workbenches tog
 
 ### Install into a profile
 
-`dsh plugin add` installs this bundle into a profile; its [profile patch](cordis.patch.yml) mounts `story`, `short-drama`, `novel-to-game`, `video-recap`, `creative`, the `creative-produce` settings namespace and the settings page. The bundle composes four Skill providers (`story`, `short-drama`, `novel-to-game`, `video-recap`), the `creative_role` specialist Roles and the production tools. These need only the skill, subagent and tool registries; the Session-scoped `/creative` API registers when `webServer` and `typert` are also available.
+`dsh plugin add` installs this bundle into a profile; its [profile patch](cordis.patch.yml) mounts `story`, `short-drama`, `novel-to-game`, `video-recap`, `creative`, the `creative-produce` settings namespace and the settings page. The bundle composes four Skill providers (`story`, `short-drama`, `novel-to-game`, `video-recap`), packaged specialist instructions and the production tools. These need only the skill and tool registries; the Session-scoped `/creative` API registers when `webServer` and `typert` are also available.
 
 ```yaml
 - id: creative
@@ -46,7 +46,7 @@ Select the project workspace in a Session, then open Fiction, Short-drama, Game 
 
 ### Chapter review
 
-Long-form chapters follow outline readiness, a compact scene plan and a reader-value review before submission. Reviews bind quoted evidence to the final body hash, and tracking retains a compact continuation summary. Packaged Role `agent_options` select review models without adding caller-controlled tool parameters; malformed options fail at load. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration` for quoted-dialogue-safe normalization. See the [reader-value decision](../../../.agents/notes/implemented/feature/2026-09-22-novel-reader-value-generation.md) and [chapter workflow](../story/knowledge/story/references/writing/long/workflow-chapter.md).
+Long-form chapters follow outline readiness, a compact scene plan and review of important issues before submission. Review returns ordinary findings with source references, not a mandatory certificate or model record. Chapter scripts retain current wordcount hashes, state revisions and atomic tracking writes; mechanical success does not establish literary quality. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration`. See the [chapter workflow](../story/knowledge/story/references/writing/long/workflow-chapter.md).
 
 ### Deliver and verify
 
@@ -97,15 +97,15 @@ Stable domain row IDs prevent duplicate registration alongside individual instal
 
 #### What the model sees
 
-Skills are discovered through `ctx.skills` and loaded with `skill`. The [four providers](src/skill-provider.ts) read descriptions and complete bodies from `SKILL.md` and prepend shared invocation and domain integration instructions: workflow names, including `$name` and `/name` references, identify Skills; `creative_role` delegates only the seven bundled novel specialists; a delegated stage uses `subagent` with a self-contained task that loads the named Skill. Story Skills use DSH resource hints, and Roles receive fixed package reference paths; both load them on demand with native `read` ([decision](../../../.agents/notes/implemented/simplification/2026-09-30-story-skills-native-resources.md)).
+Skills are discovered through `ctx.skills` and loaded with `skill`. The [four providers](src/skill-provider.ts) supply task instructions and native resource hints. Independent specialists use ordinary DSH delegation or opt-in Team tools and read the selected Role file inside the actual child; see [specialist Agents](../story/README.md#specialist-agents). Creative adds no Role executor, tool aliases or model-selection layer.
 
 #### Token effect
 
-Discovery supplies concise descriptions; all 29 entries fit the default catalog limit of 500 characters. A `skill` load adds that body as a tool result without replacing the catalog message or preloading other bodies; `creative_role` adds the selected Role persona in a child turn.
+Discovery supplies concise descriptions; all 17 Skill entries fit the default catalog limit of 500 characters. Skill loads and native reads add only the requested instructions to the consuming Agent’s context.
 
 #### KV Cache effect
 
-No direct prompt effect from this package alone. The `skill` catalog message and tool results are durable context; subagent delegation via `creative_role` adds a nested turn whose KV entries are scoped to that child.
+Native Skill, read and delegation records remain in DSH Session history. Creative does not rewrite prior messages or maintain a separate specialist conversation.
 
 ### Production projection tool
 

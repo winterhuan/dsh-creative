@@ -266,22 +266,10 @@ def chapter_commit(project: Path, chapter: int, input_path: Path, *, accept_curr
     require("wordcount" not in document, "tracking transaction must not provide wordcount")
     document["wordcount"] = build_project_wordcount_record(project, chapter, resolution=resolution)
     tracking = _tracking_module()
-    require("reader_value" in document, "reader_value review evidence is required before commit")
-    reader_value = _tracking_call(
-        tracking.normalize_reader_value,
-        document["reader_value"],
-        "reader_value",
-        expected_body_sha256=document["wordcount"]["body_sha256"],
-    )
     state = _tracking_call(tracking.apply_transaction, project, document)
     checked["tracking_committed"] = state["last_committed_chapter"] >= chapter
     checked["next_chapter_started"] = state["last_committed_chapter"] > chapter
     checked["wordcount"] = state["wordcount_records"].get(str(chapter))
-    checked["reader_value"] = {
-        "status": "pass",
-        "reviewer": reader_value["reviewer"],
-        "summary": reader_value["summary"],
-    }
     return checked
 
 

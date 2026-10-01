@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过六个 Skill、原片预览和产物查看制作视频解说。流程支持带标记的本地草稿与交付度量证据。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过两个按任务划分的 Skill、原片预览和产物查看制作视频解说。流程支持带标记的本地草稿与交付度量证据。此 bundle 可以独立安装，也可以通过 Creative 安装。
 
 ## 目录
 
@@ -27,6 +27,8 @@ kind: "package-bundle"
 ```sh
 dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/video-recap
 ```
+
+使用 `/video-recap` 进行分析、制作、修订和交付；使用 `/video-script` 进行策划、写稿与审查，不触发生成。理解、剪辑、配音和合成作为内部工序按需加载。
 
 从右侧栏打开**视频解说工作台**。插件使用当前 DSH Session、文件系统、模型和权限。生产设置仍位于已有的 Creative 生产设置页；密钥保留在 DSH 凭据库。
 
@@ -51,7 +53,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/vide
 
 #### 模型看到什么
 
-领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`video_produce_run` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
+目录注册 `video-recap` 与 `video-script`，均可由用户和模型调用。两者共用 `knowledge/video-recap` 资源基目录，原生 `read` 按需读取参考。媒体脚本保留随包路径，不单独注册为技能。`video_produce_run` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 
@@ -65,6 +67,7 @@ Skill 正文按需加载。执行添加普通工具结果，不加载无关领�
 
 <a id="known-limitations-and-deferred-work"></a>
 
+- 完整流程没有针对已有下游输入项目的独立“仅理解”入口。重复执行可能继续 TTS 或渲染，需先确定分析范围。
 - Python 脚本需要 Python 3.9+；媒体操作还需要 ffmpeg 与 ffprobe。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
 
 <a id="dev-note"></a>

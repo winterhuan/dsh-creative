@@ -29,7 +29,7 @@ description: "小说创作入口：新建工程、接入已有小说、选题扫
 - 长篇按当前任务创建 `正文/`、`设定/`、`大纲/`；进入正式章节流程时按 `references/writing/long/tracking-transaction.md` 初始化追踪。第一章正文落盘前准备对应细纲。
 - 短篇按需使用 `设定.md`、`小节大纲.md`、`正文.md`，不强加长篇追踪。
 - 不为填满模板编造事实，不用空文件冒充完成。未决方向与已确认设定分开。
-- 专业角色可通过 `creative_role` 辅助；简单任务直接完成。模型、权限和会话由 DSH 管理，项目里不需要平台配置或部署标记。
+- 需要独立专家时按 `references/project/delegation.md` 使用原生委派；简单任务直接完成。模型、权限和会话由 DSH 管理，项目里不需要平台配置或部署标记。
 
 完成后说明实际创建、保留的文件和仍缺的信息。小说文件通过“小说”工作台查看。
 
@@ -37,4 +37,4 @@ description: "小说创作入口：新建工程、接入已有小说、选题扫
 
 长篇需要单一原文时，用 `scripts/export_novel_txt.py --story-root <小说目录> --out-dir <导出目录>` 生成原著和章节映射；短篇可直接使用 `正文.md`。用 `scripts/record_lineage.py` 记录来源与目标，参数与交付边界见 `references/intake/workflow.md`。
 
-改短剧加载 `short-drama-novel-analyze`，改游戏加载 `novel-game-analyze`；成片解说交给 `video-recap`。只在相应插件已安装、技能可见时调用。
+改短剧加载 `short-drama`，改游戏加载 `novel-to-game`；成片解说交给 `video-recap`。只在相应插件已安装、技能可见时调用。

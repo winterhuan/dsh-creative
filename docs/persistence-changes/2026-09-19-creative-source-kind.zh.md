@@ -52,7 +52,7 @@ changes:
 <a id="verification"></a>
 ## 验证
 
-pnpm exec vitest run packages/creative/creative/tests/native-hooks.spec.ts：13 个测试通过，覆盖 post-write 提醒的 source 声明与 waterfall 集成。
+pnpm exec vitest run packages/creative/story/tests/native-hooks.spec.ts：13 个测试通过，覆盖 post-write 提醒的 source 声明与 waterfall 集成。
 
 <a id="dev-note"></a>
 ## 开发备注

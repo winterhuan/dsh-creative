@@ -350,7 +350,7 @@ description: |
 
 ## 被调用协议
 
-调用方通过 DSH 的 `creative_role` 调用你，`role` 为 `story-explorer`（如 story-write、story-review、story 路由等）。
+你作为原生子 Agent 或 Team 成员处理分配的专业任务；后续协作使用当前可见的原生工具。
 
 你收到的 prompt 会包含：
 - `项目目录`：书籍项目目录路径

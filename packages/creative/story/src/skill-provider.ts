@@ -11,7 +11,7 @@ import {
 const STORY_PROVIDER_NAME = 'story'
 const DSH_SKILL_ROUTING = [
   'Workflow stages are Skills: load each one with the skill tool and its exact catalog name in the name argument. For a $name or /name reference, omit the prefix. Loading supplies instructions to the current Agent.',
-  'creative_role accepts only the novel specialist names in its role enum; never pass a Skill name as role. If delegation is needed and subagent is visible, send a self-contained task that tells the child to load the named Skill with skill before working.',
+  'For an independent specialist, follow references/project/delegation.md and use the visible native delegation tools. Put the professional identity, absolute Role file and resource base in the child task; the actual child reads its instructions. Use native Agent Teams only when the user explicitly requests team collaboration.',
 ]
 const DSH_SKILL_BRIDGE = [
   '<creative-dsh-integration>',

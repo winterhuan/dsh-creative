@@ -1,13 +1,13 @@
 ---
 name: game-qa
-description: "Verify a game with evidence on its selected target runtime. Launch the actual build and prove real rendering, input, the core loop, at least one designed outcome, restart, and explicit limitations without dressing subjective fun up as a certain verdict. Use for test a generated game, QA a game build, check whether the game is fully playable, or verify the build. 游戏证据化质量验证。在选定的目标运行环境中启动实际构建，证明真实渲染、输入、核心循环、至少一个设计结果、重开和明确限制，不把主观趣味包装成确定性结论。用于测试生成游戏、检查游戏能否完整游玩或验证构建。"
+description: "验证浏览器游戏：真实启动、渲染、输入、核心循环、结果与重开，并通过 game_qa 生成 Studio 可认证的证据。用于试玩验证、构建回归和检查游戏是否走通；不代替主观趣味判断。"
 ---
 # 游戏质量验证
 
 验证当前候选能否完成最小可玩闭环，不把自动化结果包装成趣味、平衡、权利或发布质量结论。
 
-读取 [qa-contract.md](references/qa-contract.md) 定判据，按
-[test-design-method.md](references/test-design-method.md) 设计最少但有区分力的检查。
+用原生 `read` 读取资源基目录下的 `references/qa-contract.md` 定判据，按
+`references/test-design-method.md` 设计最少但有区分力的检查。非 Web 目标不受当前 Chrome 驱动覆盖，应报告限制，不制造替代平台 PASS。
 
 产物语言由 `PRODUCT_BRIEF.md` 锁定；未锁定时跟随对话语言，不默认产出中文。
 
