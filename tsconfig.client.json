@@ -18,6 +18,9 @@
     },
     {
       "path": "./packages/client/ui-settings-creative-produce"
+    },
+    {
+      "path": "./packages/client/ui-settings-model-options"
     }
   ]
 }

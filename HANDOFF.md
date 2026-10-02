@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-01。
+最后更新：2026-10-02。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -27,7 +27,7 @@
 
 - 依赖 npm 上发布的 DSH `0.2.0-rc.2`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-- 8 个包都位于 `@winterhuan` scope 下。
+- 9 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
 
 2026-09-30 四领域拆分验证：清理构建产物后 `typecheck`、`build` 通过；全量 59 个文件、577 项测试通过。文档 16 项、规范 3 项通过，归档完整性通过。四个领域均有独立包与侧栏；Creative 聚合页面已移除；通过聚合包安装的小说保存、短剧生产页、视频播放和游戏独立入口在临时 web profile 验证，无页面脚本异常。三个新包的压缩包安装、浏览器检查与 16 项包内资源检查通过；已有设置包尚未发布到 npm，压缩包验证用临时 profile 的 pnpm override 指向它的本地压缩包。游戏此前的独立包、压缩包、聚合与三种模板 Chrome QA 已通过。未修改用户 profile。
@@ -35,6 +35,10 @@
 2026-09-30 小说技能精简验证：清理构建产物后的 `typecheck`、`build` 通过；全量 59 个文件、575 项测试通过（删除旧脚本 wrapper 的重复轮次）。文档 16 项、规范 3 项及归档完整性通过。临时 web profile 的 Chrome 验证了六个小说技能、每个入口的参考文件预览和空工作台 `/story` 提示，无页面脚本错误。未调用真实模型或外部检测。
 
 2026-10-01 原生专家协作简化验证：删除专用 Role 执行器和固定评审 JSON 校验链，保留专业指令、实际字数哈希及原子追踪事务。清理构建产物后 `typecheck`、`build` 通过，全量 58 个文件、563 项测试通过，文档与规范检查通过。Loader 测试覆盖原生子 Agent 实际读取 Role/参考、Team 冷成员续接、无评审字段提交及旧记录原值保留。临时 DSH web profile 的 Chrome 检查确认原生 Team 成员面板可见，旧 Role 结果格式测试样例可通过通用工具卡查看，无页面脚本错误。使用脚本化模型，未调用真实模型或付费服务；临时服务和浏览器已关闭，未修改用户 profile。
+
+2026-10-01 模型设置增强验证：独立客户端组合包完成本地链接和压缩包安装；`typecheck`、`build`、全量 61 个文件 594 项测试通过，新包 31 项回归测试通过。隔离 DSH 的 Chrome 验证了思考级别参数映射、省略关闭参数、0/1/3 次重试对应 1/2/4 次请求、取消后停止重试、恢复默认、跨窗口冲突、刷新持久化，以及深浅色和窄窗口布局；无页面脚本错误。使用本地模拟接口，未调用付费模型或修改用户 profile。
+
+2026-10-02 模型思考设置批量编辑：模型列表增加配置摘要和待保存标记；支持搜索、勾选、全选当前搜索结果、预览完整参数映射，并将配置复制到所选模型的草稿后统一保存。`typecheck`、`build` 与全量 61 个文件 601 项测试通过，其中包内 38 项测试覆盖自定义及目录模型、筛选范围外的选择保留、独立草稿、取消、放弃修改和批量预览期间的版本冲突。文档 16 项与规范 3 项检查通过；受限环境不能创建 tsx CLI 的 IPC 管道，改用 `node --import tsx` 执行相同校验脚本。用户 `web` profile 已链接本地包，重新构建后需重启 DSH 并刷新。此次真实浏览器验证未完成：隔离 DSH 未就绪，Chrome 启动以 SIGABRT 退出，并报告进程控制 EPERM；不能沿用上一轮浏览器结果确认本次批量界面。
 
 截至 2026-09-29 的验证结果：
 
@@ -81,7 +85,8 @@ dsh-creative/
 │   │   └── skill-viewer/              @winterhuan/dsh-skill-viewer（Host，skillViewer Remote）
 │   └── client/
 │       ├── ui-skill-viewer/           @winterhuan/dsh-client-ui-skill-viewer（Client）
-│       └── ui-settings-creative-produce/  @winterhuan/dsh-client-ui-settings-creative-produce（Client）
+│       ├── ui-settings-creative-produce/  @winterhuan/dsh-client-ui-settings-creative-produce（Client）
+│       └── ui-settings-model-options/  @winterhuan/dsh-client-ui-settings-model-options（独立安装，Client）
 ├── scripts/
 │   ├── tsdown.client.ts               客户端 bundle 预设 clientBundle()（上游拷贝，有本地改动）
 │   ├── client-build-environment.ts    客户端构建期环境变量记录（上游拷贝，有本地改动）
@@ -146,6 +151,10 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 `ui-settings-creative-produce` 编辑 `creative-produce` 设置命名空间。6 个提供商密钥通过 `ctx.remote.credentials` 写入；这个 Remote 由 DSH 内置的 `@deepseek-ai/dsh-api-settings-controller` 提供，由 `api-remotes` 挂载，插件只需要它的类型（见[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
 
+### 模型设置增强
+
+`ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力和提供方重试次数。它复用内置设置、模型目录和重试运行时，不随 Creative 聚合包安装。安装与配置见[包说明](packages/client/ui-settings-model-options/README.zh.md)。
+
 ### 小说技能与资源
 
 小说包提供 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish`、`story-cover` 六个入口。长短篇流程按需读取；已有工程直接继续，原始文本接入不要求先拆全书。普通润色不调用朱雀，检测需要用户明确请求。
@@ -192,7 +201,7 @@ pnpm run clean                # 删除 packages/*/*/lib
    - `tsc -b tsconfig.host.json` 编译 skill-viewer 和 creative 的 host 面，输出 `lib/types/*.js` 与 `*.d.ts`。
    - `tsdown --env.DSH_BUILD_FACE host`：根 `tsdown.config.ts` 把各包的 `lib/types/index.js` 打成 `lib/index.js`，并由 `typertPlugin({ mode: 'workspace', faces: ['host'] })` 生成 skill-viewer 的 `lib/typert.host.{js,d.ts}` 和 `lib/typert.remote-client.{js,d.ts}`。
 2. `build:client`：
-   - `tsc -b tsconfig.client.json` 编译四个领域工作台和两个独立 UI 包的客户端编译面。`ui-skill-viewer` 要用第 1 步生成的 `@winterhuan/dsh-skill-viewer/remote` 声明，所以 client 面必须排在 host 构建之后，`typecheck` 也因此先跑 `build:host`。
+   - `tsc -b tsconfig.client.json` 编译四个领域工作台和三个独立 UI 包的客户端编译面。`ui-skill-viewer` 要用第 1 步生成的 `@winterhuan/dsh-skill-viewer/remote` 声明，所以 client 面必须排在 host 构建之后，`typecheck` 也因此先跑 `build:host`。
    - `tsdown --env.DSH_BUILD_FACE client`：客户端包各自的 `tsdown.config.ts` 调用 `scripts/tsdown.client.ts` 的 `clientBundle()`，产出 Node 入口和浏览器 bundle。
 
 构建产物：
@@ -204,7 +213,7 @@ pnpm run clean                # 删除 packages/*/*/lib
 | novel-to-game | `lib/index.js`、`lib/client.js` |
 | skill-viewer | `lib/index.js`、`lib/typert.host.{js,d.ts}`、`lib/typert.remote-client.{js,d.ts}` |
 | ui-skill-viewer | `lib/index.js`、`lib/client.js` |
-| ui-settings-creative-produce | `lib/index.js`、`lib/client.js` |
+| ui-settings-creative-produce / ui-settings-model-options | `lib/index.js`、`lib/client.js` |
 
 `lib/`、`*.tsbuildinfo` 和 `.dsh-build/`（`client-build-environment.ts` 的构建记录）都被 git 忽略。`dsh plugin add` 是链接安装，安装和调试前必须先 build。
 

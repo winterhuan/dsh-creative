@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-settings-model-options/README.md
+/:
+  en: 9883e4b26cf7c603
+  zh: f7baf0bf7cefe254
+/winterhuan-dsh-client-ui-settings-model-options:
+  en: a0c9e420e4dbdfff
+  zh: cea139e68568b931
+/winterhuan-dsh-client-ui-settings-model-options/summary:
+  en: 848ee565dc157920
+  zh: 3056a52d5ecddf98
+/winterhuan-dsh-client-ui-settings-model-options/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: ae047d41fd4380ed
+/winterhuan-dsh-client-ui-settings-model-options/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/winterhuan-dsh-client-ui-settings-model-options/use-this-package/install:
+  en: 83660dd091ce932a
+  zh: 7bbcbad63e363102
+/winterhuan-dsh-client-ui-settings-model-options/use-this-package/thinking-capability:
+  en: de05c501594fe6c0
+  zh: dd9f87891fd523b6
+/winterhuan-dsh-client-ui-settings-model-options/use-this-package/retry-limit:
+  en: 074c0f019bef5078
+  zh: 5bff8b5a0d3bea45
+/winterhuan-dsh-client-ui-settings-model-options/use-this-package/save-and-recover:
+  en: 1b97d7609a5e67bb
+  zh: 00241f6341098dfe
+/winterhuan-dsh-client-ui-settings-model-options/understand-the-implementation:
+  en: 9d6617e61517a446
+  zh: af090f02d15c1e65
+/winterhuan-dsh-client-ui-settings-model-options/further-exploration:
+  en: eaea085986646b9c
+  zh: f3a4997fc132a127
+/winterhuan-dsh-client-ui-settings-model-options/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/winterhuan-dsh-client-ui-settings-model-options/model-experience/request-settings:
+  en: 1ea75196ea0e815d
+  zh: 1b658ebd052cb745
+/winterhuan-dsh-client-ui-settings-model-options/model-experience/request-settings/what-the-model-sees:
+  en: 213349ac5cce0814
+  zh: 404f32e9e07aa2d6
+/winterhuan-dsh-client-ui-settings-model-options/model-experience/request-settings/token-effect:
+  en: 3fabc0f5cf9434a2
+  zh: a62ca20577ddfdb9
+/winterhuan-dsh-client-ui-settings-model-options/model-experience/request-settings/kv-cache-effect:
+  en: 0d5a05efccc21530
+  zh: 2d16ade4d6641168
+/winterhuan-dsh-client-ui-settings-model-options/known-limitations-and-deferred-work:
+  en: cd8eec77ebb2f45f
+  zh: 0dd5b3d2f38ad2cd
+/winterhuan-dsh-client-ui-settings-model-options/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 4545eda38a068f8d
