@@ -30,7 +30,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 Open **Fiction workbench** from the right sidebar. The plugin uses the current DSH Session, filesystem, model and permissions. Production settings remain in the existing Creative production settings page; secrets stay in the DSH credential store.
 
-The fiction workbench treats the current Session directory as the project root. It lists that directory’s direct `正文/`, `大纲/`, `设定/` and other standard roots, plus standalone story documents. Opening their parent directory does not discover child projects; open the novel directory itself. Nested volumes inside a recognized root remain visible.
+The fiction workbench discovers novels in the current Session directory and its immediate child directories. For example, opening `shenji/` lists `神机诸天录/正文/` and that novel’s other standard directories; opening `神机诸天录/` directly also works. Each novel’s files and edits keep their full paths. Discovery stops after one project-directory level, while volumes inside `正文/`, `大纲/`, `设定/` and other recognized directories remain recursive. Standalone story documents are supported at either project level.
 
 The six entries are `story` (project setup, existing novels, research and preferences), `story-write` (long and short fiction), `story-analyze` (analysis), `story-review` (review), `story-polish` (local editing and explicitly requested Zhuque detection) and `story-cover` (covers). Existing projects continue directly; raw-text intake does not require full-book analysis.
 

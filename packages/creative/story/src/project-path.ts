@@ -125,10 +125,16 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
   let leaf = first
   let domain = domainForLeaf(first, segments.length === 1)
   if (domain === undefined) {
-    prefix = BOOK_CONTAINERS.some(container => container === first) ? 2 : 1
+    prefix = 1
     leaf = segments[prefix] ?? ''
     if (leaf === '拆文库') return undefined
     domain = domainForLeaf(leaf, segments.length === prefix + 1)
+    if (domain === undefined && BOOK_CONTAINERS.some(container => container === first)) {
+      prefix = 2
+      leaf = segments[prefix] ?? ''
+      if (leaf === '拆文库') return undefined
+      domain = domainForLeaf(leaf, segments.length === prefix + 1)
+    }
   }
   if (domain === undefined) return undefined
   const projectRoot = segments.slice(0, prefix).join('/')
@@ -143,6 +149,15 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
           : leaf === '剧集' && episode !== undefined && body.length === 3 && creatorDocuments.has(body[2] ?? '') ? 'creator-document'
             : episode !== undefined && body.length === 2 ? 'episode' : 'document'
   return { path, projectRoot, relativePath, domain, role, episodePath }
+}
+
+/**
+ * Limit workbench discovery, file access, and Chat redirects to root and immediate-child novels.
+ * @param path - parsed creative path, including layouts supported by the writing tools.
+ * @returns whether the story editor supports this project's depth and domain.
+ */
+export function isStoryWorkbenchPath(path: CreativeProjectPath | undefined): path is CreativeProjectPath {
+  return path?.domain === 'story' && !path.projectRoot.includes('/')
 }
 
 /**

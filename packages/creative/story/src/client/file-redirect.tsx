@@ -1,9 +1,9 @@
 /**
- * Route Chat file opens for Creative project files into the single Creative workbench.
+ * Route Chat file opens for editable novel documents into the story workbench.
  *
  * Chat opens a file as a `dsh-resource://file/session/<id>/<path>` resource. This tab type claims
- * those addresses at the `extension` band when the path is a Creative text or media file, so it
- * outranks the plain-text preview. Its body immediately replaces itself with the `creative` page,
+ * those addresses at the `extension` band when the path is a supported story text file, so it
+ * outranks the plain-text preview. Its body immediately replaces itself with the `story` page,
  * carrying the path as a navigation parameter, so one workbench tab serves every file.
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
@@ -11,7 +11,7 @@ import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { parseFileAddress } from '@deepseek-ai/dsh-util-workspace-path'
 import { useEffect } from 'react'
-import { creativeMediaMimeType, isCreativeTextPath, parseCreativePath } from '../project-path.ts'
+import { isCreativeTextPath, isStoryWorkbenchPath, parseCreativePath } from '../project-path.ts'
 
 /** Implementation identity of the redirect tab type. */
 const REDIRECT_ID = '@winterhuan/dsh-story/file-redirect'
@@ -30,7 +30,7 @@ function creativeFileOf(context: ClientContext, address: string): { readonly ses
   const sessionId = file.sessionId as SessionId
   const cwd = context.sessions.list.getSnapshot().byId[sessionId]?.cwd
   const parsed = parseCreativePath(file.path, cwd)
-  if (parsed?.domain !== 'story' || parsed.projectRoot !== '' || (!isCreativeTextPath(parsed) && creativeMediaMimeType(parsed.path) === undefined)) return undefined
+  if (!isStoryWorkbenchPath(parsed) || !isCreativeTextPath(parsed)) return undefined
   return { sessionId, path: parsed.path }
 }
 

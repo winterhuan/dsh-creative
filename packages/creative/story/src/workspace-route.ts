@@ -9,8 +9,8 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-typert-registry'
 import { isTrustedWorkspaceRequest } from './workspace-request-trust.js'
 import {
-  CREATIVE_DIRECTORIES,
-  PROJECT_FILES, creativeMediaMimeType, isCreativeTextPath, parseCreativePath, projectPath,
+  CREATIVE_DIRECTORIES, STORY_DIRECTORIES,
+  PROJECT_FILES, creativeMediaMimeType, isCreativeTextPath, isStoryWorkbenchPath, parseCreativePath, projectPath,
   type CreativeProjectPath, type CreativeProjectSummary,
 } from './project-path.ts'
 import { type ProduceConfig } from './produce-settings.ts'
@@ -87,8 +87,7 @@ function safeRelativePath(path: string): boolean {
 
 function editablePath(path: string): boolean {
   const parsed = parseCreativePath(path)
-  if (parsed?.domain !== 'story' || parsed.projectRoot !== '') return false
-  return parsed !== undefined && isCreativeTextPath(parsed)
+  return isStoryWorkbenchPath(parsed) && isCreativeTextPath(parsed)
 }
 
 /**
@@ -107,7 +106,7 @@ function assertCreativePath(path: string, kind: 'text' | 'media'): CreativeProje
     throw new WorkspaceHttpError(403, '文件路径不在创作工作台中。')
   }
   const parsed = parseCreativePath(path)
-  if (parsed?.domain !== 'story' || parsed.projectRoot !== '') {
+  if (!isStoryWorkbenchPath(parsed)) {
     throw new WorkspaceHttpError(403, '文件路径不在创作工作台中。')
   }
   return parsed
@@ -187,8 +186,8 @@ function skipWorkspaceDirectory(path: string): boolean {
 }
 
 /**
- * List the opened novel project's standard directories and standalone documents.
- * Nested book directories are separate projects and are not discovered here.
+ * List novels in the workspace and its immediate child directories.
+ * Each project's standard directories and standalone documents retain their full paths.
  * Recursion within 正文, 大纲 and the other recognized roots preserves volumes.
  * A listing is truncated only when another eligible file exceeds FILE_LIMIT.
  * @param realm - the Session's project directory and filesystem.
@@ -198,12 +197,12 @@ async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
   const files: WorkspaceFile[] = []
   // Returns true when the listing is truncated: an eligible file appeared once
   // `files` already held the limit.
-  const walk = async (path: string, directory: FsTarget): Promise<boolean> => {
+  const walk = async (path: string, directory: FsTarget, project: FsTarget): Promise<boolean> => {
     for (const entry of await realm.fs.listDir(directory)) {
-      if (entry.name.startsWith('.') || !realm.fs.contains(realm.root, entry.target)) continue
+      if (entry.name.startsWith('.') || !realm.fs.contains(project, entry.target)) continue
       const childPath = `${path}/${entry.name}`
       if (entry.type === 'directory') {
-        if (!skipWorkspaceDirectory(childPath) && await walk(childPath, entry.target)) return true
+        if (!skipWorkspaceDirectory(childPath) && await walk(childPath, entry.target, project)) return true
       }
       else if (entry.type === 'file' && editablePath(childPath)) {
         const info = entry.version === undefined || entry.size === undefined ? await realm.fs.stat(entry.target) : undefined
@@ -217,23 +216,33 @@ async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
     }
     return false
   }
-  let truncated = false
-  for (const directory of CREATIVE_DIRECTORIES) {
-    const target = await realm.fs.resolve(directory, { cwd: realm.cwd })
-    if (!realm.fs.contains(realm.root, target)) continue
-    const info = await realm.fs.stat(target)
-    if (info?.type === 'directory' && await walk(directory, target)) {
-      truncated = true
-      break
+  const listProject = async (prefix: string, project: FsTarget): Promise<boolean> => {
+    for (const directory of prefix === '' ? CREATIVE_DIRECTORIES : STORY_DIRECTORIES) {
+      const path = projectPath(prefix, directory)
+      const target = await realm.fs.resolve(path, { cwd: realm.cwd })
+      if (!realm.fs.contains(project, target)) continue
+      const info = await realm.fs.stat(target)
+      if (info?.type === 'directory' && await walk(path, target, project)) return true
     }
+    for (const name of PROJECT_FILES) {
+      const path = projectPath(prefix, name)
+      const target = await realm.fs.resolve(path, { cwd: realm.cwd })
+      if (!realm.fs.contains(project, target)) continue
+      const info = await realm.fs.stat(target)
+      if (info?.type === 'file') {
+        if (files.length >= FILE_LIMIT) return true
+        files.push({ path, bytes: info.size ?? 0, version: info.version, kind: 'text' })
+      }
+    }
+    return false
   }
-  for (const path of PROJECT_FILES) {
-    if (truncated) break
-    const target = await creativeTarget(realm, path)
-    const info = await realm.fs.stat(target)
-    if (info?.type === 'file') {
-      if (files.length >= FILE_LIMIT) { truncated = true; break }
-      files.push({ path, bytes: info.size ?? 0, version: info.version, kind: 'text' })
+  let truncated = await listProject('', realm.root)
+  if (!truncated) {
+    for (const entry of await realm.fs.listDir(realm.root)) {
+      if (entry.type !== 'directory' || skipWorkspaceDirectory(entry.name) || !realm.fs.contains(realm.root, entry.target)) continue
+      const parsed = parseCreativePath(`${entry.name}/正文`)
+      if (!isStoryWorkbenchPath(parsed) || parsed.projectRoot !== entry.name) continue
+      if (await listProject(entry.name, entry.target)) { truncated = true; break }
     }
   }
   return { files: files.sort((left, right) => left.path.localeCompare(right.path, 'zh-Hans-CN')), truncated }
