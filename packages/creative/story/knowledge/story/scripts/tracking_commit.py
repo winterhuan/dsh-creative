@@ -869,6 +869,7 @@ def normalize_transaction(project: Path, state: dict[str, Any], document: object
         {
             "schema_version", "mode", "chapter", "chapter_title", "expected_state_revision",
             "delta", "context", "character_snapshots", "wordcount", "reader_value",
+            "expected_body_sha256", "expected_outline_sha256",
         },
         "transaction",
     )
@@ -879,6 +880,11 @@ def normalize_transaction(project: Path, state: dict[str, Any], document: object
     expected_revision = as_int(root.get("expected_state_revision"), "expected_state_revision")
     wordcount_input = root.get("wordcount")
     require(expected_revision == state["state_revision"], "tracking state changed since this transaction was prepared")
+    source_snapshot = None
+    if "expected_body_sha256" in root or "expected_outline_sha256" in root:
+        source_snapshot = wordcount_value(wordcount_core.chapter_source_snapshot, project, chapter)
+        wordcount_value(wordcount_core.validate_expected_source_digests, root,
+                        wordcount_core.chapter_source_digests(source_snapshot))
     last = state["last_committed_chapter"]
     if mode == "append":
         require(chapter == last + 1, f"append chapter must be {last + 1}, got {chapter}")
@@ -910,6 +916,7 @@ def normalize_transaction(project: Path, state: dict[str, Any], document: object
         "context": context,
         "snapshots": snapshots,
         "wordcount": wordcount,
+        "source_snapshot": source_snapshot,
     }
 
 
@@ -1095,6 +1102,9 @@ def _apply_transaction_locked(project: Path, document: object) -> dict[str, Any]
             f"chapter delta {transaction['chapter']} already exists with different content",
         )
 
+    if transaction["source_snapshot"] is not None:
+        wordcount_value(wordcount_core.require_chapter_sources_unchanged,
+                        project, transaction["chapter"], transaction["source_snapshot"])
     write_if_changed(path, delta_payload)
     write_views(tracking, views)
     # 唯一权威文件最后落盘；在此之前失败可用同一事务直接重跑。

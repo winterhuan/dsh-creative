@@ -6,9 +6,11 @@
 
 运行 `scripts/tracking_commit.py check --project {项目根}`，从紧凑结果取得 `last_committed_chapter + 1` 与 `state_revision`，核对 `追踪/上下文.md` 当前进度。已有正文却无追踪状态时，先由 `story` 接入建立必要状态，不要求完整拆文。状态损坏按 [追踪事务](tracking-transaction.md) 修复。
 
-读取用户范围的卷级目标、当前剧情单元和细纲，确认可释放的信息、禁止提前释放的底牌、必要兑现及章尾边界。缺细纲时先按 [规划流程](workflow-setup.md) 补齐；已确认卷纲的实质变化应先处理，不以续写名义静默重规划。
+将用户范围和已知约束传入每章准备；准备执行者读取卷级目标、当前剧情单元和已有细纲，确认信息边界、必要兑现及章尾停笔点。缺细纲时按 [中途补纲](workflow-setup.md#中途补纲) 创建并检查，不要求用户事先准备完整批次的细纲。已确认卷纲的实质变化应先处理，不以续写名义静默重规划。
 
 ## 逐章循环
+
+明确选用 [原生 workflow](native-workflow.md) 时，每章顶层调用同一份模板，包含 Prepare 的检查、补纲与场景计划，确认业务结果为已验证的 `committed` 或 `already_committed` 后才推进。`needs_input` 时补充具体缺失事实或作者决定，再从 Prepare 重启同一章；`revision_limit`、`uncertain` 或运行失败时停止推进，不用 `pipeline` 并发连续章。
 
 每章完整执行一次 [单章流程](workflow-chapter.md)：准备 → 正文 → 检查 → 读者价值评审 → 事务提交与验证。下一章依赖上章落盘正文和已提交追踪，不能并发写多章。上一章提交失败或长度仍待用户裁定时停止推进。
 

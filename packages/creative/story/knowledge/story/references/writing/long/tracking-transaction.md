@@ -4,6 +4,8 @@
 
 ## 权威层与派生层
 
+`storyctl.py chapter check` 返回实际正文、细纲字节的 `body_sha256`、`outline_sha256` 及 `state_revision`，检查期间变化会拒绝结果。事务可选填 `expected_body_sha256`、`expected_outline_sha256`，提交在追踪锁内校验，正文或细纲变化须重检重评审；修订号变化须重读事实并重构事务，不能静默替换预期值。[原生 workflow](native-workflow.md) 使用这两项保护，普通事务不强制填写。哈希不新增追踪字段，也不代表文学批准；外部程序不遵循项目锁时仍受现有文件系统并发限制。
+
 | 层级 | 文件 | 语义 |
 |---|---|---|
 | 唯一权威 | `_tracking-state.json` | schema、最后提交章、导入截止章、状态修订号、上下文结构、角色/伏笔/时间线、已提交章节的简短字数记录 |

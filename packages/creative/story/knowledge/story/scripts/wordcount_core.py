@@ -189,17 +189,56 @@ def find_chapter_file(directory: Path, chapter: int, *, outline: bool) -> Path:
     return matches[0]
 
 
+def chapter_source_snapshot(project: Path, chapter: int) -> dict[str, Any]:
+    """Read exact source bytes, rejecting replacement or edits during collection."""
+    root = project.resolve()
+    paths = {
+        "outline": find_chapter_file(root / "大纲", chapter, outline=True),
+        "body": find_chapter_file(root / "正文", chapter, outline=False),
+    }
+    def versions() -> dict[str, tuple[int, ...]]:
+        result = {}
+        for name, path in paths.items():
+            stat = path.stat()
+            result[name] = (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+        return result
+    try:
+        before = versions()
+        contents = {name: path.read_bytes() for name, path in paths.items()}
+        require(before == versions(), "chapter files changed while reading; check and review again")
+    except OSError as exc:
+        raise WordcountError(f"unable to read chapter files: {exc}") from exc
+    return {"paths": paths, "contents": contents, "versions": before}
+
+
+def chapter_source_digests(snapshot: dict[str, Any]) -> dict[str, str]:
+    return {f"{name}_sha256": hashlib.sha256(data).hexdigest() for name, data in snapshot["contents"].items()}
+
+
+def require_chapter_sources_unchanged(project: Path, chapter: int, snapshot: dict[str, Any]) -> None:
+    require(chapter_source_snapshot(project, chapter) == snapshot,
+            "chapter files changed during validation; check and review again")
+
+
+def validate_expected_source_digests(document: dict[str, Any], digests: dict[str, str]) -> None:
+    for name, current in digests.items():
+        key = f"expected_{name}"
+        if key not in document:
+            continue
+        value = document[key]
+        require(isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None,
+                f"{key} is invalid")
+        require(value == current, f"{key} is stale; check and review the current files again")
+
+
 def build_project_wordcount_record(project: Path, chapter: int, *, resolution: str) -> dict[str, Any]:
     require(resolution in RESOLUTIONS, f"unsupported wordcount resolution: {resolution}")
-    root = project.resolve()
-    outline_path = find_chapter_file(root / "大纲", chapter, outline=True)
-    body_path = find_chapter_file(root / "正文", chapter, outline=False)
+    snapshot = chapter_source_snapshot(project, chapter)
     try:
-        target = target_from_outline(outline_path.read_text(encoding="utf-8"))
-        body_bytes = body_path.read_bytes()
-        body = body_bytes.decode("utf-8")
-    except (OSError, UnicodeError) as exc:
-        raise WordcountError(f"unable to read chapter files: {exc}") from exc
+        target = target_from_outline(snapshot["contents"]["outline"].decode("utf-8"))
+        body = snapshot["contents"]["body"].decode("utf-8")
+    except UnicodeError as exc:
+        raise WordcountError(f"unable to decode chapter files: {exc}") from exc
     result = evaluate_wordcount(body, target, chapter=chapter)
     require(result["status"] != "invalid", f"invalid chapter wordcount: {result['invalid_reason']}")
     in_user_band = result["status"] in {"internal_pass", "borderline"}
@@ -214,7 +253,7 @@ def build_project_wordcount_record(project: Path, chapter: int, *, resolution: s
         "actual": result["actual"],
         "status": result["status"],
         "resolution": resolution,
-        "body_sha256": hashlib.sha256(body_bytes).hexdigest(),
+        "body_sha256": chapter_source_digests(snapshot)["body_sha256"],
     }
 
 

@@ -220,6 +220,49 @@ describe('bundled novel executable scripts', () => {
     expect(optional.exitCode, optional.stderr).toBe(0)
   })
 
+  for (const hasOutlineDirectory of [false, true]) {
+    it(`reports a missing chapter outline for preparation with outline directory ${hasOutlineDirectory}`, async (context) => {
+      const cwd = await workspace(context)
+      const project = join(cwd, 'book')
+      await mkdir(project)
+      if (hasOutlineDirectory) await mkdir(join(project, '大纲'))
+      const args = [script('check-outline-contract.js'), '--json', '--project', project, '--chapter', '11']
+      const missing = await run(context, cwd, process.execPath, args)
+      expect(missing.exitCode, missing.stderr).toBe(1)
+      const outline = join(project, '大纲/细纲_第011章.md')
+      expect(JSON.parse(missing.stdout)).toMatchObject({
+        ok: false, file: outline,
+        failures: [{ id: 'outline.readable' }],
+        repair_scope: [{ id: 'outline.readable', file: '细纲_第011章.md' }],
+      })
+      await expect(readFile(outline)).rejects.toMatchObject({ code: 'ENOENT' })
+      await mkdir(join(project, '大纲'), { recursive: true })
+      await writeFile(outline, validLongOutline, { flag: 'wx' })
+      const ready = await run(context, cwd, process.execPath, args)
+      expect(ready.exitCode, ready.stderr).toBe(0)
+      expect(JSON.parse(ready.stdout)).toMatchObject({ ok: true, file: outline })
+      expect(await readFile(outline, 'utf8')).toBe(validLongOutline)
+    })
+  }
+
+  it('uses an existing outline filename and rejects ambiguous chapters or a missing project', async (context) => {
+    const cwd = await workspace(context)
+    const entry = script('check-outline-contract.js')
+    const absent = await run(context, cwd, process.execPath, [entry, '--json', '--project', join(cwd, 'missing'), '--chapter', '11'])
+    expect(absent.exitCode).toBe(2)
+    await mkdir(join(cwd, '大纲'))
+    const outline = join(cwd, '大纲/细纲_第11章_账册.md')
+    await writeFile(outline, validLongOutline)
+    const args = [entry, '--json', '--project', cwd, '--chapter', '11']
+    const ready = await run(context, cwd, process.execPath, args)
+    expect(ready.exitCode, ready.stderr).toBe(0)
+    expect(JSON.parse(ready.stdout).file).toBe(outline)
+    await writeFile(join(cwd, '大纲/细纲_第011章.md'), validLongOutline)
+    const ambiguous = await run(context, cwd, process.execPath, args)
+    expect(ambiguous.exitCode).toBe(2)
+    expect(ambiguous.stderr).toContain('多个第 11 章细纲')
+  })
+
   for (const [filename, args] of [
     ['check-outline-contract.js', ['--json', 'missing.md']],
     ['check-phase2-contract.js', ['--json']],
@@ -467,6 +510,15 @@ describe('bundled novel executable scripts', () => {
     ])
     expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
     expect(result.stderr).toContain('Ran 10 tests')
+  })
+
+  it('binds checks and guarded commits to source bytes and the tracking revision', async (context) => {
+    const cwd = await workspace(context)
+    const result = await run(context, cwd, python, [
+      '-B', resolve(import.meta.dirname, 'fixtures/knowledge-chapter-freshness.py'), script('storyctl.py'),
+    ])
+    expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
+    expect(result.stderr).toContain('Ran 9 tests')
   })
 
   it('classifies Zhuque detection reports and failures offline', async (context) => {

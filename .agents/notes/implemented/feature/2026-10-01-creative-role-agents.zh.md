@@ -18,6 +18,8 @@ Role 仍是专业 Agent。原生 subagent 或 Team 工具创建实际执行者�
 
 本决策取代[工作台决策](2026-09-03-creative-workbench.zh.md#composition-and-knowledge)的 Role 执行策略及[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md)的评审证明和模型要求。原有项目安全、题材化审稿、细纲与检测仅供建议的理由继续有效。
 
+[原生小说工作流决策](2026-10-03-story-native-workflow.zh.md)允许用精简的结构化审稿建议进行工作流路由。它保留原生执行者与无需评审字段的追踪事务；这一例外不恢复持久质量证明，也不改变普通自然语言审稿。
+
 ## 考虑过的替代方案
 
 **保留轻薄的 creative_role 包装。** 它仍需管理角色选择、两种结果格式、服务可用性与原生工具已有的清理职责。

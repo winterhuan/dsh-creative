@@ -5,7 +5,7 @@
  * Usage:
  *   node scripts/check-outline-contract.js --json <细纲路径...>
  *   node scripts/check-outline-contract.js --json --project <书目录> --chapter N
- * Exit: 0 = pass, 1 = blocking contract failures, 2 = invalid invocation.
+ * Exit: 0 = pass, 1 = blocking findings (including a missing outline), 2 = invalid invocation or ambiguous chapter path.
  *
  * Scope is structural only: it decides whether the blueprint carries the fields,
  * subsections and table shape the authoritative template names. It never judges
@@ -77,7 +77,7 @@ function verify(file) {
     name,
     read.ok ? '文件存在且非空' : (read.error || '文件为空'),
     '细纲文件存在且非空',
-    '只补建缺失的细纲文件，不改动同批其他章。'
+    '章节准备阶段先核实工程与同章文件；细纲缺失时按已确认卷纲和当前事实补建本章，检查通过后再启动写手，不改动同批其他章。'
   ))
   if (!read.ok) return report(file, checks)
   const text = read.text
@@ -184,19 +184,23 @@ function report(file, checks) {
 
 function resolveChapter(project, chapter) {
   const dir = path.join(project, '大纲')
+  const wanted = Number(chapter)
+  const missingFile = path.join(dir, `细纲_第${String(wanted).padStart(3, '0')}章.md`)
   let entries
   try {
     entries = fs.readdirSync(dir)
   } catch (error) {
+    if (error.code === 'ENOENT' && fs.statSync(project, { throwIfNoEntry: false })?.isDirectory()) {
+      return { file: missingFile }
+    }
     return { error: `无法读取 ${dir}：${error.message}` }
   }
-  const wanted = Number(chapter)
-  const hit = entries.find((entry) => {
+  const matches = entries.filter((entry) => {
     const match = entry.match(/^细纲_第0*(\d+)章.*\.md$/)
     return match && Number(match[1]) === wanted
   })
-  if (!hit) return { error: `${dir} 下没有第 ${wanted} 章细纲` }
-  return { file: path.join(dir, hit) }
+  if (matches.length > 1) return { error: `${dir} 下有多个第 ${wanted} 章细纲：${matches.join('、')}；先确认使用哪个文件，不再新建。` }
+  return { file: matches.length === 1 ? path.join(dir, matches[0]) : missingFile }
 }
 
 function parseArgs(argv) {
@@ -227,7 +231,7 @@ function parseArgs(argv) {
 /**
  * Run the outline checker with skill-local command-line arguments.
  * @param {string[]} argv - Arguments after the script path.
- * @returns {number} Zero for passing outlines, one for findings, or two for invalid arguments.
+ * @returns {number} Zero for passing outlines, one for findings including missing files, or two for invalid arguments or unresolved chapter paths.
  */
 function main(argv) {
   const parsed = parseArgs(argv)

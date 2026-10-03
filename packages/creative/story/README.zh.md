@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。可选用原生 workflow 完成细纲准备、写作、独立审稿和带版本保护的章节提交。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 可以独立安装，也可以通过 Creative 安装。
 
 ## 目录
 
@@ -39,6 +39,12 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 需要独立专家时使用当前可见的原生 `subagent`，任务说明专业身份、Role 文件绝对路径和资源根，由实际子 Agent 用原生 `read` 读取指令。用户明确要求 Agent Teams 时使用 `spawn_teammate`，再以 `send_message` 复用成员。参见[委派说明](knowledge/story/references/project/delegation.md)。Role 不是额外工具或 Skill，调用方读取它也不构成独立评审。
 
+### 原生单章 workflow
+
+要求 `story-write` 用原生 workflow 写长篇新章，或声明后续章节采用这一偏好。父会话提供工程、章号和约束，再按[调用说明](knowledge/story/references/writing/long/native-workflow.md)读取模板。DSH 已有的 `workflow` 工具内，Prepare 在已授权规划内检查或补建本章细纲并生成场景计划，随后执行写作、独立审稿、最多两轮修订及追踪提交验证。已有可用细纲直接复用；除非用户要求确认，常规准备不再次索要批准。关键事实缺失或需要作者裁定时停止依赖工作。连续章串行执行，保留仍有未决问题的草稿。
+
+审稿在此 workflow 内返回少量流程分支字段，普通审稿仍为自然语言。提交校验审稿对应的正文、细纲哈希和预期追踪修订号；文件变化后须重检重评审。追踪不增加审稿证明。原生运行完成可能包含未提交的章节结果，调用方须检查返回状态再推进。
+
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
@@ -62,11 +68,11 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 #### 模型看到什么
 
-领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`story_zhuque` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
+领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`story_zhuque` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。workflow 各阶段收到明确的 `structured_output` 指令。Prepare 交回实际路径、场景计划和已检查的细纲身份；写手接收这些结果及完整检查命令。缺少结构化结果时，提示父会话查看失败子 Agent 的 Session。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 
-Skill 正文和专业指令按需加载。委派只读取所选 Role 及必要参考；初始目录不增加专用 Role 工具 schema 或整套专家正文。
+Skill 正文和专业指令按需加载。委派只读取所选 Role 及必要参考；初始目录不增加专用 Role 工具 schema 或整套专家正文。workflow 支持未改变 Skill 目录描述。以 `cl100k_base` 静态估算，写作和审稿 Skill 正文分别增加 152、84 token；延后加载的模板为 3754 token，说明为 3243。读取再提交模板会保留两份源码，尚未计入工具格式。独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；这些数值不是提供商计费或端到端效率结论。
 
 #### KV Cache 影响
 
@@ -78,6 +84,7 @@ Skill 正文和专业指令按需加载。委派只读取所选 Role 及必要�
 
 - 原生 Team 工具需要显式启用团队组合和持久 Session。专业指令进入任务上下文，不由插件覆盖系统 persona。审稿输出普通意见；章节脚本校验机械条件，不认证文学质量或评审模型元数据。
 - Python 脚本需要 Python 3.9+；章节检查还需要 Node。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
+- 原生单章模板需要 DSH 组合提供 `workflow` 和子 Agent 结构化输出。它处理长篇新章及其未提交稿；已提交章修改沿用现有修订路径。模板复用与审稿只读依靠指令，不是 Host 强制机制或单独审稿权限策略。取消保留产物，恢复核对真实文件和追踪，不恢复旧脚本栈。文件校验不隔离任意外部写入者。
 
 <a id="dev-note"></a>
 ### 开发笔记

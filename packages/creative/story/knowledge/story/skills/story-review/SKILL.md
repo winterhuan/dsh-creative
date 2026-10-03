@@ -21,3 +21,5 @@ description: "审查小说正文、设定和大纲，指出有原文依据的问
 审查不修改正文、设定、大纲或追踪。修改交给 `story-write` 或 `story-polish`，重要问题应在提交前解决；正文改变后复核受影响部分，不把旧结论当成新文本的批准。长报告或用户需要文件时可交付普通 Markdown，默认在当前会话或原生 Team 消息中反馈。
 
 脚本只验证可客观检查的文件与事务条件，提交成功不代表文学质量通过。
+
+参与显式选用的原生 workflow 时，遵循 `references/writing/long/native-workflow.md` 的版本核对，按任务 schema 返回 `recommendation` 和可读 `review`；它只控制该运行的分支，不是持久质量证明，普通审稿不要求此 JSON。

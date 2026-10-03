@@ -72,17 +72,6 @@ def _read_json_object(path: Path, label: str) -> dict[str, Any]:
     return value
 
 
-def _project_files(project: Path, chapter: int) -> tuple[Path, Path, int]:
-    root = project.resolve()
-    outline = find_chapter_file(root / "大纲", chapter, outline=True)
-    body = find_chapter_file(root / "正文", chapter, outline=False)
-    try:
-        target = target_from_outline(outline.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError) as exc:
-        raise WordcountError(f"unable to read outline: {exc}") from exc
-    return outline, body, target
-
-
 def _json_findings(output: str) -> list[dict[str, Any]] | None:
     try:
         value = json.loads(output)
@@ -202,11 +191,15 @@ def check_outline_readiness(outline: Path) -> dict[str, Any]:
 
 
 def chapter_check(project: Path, chapter: int) -> dict[str, Any]:
-    outline, body_path, target = _project_files(project, chapter)
+    tracking = _tracking_module()
+    state = _tracking_call(tracking.load_state, project)
+    snapshot = chapter_source_snapshot(project, chapter)
+    outline, body_path = snapshot["paths"]["outline"], snapshot["paths"]["body"]
     try:
-        body = body_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as exc:
-        raise WordcountError(f"unable to read body: {exc}") from exc
+        target = target_from_outline(snapshot["contents"]["outline"].decode("utf-8"))
+        body = snapshot["contents"]["body"].decode("utf-8")
+    except UnicodeError as exc:
+        raise WordcountError(f"unable to decode chapter files: {exc}") from exc
     length = evaluate_wordcount(body, target, chapter=chapter)
     outline_readiness = check_outline_readiness(outline)
     quality = check_blocking_quality(outline, body_path, project)
@@ -219,8 +212,9 @@ def chapter_check(project: Path, chapter: int) -> dict[str, Any]:
         actions = ["compress-once", "accept-current-length", "revise-outline-or-target", "discard"]
     else:
         actions = ["accept-current-length", "revise-outline-or-target", "discard"]
-    tracking = _tracking_module()
-    state = _tracking_call(tracking.load_state, project)
+    require_chapter_sources_unchanged(project, chapter, snapshot)
+    require(_tracking_call(tracking.load_state, project)["state_revision"] == state["state_revision"],
+            "tracking state changed during check; reload context and check again")
     compression = None
     if length["status"] == "over" and quality["status"] == "pass":
         actual = length["actual"]
@@ -243,6 +237,7 @@ def chapter_check(project: Path, chapter: int) -> dict[str, Any]:
         "quality": quality,
         "compression": compression,
         "state_revision": state["state_revision"],
+        **chapter_source_digests(snapshot),
         "tracking_committed": state["last_committed_chapter"] >= chapter,
         "next_chapter_started": state["last_committed_chapter"] > chapter,
         "available_actions": actions,
@@ -264,6 +259,12 @@ def chapter_commit(project: Path, chapter: int, input_path: Path, *, accept_curr
     document = _read_json_object(input_path, "tracking transaction")
     require(document.get("chapter") == chapter, "tracking transaction chapter does not match command")
     require("wordcount" not in document, "tracking transaction must not provide wordcount")
+    require(document.get("expected_state_revision") == checked["state_revision"],
+            "tracking state changed since this transaction was prepared")
+    digests = {name: checked[name] for name in ("body_sha256", "outline_sha256")}
+    validate_expected_source_digests(document, digests)
+    # Bind this check to the locked transaction even on the ordinary direct path.
+    document.update({f"expected_{name}": value for name, value in digests.items()})
     document["wordcount"] = build_project_wordcount_record(project, chapter, resolution=resolution)
     tracking = _tracking_module()
     state = _tracking_call(tracking.apply_transaction, project, document)

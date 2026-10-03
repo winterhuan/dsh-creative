@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for 2026-10-03-story-native-workflow.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-03-story-native-workflow.md
+/agent-note-novel-chapters-through-the-native-workflow-tool:
+  en: 445704e9be4409ce
+  zh: 534f4a9d0112e8b3
+/agent-note-novel-chapters-through-the-native-workflow-tool/problem:
+  en: 5898c27762641c3f
+  zh: eba020c807a9abd3
+/agent-note-novel-chapters-through-the-native-workflow-tool/decision:
+  en: 44408eb4a6ae4044
+  zh: 23466a27701bd9f1
+/agent-note-novel-chapters-through-the-native-workflow-tool/review-routing-and-source-identity:
+  en: 95726920791ebaff
+  zh: 970cabfa084ccd3d
+/agent-note-novel-chapters-through-the-native-workflow-tool/outcomes-and-recovery:
+  en: e8b8f09023bdd18c
+  zh: 708e4a27791368d2
+/agent-note-novel-chapters-through-the-native-workflow-tool/alternatives-considered:
+  en: 2343a595818edd5f
+  zh: 50ce6353849673ab
+/agent-note-novel-chapters-through-the-native-workflow-tool/consequences:
+  en: 0878813bab9ff06f
+  zh: 879ce11a121c7427
+/agent-note-novel-chapters-through-the-native-workflow-tool/testing:
+  en: a2a7a89f5dabc2c8
+  zh: a1576fd18a228737

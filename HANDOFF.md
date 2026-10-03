@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-02。
+最后更新：2026-10-03。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -160,6 +160,14 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 小说包提供 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish`、`story-cover` 六个入口。长短篇流程按需读取；已有工程直接继续，原始文本接入不要求先拆全书。普通润色不调用朱雀，检测需要用户明确请求。
 
 六个技能的 `resourceBase` 均指向 `knowledge/story`，参考资料集中在 `references/`、脚本在 `scripts/`，DSH 原生 `read` 负责模型侧读取。专业 Agent 由原生 subagent 或 Team 工具创建，委派任务提供 Role 文件绝对路径和领域资源根，再由子 Agent 原生读取。章节提交不要求评审 JSON；旧评审记录只保留为历史数据，不再投影到续写。脚本移动后需保留 `storyctl.py` 与 `wordcount_core.py`、`tracking_commit.py` 同目录；`produce-tool.ts` 和 `sync-video-runtime.py` 使用新的脚本位置。
+
+2026-10-03 原生小说 workflow：新增按需加载的单章模板，由 `story-write` 在明确选择时顶层调用 DSH 原生 `workflow`，完成细纲检查与必要补建、场景计划、写作、独立审稿、最多两轮修订和提交验证。`chapter check` 返回正文/细纲哈希，提交支持可选预期哈希并在追踪锁内校验；普通审稿与无审稿记录的提交保持可用。具体入口、范围、恢复及 token 成本见[小说包说明](packages/creative/story/README.zh.md)。决策记录已转为 implemented，原生专家协作决策仅增加 workflow 局部结构化路由例外。
+
+验证：`typecheck`、`build`、全量 64 文件 628 项测试通过；补充用例后相关 3 文件 37 项及新增测试的独立 TypeScript 检查通过，Python 版本校验夹具含 9 项回归。文档 16 项和规范 3 项检查通过。原生模型循环与工具运行时测试覆盖五个独立子会话的写作—审稿—修订—再审稿—提交、真实脚本与追踪、待裁定返回、无效结构化响应及取消清理。使用脚本化模型，未调用付费服务，不据此宣称文学质量提升。
+
+准备阶段与失败诊断修复验证：相关 3 文件 50 项回归及新增测试的严格 TypeScript 检查通过。原生运行时使用脚本化模型，覆盖 Prepare 内补建/复用细纲、交接场景计划、缺失规划时停止、无原批准细纲时保留已有正文，以及模型报错或未调用 `structured_output` 的诊断；成功修订流程包含六个子会话。以下五成员浏览器记录来自加入 Prepare 前，本轮未重做浏览器或真实模型验证。
+
+隔离 `DSH_HOME` 完成本地链接和压缩包独立安装，模板、调用说明、三个 Python 脚本及写手 Role 六项包内资源检查通过。已有设置包未发布到 npm，压缩包安装在临时 profile 的 `pnpm-workspace.yaml` 配置本地压缩包 override；pnpm 11 不读取 package.json 中的 pnpm.overrides。Chrome 中原生 DSH 的历史运行展示与刷新验证通过：已提交运行显示 5 个已完成成员，待作者裁定显示 2 个已完成成员，早期取消显示 cancelled；没有页面脚本异常。历史夹具采用未压缩 Session，临时 profile 显式配置相同编码，并使用浏览器目录选择器；路径按 macOS 实际路径统一。浏览器验证针对历史呈现，实时子会话导航与真实模型文学判断未验证。临时服务和浏览器均已关闭，用户 profile 未改动。
 
 ### 短剧、游戏与视频技能资源
 
@@ -488,6 +496,8 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 | 现象 | 处理 |
 |---|---|
 | `pnpm install` 报某个 `@deepseek-ai/*` 404 | 检查是否写了 `*` / `latest`，改为精确版本（[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)） |
+| 小说 workflow 报 `no structured result` | 查看失败成员的子 Session 结束原因，再核查草稿和追踪；模型报错与未调用 `structured_output` 都可能返回 null，不能归因于摘要长度或盲目重跑（[结果与恢复](packages/creative/story/knowledge/story/references/writing/long/native-workflow.md#结果与恢复)） |
+| 新章细纲不存在 | workflow 的 Prepare 按[中途补纲](packages/creative/story/knowledge/story/references/writing/long/workflow-setup.md#中途补纲)在授权内创建并检查后交给写手；普通路径由主会话准备。章号检查返回缺失路径与补建建议，同章多个文件则先核实，不重复创建 |
 | 类型检查报 `Cannot find module '@deepseek-ai/<包>/remote'` 或 `ClientRemote` 缺属性 | 把该包加进 devDependencies，并 `import type {} from '<包>/remote'`（[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)） |
 | 类型检查报找不到 `@winterhuan/dsh-skill-viewer/remote` | 先跑 `pnpm run build:host`；`typecheck` 已经包含这一步 |
 | typert 报 `has no Remote methods` | 确认补丁已应用（`pnpm install` 会重新打补丁），以及补丁版本与安装的生成器版本一致（[问题 5](#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)） |

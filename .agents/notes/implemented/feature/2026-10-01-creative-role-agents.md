@@ -18,6 +18,8 @@ Existing reader_value_records remain opaque historical data through normal trans
 
 This supersedes Role execution policy in the [workbench decision](2026-09-03-creative-workbench.md#composition-and-knowledge) and the review-certificate/model requirements in the [reader-value decision](2026-09-22-novel-reader-value-generation.md). Their project safety, genre-aware review, outline and advisory-detector rationale remain active.
 
+The [native story workflow decision](2026-10-03-story-native-workflow.md) permits a small structured review recommendation for workflow routing. It retains native executors and review-free tracking transactions; the exception does not restore a persistent quality certificate or change ordinary prose review.
+
 ## Alternatives considered
 
 **Keep a thin creative_role wrapper.** It still owns role selection, two result formats, service availability and cleanup that native tools already provide.
