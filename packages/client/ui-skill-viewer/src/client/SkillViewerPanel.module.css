@@ -1,6 +1,6 @@
 .panel {
   display: grid;
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  grid-template-columns: minmax(260px, 30%) minmax(0, 1fr);
   flex: 1;
   min-height: 0;
   min-width: 0;
@@ -17,6 +17,7 @@
 
 .catalog {
   border-right: 0.5px solid var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-1);
 }
 
 .search {
@@ -24,9 +25,65 @@
   padding: 16px 16px 8px;
 }
 
+.catalogActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+  margin-top: 6px;
+}
+
+.catalogActions > span {
+  flex: 1;
+}
+
+.textButton {
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.textButton:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.textButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 96px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
+
 .searchInput {
   box-sizing: border-box;
   width: 100%;
+}
+
+.searchInput input::placeholder {
+  color: var(--dsw-alias-label-secondary);
+  opacity: 1;
 }
 
 .catalogScroll {
@@ -35,6 +92,7 @@
   padding: 8px 12px 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  --dsh-scrollbar-track-margin: 8px;
 }
 
 .selectionHint {
@@ -42,7 +100,7 @@
   padding: 24px;
   text-align: center;
   font-size: 14px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
 }
 
 .readerStatus {
@@ -59,7 +117,7 @@
 }
 
 .hint {
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
   font-size: 13px;
   margin: 0;
 }
@@ -125,7 +183,7 @@
   border: 0.5px solid transparent;
   background: transparent;
   cursor: pointer;
-  padding: 10px;
+  padding: 12px;
   border-radius: 6px;
 }
 
@@ -137,6 +195,15 @@
 .rowButton[aria-current='true'] {
   border-color: var(--dsw-alias-border-l1);
   background: var(--dsw-alias-bg-muted);
+  box-shadow: inset 3px 0 var(--dsw-alias-label-primary);
+}
+
+.rowButton:focus-visible,
+.textButton:focus-visible,
+.referenceSelect:focus-visible,
+.metadataHeading:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 2px;
 }
 
 .rowTitle {
@@ -147,14 +214,14 @@
 
 .name {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--dsw-alias-label-primary);
   overflow-wrap: anywhere;
 }
 
 .badge {
   font-size: 11px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
   border: 0.5px solid var(--dsw-alias-border-l1);
   padding: 1px 6px;
   border-radius: 999px;
@@ -177,11 +244,13 @@
 
 .meta {
   font-size: 12px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
 }
 
 .detailName {
   font-size: 15px;
+  font-weight: 500;
   margin: 0;
   color: var(--dsw-alias-label-primary);
   overflow-wrap: anywhere;
@@ -207,18 +276,22 @@
   padding: 20px 24px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  --dsh-scrollbar-track-margin: 8px;
 }
 
 .metadata {
   margin: 16px 0;
-  font-size: 12px;
+  padding: 12px 0;
+  border-block: 0.5px solid var(--dsw-alias-border-l2);
+  font-size: 13px;
   color: var(--dsw-alias-label-secondary);
 }
 
 .metadataHeading {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .referenceBack {
@@ -227,6 +300,12 @@
 
 .references {
   margin: 16px 0;
+}
+
+.referenceFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .referenceLabel {
@@ -267,7 +346,7 @@
 .metaRow dt {
   flex: none;
   min-width: 64px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
 }
 
 .metaRow dd {
@@ -278,22 +357,31 @@
 }
 
 .instructions {
-  border: 0.5px solid var(--dsw-alias-border-l1);
-  border-radius: 6px;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .instructionsHeader {
-  font-size: 12px;
-  color: var(--dsw-alias-label-tertiary);
-  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--dsw-alias-label-secondary);
+  padding: 12px 0;
   border-bottom: 0.5px solid var(--dsw-alias-border-l2);
-  background: var(--dsw-alias-markdown-code-block-banner);
+  overflow-wrap: anywhere;
+}
+
+.markdown {
+  min-width: 0;
+  padding: 16px 0;
 }
 
 .body {
-  margin: 0;
-  padding: 10px;
+  margin: 16px 0 0;
+  padding: 16px;
+  border-radius: 6px;
   font-size: 13px;
   line-height: 1.7;
   white-space: pre-wrap;

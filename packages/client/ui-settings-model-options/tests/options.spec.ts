@@ -1,6 +1,6 @@
 /** Field edits preserve unrelated settings and match the pinned adapter's capability schema. */
 import { Context } from '@deepseek-ai/cordis'
-import Llm from '@deepseek-ai/dsh-llm'
+import Llm, { resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
 import * as PiAi from '@deepseek-ai/dsh-llm-pi-ai'
 import { describe, expect, it } from 'vitest'
 import type { ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
@@ -68,6 +68,52 @@ describe('reasoning capabilities', () => {
 })
 
 describe('retry counts', () => {
+  it.for([[], providerPath])('enables invalid-request retries at settings path %j using the runtime defaults', path => {
+    const edits: OptionsDraft = { snapshot: snapshot({}), reasoning: new Map(), retryInvalidRequests: true }
+    const defaults = resolveRetryPolicy(undefined, 'test')
+    expect(defaults.mode).toBe('normal')
+    if (defaults.mode !== 'normal') throw new Error('Expected finite retry defaults')
+    expect(optionOperations(edits, path, [], read)).toEqual([
+      { op: 'set', path: [...path, 'retryPolicy', 'mode'], value: 'normal' },
+      { op: 'set', path: [...path, 'retryPolicy', 'retryableCodes'], value: [...defaults.retryableCodes, 'INVALID_REQUEST'] },
+    ])
+  })
+
+  it.each([true, false])('changes invalid-request eligibility to %s without replacing other error codes or backoff', enabled => {
+    const policy = { mode: 'normal', maxRetries: 2, retryableCodes: ['SERVER', 'CUSTOM', 'INVALID_REQUEST'], backoff: { initialDelayMs: 1000 } }
+    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: policy }), reasoning: new Map(), retryInvalidRequests: enabled }
+    expect(optionOperations(edits, [], [], read)).toEqual([
+      { op: 'set', path: ['retryPolicy', 'retryableCodes'], value: enabled ? policy.retryableCodes : ['SERVER', 'CUSTOM'] },
+    ])
+    expect(policy.retryableCodes).toEqual(['SERVER', 'CUSTOM', 'INVALID_REQUEST'])
+  })
+
+  it.each([['AUTH', 'retryAuthErrors'], ['QUOTA', 'retryQuotaErrors']] as const)('adds %s without replacing other error codes or backoff', (code, field) => {
+    const policy = { mode: 'normal', maxRetries: 2, retryableCodes: ['SERVER', 'CUSTOM'], backoff: { initialDelayMs: 1000 } }
+    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: policy }), reasoning: new Map(), [field]: true }
+    expect(optionOperations(edits, [], [], read)).toEqual([
+      { op: 'set', path: ['retryPolicy', 'retryableCodes'], value: ['SERVER', 'CUSTOM', code] },
+    ])
+  })
+
+  it('removes QUOTA while retaining AUTH and INVALID_REQUEST', () => {
+    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: { mode: 'normal', retryableCodes: ['AUTH', 'QUOTA', 'INVALID_REQUEST'] } }),
+      reasoning: new Map(), retryQuotaErrors: false }
+    expect(optionOperations(edits, [], [], read)).toEqual([
+      { op: 'set', path: ['retryPolicy', 'retryableCodes'], value: ['AUTH', 'INVALID_REQUEST'] },
+    ])
+  })
+
+  it('restores transient defaults when invalid requests are the only configured error class', () => {
+    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: { mode: 'normal', retryableCodes: ['INVALID_REQUEST'] } }),
+      reasoning: new Map(), retryInvalidRequests: false }
+    const defaults = resolveRetryPolicy(undefined, 'test')
+    if (defaults.mode !== 'normal') throw new Error('Expected finite retry defaults')
+    expect(optionOperations(edits, [], [], read)).toEqual([
+      { op: 'set', path: ['retryPolicy', 'retryableCodes'], value: defaults.retryableCodes },
+    ])
+  })
+
   it.each(['', ' ', '-1', '1.5', 'Infinity', '9007199254740992'])('rejects invalid input %j', count => {
     expect(draftError({ ...draft({ mode: 'inherit', efforts: {} }), retry: { mode: 'normal', count } })).toBe('invalidRetries')
   })

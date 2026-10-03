@@ -25,7 +25,9 @@ This package renders the Web skill viewer: a sidebar-foot action that opens a mo
 
 The [skill viewer](../../skill/skill-viewer/README.md) bundle installs this plugin together with the host-side service. Choose **Skills** at the bottom of the left Sidebar. With an addressable session the panel shows the catalog: a search input over the list, one row per skill carrying a `user-only` badge when the skill is hidden from the model, and a stale banner when the catalog is last-good coverage. A blank or continuable-subagent view renders the unscoped empty state instead, because the RPC requires an attached session.
 
-The modal uses the available viewport height and selects the first skill matching the current search when opened. Wide screens keep the searchable catalog beside the selected skill; narrow screens switch between the list and reader with a Back control. Skill information is always expanded. The reference selector opens local files in the same reader; Back to skill restores the instructions. The reader has one scrollable area while the title and Close control stay visible. Selecting another skill or file starts at the top. Search retains its query, and closing returns keyboard focus to the sidebar action. All copy routes through the locale-owned `skillViewer` dictionary, zh and en.
+Search matches skill names, descriptions, usage guidance, sources, and providers, with name matches ranked first. The catalog shows the matching count and offers Clear and Refresh. Refresh reads the current catalog and body again; reopening uses the cache. Both retain the selected skill when it remains available. Entering a different session selects the first match. Ordinary session-list updates preserve the current selection and reference read.
+
+The modal uses the available viewport height. Wide screens keep the catalog beside the reader; narrow screens use Back to switch between them. Markdown instructions and references open as formatted previews, with Source showing the exact text; other text files use Source. Skill information expands on demand. Filter reference paths before choosing a file, and use Back to skill to return to the instructions. The reader has one scrollable area beneath its title. Selecting another skill or file starts at the top, and closing returns keyboard focus to the sidebar action. All copy is available in Chinese and English.
 
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
@@ -52,8 +54,8 @@ None; the package never assembles or sends provider requests.
 <a id="known-limitations-and-deferred-work"></a>
 
 - **The viewer is read-only presentation** — it never invokes a skill and never mutates a session.
-- **Search filters names and descriptions only** — it does not scan instruction bodies.
-- **There is no watch** — reopening preserves settled caches; on-disk changes require a retry or cache invalidation before the next read.
+- **Search filters catalog metadata only** — it does not scan instruction bodies.
+- **There is no watch** — reopening preserves settled caches; use Refresh to read on-disk changes.
 
 **Runtime invariant:** No companion is published. This package is a read-only browser projection of the `skillViewer` Remote namespace onto one sidebar slot entry. It emits no Cordis events and owns no cross-plugin mutable state.
 

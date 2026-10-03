@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
-import { Input, rankByName } from '@deepseek-ai/dsh-client-ui-primitives'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { Input, IconLoadingOutlineRegular, MarkdownText, SegmentedControl } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SkillViewerGetValue } from '@winterhuan/dsh-skill-viewer/types'
 import type { SkillViewerReferenceState, SkillViewerState } from './controller.ts'
+import { searchSkills } from './controller.ts'
 import css from './SkillViewerPanel.module.css'
 
 /** Plain-data props of the viewer panel: snapshot plus intent callbacks. */
@@ -64,7 +65,7 @@ function SkillRow({ name, description, modelInvocable, source, provider, selecte
  */
 export function SkillViewerPanel({ state, t, onQuery, onRetry, onSelect, onBack, onReference }: SkillViewerPanelProps): ReactNode {
   const detail = state.detail
-  const matches = rankByName(state.skills, state.query)
+  const matches = searchSkills(state.skills, state.query)
   return (
     <div className={css.panel} data-detail={detail !== null || undefined}>
       <div className={css.catalog}>
@@ -78,11 +79,16 @@ export function SkillViewerPanel({ state, t, onQuery, onRetry, onSelect, onBack,
               value={state.query}
               onChange={(event) => { onQuery(event.target.value) }}
             />
+            <div className={css.catalogActions}>
+              <span className={css.hint} role="status">{t('list.count', { count: matches.length, total: state.skills.length })}</span>
+              {state.query ? <button type="button" className={css.textButton} onClick={() => { onQuery('') }}>{t('search.clear')}</button> : null}
+              <button type="button" className={css.textButton} disabled={state.status === 'loading'} onClick={onRetry}>{t('list.refresh')}</button>
+            </div>
           </div>
         ) : null}
         <div className={css.catalogScroll}>
           {state.status === 'idle' || state.status === 'loading' ? (
-            <p className={css.status}>{t('list.loading')}</p>
+            <div className={css.loading} role="status" aria-label={t('list.loading')}><IconLoadingOutlineRegular className={css.spinner} /></div>
           ) : null}
           {state.status === 'error' ? (
             <div className={css.errorBlock} role="alert">
@@ -90,7 +96,7 @@ export function SkillViewerPanel({ state, t, onQuery, onRetry, onSelect, onBack,
               <button type="button" className={css.retry} onClick={onRetry}>{t('list.retry')}</button>
             </div>
           ) : null}
-          {state.status === 'ready' ? (
+          {state.status === 'ready' || state.skills.length > 0 ? (
             <>
               {state.stale ? <p className={css.stale}>{t('list.stale')}</p> : null}
               {state.skills.length === 0 ? (
@@ -132,7 +138,7 @@ export function SkillViewerPanel({ state, t, onQuery, onRetry, onSelect, onBack,
               </button>
               <h2 className={css.detailName}><code>{detail.name}</code></h2>
             </div>
-            {detail.status === 'loading' ? <p className={css.readerStatus}>{t('detail.loading')}</p> : null}
+            {detail.status === 'loading' ? <div className={css.loading} role="status" aria-label={t('detail.loading')}><IconLoadingOutlineRegular className={css.spinner} /></div> : null}
             {detail.status === 'error' ? (
               <div className={css.readerStatus} role="alert">
                 <p className={css.error}>{`${t('detail.error')}：${detail.error ?? t('error.unknown')}`}</p>
@@ -142,7 +148,7 @@ export function SkillViewerPanel({ state, t, onQuery, onRetry, onSelect, onBack,
               </div>
             ) : null}
             {detail.status === 'ready' && detail.value !== null ? (
-              <SkillDetail key={`${detail.name}/${state.reference?.path ?? ''}`} value={detail.value} reference={state.reference} onReference={onReference} t={t} />
+              <SkillDetail key={detail.name} value={detail.value} reference={state.reference} onReference={onReference} t={t} />
             ) : null}
           </>
         )}
@@ -162,11 +168,21 @@ function SkillDetail({ value, reference, onReference, t }: {
   onReference: SkillViewerPanelProps['onReference']
   t: SkillViewerPanelProps['t']
 }): ReactNode {
+  const [fileQuery, setFileQuery] = useState('')
+  const [mode, setMode] = useState<'preview' | 'source'>('preview')
+  const id = useId()
+  const scroll = useRef<HTMLDivElement>(null)
+  useEffect(() => { if (scroll.current !== null) scroll.current.scrollTop = 0 }, [reference?.path])
+  const files = value.references?.files ?? []
+  const matches = files.filter(path => path.toLowerCase().includes(fileQuery.trim().toLowerCase()))
+  const markdown = reference === null || /\.(md|markdown)$/i.test(reference.path)
+  const content = reference === null ? value.content : reference.value?.content ?? ''
+  const activeMode = markdown ? mode : 'source'
   return (
-    <div className={css.detail} role="region" aria-label={t('detail.content')} tabIndex={0}>
+    <div ref={scroll} className={css.detail} role="region" aria-label={t('detail.content')} tabIndex={0}>
       <p className={css.description}>{value.description}</p>
-      <section className={css.metadata} aria-label={t('meta.details')}>
-        <h3 className={css.metadataHeading}>{t('meta.details')}</h3>
+      <details className={css.metadata}>
+        <summary className={css.metadataHeading}>{t('meta.details')}</summary>
         <dl className={css.metaList}>
           <div className={css.metaRow}>
             <dt>{t('meta.source')}</dt>
@@ -195,25 +211,35 @@ function SkillDetail({ value, reference, onReference, t }: {
             </div>
           )}
         </dl>
-      </section>
+      </details>
       <div className={css.references}>
         {value.references === null ? <p className={css.hint}>{t('reference.unavailable')}</p>
           : value.references.files.length === 0 ? null
             : (
-              <label className={css.referenceLabel}>
-                <span>{t('reference.label')}</span>
-                <select className={css.referenceSelect} value={reference?.path ?? ''} onChange={(event) => { onReference(event.target.value) }}>
-                  <option value="">{t('reference.instructions')}</option>
-                  {value.references.files.map(path => <option key={path} value={path}>{path}</option>)}
-                </select>
-              </label>
+              <div className={css.referenceFields}>
+                <Input className={css.searchInput as string} aria-label={t('reference.search')} placeholder={t('reference.search')}
+                  value={fileQuery} onChange={event => { setFileQuery(event.target.value) }} />
+                <label className={css.referenceLabel}>
+                  <span>{t('reference.label')}</span>
+                  <select className={css.referenceSelect} value={reference?.path ?? ''} onChange={(event) => { onReference(event.target.value) }}>
+                    <option value="">{t('reference.instructions')}</option>
+                    {reference !== null && !matches.includes(reference.path) ? <option value={reference.path}>{reference.path}</option> : null}
+                    {matches.map(path => <option key={path} value={path}>{path}</option>)}
+                  </select>
+                </label>
+                {matches.length === 0 ? <p className={css.hint}>{t('reference.noResults')}</p> : null}
+              </div>
             )}
         {value.references?.files.length === 0 && !value.references.truncated ? <p className={css.hint}>{t('reference.empty')}</p> : null}
         {value.references?.truncated === true ? <p className={css.hint}>{t('reference.listTruncated')}</p> : null}
       </div>
       <section className={css.instructions} aria-label={t('detail.instructions')}>
-        <div className={css.instructionsHeader}>{reference?.path ?? t('detail.instructions')}</div>
-        {reference?.status === 'loading' ? <p className={css.readerStatus}>{t('reference.loading')}</p> : null}
+        <div className={css.instructionsHeader}>
+          <span>{reference?.path ?? t('detail.instructions')}</span>
+          {markdown ? <SegmentedControl id={id} value={mode} onChange={setMode} label={t('detail.view')}
+            options={[{ value: 'preview', label: t('detail.preview') }, { value: 'source', label: t('detail.source') }]} /> : null}
+        </div>
+        {reference?.status === 'loading' ? <div className={css.loading} role="status" aria-label={t('reference.loading')}><IconLoadingOutlineRegular className={css.spinner} /></div> : null}
         {reference?.status === 'error' ? (
           <div className={css.readerStatus} role="alert">
             <p className={css.error}>{`${t('reference.error')}：${reference.error ?? t('error.unknown')}`}</p>
@@ -222,7 +248,14 @@ function SkillDetail({ value, reference, onReference, t }: {
         ) : null}
         {reference?.value?.truncated === true ? <p className={css.readerStatus}>{t('reference.truncated')}</p> : null}
         {reference === null || reference.status === 'ready'
-          ? <pre className={css.body}>{reference === null ? value.content : reference.value?.content}</pre>
+          ? <div role={markdown ? 'tabpanel' : undefined} id={`${id}-${activeMode}-panel`} aria-labelledby={markdown ? `${id}-${activeMode}` : undefined}>
+            {activeMode === 'source' ? <pre className={css.body}>{content}</pre>
+              : <div className={css.markdown}><MarkdownText text={content} labels={{
+                code: { copyLabel: t('code.copy'), copiedLabel: t('code.copied'), toolbarLabels: {
+                  codeLabel: t('code.title'), wrapLabel: t('code.wrap'), unwrapLabel: t('code.unwrap'),
+                } }, footnotes: t('detail.footnotes'),
+              }} /></div>}
+          </div>
           : null}
       </section>
     </div>

@@ -147,13 +147,17 @@ DSH 内置的 `@deepseek-ai/dsh-api-remotes` 只挂载内置包的 Remote。外�
 
 DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖它自动挂载自己的 Remote。
 
+2026-10-03 Skill Viewer 验证：会话列表通知只在所查看的会话身份变化时重载，普通状态更新保留技能选择。搜索、刷新、Markdown 预览与参考文件查找见[查看器说明](packages/client/ui-skill-viewer/README.zh.md)。`typecheck`、`build` 和客户端 104 项测试通过；隔离 DSH 的 Chrome 验证快速切换、另一标签页更新同一会话、重开保留选择、磁盘刷新、参考文件导航、深浅色及 720px/390px 布局，页面脚本错误为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-skill-viewer-owssq_44/`；使用本地模拟模型接口，未修改用户 profile 或技能文件。
+
 ### 设置与密钥
 
 `ui-settings-creative-produce` 编辑 `creative-produce` 设置命名空间。6 个提供商密钥通过 `ctx.remote.credentials` 写入；这个 Remote 由 DSH 内置的 `@deepseek-ai/dsh-api-settings-controller` 提供，由 `api-remotes` 挂载，插件只需要它的类型（见[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
 
 ### 模型设置增强
 
-`ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力和提供方重试次数。它复用内置设置、模型目录和重试运行时，不随 Creative 聚合包安装。安装与配置见[包说明](packages/client/ui-settings-model-options/README.zh.md)。
+`ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力、提供方重试次数及无效请求、认证、额度错误的重试开关。它复用内置设置、模型目录和重试运行时，不随 Creative 聚合包安装。安装与配置见[包说明](packages/client/ui-settings-model-options/README.zh.md)。
+
+2026-10-03 重试开关验证：`typecheck`、`build`、包内 54 项及全量 65 文件 683 项测试通过。隔离 DSH 的 Chrome 与本地模拟接口确认 400 在关闭开关、开启并设置 3 次、开启并设置 0 次时分别请求 1、4、1 次，413 沿用此开关。QUOTA 关闭时请求 1 次，开启并设置 2 次时请求 3 次，设为 0 时请求 1 次；接口恢复后可成功完成。AUTH 关闭时 401 请求 1 次，开启并设置 1 次时请求 2 次。刷新持久化、深浅色及 720px 窄窗口检查通过，页面脚本错误为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-retry400-2mtl7t6i/` 的 `results.json` 与 `quota-results.json`；未调用付费模型或修改用户 profile。
 
 ### 小说技能与资源
 

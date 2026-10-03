@@ -16,7 +16,7 @@ import type { SkillViewerEntry, SkillViewerGetValue } from '@winterhuan/dsh-skil
 import { SkillViewerController, type SkillViewerRemote } from '../src/client/controller.ts'
 import { SkillViewerAction } from '../src/client/SkillViewerAction.tsx'
 import { SkillViewerPanel } from '../src/client/SkillViewerPanel.tsx'
-import { zh } from '../src/client/locales.ts'
+import { en, zh } from '../src/client/locales.ts'
 import type { SkillViewerState } from '../src/client/controller.ts'
 
 afterEach(cleanup)
@@ -88,9 +88,23 @@ function renderPanel(overrides: Partial<SkillViewerState> = {}): {
 }
 
 describe('SkillViewerPanel list views', () => {
+  it.each([zh, en])('searches descriptions, reports the count and exposes clear and refresh in either locale', dictionary => {
+    const onQuery = vi.fn(), onRetry = vi.fn()
+    const copy = makeTranslate(dictionary)
+    render(<SkillViewerPanel state={state({ query: 'publishing', skills: [entry({ description: 'Before publishing.' }), entry({ name: 'write', description: 'Draft.' })] })}
+      t={copy} onQuery={onQuery} onRetry={onRetry} onSelect={vi.fn()} onBack={vi.fn()} onReference={vi.fn()} />)
+    expect(screen.getByRole('button', { name: /review/ })).toBeDefined()
+    expect(screen.queryByRole('button', { name: /write/ })).toBeNull()
+    expect(screen.getByRole('status').textContent).toBe(copy('list.count', { count: 1, total: 2 }))
+    fireEvent.click(screen.getByRole('button', { name: copy('search.clear') }))
+    expect(onQuery).toHaveBeenCalledWith('')
+    fireEvent.click(screen.getByRole('button', { name: copy('list.refresh') }))
+    expect(onRetry).toHaveBeenCalledOnce()
+  })
+
   it('renders the loading state', () => {
     renderPanel({ status: 'loading' })
-    expect(screen.getByText(zh['list.loading'])).toBeDefined()
+    expect(screen.getByRole('status', { name: zh['list.loading'] })).toBeDefined()
   })
 
   it('renders the error state and routes retry', () => {
@@ -166,6 +180,40 @@ describe('SkillViewerPanel list views', () => {
 })
 
 describe('SkillViewerPanel detail views', () => {
+  it('renders Markdown tables and switches to the exact original text', () => {
+    const content = '# Checklist\n\n| Check | Result |\n| --- | --- |\n| Links | Ready |\n\n<script>unsafe()</script>'
+    renderPanel({ detail: { name: 'review', status: 'ready', value: detail({ content }), error: null } })
+    expect(screen.getByRole('heading', { name: 'Checklist' })).toBeDefined()
+    expect(screen.getByRole('table').textContent).toContain('Links')
+    expect(document.querySelector('script')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: zh['detail.source'] }))
+    expect(screen.getByRole('tabpanel').textContent).toBe(content)
+    expect(screen.queryByRole('table')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: zh['detail.preview'] }))
+    expect(screen.getByRole('table')).toBeDefined()
+  })
+
+  it('filters reference paths while retaining the selected file and the way back to instructions', () => {
+    const { onReference } = renderPanel({
+      detail: { name: 'review', status: 'ready', value: detail({ references: { files: ['references/guide.md', 'references/checks.md', 'references/data.json'], truncated: false } }), error: null },
+      reference: { path: 'references/guide.md', status: 'ready', value: { path: 'references/guide.md', content: '# Guide', bytes: 7, truncated: false }, error: null },
+    })
+    fireEvent.change(screen.getByRole('textbox', { name: zh['reference.search'] }), { target: { value: 'CHECKS' } })
+    expect(screen.getAllByRole('option').map(option => option.textContent)).toEqual([zh['reference.instructions'], 'references/guide.md', 'references/checks.md'])
+    expect(screen.getByRole('combobox')).toHaveProperty('value', 'references/guide.md')
+    fireEvent.change(screen.getByRole('textbox', { name: zh['reference.search'] }), { target: { value: 'absent' } })
+    expect(screen.getByText(zh['reference.noResults'])).toBeDefined()
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '' } })
+    expect(onReference).toHaveBeenCalledWith('')
+  })
+
+  it('displays non-Markdown references as source text', () => {
+    renderPanel({ detail: { name: 'review', status: 'ready', value: detail(), error: null },
+      reference: { path: 'references/data.json', status: 'ready', value: { path: 'references/data.json', content: '{"value":1}', bytes: 11, truncated: false }, error: null } })
+    expect(screen.getByText('{"value":1}').tagName).toBe('PRE')
+    expect(screen.queryByRole('tablist')).toBeNull()
+  })
+
   it.each([
     { references: null, message: zh['reference.unavailable'] },
     { references: { files: [], truncated: false }, message: zh['reference.empty'] },
@@ -182,7 +230,7 @@ describe('SkillViewerPanel detail views', () => {
       detail: { name: 'review', status: 'ready', value: detail(), error: null },
       reference: { path: 'references/guide.md', status: 'loading', value: null, error: null },
     })
-    expect(screen.getByText(zh['reference.loading'])).toBeDefined()
+    expect(screen.getByRole('status', { name: zh['reference.loading'] })).toBeDefined()
     expect(screen.queryByText(detail().content)).toBeNull()
   })
 
@@ -221,10 +269,11 @@ describe('SkillViewerPanel detail views', () => {
     expect(screen.getByRole('region', { name: zh['detail.instructions'] })).toBeDefined()
   })
 
-  it('shows metadata without a disclosure control', () => {
+  it('keeps metadata collapsed so the instruction preview is visible first', () => {
     renderPanel({ detail: { name: 'review', status: 'ready', value: detail(), error: null } })
-    expect(screen.getByRole('region', { name: zh['meta.details'] })).toBeDefined()
-    expect(document.querySelector('details')).toBeNull()
+    expect(document.querySelector('details')?.open).toBe(false)
+    fireEvent.click(screen.getByText(zh['meta.details']))
+    expect(document.querySelector('details')?.open).toBe(true)
     expect(screen.getByText('project-dsh')).toBeDefined()
     expect(screen.getByRole('region', { name: zh['detail.instructions'] })).toBeDefined()
   })
@@ -234,7 +283,7 @@ describe('SkillViewerPanel detail views', () => {
       detail: { name: 'review', status: 'loading', value: null, error: null },
     })
 
-    expect(screen.getByText(zh['detail.loading'])).toBeDefined()
+    expect(screen.getByRole('status', { name: zh['detail.loading'] })).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: zh['detail.back'] }))
     expect(onBack).toHaveBeenCalledOnce()
   })
@@ -273,8 +322,7 @@ describe('SkillViewerPanel detail views', () => {
     expect(screen.getByText('Before publishing.')).toBeDefined()
     expect(screen.getByText('/project/.dsh/skills/review/SKILL.md')).toBeDefined()
     expect(screen.getByText(zh['detail.instructions'])).toBeDefined()
-    // Whitespace normalization flattens the <pre> body; match a fragment and
-    // pin the element to the verbatim-body region.
+    fireEvent.click(screen.getByRole('tab', { name: zh['detail.source'] }))
     const body = screen.getByText(/Follow the checklist\./)
     expect(body.tagName).toBe('PRE')
   })
@@ -378,9 +426,9 @@ describe('SkillViewerAction', () => {
     expect(calls.some(call => call.method === 'get')).toBe(true)
 
     fireEvent.change(await screen.findByRole('combobox', { name: zh['reference.label'] }), { target: { value: 'references/guide.md' } })
-    expect(await screen.findByText('# Guide')).toBeDefined()
+    expect(await screen.findByRole('heading', { name: 'Guide' })).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: zh['reference.back'] }))
-    expect((await screen.findByText(/Follow the checklist\./)).textContent).toBe(detail().content)
+    expect(await screen.findByRole('heading', { name: 'Review' })).toBeDefined()
 
     fireEvent.click(screen.getByRole('button', { name: zh['detail.back'] }))
     expect(controller.store.getSnapshot().detail).toBeNull()

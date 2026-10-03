@@ -47,6 +47,12 @@ Request parameter values are editable in the expanded mapping. A blank Off value
 
 Enter the maximum number of additional attempts after the first request: `0` disables retries and `3` allows at most four attempts under this policy. The default is five retries. A stored unlimited policy remains intact until a number is entered or the inherited limit is restored. Restoring the limit restores the inherited policy mode and count, preserving retry error codes and backoff settings.
 
+Enable **Retry invalid requests (HTTP 400/413)** to include failures the adapter classifies as `INVALID_REQUEST`. The option is off by default and uses the same retry limit; `0` still disables retries. Requests are sent again unchanged, so incompatible parameters can fail again. An unlimited policy already retries these errors; enter a finite limit before adjusting the option.
+
+Enable **Retry authentication errors (AUTH)** to include failures the adapter classifies as `AUTH`. The option is off by default and uses the same retry limit. Enable it only when the provider can recover; invalid credentials and exhausted quota will keep failing and can repeat provider requests.
+
+Enable **Retry quota errors (QUOTA)** to include quota failures classified as `QUOTA`. The option is off by default and uses the same retry limit; `0` still disables retries. Requests are sent again unchanged and do not add quota. Use this when the provider can recover between attempts.
+
 The provider policy is executed by DSH's `llm-retry` plugin, which the web profile includes. It retries eligible failed model steps and supports cancellation; raw LLM stream calls do not acquire retries from these controls. See the [retry executor](../../../upstream/packages/llm/llm-retry/README.md) for the execution rules.
 
 ### Save and recover
@@ -63,9 +69,9 @@ Edits remain drafts until Save. Switching models retains their drafts; leaving o
 
 The [bundle patch](cordis.patch.yml) installs one browser plugin. It registers in the existing `settings.models.provider-card` slot for `llm-pi-ai` and `llm-deepseek`; only the pi-ai family exposes model thinking metadata. The [browser entry](src/client/index.ts) binds the shared settings mirror, native model catalog, and an application-wide save toast. The Host entry registers no settings namespace or request executor.
 
-[Draft operations](src/client/options.ts) address custom models through their existing array entries and built-in models through `modelOverrides`. Each save carries the revision captured on the first edit or when opening a batch preview, and changes only the selected fields. No catalog is copied to change a built-in model, and no credentials, retry backoff, or error-code list is restated. The adapters validate saved settings and publish their live capabilities to the existing chat selector.
+[Draft operations](src/client/options.ts) address custom models through their existing array entries and built-in models through `modelOverrides`. Each save carries the revision captured on the first edit or when opening a batch preview, and changes only the selected fields. No catalog is copied to change a built-in model, and credentials and retry backoff are preserved. The invalid-request, authentication, and quota options add or remove only their respective error classes from the existing policy. Omitted classes use the pinned DSH defaults; if removing the optional classes would leave an empty list, the UI restores the default transient error classes. The adapters validate saved settings and publish their live capabilities to the existing chat selector.
 
-The package owns no independently observable Host state, so it exposes no runtime invariant installer. Its tests cover field edits, runtime capability reporting, read-only controls, retained drafts, revision conflicts, and slot disposal.
+The package owns no independently observable Host state, so it exposes no runtime invariant installer. Its tests cover field edits, runtime capability reporting, retry-default parity, error-class preservation, read-only controls, retained drafts, revision conflicts, and slot disposal.
 
 </details>
 

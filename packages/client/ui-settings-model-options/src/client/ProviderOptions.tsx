@@ -4,7 +4,7 @@ import { IconLoadingOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { ModelCatalogModel } from '@deepseek-ai/dsh-api-remotes/client'
-import { THINKING_LEVELS, draftError, modelOptions, optionOperations, reasoningDraft, reasoningError } from './options.ts'
+import { THINKING_LEVELS, draftError, modelOptions, optionOperations, reasoningDraft, reasoningError, retryableCodes } from './options.ts'
 import type { OptionsDraft, ReasoningDraft, RetryDraft } from './options.ts'
 import type { ProviderOptionsFace } from './operations.ts'
 import { BatchReasoning, reasoningSummary } from './BatchReasoning.tsx'
@@ -76,6 +76,10 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
   const unlimited = retry?.mode !== 'normal' && read(policySource, [...policyPath, 'mode']) === 'always'
   const retries = read(policySource, [...policyPath, 'maxRetries'])
   const retryText = retry?.mode === 'normal' ? retry.count : unlimited ? '' : String(typeof retries === 'number' ? retries : 5)
+  const codes = retryableCodes(source.value, provider.settingsPath, read)
+  const retryInvalid = unlimited || (draft?.retryInvalidRequests ?? codes.includes('INVALID_REQUEST'))
+  const retryAuth = unlimited || (draft?.retryAuthErrors ?? codes.includes('AUTH'))
+  const retryQuota = unlimited || (draft?.retryQuotaErrors ?? codes.includes('QUOTA'))
 
   const edit = (change: (current: OptionsDraft) => OptionsDraft): void => {
     setDraft(current => change(current ?? { snapshot: source, reasoning: new Map() }))
@@ -184,6 +188,26 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
         value={retryText} onChange={event => { editRetry({ mode: 'normal', count: event.target.value }) }} />
       <button type="button" className={css.link} onClick={() => { editRetry({ mode: 'inherit' }) }}>{t('inheritedRetry')}</button>
       {inherited ? <p className={css.hint}>{t('restored')}</p> : null}
+      <label className={css.check}>
+        <input type="checkbox" checked={retryInvalid} disabled={unlimited} aria-describedby={`${id}-invalid-retry-hint`}
+          onChange={event => { const checked = event.target.checked; edit(current => ({ ...current, retryInvalidRequests: checked })) }} />
+        {t('retryInvalidRequests')}
+      </label>
+      <p className={css.hint} id={`${id}-invalid-retry-hint`}>{t('retryInvalidHint')}</p>
+      <label className={css.check}>
+        <input type="checkbox" checked={retryAuth} disabled={unlimited} aria-describedby={`${id}-auth-retry-hint`}
+          onChange={event => { const checked = event.target.checked; edit(current => ({ ...current, retryAuthErrors: checked })) }} />
+        {t('retryAuthErrors')}
+      </label>
+      <p className={css.hint} id={`${id}-auth-retry-hint`}>{t('retryAuthHint')}</p>
+      <label className={css.check}>
+        <input type="checkbox" checked={retryQuota} disabled={unlimited} aria-describedby={`${id}-quota-retry-hint`}
+          onChange={event => { const checked = event.target.checked; edit(current => ({ ...current, retryQuotaErrors: checked })) }} />
+        {t('retryQuotaErrors')}
+      </label>
+      <p className={css.hint} id={`${id}-quota-retry-hint`}>{t('retryQuotaHint')}</p>
+      {!unlimited && !retryInvalid && !retryAuth && !retryQuota && codes.length > 0 && codes.every(code => code === 'INVALID_REQUEST' || code === 'AUTH' || code === 'QUOTA')
+        ? <p className={css.hint}>{t('retryDefaultsRestored')}</p> : null}
     </fieldset>
     <div className={css.validation} aria-live="polite">
       {stale ? <p role="alert">{t('conflict')}</p> : error === undefined ? null : <p role="alert">{t(error)}</p>}

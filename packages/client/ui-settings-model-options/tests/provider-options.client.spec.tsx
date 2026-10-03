@@ -43,17 +43,114 @@ describe('provider options', () => {
     await b.open()
     const t = b.props.t
     fireEvent.change(screen.getByLabelText(t('reasoning')), { target: { value: 'custom' } })
-    expect(screen.getByRole('button', { name: t('save'), exact: true })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: t('save') })).toHaveProperty('disabled', true)
     fireEvent.click(screen.getByLabelText(t('high')))
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } })
+    fireEvent.click(screen.getByLabelText(t('retryInvalidRequests')))
     expect(b.save).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByRole('button', { name: t('save'), exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: t('save') }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledTimes(1) })
     expect(b.save).toHaveBeenCalledWith([
       { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
       { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'maxRetries'], value: 3 },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'INVALID_REQUEST'] },
       { op: 'set', path: ['providers', 'gateway', 'models', '0', 'reasoningEfforts'], value: { high: 'high' } },
     ], 7)
+  })
+
+  it('reads inherited invalid-request eligibility and discards a pending change', async () => {
+    const b = bench()
+    b.snapshot.value = { providers: { gateway: { retryPolicy: { mode: 'normal', maxRetries: 2, retryableCodes: ['SERVER', 'INVALID_REQUEST'] } } } }
+    await b.open()
+    const checkbox = screen.getByLabelText(b.props.t('retryInvalidRequests'))
+    expect(checkbox).toHaveProperty('checked', true)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
+    expect(checkbox).toHaveProperty('checked', true)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['SERVER'] },
+    ], 7) })
+  })
+
+  it('saves AUTH retry eligibility separately', async () => {
+    const b = bench()
+    await b.open()
+    const checkbox = screen.getByLabelText(b.props.t('retryAuthErrors'))
+    expect(checkbox).toHaveProperty('checked', false)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('save') }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'AUTH'] },
+    ], 7) })
+  })
+
+  it.each(['en', 'zh'] as const)('saves QUOTA eligibility with a zero retry limit in %s', async locale => {
+    const b = bench(locale)
+    await b.open()
+    const checkbox = screen.getByLabelText(b.props.t('retryQuotaErrors'))
+    expect(checkbox).toHaveProperty('checked', false)
+    fireEvent.click(checkbox)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '0' } })
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('save') }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'maxRetries'], value: 0 },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'QUOTA'] },
+    ], 7) })
+  })
+
+  it('explains default restoration when QUOTA is the only configured class', async () => {
+    const b = bench()
+    b.snapshot.value = { providers: { gateway: { retryPolicy: { mode: 'normal', retryableCodes: ['QUOTA'] } } } }
+    await b.open()
+    fireEvent.click(screen.getByLabelText(b.props.t('retryQuotaErrors')))
+    expect(screen.getByText(b.props.t('retryDefaultsRestored'))).toBeTruthy()
+  })
+
+  it('keeps always mode intact until a finite limit is entered', async () => {
+    const b = bench()
+    b.snapshot.value = { providers: { gateway: { retryPolicy: { mode: 'always' } } } }
+    await b.open()
+    const checkbox = screen.getByLabelText(b.props.t('retryInvalidRequests'))
+    expect(checkbox).toHaveProperty('checked', true)
+    expect(checkbox).toHaveProperty('disabled', true)
+    expect(screen.getByLabelText(b.props.t('retryQuotaErrors'))).toHaveProperty('checked', true)
+    expect(screen.getByLabelText(b.props.t('retryQuotaErrors'))).toHaveProperty('disabled', true)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '0' } })
+    expect(checkbox).toHaveProperty('disabled', false)
+    expect(checkbox).toHaveProperty('checked', false)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalled() })
+    expect(b.save.mock.calls[0]?.[0]).toEqual([
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'maxRetries'], value: 0 },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'INVALID_REQUEST'] },
+    ])
+  })
+
+  it('restores only the inherited limit while retaining the staged error choice', async () => {
+    const b = bench()
+    await b.open()
+    fireEvent.click(screen.getByLabelText(b.props.t('retryInvalidRequests')))
+    fireEvent.click(screen.getByRole('button', { name: 'Restore inherited retry limit' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
+      { op: 'unset', path: ['providers', 'gateway', 'retryPolicy', 'maxRetries'] },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'INVALID_REQUEST'] },
+    ], 7) })
+  })
+
+  it('explains the fallback when disabling the only configured error class', async () => {
+    const b = bench()
+    b.snapshot.value = { providers: { gateway: { retryPolicy: { mode: 'normal', retryableCodes: ['INVALID_REQUEST'] } } } }
+    await b.open()
+    fireEvent.click(screen.getByLabelText(b.props.t('retryInvalidRequests')))
+    expect(screen.getByText(b.props.t('retryDefaultsRestored'))).toBeTruthy()
   })
 
   it('retains each model draft when switching the selected model', async () => {
@@ -75,7 +172,7 @@ describe('provider options', () => {
     fireEvent.click(screen.getByText('Request parameter values'))
     expect(screen.getByLabelText('Off parameter value')).toHaveProperty('value', '')
     fireEvent.change(screen.getByLabelText('Off parameter value'), { target: { value: 'none' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save).toHaveBeenCalled() })
     expect(b.save.mock.calls[0]?.[0][0]).toMatchObject({ value: { off: 'none', high: 'high' } })
   })
@@ -99,7 +196,7 @@ describe('provider options', () => {
     expect(panel.queryByLabelText(t('selectTarget', { model: 'a' }))).toBeNull()
     expect(panel.getAllByRole('checkbox').every(input => !(input as HTMLInputElement).checked)).toBe(true)
     expect(panel.getByRole('button', { name: t('applyTargets', { count: '0' }) })).toHaveProperty('disabled', true)
-    expect(screen.getByRole('button', { name: t('save'), exact: true })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: t('save') })).toHaveProperty('disabled', true)
     fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'b' })))
     fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'c' })))
     fireEvent.click(panel.getByRole('button', { name: t('applyTargets', { count: '2' }) }))
@@ -109,7 +206,7 @@ describe('provider options', () => {
     }) })).toBeTruthy()
     fireEvent.change(screen.getByLabelText(t('model')), { target: { value: 'b' } })
     fireEvent.change(screen.getByLabelText(t('wireValue', { level: t('high') })), { target: { value: 'deep' } })
-    fireEvent.click(screen.getByRole('button', { name: t('save'), exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: t('save') }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledTimes(1) })
     expect(b.save).toHaveBeenCalledWith([
       { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
@@ -135,7 +232,7 @@ describe('provider options', () => {
     fireEvent.change(panel.getByRole('searchbox'), { target: { value: 'missing' } })
     expect(panel.getByText('No matching models')).toBeTruthy()
     fireEvent.click(panel.getByRole('button', { name: 'Apply to 1 models' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
       { op: 'unset', path: ['providers', 'gateway', 'models', '2', 'reasoningEfforts'] },
     ], 7) })
@@ -151,7 +248,7 @@ describe('provider options', () => {
     expect(screen.getByText('none')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Select B (b)'))
     fireEvent.click(screen.getByRole('button', { name: 'Apply to 1 models' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
       { op: 'set', path: ['providers', 'gateway', 'modelOverrides', 'b', 'reasoningEfforts'], value: { off: 'none', high: 'ultra' } },
     ], 7) })
@@ -164,7 +261,7 @@ describe('provider options', () => {
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
     fireEvent.click(screen.getByLabelText('Select b'))
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(screen.getByLabelText('Thinking capability')).toHaveProperty('value', 'disabled')
     expect(screen.getByRole('spinbutton')).toHaveProperty('value', '2')
     fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
@@ -203,12 +300,12 @@ describe('provider options', () => {
     b.view.rerender(<ProviderOptions {...b.props} />)
     expect(screen.getByRole('alert').textContent).toContain('Settings changed elsewhere')
     expect(screen.getByRole('button', { name: 'Apply to 1 models' }).closest('fieldset')).toHaveProperty('disabled', true)
-    expect(screen.getByRole('button', { name: 'Save', exact: true })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true)
     fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
     expect(screen.queryByRole('alert')).toBeNull()
     expect(screen.queryByRole('group', { name: 'Apply to other models' })).toBeNull()
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '2' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save.mock.calls[0]?.[1]).toBe(8) })
   })
 
@@ -217,10 +314,10 @@ describe('provider options', () => {
     b.save.mockResolvedValueOnce({ ok: false, conflict: false, message: 'refused' })
     await b.open()
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '0' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
-    await waitFor(() => { expect(screen.getByRole('button', { name: 'Save', exact: true })).toHaveProperty('disabled', false) })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => { expect(screen.getByRole('button', { name: 'Save' })).toHaveProperty('disabled', false) })
     expect(screen.getByRole('spinbutton')).toHaveProperty('value', '0')
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledTimes(2) })
   })
 
@@ -228,12 +325,14 @@ describe('provider options', () => {
     const b = bench()
     await b.open()
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '2' } })
+    fireEvent.click(screen.getByLabelText(b.props.t('retryInvalidRequests')))
     const next = { ...b.snapshot, revision: 8 }
     b.props.useSettings = select => select(next)
     b.view.rerender(<ProviderOptions {...b.props} />)
     expect(screen.getByRole('alert').textContent).toContain('Settings changed elsewhere')
-    expect(screen.getByRole('button', { name: 'Save', exact: true })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true)
     expect(screen.getByRole('spinbutton')).toHaveProperty('value', '2')
+    expect(screen.getByLabelText(b.props.t('retryInvalidRequests')).closest('fieldset')).toHaveProperty('disabled', true)
     fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
     expect(screen.queryByRole('alert')).toBeNull()
   })
@@ -244,7 +343,7 @@ describe('provider options', () => {
     b.save.mockReturnValue(new Promise(result => { resolve = result }))
     await b.open()
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '1' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     expect(screen.getByRole('button', { name: 'Saving…' })).toHaveProperty('disabled', true)
     b.view.unmount()
     resolve({ ok: true })

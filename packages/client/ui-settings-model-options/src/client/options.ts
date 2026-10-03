@@ -22,11 +22,17 @@ export interface ReasoningDraft {
 /** Restore the inherited retry limit or set a finite number of additional attempts. */
 export type RetryDraft = { mode: 'inherit' } | { mode: 'normal'; count: string }
 
+// Normal-mode defaults when retryableCodes is omitted in DSH 0.2.0-rc.2.
+const DEFAULT_RETRYABLE_CODES = ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT'] as const
+
 /** Edits retain the exact snapshot from which the first field was changed. */
 export interface OptionsDraft {
   snapshot: ConfigFormSnapshot<unknown>
   reasoning: ReadonlyMap<string, ReasoningDraft>
   retry?: RetryDraft
+  retryInvalidRequests?: boolean
+  retryAuthErrors?: boolean
+  retryQuotaErrors?: boolean
 }
 
 /** One configured or catalog model, with its adapter-owned settings address. */
@@ -39,6 +45,19 @@ export interface ModelOption {
 
 /** Bound settings service reader, also usable by pure draft operations. */
 export type ReadPath = (value: unknown, path: readonly string[]) => unknown
+
+/**
+ * Read the provider's configured retry classes, or the pinned runtime defaults.
+ * @param value - resolved settings namespace.
+ * @param providerPath - provider's address within the namespace.
+ * @param read - settings-owned reader.
+ * @returns normal-mode retry classes; always mode ignores this list.
+ */
+export function retryableCodes(value: unknown, providerPath: readonly string[], read: ReadPath): readonly string[] {
+  const codes = read(value, [...providerPath, 'retryPolicy', 'retryableCodes'])
+  return Array.isArray(codes) && codes.every((code: unknown): code is string => typeof code === 'string')
+    ? codes : DEFAULT_RETRYABLE_CODES
+}
 
 /**
  * Join stored models with catalog labels without materializing a replacement catalog.
@@ -122,7 +141,7 @@ export function reasoningError(reasoning: ReasoningDraft): 'missingLevel' | 'mis
  * @param providerPath - provider's address within its settings namespace.
  * @param models - model addresses read from that snapshot.
  * @param read - settings-owned reader for inherited retry settings.
- * @returns field operations preserving other model fields, credentials, backoff, and retry codes.
+ * @returns field operations preserving other model fields, credentials, backoff, and unselected retry classes.
  * @throws when a draft is invalid or a selected model is absent.
  */
 export function optionOperations(draft: OptionsDraft, providerPath: readonly string[], models: readonly ModelOption[], read: ReadPath): SettingsPathOpView[] {
@@ -141,6 +160,26 @@ export function optionOperations(draft: OptionsDraft, providerPath: readonly str
       ops.push({ op: 'set', path: [...path, 'mode'], value: 'normal' })
       ops.push({ op: 'set', path: [...path, 'maxRetries'], value: Number(draft.retry.count) })
     }
+  }
+  if (draft.retryInvalidRequests !== undefined || draft.retryAuthErrors !== undefined || draft.retryQuotaErrors !== undefined) {
+    const path = [...providerPath, 'retryPolicy']
+    const current = retryableCodes(draft.snapshot.value, providerPath, read)
+    let codes = [...current]
+    for (const [code, enabled] of [
+      ['INVALID_REQUEST', draft.retryInvalidRequests],
+      ['AUTH', draft.retryAuthErrors],
+      ['QUOTA', draft.retryQuotaErrors],
+    ] as const) {
+      if (enabled === undefined) continue
+      codes = enabled
+        ? codes.includes(code) ? codes : [...codes, code]
+        : codes.filter(existing => existing !== code)
+    }
+    if (draft.retry === undefined && read(draft.snapshot.value, [...path, 'mode']) === undefined) {
+      ops.push({ op: 'set', path: [...path, 'mode'], value: 'normal' })
+    }
+    // The runtime requires a nonempty list, even when maxRetries is zero.
+    ops.push({ op: 'set', path: [...path, 'retryableCodes'], value: codes.length ? [...codes] : [...DEFAULT_RETRYABLE_CODES] })
   }
   for (const [id, reasoning] of draft.reasoning) {
     const model = models.find(candidate => candidate.id === id)

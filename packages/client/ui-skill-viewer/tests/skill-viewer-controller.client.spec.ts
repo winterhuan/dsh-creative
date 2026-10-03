@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { SkillViewerEntry, SkillViewerGetValue, SkillViewerListValue } from '@winterhuan/dsh-skill-viewer/types'
-import { SkillViewerController, type SkillViewerRemote } from '../src/client/controller.ts'
+import { searchSkills, SkillViewerController, type SkillViewerRemote } from '../src/client/controller.ts'
 
 const A = 's-a' as SessionId
 const B = 's-b' as SessionId
@@ -108,6 +108,14 @@ async function ready(remote: SkillViewerRemote, sessionId: SessionId = A): Promi
 }
 
 describe('SkillViewerController addressing', () => {
+  it('ranks names before description, usage and origin matches without duplicating entries', () => {
+    const skills = [entry({ name: 'beta', description: 'Publishing guide' }), entry({ name: 'publish', source: 'publishing' }),
+      entry({ name: 'gamma', whenToUse: 'Before publishing' }), entry({ name: 'delta', provider: 'publisher' })]
+    expect(searchSkills(skills, ' PUBLI ').map(skill => skill.name)).toEqual(['publish', 'beta', 'gamma', 'delta'])
+    expect(searchSkills(skills, 'project-dsh')).toHaveLength(3)
+    expect(searchSkills(skills, '')).toEqual(skills)
+  })
+
   it('selects the first matching skill when the catalog opens', async () => {
     const { remote } = fakeRemote({
       listDetails: () => Promise.resolve(listValue({ skills: [entry({ name: 'alpha' }), entry({ name: 'review' })] })),
@@ -252,6 +260,23 @@ describe('SkillViewerController caching', () => {
 })
 
 describe('SkillViewerController failures', () => {
+  it('retains the catalog and selected body after a failed refresh, then removes a vanished selection', async () => {
+    let listing: 'ready' | 'failed' | 'empty' = 'ready'
+    const { remote } = fakeRemote({ listDetails: () => listing === 'failed' ? Promise.reject(new Error('offline'))
+      : Promise.resolve(listValue({ skills: listing === 'empty' ? [] : [entry()] })) })
+    const controller = await ready(remote)
+    try {
+      listing = 'failed'
+      controller.retry()
+      await settle()
+      expect(controller.store.getSnapshot()).toMatchObject({ status: 'error', skills: [entry()], detail: { name: 'review', status: 'ready' } })
+      listing = 'empty'
+      controller.retry()
+      await settle()
+      expect(controller.store.getSnapshot()).toMatchObject({ status: 'ready', skills: [], detail: null })
+    } finally { controller.dispose() }
+  })
+
   it('surfaces a failed read and lets the next open retry', async () => {
     let failing = true
     const { remote, calls } = fakeRemote({
@@ -341,6 +366,67 @@ function deferredBodies(mode: 'resolve' | 'reject') {
 }
 
 describe('SkillViewerController detail lifecycle', () => {
+  it('lets a pending selection finish across same-session updates and keeps back navigation on the list', async () => {
+    const { script, release } = deferredBodies('resolve')
+    const { remote } = fakeRemote(script)
+    const holder = fakeSessions(A)
+    const controller = new SkillViewerController(remote, holder.sessions)
+    try {
+      controller.open()
+      await settle()
+      controller.select('write')
+      holder.switchTo(A)
+      release('write', detail({ name: 'write' }))
+      release('review', detail())
+      await settle()
+      expect(controller.store.getSnapshot().detail).toMatchObject({ name: 'write', status: 'ready' })
+      controller.back()
+      holder.switchTo(A)
+      expect(controller.store.getSnapshot().detail).toBeNull()
+    } finally { controller.dispose() }
+  })
+
+  it('keeps the selected skill and pending reference when the same session publishes an update', async () => {
+    const preview = Promise.withResolvers<{ path: string; content: string; bytes: number; truncated: boolean }>()
+    const { remote, calls } = fakeRemote({
+      listDetails: () => Promise.resolve(listValue({ skills: [entry(), entry({ name: 'write' })] })),
+      get: request => Promise.resolve(detail({ name: (request as { name: string }).name })),
+      readReference: () => preview.promise,
+    })
+    const holder = fakeSessions(A)
+    const controller = new SkillViewerController(remote, holder.sessions)
+    try {
+      controller.open()
+      await settle()
+      controller.select('write')
+      await settle()
+      controller.selectReference('references/guide.md')
+      const selected = controller.store.getSnapshot()
+      holder.switchTo(A)
+      expect(controller.store.getSnapshot()).toBe(selected)
+      preview.resolve({ path: 'references/guide.md', content: 'Writing guide', bytes: 13, truncated: false })
+      await settle()
+      expect(controller.store.getSnapshot()).toMatchObject({ detail: { name: 'write' }, reference: { status: 'ready', value: { content: 'Writing guide' } } })
+      expect(calls.filter(call => call.method === 'get')).toHaveLength(2)
+    } finally { controller.dispose() }
+  })
+
+  it.each(['reopen', 'refresh'] as const)('keeps the selected skill on %s', async (action) => {
+    const { remote } = fakeRemote({
+      listDetails: () => Promise.resolve(listValue({ skills: [entry(), entry({ name: 'write' })] })),
+      get: request => Promise.resolve(detail({ name: (request as { name: string }).name })),
+    })
+    const controller = await ready(remote)
+    try {
+      controller.select('write')
+      await settle()
+      if (action === 'reopen') { controller.close(); controller.open() }
+      else controller.retry()
+      await settle()
+      expect(controller.store.getSnapshot().detail).toMatchObject({ name: 'write', status: 'ready' })
+    } finally { controller.dispose() }
+  })
+
   it.each(['resolve', 'reject'] as const)('ignores body %s when Session notification follows its snapshot', async (mode) => {
     const { script, release } = deferredBodies(mode)
     const { remote } = fakeRemote(script)

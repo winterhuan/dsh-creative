@@ -154,6 +154,20 @@ function failureText(error: unknown): string | null {
   return error instanceof Error ? error.message : null
 }
 
+/**
+ * Rank skill names first, followed by entries matching their description or origin.
+ * @param skills - current session's catalog.
+ * @param query - case-insensitive name or metadata search.
+ * @returns matching entries without duplicates, preserving catalog order after name matches.
+ */
+export function searchSkills(skills: readonly SkillViewerEntry[], query: string): SkillViewerEntry[] {
+  const text = query.trim().toLowerCase()
+  const names = rankByName(skills, text)
+  const matched = new Set(names.map(skill => skill.name))
+  return [...names, ...skills.filter(skill => !matched.has(skill.name)
+    && [skill.description, skill.whenToUse, skill.source, skill.provider].some(value => value?.toLowerCase().includes(text)))]
+}
+
 /** Panel controller: viewing state plus session-keyed Remote caches. */
 export class SkillViewerController {
   /** Panel snapshot the renderer subscribes to. */
@@ -168,6 +182,7 @@ export class SkillViewerController {
   private selectionVersion = 0
   private listVersion = 0
   private referenceRead: AbortController | undefined
+  private viewedSession: SessionId | undefined
 
   /**
    * @param remote - the mounted skillViewer namespace contribution.
@@ -194,10 +209,11 @@ export class SkillViewerController {
 
   /** Show the panel, loading the current session's catalog when uncached. */
   open(): void {
+    const selected = this.addressable() === this.viewedSession ? this.store.getSnapshot().detail?.name : undefined
     this.selectionVersion += 1
     this.cancelReference()
     this.set({ open: true, detail: null, reference: null })
-    this.ensureList(true)
+    this.ensureList(true, selected)
   }
 
   /** Hide the panel; settled caches survive for the next open. */
@@ -218,11 +234,12 @@ export class SkillViewerController {
   /** Reload the current session's catalog, bypassing its cache. */
   retry(): void {
     const sessionId = this.addressable()
+    const selected = this.store.getSnapshot().detail?.name
     if (sessionId !== undefined) this.invalidateSession(sessionId)
     this.selectionVersion += 1
     this.cancelReference()
-    this.set({ detail: null, reference: null })
-    this.ensureList(true)
+    this.set({ reference: null })
+    this.ensureList(true, selected)
   }
 
   /**
@@ -328,6 +345,7 @@ export class SkillViewerController {
   /** Reload the list when the current session changed under an open panel. */
   private refreshOnSessionChange(): void {
     if (!this.store.getSnapshot().open) return
+    if (this.addressable() === this.viewedSession) return
     this.selectionVersion += 1
     this.cancelReference()
     this.set({ detail: null, reference: null })
@@ -350,10 +368,12 @@ export class SkillViewerController {
   }
 
   /** Load the current session's catalog from cache or the Remote. */
-  private ensureList(selectDefault = false): void {
+  private ensureList(selectDefault = false, selected?: string): void {
     const listVersion = ++this.listVersion
     const selectionVersion = this.selectionVersion
     const sessionId = this.addressable()
+    if (sessionId !== this.viewedSession) this.set({ skills: [], stale: false })
+    this.viewedSession = sessionId
     if (sessionId === undefined) {
       this.set({
         status: 'ready', skills: [], stale: false, error: null, scoped: false,
@@ -364,9 +384,10 @@ export class SkillViewerController {
     const publish = (value: SkillViewerListValue): void => {
       this.set({ status: 'ready', skills: value.skills, stale: value.stale, error: null, scoped: true })
       const state = this.store.getSnapshot()
-      if (!selectDefault || !state.open || state.detail !== null || this.selectionVersion !== selectionVersion) return
-      const first = rankByName(value.skills, state.query)[0]
+      if (!selectDefault || !state.open || (selected === undefined && state.detail !== null) || this.selectionVersion !== selectionVersion) return
+      const first = value.skills.find(skill => skill.name === selected) ?? searchSkills(value.skills, state.query)[0]
       if (first !== undefined) this.select(first.name)
+      else this.set({ detail: null, reference: null })
     }
     if (cached !== undefined) {
       publish(cached)
@@ -383,7 +404,7 @@ export class SkillViewerController {
         if (this.listVersion !== listVersion) return
         if (this.addressable() !== sessionId) return
         this.set({
-          status: 'error', skills: [], stale: false, error: failureText(error), scoped: true,
+          status: 'error', error: failureText(error), scoped: true,
         })
       },
     )
