@@ -28,7 +28,7 @@ Creative 小说写作流程会检查文件结构、追踪状态、细纲消费�
 
 ### 写作、连续性与评审各有归属
 
-`narrative-writer` 写正文并局部修订。`story-review` 向 `story-architect` 获取读者价值证据；`consistency-checker` 检查事实、角色状态和伏笔。确定性工具负责格式、退化和追踪。写手只接收选定的题材、情绪、节奏指导及相关例句。参考仍可按需读取；固定密度、章节占比、道具三次出现和钩子公式是可选技法，不是通用验收条件。 [六技能决策](../simplification/2026-09-30-story-skills-native-resources.zh.md) 明确单会话降级：主会话另行完整评审，记录 `role=solo` 和实际配置，不宣称独立评审。
+`narrative-writer` 写正文并局部修订。`story-review` 向 `story-architect` 获取读者价值证据；`consistency-checker` 检查事实、角色状态和伏笔。确定性工具负责格式、退化和追踪。写手只接收选定的题材、情绪、节奏指导及相关例句。参考仍可按需读取；固定密度、章节占比、道具三次出现和钩子公式是可选技法，不是通用验收条件。[六技能决策](../simplification/2026-09-30-story-skills-native-resources.zh.md)明确单会话降级：主会话另行完整评审，如实说明由主会话完成，不宣称独立性，也不产生固定审稿记录。
 
 ### 记录实际评审配置
 

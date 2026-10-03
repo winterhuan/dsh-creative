@@ -177,15 +177,20 @@ def _chapter_number_from_name(name: str, *, outline: bool) -> int | None:
     return int(match.group(1)) if match else None
 
 
-def find_chapter_file(directory: Path, chapter: int, *, outline: bool) -> Path:
+def find_chapter_file(directory: Path, chapter: int, *, outline: bool, allow_missing: bool = False) -> Path:
+    """Resolve one chapter file; preparation may request its proposed missing path."""
     require(isinstance(chapter, int) and not isinstance(chapter, bool) and chapter >= 1, "chapter must be >= 1")
-    require(directory.is_dir(), f"chapter directory is missing: {directory}")
+    require(directory.is_dir() or (allow_missing and not directory.exists() and directory.parent.is_dir()),
+            f"chapter directory is missing: {directory}")
     matches = sorted(
-        path for path in directory.iterdir()
+        path for path in (directory.iterdir() if directory.is_dir() else ())
         if path.is_file() and _chapter_number_from_name(path.name, outline=outline) == chapter
     )
+    if allow_missing and not matches:
+        return directory / f"{'细纲_' if outline else ''}第{chapter:03d}章.md"
     label = "outline" if outline else "body"
-    require(len(matches) == 1, f"chapter {chapter} must have exactly one {label} file")
+    require(len(matches) == 1,
+            f"chapter {chapter} must have exactly one {label} file in {directory}; found: {', '.join(path.name for path in matches) or '(none)'}")
     return matches[0]
 
 

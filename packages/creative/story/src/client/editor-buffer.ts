@@ -1,13 +1,10 @@
-/** Draft reconciliation and Session-owned in-flight save state. */
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+/** Reconcile Session-owned drafts with versioned disk files. */
 
 /** An editable file and its last acknowledged disk revision. */
 export interface FileBuffer {
-  readonly episodeRevision?: string | undefined
-  readonly episodeDiagnostics?: readonly string[] | undefined
   readonly content: string
   readonly saved: string
-  readonly source: 'disk' | 'human' | 'agent'
+  readonly source: 'disk' | 'human'
   readonly version: string
   readonly error?: string | undefined
   readonly missing?: boolean | undefined
@@ -32,7 +29,7 @@ export type FileBuffers = Record<string, FileBuffer>
 /**
  * Reconcile a directory listing without treating a partial listing as deletion.
  * @param buffers - current editor content, including uncommitted human drafts.
- * @param paths - files present in the listing or currently being written.
+ * @param paths - files present in the listing.
  * @param truncated - whether the listing omits unknown files.
  * @param removedMessage - localized notice for a deleted file with a draft.
  * @returns retained drafts and live files; clean deleted buffers are removed.
@@ -78,42 +75,4 @@ export function receiveFile(existing: FileBuffer | undefined, file: FilePayload,
     }
   }
   return { content: file.content, saved: file.content, source: 'disk', version: file.version }
-}
-
-/**
- * Decide whether a listed revision still needs a content read.
- * @param buffer - cached content or a human draft.
- * @param version - current directory revision.
- * @returns whether the editor has not observed this disk revision.
- */
-export function needsFileRead(buffer: FileBuffer | undefined, version: string): boolean {
-  return buffer === undefined || buffer.missing === true || buffer.source === 'agent'
-    || (buffer.conflict !== undefined && buffer.conflict.theirsVersion === undefined)
-    || (buffer.version !== version && buffer.conflict?.theirsVersion !== version)
-}
-
-/**
- * Own save locks for one Session across Sidebar tab mounts, without persistence.
- * @returns an observable set with synchronous acquisition and release.
- */
-export function createSaveState(): {
-  active: SnapshotStore<ReadonlySet<string>>
-  begin: (path: string) => boolean
-  end: (path: string) => void
-} {
-  const active = createSnapshotStore<ReadonlySet<string>>(new Set())
-  return {
-    active,
-    begin: (path: string): boolean => {
-      const current = active.getSnapshot()
-      if (current.has(path)) return false
-      active.set(new Set([...current, path]))
-      return true
-    },
-    end: (path: string): void => {
-      const next = new Set(active.getSnapshot())
-      next.delete(path)
-      active.set(next)
-    },
-  }
 }

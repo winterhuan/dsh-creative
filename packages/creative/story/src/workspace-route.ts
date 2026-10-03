@@ -11,16 +11,13 @@ import { isTrustedWorkspaceRequest } from './workspace-request-trust.js'
 import {
   CREATIVE_DIRECTORIES, STORY_DIRECTORIES,
   PROJECT_FILES, creativeMediaMimeType, isCreativeTextPath, isStoryWorkbenchPath, parseCreativePath, projectPath,
-  type CreativeProjectPath, type CreativeProjectSummary,
+  type CreativeProjectPath,
 } from './project-path.ts'
-import { type ProduceConfig } from './produce-settings.ts'
 const FILE_LIMIT = 1_000
 
 interface WorkspaceRouteOptions {
   readonly maxBytes: number
   readonly trustedHosts?: readonly string[]
-  /** Production profile seed; the video preflight reports the credentials a run would receive. */
-  readonly produce?: ProduceConfig
 }
 
 interface WorkspaceFile {
@@ -248,49 +245,6 @@ async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
   return { files: files.sort((left, right) => left.path.localeCompare(right.path, 'zh-Hans-CN')), truncated }
 }
 
-async function metadata(
-  realm: WorkspaceRealm,
-  path: string,
-  maxBytes: number,
-): Promise<{ readonly value: unknown; readonly error?: string }> {
-  try {
-    const target = await creativeTarget(realm, path)
-    if (await realm.fs.stat(target) === undefined) return { value: null }
-    const value: unknown = JSON.parse((await readVersionedFile(realm.fs, target, maxBytes)).content)
-    return { value }
-  } catch (error) {
-    return { value: null, error: error instanceof SyntaxError ? `${path} 不是有效的 JSON。` : `${path} 暂时无法读取。` }
-  }
-}
-
-/**
- * Read each listed project's metadata independently of the listing's file limit.
- * @param realm - session filesystem and workspace root.
- * @param files - listed creative files identifying the projects.
- * @param maxBytes - maximum bytes per metadata document.
- * @returns metadata keyed by full project root, including project-local read errors.
- */
-async function workspaceProjects(
-  realm: WorkspaceRealm, files: readonly WorkspaceFile[], maxBytes: number,
-): Promise<CreativeProjectSummary[]> {
-  const projects = new Map<string, Set<CreativeProjectSummary['domains'][number]>>()
-  for (const file of files) {
-    const parsed = parseCreativePath(file.path)
-    if (parsed === undefined) continue
-    const domains = projects.get(parsed.projectRoot) ?? new Set()
-    domains.add(parsed.domain)
-    projects.set(parsed.projectRoot, domains)
-  }
-  return Promise.all([...projects].map(async ([root, domains]) => {
-    const tracking: Awaited<ReturnType<typeof metadata>> = domains.has('story') ? await metadata(realm, projectPath(root, '追踪/_tracking-state.json'), maxBytes) : { value: null }
-    const shortDrama: Awaited<ReturnType<typeof metadata>> = domains.has('drama') ? await metadata(realm, projectPath(root, 'short-drama.json'), maxBytes) : { value: null }
-    return {
-      root, domains: [...domains], tracking: tracking.value, shortDrama: shortDrama.value,
-      metadataErrors: [tracking.error, shortDrama.error].filter((error): error is string => error !== undefined),
-    }
-  }))
-}
-
 function mapFsError(error: unknown): WorkspaceHttpError | undefined {
   if (!(error instanceof FsError)) return undefined
   switch (error.code) {
@@ -316,10 +270,9 @@ async function handle(context: Context, request: IncomingMessage, response: Serv
       const realm = await workspaceRealm(context, url)
       const listing = await listFiles(realm)
       const files = listing.files
-      const projects = await workspaceProjects(realm, files, options.maxBytes)
       const sessionId = url.searchParams.get('sessionId')
       if (sessionId === null) throw new WorkspaceHttpError(400, '缺少 DSH sessionId。')
-      send(response, 200, { cwd: realm.cwd, files, truncated: listing.truncated, projects, mode: 'dsh-session' })
+      send(response, 200, { cwd: realm.cwd, files, truncated: listing.truncated, mode: 'dsh-session' })
       return
     }
     if (url.pathname === '/story/file' && request.method === 'GET') {

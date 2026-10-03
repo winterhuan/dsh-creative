@@ -86,12 +86,12 @@ PYEOF
 
 实测输出形如 `sentences=6; short_lt15=66%; mid_15to30=33%; long_gt30=0%; avg_len=12; punct_density=15%`。
 
-把输出的 `short_lt15 / mid_15to30 / long_gt30 / avg_len / punct_density` 数值直接填进 `style-profile-protocol.md` 模板第 40 行的 `{...X% / Y% / Z%}` 占位符——`confidence: high`，因为是确定性测量，不是抽样估计。
+把输出的 `short_lt15 / mid_15to30 / long_gt30 / avg_len / punct_density` 填入 [文风模板](style-profile-protocol.md) 的句长分布，并注明实际采样范围。样本内测量可标 `confidence: high`，但不据此声称全书分布相同，也不将它变成新正文的句长或标点配额。
 
-**Bash 不可用时的降级**（仅子代理上下文等极端情况，主线程不会触发）：
+**Bash 不可用时**：
 
 - 跳过本步骤；句长段写「Bash 工具不可用，跳过确定性统计」
-- `confidence: low`，narrative-writer 让位回默认 Gate D（按句长标准校准）
+- 该项标 `confidence: low`；保留有来源的风格观察，不猜统计量或要求写手校准句长
 
 ### Step 5: 选原文锚点片段 (4-6 段)
 
@@ -115,10 +115,7 @@ PYEOF
 按 [style-profile-protocol.md](style-profile-protocol.md) 模板填写 `拆文库/{书名}/文风.md`：
 
 - **文风文件必须留在拆文库**（`拆文库/{书名}/文风.md`），**永不由 analyze 直接写入** `对标/` 或写作项目目录——拆文库是数据源；只有该书被明确选为另一项目的外部对标时，才由 story 或 story-write 首次引用同步到 `对标/{书名}/`
-- 每段标 `confidence: high/med/low`（内部给写作 agent 判断强弱，普通用户可忽略）：
-  - `high`：数据直接来自拆文产物（如「写法技巧」直接引用拆文报告）
-  - `med`：从样本归纳且样本充足（如基调序列从 ≥10 章摘要统计）
-  - `low`：样本不足或采样失败（如锚点缺失、Bash 不可用导致 Step 4 句长统计跳过）
+- 每项按 [文风协议](style-profile-protocol.md#confidence-字段语义) 标明证据强度和范围；引用拆文结论仍需保留其原文依据与采样限制。
 - 「分层模仿建议」必须分基础层 / 进阶层 / 适配层；基础层只写词汇、句式、描写和对话习惯，进阶层写节奏、伏笔、视角和场景衔接，适配层写哪些可用、哪些容易让本项目错位；明确不复制专名、标志性台词、独特桥段和事件顺序
 - 字数预算：硬上限 ~4000 字。**描述段 ≤ 1800 字 + 锚点 4-6 段 × 300-500 字**
 - 如果 Step 4 失败（章节分隔符识别不出）→ 「生成记录」写 `文风可用：否：无法识别章节分隔符`；原文锚点段全填占位符 "原文缺失，需手动补充"，confidence 全 low

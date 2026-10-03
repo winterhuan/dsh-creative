@@ -4,7 +4,7 @@
 
 ## 通道
 
-先调用 `story_produce_status` 查看 `zhuqueConfigured`。已配置时用 `story_zhuque`：
+先调用 `story_produce_status`，检查 `configured` 列表是否包含 `MAKERS_API_KEY`。已配置时用 `story_zhuque`：
 
 ```json
 {

@@ -25,6 +25,7 @@ import { join, resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 import { execa } from 'execa'
 import { describe, expect, it, type TestContext } from 'vitest'
+import { registerCreativeHooks } from '../src/native-hooks.ts'
 
 const resources = resolve(import.meta.dirname, '../knowledge/story')
 const script = await readFile(join(resources, 'workflows/chapter.js'), 'utf8')
@@ -62,17 +63,17 @@ class ChapterAdapter extends LlmAdapter {
   }
   makeSteps(request: GenerateOptions): Step[] {
     if (request.sessionId === 'chapter-lead') return [
+      this.read(join(resources, 'references/writing/long/native-workflow.md')),
       this.read(join(resources, 'workflows/chapter.js')),
       { name: 'workflow', args: { meta: { name: 'story-chapter', description: 'Chapter integration' }, script, args: this.workflowArgs } },
     ]
     const prompt = JSON.stringify(request.messages)
-    const guide = this.read(join(resources, 'references/writing/long/native-workflow.md'))
     const body = join(this.project, '正文/第1章.md')
     const outline = join(this.project, '大纲/细纲_第1章.md')
     if (prompt.includes('You prepare this chapter.')) {
       const tracking = [this.python, '-B', join(resources, 'scripts/tracking_commit.py'), 'check', '--project', this.project].map(quote).join(' ')
-      const outlineCheck = [process.execPath, join(resources, 'scripts/check-outline-contract.js'), '--json', '--project', this.project, '--chapter', '1'].map(quote).join(' ')
-      const steps: Step[] = [guide, this.read(join(resources, 'skills/story-write/SKILL.md')),
+      const outlineCheck = [this.python, '-B', join(resources, 'scripts/check_outline_contract.py'), '--json', '--project', this.project, '--chapter', '1'].map(quote).join(' ')
+      const steps: Step[] = [this.read(join(resources, 'skills/story-write/SKILL.md')),
         this.read(join(resources, 'references/writing/long/workflow-chapter.md')),
         this.bash(`${tracking} > preparation-state.json && cat preparation-state.json`),
         this.read(join(this.project, '追踪/上下文.md')), this.read(join(this.project, '大纲/卷纲.md')),
@@ -104,12 +105,13 @@ class ChapterAdapter extends LlmAdapter {
     }
     if (prompt.includes('You are the narrative-writer.')) {
       expect(prompt).toContain(scenePlan)
-      if (this.mode.startsWith('writer-')) return [guide]
+      if (this.mode.startsWith('writer-')) return [this.read(join(resources, 'skills/story-write/SKILL.md'))]
       const prose = this.reviewCount ? finalBody : initialBody
-      return [guide, this.read(resolve(resources, '../creative/roles/narrative-writer.md')),
+      return [this.read(resolve(resources, '../creative/roles/narrative-writer.md')),
         this.read(join(resources, 'skills/story-write/SKILL.md')), this.read(outline),
         this.read(join(this.project, '追踪/上下文.md')),
-        this.bash(this.command(`from pathlib import Path\nPath(${JSON.stringify(body)}).write_text(${JSON.stringify(prose)}, encoding="utf-8")`)),
+        ...this.reviewCount ? [this.read(body)] : [],
+        { name: 'write', args: { file_path: body, content: prose } },
         this.bash(`${this.checkCommand()} > checked.json && cat checked.json`),
         async () => ({ name: STRUCTURED_OUTPUT_TOOL, args: {
           status: 'checked', summary: 'Draft checked against actual files.', compression_used: false,
@@ -121,7 +123,7 @@ class ChapterAdapter extends LlmAdapter {
       this.reviewCount++
       const recommendation = this.mode === 'invalid-review' ? 'invalid' : this.mode === 'needs-input' ? 'needs_input' : this.reviewCount === 1 ? 'revise' : 'ready'
       const identityCommand = this.command(`import sys,json\nfrom pathlib import Path\nsys.path.insert(0,${JSON.stringify(join(resources, 'scripts'))})\nfrom wordcount_core import chapter_source_snapshot,chapter_source_digests\nfrom tracking_commit import load_state\np=Path(${JSON.stringify(this.project)})\ns=chapter_source_snapshot(p,1)\nprint(json.dumps({**chapter_source_digests(s),"state_revision":load_state(p)["state_revision"],"versions":s["versions"]}))`)
-      return [guide, this.read(join(resources, 'skills/story-review/SKILL.md')),
+      return [this.read(join(resources, 'skills/story-review/SKILL.md')),
         this.read(join(resources, 'references/review/workflow.md')), this.read(join(resources, 'references/review/quality-rubric.md')),
         this.bash(`${identityCommand} > before.json && cat before.json`), this.read(outline), this.read(body),
         this.bash(`${identityCommand} > after.json && cat after.json`),
@@ -132,7 +134,7 @@ class ChapterAdapter extends LlmAdapter {
       ]
     }
     if (!prompt.includes('You own tracking verification')) throw new Error('Unexpected child task')
-    return [guide, this.read(join(resources, 'references/writing/long/tracking-transaction.md')), this.read(body), this.read(outline),
+    return [this.read(join(resources, 'references/writing/long/tracking-transaction.md')), this.read(body), this.read(outline),
       async () => {
         const current = await this.sourceResult()
         const transaction = JSON.parse(await readFile(join(this.project, 'transaction.json'), 'utf8'))
@@ -231,6 +233,7 @@ async function setup(test: TestContext, mode: ChapterAdapter['mode']) {
   await ctx.plugin(Spawn, { providerName: 'spawn' })
   await ctx.plugin(Workflow)
   await ctx.plugin(WorkflowTool)
+  registerCreativeHooks(ctx)
   ctx.llm.registerAdapter(['chapter-test'], adapter)
   const lead = await ctx.agentLoop.create(SessionId('chapter-lead'), { provider: 'chapter-test', model: 'scripted' }, { cwd: project })
   const idle = new Promise<void>(resolve => {
@@ -265,6 +268,11 @@ describe('chapter template through the native model and tool runtime', () => {
     expect(history).toContain('# Narrative Writer')
     expect(history).toContain('# story-review：小说审稿')
     expect(history).toContain('body_sha256')
+    const writerHistory = JSON.stringify(adapter.requests.filter(request => request.sessionId === children[1]))
+    expect(writerHistory).toContain('<creative-post-write>')
+    expect(writerHistory).toContain('由当前流程指定的提交者')
+    expect(writerHistory).not.toContain('继续当前步骤前核对并更新')
+    expect(writerHistory).not.toContain('# 原生 workflow 单章执行')
     const toolText = events.filter(event => event.type === 'tool/result')
       .flatMap(event => event.data.message.content).filter(block => block.type === 'text').map(block => block.text).join('\n')
     expect(toolText).toContain('"status": "committed"')

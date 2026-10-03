@@ -150,6 +150,12 @@ describe('bundled novel executable scripts', () => {
     ])
     expect(initialized.exitCode, initialized.stderr).toBe(0)
     expect(JSON.parse(initialized.stdout)).toMatchObject({ ok: true })
+    await writeFile(join(cwd, '细纲.md'), validLongOutline)
+    const outline = await run(context, cwd, python, [
+      '-B', join(bundled, 'scripts/check_outline_contract.py'), '--json', '细纲.md',
+    ])
+    expect(outline.exitCode, outline.stderr).toBe(0)
+    expect(JSON.parse(outline.stdout)).toMatchObject({ ok: true })
   })
 
   for (const [filename, blockedProse] of [
@@ -220,14 +226,46 @@ describe('bundled novel executable scripts', () => {
     expect(optional.exitCode, optional.stderr).toBe(0)
   })
 
+  it.for(['约 500', '3,000', '500\n- 字数目标：800'])('rejects an outline target that chapter checks cannot read: %s', async (target, context) => {
+    const cwd = await workspace(context)
+    const outline = join(cwd, '细纲.md')
+    await writeFile(outline, validLongOutline.replace('字数目标：500', `字数目标：${target}`))
+    const checked = await run(context, cwd, python, ['-B', script('check_outline_contract.py'), '--json', outline])
+    expect(checked.exitCode, checked.stderr).toBe(1)
+    expect(JSON.parse(checked.stdout)).toMatchObject({
+      ok: false, failures: [expect.objectContaining({ id: 'outline.wordcount-target' })],
+    })
+  })
+
+  it.for([
+    ['核心事件：主角必须亲自取回账册', '其他事件：主角必须亲自取回账册', 'outline.required-fields'],
+    ['读者期待：主角能否在封门前拿到账册', '读者期待：[待补充]', 'outline.intent-fields-substantive'],
+    ['### 情节安排', '## 情节安排', 'outline.subsections'],
+    ['- 高潮：主角公开签押漏洞', '- 收尾：主角公开签押漏洞', 'outline.five-act'],
+    ['| 功能标签 | 执行边界 |', '| 标签 | 边界 |', 'outline.plotpoint-table'],
+    ['字数目标：500', '字数目标：499', 'outline.wordcount-target'],
+    ['字数口径：visible_chars_v1', '字数口径：other_metric', 'outline.wordcount-target'],
+  ] as const)('retains the outline rule %s', async ([original, replacement, finding], context) => {
+    const cwd = await workspace(context)
+    const outline = join(cwd, '细纲.md')
+    const content = validLongOutline.replace(original, replacement)
+    await writeFile(outline, content)
+    const checked = await run(context, cwd, python, ['-B', script('check_outline_contract.py'), '--json', outline])
+    expect(checked.exitCode, checked.stderr).toBe(1)
+    expect(JSON.parse(checked.stdout)).toMatchObject({
+      ok: false, failures: [expect.objectContaining({ id: finding })],
+    })
+    expect(await readFile(outline, 'utf8')).toBe(content)
+  })
+
   for (const hasOutlineDirectory of [false, true]) {
     it(`reports a missing chapter outline for preparation with outline directory ${hasOutlineDirectory}`, async (context) => {
       const cwd = await workspace(context)
       const project = join(cwd, 'book')
       await mkdir(project)
       if (hasOutlineDirectory) await mkdir(join(project, '大纲'))
-      const args = [script('check-outline-contract.js'), '--json', '--project', project, '--chapter', '11']
-      const missing = await run(context, cwd, process.execPath, args)
+      const args = ['-B', script('check_outline_contract.py'), '--json', '--project', project, '--chapter', '11']
+      const missing = await run(context, cwd, python, args)
       expect(missing.exitCode, missing.stderr).toBe(1)
       const outline = join(project, '大纲/细纲_第011章.md')
       expect(JSON.parse(missing.stdout)).toMatchObject({
@@ -238,7 +276,7 @@ describe('bundled novel executable scripts', () => {
       await expect(readFile(outline)).rejects.toMatchObject({ code: 'ENOENT' })
       await mkdir(join(project, '大纲'), { recursive: true })
       await writeFile(outline, validLongOutline, { flag: 'wx' })
-      const ready = await run(context, cwd, process.execPath, args)
+      const ready = await run(context, cwd, python, args)
       expect(ready.exitCode, ready.stderr).toBe(0)
       expect(JSON.parse(ready.stdout)).toMatchObject({ ok: true, file: outline })
       expect(await readFile(outline, 'utf8')).toBe(validLongOutline)
@@ -247,24 +285,23 @@ describe('bundled novel executable scripts', () => {
 
   it('uses an existing outline filename and rejects ambiguous chapters or a missing project', async (context) => {
     const cwd = await workspace(context)
-    const entry = script('check-outline-contract.js')
-    const absent = await run(context, cwd, process.execPath, [entry, '--json', '--project', join(cwd, 'missing'), '--chapter', '11'])
+    const entry = script('check_outline_contract.py')
+    const absent = await run(context, cwd, python, ['-B', entry, '--json', '--project', join(cwd, 'missing'), '--chapter', '11'])
     expect(absent.exitCode).toBe(2)
     await mkdir(join(cwd, '大纲'))
     const outline = join(cwd, '大纲/细纲_第11章_账册.md')
     await writeFile(outline, validLongOutline)
-    const args = [entry, '--json', '--project', cwd, '--chapter', '11']
-    const ready = await run(context, cwd, process.execPath, args)
+    const args = ['-B', entry, '--json', '--project', cwd, '--chapter', '11']
+    const ready = await run(context, cwd, python, args)
     expect(ready.exitCode, ready.stderr).toBe(0)
     expect(JSON.parse(ready.stdout).file).toBe(outline)
     await writeFile(join(cwd, '大纲/细纲_第011章.md'), validLongOutline)
-    const ambiguous = await run(context, cwd, process.execPath, args)
+    const ambiguous = await run(context, cwd, python, args)
     expect(ambiguous.exitCode).toBe(2)
-    expect(ambiguous.stderr).toContain('多个第 11 章细纲')
+    expect(ambiguous.stderr).toContain('chapter 11 must have exactly one outline file')
   })
 
   for (const [filename, args] of [
-    ['check-outline-contract.js', ['--json', 'missing.md']],
     ['check-phase2-contract.js', ['--json']],
     ['check-delivery-contract.js', ['--json', '--min-chars', '1', '--max-chars', '20', '--sections', '1']],
   ] as const) {
@@ -398,6 +435,14 @@ describe('bundled novel executable scripts', () => {
       quality: { status: 'fail', blocking_findings: [expect.objectContaining({ source: 'degeneration', severity: 'blocking' })] },
       available_actions: [],
     })
+    await writeFile(body, cleanProse)
+    for (const target of ['约 500', '3,000', '500\n- 字数目标：800']) {
+      await writeFile(join(cwd, '大纲/细纲_第1章.md'), validLongOutline.replace('字数目标：500', `字数目标：${target}`))
+      const invalid = await run(context, cwd, python, args)
+      expect(invalid.exitCode, invalid.stderr).toBe(2)
+      expect(JSON.parse(invalid.stdout)).toMatchObject({ error_code: 'CHECK_FAILED' })
+      expect(JSON.parse(invalid.stdout).message).toContain('字数目标 must appear exactly once with one value')
+    }
   })
 
   it.for(['commit', 'accept-current-length'])('%s preserves mechanical checks without requiring a review record', async (action, context) => {

@@ -57,7 +57,7 @@ The writing guards and specialist Roles belong to this package. Explicitly reque
 
 The package has no dependency on the Creative aggregate or another domain plugin. Required helper scripts ship as package resources. The [aggregate](../creative/README.md) preserves legacy tool names and routes without a separate browser page.
 
-The six Skills share the packaged `knowledge/story` resource base. DSH supplies resource hints, and Skills and Roles read references on demand with native `read`; scripts live in that directory’s `scripts/` folder.
+The six Skills share the packaged `knowledge/story` resource base. DSH supplies resource hints, and Skills and Roles read references on demand with native `read`; scripts live in that directory’s `scripts/` folder. The Python outline checker `check_outline_contract.py` shares chapter-path and word-target parsing with submission through `wordcount_core.py`. The fiction workspace response carries the file listing and truncation status.
 
 </details>
 
@@ -68,11 +68,11 @@ The six Skills share the packaged `knowledge/story` resource base. DSH supplies 
 
 #### What the model sees
 
-The domain catalog exposes only its own Skill descriptions. Loading a Skill supplies its full instructions and packaged helper paths. `story_zhuque` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. Workflow stages receive explicit `structured_output` instructions. Prepare returns actual paths, a scene plan and checked outline identity; the writer receives these results and complete check commands. A missing structured result directs the parent to the failed child's Session. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
+The domain catalog lists six Skills. Loading supplies instructions and resource paths to the current Agent. The selected Skill or workflow assigns task order and checks; Roles supply professional methods. The post-write hook requests fresh checks and review, then tracking updates by the assigned submitter through the chapter transaction. Only the parent reads the invocation guide; children receive stage duties and selected references. Prepare returns actual paths, a scene plan and checked outline identity; writers receive these with complete check commands. Workflow children finish with `structured_output`; missing results direct the parent to the failed child's Session. Delegation failures preserve partial work and report diagnostics; provider authentication or endpoint errors require provider repair. Prerequisite delegations must finish and their artifacts pass checks before work advances. Read-only `story-explorer` returns facts, sources and gaps in prose. `story_zhuque` runs a pinned script; background execution returns a DSH job ID for `job_output` and `job_kill`.
 
 #### Token effect
 
-Skill bodies and specialist instructions load on demand. Delegation reads only the selected Role and needed references; no custom Role tool schema or complete expert library enters the initial catalog. The Skill catalog descriptions are unchanged by workflow support. Using `cl100k_base` as a static estimate, the writing and review Skill bodies add 152 and 84 tokens; the deferred template uses 3754 tokens and its guide 3243. Reading and submitting the template retains its source twice before tool framing. Independent children also read their instructions and sources, so this path can cost more than direct delegation; these figures are not provider billing or an end-to-end efficiency claim.
+Skill bodies and specialist instructions load on demand. No custom Role tool schema or complete expert library enters the initial catalog. Using `cl100k_base` as a static estimate, the deferred template uses 3808 tokens, its parent-only guide 2216 and `story-explorer` 1464. Reading and submitting the template retains its source twice before tool framing. Independent children also read their instructions and sources, so this path can cost more than direct delegation; these figures are not provider billing or an end-to-end efficiency claim.
 
 #### KV Cache effect
 

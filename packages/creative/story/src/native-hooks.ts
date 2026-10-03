@@ -144,7 +144,7 @@ export async function decideStoryMutation(
 
 /**
  * Post-execute waterfall: after a successful DSH filesystem mutation of
- * `正文/`, attach a plugin-sourced reminder to update Tracking, so the next
+ * `正文/`, attach a reminder to recheck and submit through the assigned stage, so the next
  * model request carries it. Failed calls and downstream denies or blocks pass
  * through untouched.
  * @param exec - the finished tool execution.
@@ -167,7 +167,7 @@ export async function postStoryMutation(
     source: { kind: 'creative', form: 'instructions' },
     content: [{
       type: 'text',
-      text: `<creative-post-write>正文 ${mutation.path} 已变更。继续当前步骤前核对并更新 ${projectPath(parsed.projectRoot, '追踪/_tracking-state.json')} 及对应派生 Tracking 视图；不要把这条提醒当作用户的新写作要求。</creative-post-write>`,
+      text: `<creative-post-write>正文 ${mutation.path} 已变更，旧检查与审稿结论需基于当前文本复核。由当前流程指定的提交者在检查和审稿完成后，通过章节事务更新 ${projectPath(parsed.projectRoot, '追踪/_tracking-state.json')}；写手不直接修改追踪，派生视图由事务生成。不要把这条提醒当作用户的新写作要求。</creative-post-write>`,
     }],
   })
   return {

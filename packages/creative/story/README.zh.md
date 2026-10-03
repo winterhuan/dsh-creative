@@ -57,7 +57,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
 
-六个技能共用包内 `knowledge/story` 资源根目录。DSH 提供资源路径提示，技能与 Role 用原生 `read` 按需读取参考；脚本集中在该目录的 `scripts/`。
+六个技能共用包内 `knowledge/story` 资源根目录。DSH 提供资源路径提示，技能与 Role 用原生 `read` 按需读取参考；脚本集中在该目录的 `scripts/`。Python 细纲检查器 `check_outline_contract.py` 通过 `wordcount_core.py` 与提交共用章文件路径和目标字数解析。小说工作区响应包含文件列表和截断状态。
 
 </details>
 
@@ -68,11 +68,11 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 #### 模型看到什么
 
-领域目录只展示自己的 Skill 描述。加载 Skill 时提供完整指令和随包辅助脚本路径。`story_zhuque` 执行固定领域脚本；后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。workflow 各阶段收到明确的 `structured_output` 指令。Prepare 交回实际路径、场景计划和已检查的细纲身份；写手接收这些结果及完整检查命令。缺少结构化结果时，提示父会话查看失败子 Agent 的 Session。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
+领域目录列出六个 Skill，加载时向当前 Agent 提供指令和资源路径。所选 Skill 或 workflow 分配执行顺序和检查，Role 提供专业方法。写入 hook 要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。只有父会话读取调用说明，子会话接收阶段职责和选定参考。Prepare 返回实际路径、场景计划和已检查的细纲身份；写手接收这些结果及完整检查命令。workflow 子会话以 `structured_output` 结束，缺少结果时提示父会话查看失败子会话。委派失败保留已有产物并报告诊断，模型服务认证或地址错误需修复提供商配置。前置委派须完成且产物检查通过后才推进。只读的 `story-explorer` 用自然语言交回事实、来源和缺口。`story_zhuque` 执行固定脚本，后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
 
 #### Token 影响
 
-Skill 正文和专业指令按需加载。委派只读取所选 Role 及必要参考；初始目录不增加专用 Role 工具 schema 或整套专家正文。workflow 支持未改变 Skill 目录描述。以 `cl100k_base` 静态估算，写作和审稿 Skill 正文分别增加 152、84 token；延后加载的模板为 3754 token，说明为 3243。读取再提交模板会保留两份源码，尚未计入工具格式。独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；这些数值不是提供商计费或端到端效率结论。
+Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。以 `cl100k_base` 静态估算，延后加载的模板为 3808 token，仅父会话读取的说明为 2216，`story-explorer` 为 1464。读取再提交模板会保留两份源码，尚未计入工具格式。独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；这些数值不是提供商计费或端到端效率结论。
 
 #### KV Cache 影响
 

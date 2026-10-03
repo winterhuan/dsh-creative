@@ -28,5 +28,5 @@ export async function apply(context: Context, config: Config = {}): Promise<void
   context.effect(() => context.skills.registerProvider(() => createStorySkillProvider()), 'story: skills')
   registerCreativeProduceRunTool(context, { entry: config.produce ?? {} })
   registerCreativeHooks(context)
-  context.inject(['webServer', 'typert'], ctx => registerWorkspaceRoute(ctx, { maxBytes: config.editorMaxBytes ?? 2_097_152, trustedHosts: config.trustedHosts ?? [], produce: config.produce ?? {} }))
+  context.inject(['webServer', 'typert'], ctx => registerWorkspaceRoute(ctx, { maxBytes: config.editorMaxBytes ?? 2_097_152, trustedHosts: config.trustedHosts ?? [] }))
 }

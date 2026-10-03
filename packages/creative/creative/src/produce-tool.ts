@@ -148,7 +148,7 @@ export function createCreativeProduceStatusTool(options: ProduceToolOptions = {}
 
 function scriptFor(entry: Exclude<ProduceEntry, 'drama'>): string {
   if (entry === 'game-qa') return resolve(defaultNovelToGameSkillRoot(), 'game-qa/scripts/run_qa.py')
-  if (entry === 'story-zhuque') return resolve(defaultStorySkillRoot(), 'story-polish/scripts/zhuque_detect.py')
+  if (entry === 'story-zhuque') return resolve(defaultStorySkillRoot(), '../scripts/zhuque_detect.py')
   const videoSkillRoot = defaultVideoRecapSkillRoot()
   if (entry === 'video-voiceover') return resolve(videoSkillRoot, 'video-voiceover/scripts/voiceover.py')
   if (entry === 'video-recap') return resolve(videoSkillRoot, 'video-recap/scripts/recap.py')

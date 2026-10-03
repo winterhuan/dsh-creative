@@ -36,15 +36,6 @@ export interface CreativeProjectPath {
   readonly episodePath?: string | undefined
 }
 
-/** Project-local metadata returned by the workspace API. */
-export interface CreativeProjectSummary {
-  readonly root: string
-  readonly domains: readonly CreativeDomain[]
-  readonly tracking: unknown
-  readonly shortDrama: unknown
-  readonly metadataErrors: readonly string[]
-}
-
 function pathText(raw: string): string | undefined {
   const path = raw.replaceAll('\\', '/')
   if (!path.startsWith('file:')) return path

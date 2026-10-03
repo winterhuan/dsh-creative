@@ -29,38 +29,16 @@
 
 ## 阶段职责
 
-各阶段完成或需要裁定时，调用 DSH 为该子会话提供的 `structured_output` 工具交回 schema 字段。普通消息里的 JSON、进度说明和纯思考输出都不算返回结果。
+模板把责任和检查命令直接交给各阶段；子 Agent 只读取任务指明的专业参考。Role 描述专业能力，正文写入提醒不改变阶段分工。本页供父会话调用与恢复使用。
 
-Prepare 原生读取 story-write Skill、[单章准备](workflow-chapter.md#1-准备本章)及必要的[补纲规则](workflow-setup.md#中途补纲)，核对追踪并定位本章唯一实际文件。新章缺细纲时，在已确认卷/单元规划和续写授权内创建并检查；已有可用细纲直接复用，缺失字段只据确认材料补齐。多个候选、未知关键设定、缺追踪或超出授权的规划变化返回具体 `needs_input`，不写正文。已有正文而细纲缺失时只恢复可识别的原批准版本，不能从正文倒推批准。
+| 阶段 | 工作与交接 |
+|---|---|
+| Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲，交回场景计划、细纲哈希和修订号。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
+| Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`，交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
+| Review | 读取实际材料，前后核对原始字节哈希、文件版本和追踪修订号；返回 `ready / revise / needs_input` 及有来源的可读意见。 |
+| Submit / Verify | 按[追踪事务](tracking-transaction.md)提交与审稿版本一致的正文，再核对实际状态和持久记录。已提交章直接验证，不重写或重复提交。 |
 
-Prepare 检查正文与 `resume` 是否一致。它在读取就绪细纲生成场景计划前计算原始字节 SHA-256，完成后复核细纲哈希和追踪修订号。`ready` 返回实际正文/细纲路径、必要上下文、至多 4000 字符的 `scene_execution_plan`、细纲哈希和修订号。后续阶段接收这些准备结果；写手检查的细纲或修订号与准备结果不一致时停止。已提交章不规划或改写，Prepare 返回 `already_committed` 后直接交独立 Verify 阶段核对。
-
-写手原生读取 narrative-writer Role、story-write Skill 及准备好的材料和场景计划，以任务中的 `project` 为工程根；会话工作目录可能是它的父目录。使用完整 CLI 命令核对追踪、实际路径及细纲哈希。新章没有正文是正常状态，读取批准材料后创建任务中的 `body_path`；正文存在后才运行 `chapter check` 或正文快照。细纲消失或变化则 `needs_input`，不自行补纲。已存在未提交正文但 `resume=false` 时不能覆盖；恢复稿先检查，不自动重写。
-
-写作遵循单章流程的场景、字数检查点和最终 `storyctl.py chapter check`，不修改追踪或大纲。本工作流将最终检查分配给写手，提交仍由独立阶段负责。直接执行文档中的 CLI，不为例行检查导入脚本内部函数。`checked` 必须包含该命令返回的 `body_sha256`、`outline_sha256`、`state_revision`，并把 `length.status` 填入 `length_status`。长度带外且未授权接受则 `needs_input`；超长允许尚未使用的一次净删压缩，欠长不填充。检查失败返回实际原因，不自报通过。
-
-独立审稿者原生读取 story-review Skill、所选标准、实际正文及相关材料。按模板 schema 返回 `recommendation`（`ready / revise / needs_input`）和可读 `review`；普通 story-review 仍为自然语言。`review` 至多 4000 字符，保留重要问题、原文位置及修改方向；没有重要问题就说明检查范围和限制。不写正文、大纲或追踪，不用写手摘要代替阅读。
-
-审稿前后分别用已验证的 Python 读取正文、细纲原始字节及追踪修订号。以下代码接收脚本目录、工程根、章号；两次输出须完全一致，哈希和修订号还须与模板给出的身份相同。它不重复整套质检，也不持有跨模型等待的锁：
-
-```python
-import json, sys
-from pathlib import Path
-sys.path.insert(0, sys.argv[1])
-from wordcount_core import chapter_source_snapshot, chapter_source_digests
-from tracking_commit import load_state
-project, chapter = Path(sys.argv[2]), int(sys.argv[3])
-revision = load_state(project)["state_revision"]
-snapshot = chapter_source_snapshot(project, chapter)
-if load_state(project)["state_revision"] != revision:
-    raise RuntimeError("tracking changed during read")
-print(json.dumps({**chapter_source_digests(snapshot), "state_revision": revision,
-                  "versions": snapshot["versions"]}))
-```
-
-版本变化返回 `needs_input`，核对实际产物后重新调用同一章，从 Prepare 重载事实再检查和审稿。`revise` 仅用于授权范围内可执行的修改，触发局部修订、重检及新的独立审稿。初稿后最多两轮修订；仍有重要问题就返回 `revision_limit`，不提交。
-
-提交者读取最终正文、必要事实及 [追踪事务](tracking-transaction.md)，构造 `mode=append`，带审稿对应的 `expected_state_revision`、`expected_body_sha256`、`expected_outline_sha256`，不填 wordcount 或审稿证明。调用 `storyctl.py chapter commit`；明确接受自然长度且哈希一致时才用 `accept-current-length`。脚本重新检查并在追踪锁内校验身份。随后运行 `tracking_commit.py check`，核对持久字数哈希、章号、修订号及实际正文/细纲。`committed` 必须是本章及预期修订号加一，不能仅凭最后一句模型输出判断。
+每个子 Agent 用原生 `structured_output` 返回模板要求的字段，普通消息里的 JSON 或进度说明不算完成。初稿后最多两轮局部修订，每轮重检重评审。带外自然长度必须得到用户对准确正文、细纲哈希的接受；欠长不填充，超长最多使用一次压缩机会。细纲或追踪变化后须重新准备，不能悄悄替换预期值。
 
 ## 结果与恢复
 

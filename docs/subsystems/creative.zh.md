@@ -8,7 +8,7 @@
 
 ## 四个接缝
 
-**Skill 与 Role 供给。** 四个 `SkillProvider` 提供打包工作流及原生资源提示。专业 Agent 通过 DSH 委派或显式选择的 Team/workflow 工具工作，用原生 `read` 读取打包指令；Creative 不拥有专家执行器或独立模型、权限、协作系统。小说 workflow 模板在该原生执行中负责章节准备直至提交验证。
+**Skill 与 Role 供给。** 四个 `SkillProvider` 提供打包 Skill 及原生资源提示。专业 Agent 通过 DSH 委派或显式选择的 Team/workflow 工具工作，用原生 `read` 读取打包指令；Creative 不拥有专家执行器或独立模型、权限、协作系统。所选 Skill 或 workflow 负责执行顺序，Role 提供专业方法，写入提醒将追踪交给指定提交者。小说 workflow 模板负责章节准备直至提交验证，准备与提交共用 Python 章文件路径和目标字数解析器。详见[小说包说明](../../packages/creative/story/README.zh.md#model-experience)。
 
 **付费生产。** `story_zhuque`、`drama_produce_run`、`video_produce_run` 及聚合兼容入口 `creative_produce_run` 是模型接触内置 Python 生产脚本及其提供方密钥的唯一途径。密钥存放在凭据库；设置命名空间只保存引用和非敏感配置字段；工具在每次调用时解析引用，并作为显式的子进程环境变量转发，因为其他所有子进程都从清理过的环境启动。短剧运行会消耗一次性的创作者确认，契约结论驱动有界的密钥轮换。
 

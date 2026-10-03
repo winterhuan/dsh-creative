@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-03-story-rule-ownership.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-03-story-rule-ownership.md
+/agent-note-one-owner-for-fiction-workflow-rules:
+  en: 85a596528bf49910
+  zh: 109a0d205e5d85fa
+/agent-note-one-owner-for-fiction-workflow-rules/problem:
+  en: 16d2e67f1358cea9
+  zh: 30ae27ed6a57a83e
+/agent-note-one-owner-for-fiction-workflow-rules/decision:
+  en: c9c76086bbe6e1ff
+  zh: daaa205c09ca6601
+/agent-note-one-owner-for-fiction-workflow-rules/alternatives-considered:
+  en: 9ec2ed76b6a8896c
+  zh: 0dbc23dec2bfa80a
+/agent-note-one-owner-for-fiction-workflow-rules/consequences:
+  en: 6b92b5560e050eae
+  zh: 962627b186f34d5f

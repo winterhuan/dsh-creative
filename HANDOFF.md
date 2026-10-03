@@ -159,7 +159,13 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 小说包提供 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish`、`story-cover` 六个入口。长短篇流程按需读取；已有工程直接继续，原始文本接入不要求先拆全书。普通润色不调用朱雀，检测需要用户明确请求。
 
-六个技能的 `resourceBase` 均指向 `knowledge/story`，参考资料集中在 `references/`、脚本在 `scripts/`，DSH 原生 `read` 负责模型侧读取。专业 Agent 由原生 subagent 或 Team 工具创建，委派任务提供 Role 文件绝对路径和领域资源根，再由子 Agent 原生读取。章节提交不要求评审 JSON；旧评审记录只保留为历史数据，不再投影到续写。脚本移动后需保留 `storyctl.py` 与 `wordcount_core.py`、`tracking_commit.py` 同目录；`produce-tool.ts` 和 `sync-video-runtime.py` 使用新的脚本位置。
+六个技能的 `resourceBase` 均指向 `knowledge/story`，参考资料集中在 `references/`、脚本在 `scripts/`，DSH 原生 `read` 负责模型侧读取。专业 Agent 由原生 subagent 或 Team 工具创建，委派任务提供 Role 文件绝对路径和领域资源根，再由子 Agent 原生读取。章节提交不要求评审 JSON；旧评审记录只保留为历史数据，不再投影到续写。脚本移动后需保留 `storyctl.py`、`check_outline_contract.py`、`wordcount_core.py`、`tracking_commit.py` 同目录；`produce-tool.ts` 和 `sync-video-runtime.py` 使用新的脚本位置。
+
+2026-10-03 小说规则归属简化：所选 Skill/workflow 安排顺序，Role 提供专业方法，写入 hook 将追踪交给指定提交者。Python 细纲检查与提交共用解析，子会话按阶段读取资料，查询员只返回事实、来源和缺口；工作台保留实际编辑与冲突处理，删除未使用的流式状态、其他领域词典及项目元数据投影。兼容接口缩减与保留边界见[规则归属决策](.agents/notes/implemented/simplification/2026-10-03-story-rule-ownership.zh.md)。
+
+规则简化验证：清理构建产物后的 `typecheck`、`build` 通过；全量 65 文件 656 项测试、相关测试的严格 TypeScript 检查、文档 16 项及规范 3 项检查通过。原生 workflow 回归使用真实 `write` 和写入 hook 完成检查、修订及提交；脚本回归覆盖两种解析曾有分歧的目标、缺失细纲和多候选。`pnpm pack` 确认新检查器、共用解析器、提交入口、workflow 及客户端产物均在包内，旧 JS 细纲入口和已删除模块的编译产物不再分发。
+
+本轮真实 DSH 浏览器验证使用隔离 `DSH_HOME` 的独立 story 和 Creative 聚合 profile，两者均通过保存落盘、刷新恢复、外部修改冲突与草稿保留、同名兄弟章节隔离、Markdown 表格与任务列表、深浅色及 720px 窄窗口检查，页面脚本错误均为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-story-simplify.70jstw4u/`，各 profile 的 `*-results.json` 与截图对应本轮构建。临时 profile 使用浏览器目录选择器完成自动化；未调用真实模型或付费服务，未修改用户 profile 或小说。
 
 2026-10-03 原生小说 workflow：新增按需加载的单章模板，由 `story-write` 在明确选择时顶层调用 DSH 原生 `workflow`，完成细纲检查与必要补建、场景计划、写作、独立审稿、最多两轮修订和提交验证。`chapter check` 返回正文/细纲哈希，提交支持可选预期哈希并在追踪锁内校验；普通审稿与无审稿记录的提交保持可用。具体入口、范围、恢复及 token 成本见[小说包说明](packages/creative/story/README.zh.md)。决策记录已转为 implemented，原生专家协作决策仅增加 workflow 局部结构化路由例外。
 

@@ -209,6 +209,8 @@ describe('creative post-write reminder', () => {
     expect(texts).toHaveLength(1)
     expect(texts[0]).toContain('<creative-post-write>')
     expect(texts[0]).toContain('正文/第002章.md')
+    expect(texts[0]).toContain('由当前流程指定的提交者')
+    expect(texts[0]).not.toContain('继续当前步骤前核对并更新')
     expect(texts[0]).toContain('不要把这条提醒当作用户的新写作要求')
   })
 

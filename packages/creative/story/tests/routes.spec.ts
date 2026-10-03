@@ -89,17 +89,15 @@ describe('standalone story routes', () => {
     expect(fs.readBytes).not.toHaveBeenCalled()
   })
 
-  it('discovers immediate books and their metadata without traversing deeper collections or dependencies', async () => {
+  it('lists immediate books without reading metadata or traversing deeper collections', async () => {
     const { request, fs } = fixture('/collection')
     const reply = await request('workspace')
     expect(reply.status).toBe(200)
     expect(reply.body.files.map((file: { path: string }) => file.path).sort()).toEqual([
       'book/正文/第一卷/chapter.md', 'book/追踪/_tracking-state.json', 'other/正文.md', 'other/追踪/_tracking-state.json',
     ])
-    expect(reply.body.projects).toEqual([
-      { root: 'book', domains: ['story'], tracking: { title: 'Book' }, shortDrama: null, metadataErrors: [] },
-      { root: 'other', domains: ['story'], tracking: { title: 'Other' }, shortDrama: null, metadataErrors: [] },
-    ])
+    expect(reply.body).not.toHaveProperty('projects')
+    expect(fs.readBytes).not.toHaveBeenCalled()
     expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).not.toContain('/collection/archive')
     expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).not.toContain('/collection/长篇')
   })
@@ -112,7 +110,6 @@ describe('standalone story routes', () => {
     const reply = await request('workspace')
     expect(reply.status).toBe(200)
     expect(reply.body.files.map((value: { path: string }) => value.path)).toContain(file)
-    expect(reply.body.projects.map((value: { root: string }) => value.root)).toEqual([''])
   })
   it('reads and saves a child book using the observed version without changing a sibling chapter', async () => {
     const { request, fs } = fixture()

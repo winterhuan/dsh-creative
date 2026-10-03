@@ -1,5 +1,7 @@
 import { stat } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { defaultStorySkillRoot } from '../src/skill-provider.ts'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { JobHandle, JobSpec } from '@deepseek-ai/dsh-jobs'
 import type { Context } from '@deepseek-ai/cordis'
@@ -139,7 +141,9 @@ describe('creative_produce_run', () => {
     const result = await tool.execute({ entry: 'story-zhuque', argv, workdir: 'books/demo' }, execWith(agent))
     expect(result).toMatchObject({ kind: 'foreground', exitCode: 0 })
     const detection = shell.resolve.mock.calls[0]?.[0] as { command: string; env: Record<string, string>; workdir: string }
-    expect(detection.command).toContain('story-polish/scripts/zhuque_detect.py')
+    const detectorPath = resolve(defaultStorySkillRoot(), '../scripts/zhuque_detect.py')
+    expect(detection.command).toContain(shellQuote(detectorPath))
+    expect(existsSync(detectorPath)).toBe(true)
     expect(detection.command).toContain(argv.map(shellQuote).join(' '))
     expect(detection.env).toEqual({ MAKERS_API_KEY: 'dummy-MAKERS_API_KEY' })
     expect(detection.workdir).toBe(resolve('/work/story/books/demo'))

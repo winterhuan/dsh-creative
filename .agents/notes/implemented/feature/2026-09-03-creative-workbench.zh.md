@@ -19,11 +19,11 @@ Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、
 
 [`dsh-creative`](../../../../packages/creative/creative/README.zh.md) 只注入 `skills` 和 `tools`；`/creative` 路由注册在独立的 `webServer` 加 `typert` 作用域里，因此无头组合也保留 Skill、Role 和生产工具，而不需要 Web 服务。注册随插件释放。插件不发布运行时不变量伴生项：文件、请求和作业检查都在它们所授权的操作内部执行。
 
-`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，通过 Creative 聚合；各 provider 属于对应的独立领域包。每份 `SKILL.md` 拥有自己的描述和完整正文；provider 只在前面加上共享的 DSH 集成说明，这些说明把工作流名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
+`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，通过 Creative 聚合；各 provider 属于对应的独立领域包。每份 `SKILL.md` 拥有自己的描述和完整正文；provider 只在前面加上共享的 DSH 集成说明，这些说明把目录中的 Skill 名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
 
-七份打包 Role 文件为真实的原生子 Agent 或 Team 成员提供专业指令。[原生协作决策](2026-10-01-creative-role-agents.zh.md) 移除专用 Role 执行器及角色模型/工具策略。委派任务提供 Role 路径和领域资源根，由原生 read 读取所需材料。工作流阶段仍是 Skill，不是额外 Agent 类型。
+七份打包 Role 文件为真实的原生子 Agent 或 Team 成员提供专业指令。[原生协作决策](2026-10-01-creative-role-agents.zh.md) 移除专用 Role 执行器及角色模型/工具策略。委派任务提供 Role 路径和领域资源根，由原生 read 读取所需材料。原生 workflow 阶段是分配的任务，只加载履行职责所需的 Skill 和参考。
 
-小说 Skill 共用 `knowledge/story/scripts/` 下的一套打包脚本运行时，各 Skill 通过自己目录里的入口文件调用。JavaScript 以 ESM 运行；可执行文件缺失、检查结果格式错误或退出码不一致都会阻断章节交付，而不是算作检查通过。因此单独复制一个小说 Skill 目录不会带上这套运行时，共享视频脚本从 `knowledge/video-recap/runtime/` 复制，并逐字节检查一致性。剧集合成和媒体复核需要包内的视频树。作者记忆回执、章节追踪、必需参考和质量检查仍属于写作工作流。
+小说 Skill 直接调用 `knowledge/story/scripts/` 下的打包脚本。细纲准备和提交共用 Python 章文件路径及目标字数解析。JavaScript 以 ESM 运行；可执行文件缺失、检查结果格式错误或退出码不一致都会阻断章节交付，而不是算作检查通过。因此单独复制一个小说 Skill 目录不会带上这套运行时，共享视频脚本从 `knowledge/video-recap/runtime/` 复制，并逐字节检查一致性。剧集合成和媒体复核需要包内的视频树。作者记忆回执、章节追踪、必需参考和质量检查仍属于写作工作流。
 
 知识库 manifest 是 Skill、Role 和可选说明的描述性目录。它不包含提交固定值、schema 计数、生成时间、逐文件哈希或变更分类；加载直接读取打包文件，内容历史由 Git 负责。
 
@@ -43,13 +43,13 @@ Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、
 <a id="project-and-file-ownership"></a>
 ### 项目与文件归属
 
-[共享解析器](../../../../packages/creative/creative/src/project-path.ts)在支持的发现深度内识别根项目、直接的书目录、`长篇|短篇/<book>`、独立短篇，以及游戏和视频入口。元数据、选择、草稿和素材过滤都用完整的项目与剧集路径寻址，因此 `EP001`、`SHOT-001` 这类重复名称永远不是全局身份。章节正文、必需大纲和追踪文件必须属于同一项目。短篇从第一份标准文档起就可见，编辑器对章节目录和独立短篇都优先展示正文和大纲。写入后的追踪提醒是记入日志、模型可见的上下文。
+[共享解析器](../../../../packages/creative/creative/src/project-path.ts)在支持的发现深度内识别根项目、直接的书目录、`长篇|短篇/<book>`、独立短篇，以及游戏和视频入口。元数据、选择、草稿和素材过滤都用完整的项目与剧集路径寻址，因此 `EP001`、`SHOT-001` 这类重复名称永远不是全局身份。章节正文、必需大纲和追踪文件必须属于同一项目。短篇从第一份标准文档起就可见，编辑器对章节目录和独立短篇都优先展示正文和大纲。写入后的提醒是记入日志、模型可见的上下文，要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。
 
 工作区请求只接受回环地址或加载时配置并校验过的 `trustedHosts`。Host 操作强制执行扩展名白名单和解析后的文件系统包含关系，包括符号链接。文本保存使用 `FsVersion` compare-and-swap。列表最多统计 1,000 个符合条件的创作文件，只有在看到下一个符合条件的文件后才设置 `truncated`，所以恰好 1,000 个文件仍算完整；这个警告不提供分页。依赖目录、Python 缓存、隐藏目录和视频工作区既不占用这个上限，也不影响游戏预览的新鲜度。
 
 Session 文件系统 provider 拥有媒体字节。Host 直接流式读取要求 provider 在 Host realpath 解析前后都明确映射根目录和文件，并检查包含关系和大小；仅仅路径字符串和大小相同并不够。否则通过 provider 读取，每个媒体文件上限 256 MiB，并支持 RFC 9110 字节范围请求。游戏预览运行在只允许脚本的沙箱里，受 CSP 约束并使用独立的回环源，其 QA 记录只有经过认证的浏览器运行和匹配的构建、证据字节才能显示为 Current。
 
-Creative 保留这些 HTTP 路由，因为通用的 `workspaceFiles` Remote 没有 CAS 写入，也覆盖不了按领域过滤的文件清单、项目摘要、编辑器上限、Range 媒体、视频预检和 CSP 隔离的游戏预览。实时工具参数投影仍用于结算前的编辑器预览；文件观察只能替代之后的失效信号。
+Creative 保留这些 HTTP 路由，因为通用的 `workspaceFiles` Remote 没有 CAS 写入，也覆盖不了按领域过滤的文件清单、项目摘要、编辑器上限、Range 媒体、视频预检和 CSP 隔离的游戏预览。小说工作台在成功的文件变更结算后刷新文件，并保留用户未保存的草稿。
 
 <a id="production-requests-and-jobs"></a>
 ### 生产请求与作业

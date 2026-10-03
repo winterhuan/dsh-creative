@@ -31,7 +31,7 @@ python3 <资源根>/scripts/export_novel_txt.py --story-root <小说目录> --ou
 `record_lineage.py` 在工作区根的 `改编谱系.jsonl` 追加来源指纹记录：
 
 ```text
-python3 <资源根>/scripts/record_lineage.py --workspace-root <工作区> --from-domain story --from-path <原著路径> --to-domain <目标领域> --to-path <目标路径>
+python3 <资源根>/scripts/record_lineage.py --workspace-root <工作区> --from-domain novel --from-path <原著路径> --to-domain <目标领域> --to-path <目标路径>
 ```
 
 需要记录改编取舍时附 `--decision`。接收改编输入时可以记录尚未创建的目标项目；媒体交付只记录实际完成的复制，不把计划当成果，不覆盖已有谱系。下游插件也持有独立的辅助脚本，无需跨插件调用本包。

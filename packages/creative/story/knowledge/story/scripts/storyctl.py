@@ -166,27 +166,7 @@ def check_blocking_quality(outline: Path, body: Path, project: Path | None = Non
 
 
 def check_outline_readiness(outline: Path) -> dict[str, Any]:
-    node = shutil.which("node")
-    if node is None:
-        return {"status": "fail", "failures": [{"type": "TOOL_UNAVAILABLE", "message": "node is required"}]}
-    failures: list[dict[str, Any]] = []
-    completed = _run_quality_check(
-        node,
-        Path(__file__).parent / "check-outline-contract.js",
-        ["--json", str(outline)],
-        "outline-readiness",
-        failures,
-    )
-    if completed is None:
-        return {"status": "fail", "failures": failures}
-    try:
-        report = json.loads(completed.stdout)
-    except json.JSONDecodeError:
-        return {"status": "fail", "failures": [{"type": "TOOL_ERROR", "message": "invalid outline checker JSON"}]}
-    if not isinstance(report, dict) or not isinstance(report.get("failures"), list) or not isinstance(report.get("ok"), bool):
-        return {"status": "fail", "failures": [{"type": "TOOL_ERROR", "message": "invalid outline checker report"}]}
-    if completed.returncode != (0 if report["ok"] else 1) or report["ok"] == bool(report["failures"]):
-        return {"status": "fail", "failures": [{"type": "TOOL_ERROR", "message": "outline checker status disagrees with findings"}]}
+    report = _load_local_module("story_outline_contract", "check_outline_contract.py").verify(outline)
     return {"status": "pass" if report["ok"] else "fail", "failures": report["failures"]}
 
 

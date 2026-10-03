@@ -28,7 +28,7 @@ The outline checker requires reader expectation, objective, obstruction, choice,
 
 ### Writing, continuity and review have separate owners
 
-`narrative-writer` writes prose and makes local revisions. `story-review` obtains reader-value evidence from `story-architect`; `consistency-checker` checks facts, character state and foreshadowing. Deterministic tools own format, degeneration and tracking. The writer receives selected genre, emotion and rhythm guidance with relevant examples. References remain available on demand; fixed density, chapter percentages, three-use objects and hook formulas are optional techniques, not universal acceptance rules. The [six-Skill decision](../simplification/2026-09-30-story-skills-native-resources.md) defines the solo fallback: the main session performs a separate complete review, records `role=solo` and its actual configuration, and does not claim independent review.
+`narrative-writer` writes prose and makes local revisions. `story-review` obtains reader-value evidence from `story-architect`; `consistency-checker` checks facts, character state and foreshadowing. Deterministic tools own format, degeneration and tracking. The writer receives selected genre, emotion and rhythm guidance with relevant examples. References remain available on demand; fixed density, chapter percentages, three-use objects and hook formulas are optional techniques, not universal acceptance rules. The [six-Skill decision](../simplification/2026-09-30-story-skills-native-resources.md) defines the solo fallback: the main session performs a separate complete review and identifies it honestly as main-session review, without claiming independence or producing a fixed review record.
 
 ### Review configuration is recorded
 
