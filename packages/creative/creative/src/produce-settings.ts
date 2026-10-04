@@ -51,13 +51,6 @@ export interface ProduceConfig {
    * defaults to AGNES_API_KEY.
    */
   readonly agnesApiKeyEnv?: string
-  /**
-   * Credential references for the EdgeOne Makers key used by Zhuque text
-   * detection, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to MAKERS_API_KEY.
-   */
-  readonly makersApiKeyEnv?: string
   /** Image endpoint override; blank inherits the adapter default. */
   readonly openaiBaseUrl?: string
   /** MiniMax music endpoint override; blank inherits the adapter default. */
@@ -126,7 +119,6 @@ export const ProduceSettingsSchema = z.object({
   mimoApiKeyEnv: z.string().role('credential-ref').default('MIMO_API_KEY'),
   fishApiKeyEnv: z.string().role('credential-ref').default('FISH_API_KEY'),
   agnesApiKeyEnv: z.string().role('credential-ref').default('AGNES_API_KEY'),
-  makersApiKeyEnv: z.string().role('credential-ref').default('MAKERS_API_KEY'),
   openaiBaseUrl: z.string(),
   minimaxBaseUrl: z.string(),
   minimaxVideoBaseUrl: z.string(),
@@ -160,7 +152,7 @@ export const ProduceSettingsSchema = z.object({
 
 interface KeyAddress {
   /** Section field naming the credential reference. */
-  readonly field: 'openaiApiKeyEnv' | 'arkApiKeyEnv' | 'minimaxApiKeyEnv' | 'mimoApiKeyEnv' | 'fishApiKeyEnv' | 'agnesApiKeyEnv' | 'makersApiKeyEnv'
+  readonly field: 'openaiApiKeyEnv' | 'arkApiKeyEnv' | 'minimaxApiKeyEnv' | 'mimoApiKeyEnv' | 'fishApiKeyEnv' | 'agnesApiKeyEnv'
   /** Canonical adapter environment name and fallback credential reference. */
   readonly fallback: string
 }
@@ -172,7 +164,6 @@ const KEY_ADDRESSES: readonly KeyAddress[] = [
   { field: 'mimoApiKeyEnv', fallback: 'MIMO_API_KEY' },
   { field: 'fishApiKeyEnv', fallback: 'FISH_API_KEY' },
   { field: 'agnesApiKeyEnv', fallback: 'AGNES_API_KEY' },
-  { field: 'makersApiKeyEnv', fallback: 'MAKERS_API_KEY' },
 ]
 
 interface ProfileAddress {

@@ -2,11 +2,25 @@ import type { ChatSnapshot } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-conversation/client'
 
 function mutationPath(name: string, raw: string): string | undefined {
-  if (name !== 'write' && name !== 'edit' && name !== 'str_replace_editor') return undefined
+  if (name !== 'write' && name !== 'edit' && name !== 'str_replace_editor' && name !== 'bash') return undefined
   try {
     const args: unknown = JSON.parse(raw)
     if (typeof args !== 'object' || args === null || Array.isArray(args)) return undefined
     const record = args as Record<string, unknown>
+    if (name === 'bash') {
+      const command = record.command
+      // This only invalidates the listing; native bash retains ownership of execution and paths.
+      return typeof command === 'string' && (
+        command.includes('storyctl.py') && /\bchapter\b/u.test(command) && /\b(commit|accept-current-length)\b/u.test(command)
+        || command.includes('tracking_commit.py') && /\b(init|commit)\b/u.test(command)
+        || /(?:\bdsh-story\b|[/\\]lib[/\\]cli\.js)/u.test(command) && (
+          /\bchapter[\s'"]+(?:commit|accept-current-length)\b/u.test(command)
+          || /\bproject[\s'"]+init\b/u.test(command)
+          || /\banalysis[\s'"]+write-cards\b/u.test(command)
+          || /\btext[\s'"]+normalize\b/u.test(command) && /--apply\b/u.test(command)
+        )
+      ) ? '追踪/_tracking-state.json' : undefined
+    }
     if (name === 'str_replace_editor' && record.command === 'view') return undefined
     const path = name === 'str_replace_editor' ? record.path : record.file_path
     return typeof path === 'string' ? path : undefined

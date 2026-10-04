@@ -1,213 +1,28 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import type {} from '@deepseek-ai/dsh-settings'
-import z from '@deepseek-ai/schemastery'
 
-/** Settings namespace carrying the creative production runtime profile. */
-export const CREATIVE_PRODUCE_SETTINGS_NAMESPACE = 'creative-produce'
+/** Settings namespace of the story plugin. Zhuque reads only this section. */
+export const STORY_SETTINGS_NAMESPACE = 'story'
 
 /**
- * Deployment profile for the pinned creative production scripts. Secret values
- * never enter this section: each `*ApiKeyEnv` names one or more credential
- * references (comma-separated for rotation) the scripts' environment variable
- * resolves through, following the model provider pattern. Non-secret model,
- * endpoint, and polling choices live here so a deployment changes them
- * without editing host environment files.
+ * Credential reference the Zhuque detector resolves. The key literal stays in
+ * the credentials store; this field only names the reference.
  */
 export interface ProduceConfig {
   /**
-   * Credential references for the image key, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to OPENAI_API_KEY.
-   */
-  readonly openaiApiKeyEnv?: string
-  /**
-   * Credential references for the Seedance key, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to ARK_API_KEY.
-   */
-  readonly arkApiKeyEnv?: string
-  /**
-   * Credential references for the MiniMax key, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to MINIMAX_API_KEY.
-   */
-  readonly minimaxApiKeyEnv?: string
-  /**
-   * Credential references for the MiMo key, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to MIMO_API_KEY.
-   */
-  readonly mimoApiKeyEnv?: string
-  /**
-   * Credential references for the Fish key, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to FISH_API_KEY.
-   */
-  readonly fishApiKeyEnv?: string
-  /**
-   * Credential references for the Agnes key, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to AGNES_API_KEY.
-   */
-  readonly agnesApiKeyEnv?: string
-  /**
-   * Credential references for the EdgeOne Makers key used by Zhuque text
-   * detection, comma-separated for rotation; a stored value may itself hold
-   * newline-separated keys for bulk pools.
-   * defaults to MAKERS_API_KEY.
+   * Credential references for the EdgeOne Makers key, comma-separated for
+   * rotation. A stored value may itself hold newline-separated keys.
+   * Defaults to MAKERS_API_KEY.
    */
   readonly makersApiKeyEnv?: string
-  /** Image endpoint override; blank inherits the adapter default. */
-  readonly openaiBaseUrl?: string
-  /** MiniMax music endpoint override; blank inherits the adapter default. */
-  readonly minimaxBaseUrl?: string
-  /** MiniMax video endpoint override; blank inherits the adapter default. */
-  readonly minimaxVideoBaseUrl?: string
-  /** Seedance endpoint override; blank inherits the adapter default. */
-  readonly seedanceBaseUrl?: string
-  /** MiMo endpoint override; blank inherits the adapter default. */
-  readonly mimoApiUrl?: string
-  /** Exact enabled Seedance model or endpoint id; the adapter defines no default. */
-  readonly seedanceModel?: string
-  /** Exact enabled MiniMax video model id; the adapter defines no default. */
-  readonly minimaxVideoModel?: string
-  /** Resolutions the MiniMax video model accepts, e.g. 768P. */
-  readonly minimaxVideoResolutions?: string
-  /** Minimum whole-second duration the MiniMax video model accepts. */
-  readonly minimaxVideoMinDuration?: number
-  /** Maximum whole-second duration the MiniMax video model accepts. */
-  readonly minimaxVideoMaxDuration?: number
-  /** Ratios the MiniMax video model accepts, e.g. 9:16,16:9. */
-  readonly minimaxVideoRatios?: string
-  /** Ratios the Seedance model accepts, e.g. 9:16,16:9. */
-  readonly seedanceAllowedRatios?: string
-  /** Minimum whole-second duration the Seedance model accepts. */
-  readonly seedanceMinDuration?: number
-  /** Maximum whole-second duration the Seedance model accepts. */
-  readonly seedanceMaxDuration?: number
-  /** Seconds between MiniMax video status polls. */
-  readonly minimaxVideoPollInterval?: number
-  /** Seconds before a MiniMax video run times out. */
-  readonly minimaxVideoTimeoutSeconds?: number
-  /** Seconds between Seedance status polls. */
-  readonly seedancePollInterval?: number
-  /** Seconds before a Seedance run times out. */
-  readonly seedanceTimeoutSeconds?: number
-  /** Speech provider routing: auto, mimo-tts, or fish-audio. */
-  readonly ttsProvider?: string
-  /** MiMo model override; blank inherits the adapter default. */
-  readonly mimoModel?: string
-  /** MiMo narration voice; blank inherits the adapter default. */
-  readonly mimoTtsVoice?: string
-  /** MiMo Token Plan cluster for video understanding; blank uses the pay-as-you-go endpoint. */
-  readonly mimoTokenPlanCluster?: string
-  /** Fish Audio voice (reference) id; blank uses the provider default voice. */
-  readonly fishTtsReferenceId?: string
-  /** Background music file for recap assembly; blank assembles without music. */
-  readonly bgmPath?: string
-  /** Agnes endpoint override; blank inherits the adapter default. */
-  readonly agnesBaseUrl?: string
-  /** Exact Agnes image model id; blank uses agnes-image-2.5-flash. */
-  readonly agnesImageModel?: string
-  /** Agnes video model id; blank uses free agnes-video-2.5-flash, while agnes-video-2.5 bills per second. */
-  readonly agnesVideoModel?: string
-  /** Seconds between Agnes video status polls. */
-  readonly agnesVideoPollInterval?: number
-  /** Seconds before an Agnes video run times out. */
-  readonly agnesVideoTimeoutSeconds?: number
 }
 
-/** Schema of the creative-produce settings namespace and the plugin's produce entry. */
-export const ProduceSettingsSchema = z.object({
-  openaiApiKeyEnv: z.string().role('credential-ref').default('OPENAI_API_KEY'),
-  arkApiKeyEnv: z.string().role('credential-ref').default('ARK_API_KEY'),
-  minimaxApiKeyEnv: z.string().role('credential-ref').default('MINIMAX_API_KEY'),
-  mimoApiKeyEnv: z.string().role('credential-ref').default('MIMO_API_KEY'),
-  fishApiKeyEnv: z.string().role('credential-ref').default('FISH_API_KEY'),
-  agnesApiKeyEnv: z.string().role('credential-ref').default('AGNES_API_KEY'),
-  makersApiKeyEnv: z.string().role('credential-ref').default('MAKERS_API_KEY'),
-  openaiBaseUrl: z.string(),
-  minimaxBaseUrl: z.string(),
-  minimaxVideoBaseUrl: z.string(),
-  seedanceBaseUrl: z.string(),
-  mimoApiUrl: z.string(),
-  seedanceModel: z.string(),
-  minimaxVideoModel: z.string(),
-  minimaxVideoResolutions: z.string(),
-  minimaxVideoMinDuration: z.number().step(1).min(1),
-  minimaxVideoMaxDuration: z.number().step(1).min(1),
-  minimaxVideoRatios: z.string(),
-  seedanceAllowedRatios: z.string(),
-  seedanceMinDuration: z.number().step(1).min(1),
-  seedanceMaxDuration: z.number().step(1).min(1),
-  minimaxVideoPollInterval: z.number().step(1).min(1),
-  minimaxVideoTimeoutSeconds: z.number().step(1).min(1),
-  seedancePollInterval: z.number().step(1).min(1),
-  seedanceTimeoutSeconds: z.number().step(1).min(1),
-  ttsProvider: z.string().default('auto'),
-  mimoModel: z.string(),
-  mimoTtsVoice: z.string(),
-  mimoTokenPlanCluster: z.string(),
-  fishTtsReferenceId: z.string(),
-  bgmPath: z.string(),
-  agnesBaseUrl: z.string(),
-  agnesImageModel: z.string(),
-  agnesVideoModel: z.string(),
-  agnesVideoPollInterval: z.number().step(1).min(1),
-  agnesVideoTimeoutSeconds: z.number().step(1).min(1),
-}) as z<ProduceConfig>
-
-interface KeyAddress {
-  /** Section field naming the credential reference. */
-  readonly field: 'openaiApiKeyEnv' | 'arkApiKeyEnv' | 'minimaxApiKeyEnv' | 'mimoApiKeyEnv' | 'fishApiKeyEnv' | 'agnesApiKeyEnv' | 'makersApiKeyEnv'
-  /** Canonical adapter environment name and fallback credential reference. */
-  readonly fallback: string
-}
-
-const KEY_ADDRESSES: readonly KeyAddress[] = [
-  { field: 'makersApiKeyEnv', fallback: 'MAKERS_API_KEY' },
-]
-
-interface ProfileAddress {
-  /** Section field carrying the non-secret value. */
-  readonly field: Exclude<keyof ProduceConfig, KeyAddress['field']>
-  /** Environment variable the pinned scripts read. */
-  readonly env: string
-}
-
-const PROFILE_ADDRESSES: readonly ProfileAddress[] = []
-
-function text(value: unknown): string | undefined {
-  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : undefined
-  return typeof value === 'string' && value !== '' ? value : undefined
-}
+/** Canonical environment name the detector reads, and the default reference. */
+const MAKERS_ENV = 'MAKERS_API_KEY'
 
 /**
- * Project one resolved section into the environment a pinned production script
- * receives. Every entry is a deliberate caller opt-in, so credential-shaped
- * names survive the subprocess credential scrub. Resolution is per call with
- * no cross-operation cache: the settings section wins, the launch environment
- * covers what it does not name, and an unset value stays unset so the
- * script's own default applies.
- * @param ctx - plugin context supplying the credential and environment planes.
- * @param section - the currently authoritative profile.
- * @returns environment entries to forward explicitly; never secret metadata.
- */
-export async function resolveProduceEnv(
-  ctx: Context,
-  section: ProduceConfig,
-): Promise<Record<string, string>> {
-  const envs = await resolveProduceEnvs(ctx, section)
-  const first = envs[0]
-  /* v8 ignore next -- resolveProduceEnvs always yields at least one environment. */
-  if (first === undefined) throw new Error('produce settings resolved no key environment.')
-  return first
-}
-
-/**
- * Split one key field into the credential references it names. A field may
- * carry several references separated by commas for rotation; a blank field
+ * Split one key field into the credential references it names. A blank field
  * falls back to the single default reference.
  * @param declared - the section's raw field value.
  * @param fallback - the default reference when the field names none.
@@ -221,9 +36,7 @@ export function keyReferences(declared: unknown, fallback: string): string[] {
 }
 
 /**
- * Split one resolved credential value into the keys it carries. A value holds
- * either a single key or a bulk pool with one key per line, so thousands of
- * keys ride one reference while the credentials read stays a single lookup.
+ * Split one resolved credential value into the keys it carries.
  * @param value - the stored credential value.
  * @returns the non-empty trimmed lines, in pool order.
  */
@@ -232,13 +45,9 @@ export function keyLines(value: string): string[] {
 }
 
 /**
- * Project one resolved section into one environment per key rotation attempt.
- * Attempt zero carries every field's first resolved key, which is exactly what
- * {@link resolveProduceEnv} returns; later attempts rotate each multi-key
- * field independently while single-key fields repeat. Lookup references never
- * rename the canonical environment variables consumed by adapters. Fields with no
- * resolvable key stay unset on every attempt so the script keeps reporting
- * `missing_credential` instead of receiving an empty value.
+ * Project the story section into one environment per key rotation attempt.
+ * Lookup references never rename `MAKERS_API_KEY`. An unset key stays unset
+ * so the script reports `missing_credential` instead of receiving an empty value.
  * @param ctx - plugin context supplying the credential and environment planes.
  * @param section - the currently authoritative profile.
  * @returns one explicit environment per attempt; never secret metadata.
@@ -247,85 +56,33 @@ export async function resolveProduceEnvs(
   ctx: Context,
   section: ProduceConfig,
 ): Promise<Array<Record<string, string>>> {
-  const launch = ctx.get('launchEnvironment')
-  const profile: Record<string, string> = {}
-  for (const { field, env: name } of PROFILE_ADDRESSES) {
-    const value = text(section[field]) ?? launch?.get(name)?.value
-    if (value !== undefined && value !== '') profile[name] = value
-  }
-  const rotations = await resolveProduceKeys(ctx, section)
-  const attempts = Math.max(1, ...rotations.map(rotation => rotation.values.length))
-  const envs: Array<Record<string, string>> = []
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const env: Record<string, string> = { ...profile }
-    for (const { name, values } of rotations) {
-      if (values.length === 0) continue
-      const pick = values[attempt % values.length]
-      /* v8 ignore next -- a non-empty rotation always yields a pick for a valid attempt. */
-      if (pick === undefined) continue
-      env[name] = pick
-    }
-    envs.push(env)
-  }
-  return envs
-}
-
-/**
- * Inspect usable production credentials using the same lookup order as execution.
- * @param ctx - context supplying credential and launch-environment services.
- * @param section - currently authoritative production profile.
- * @returns canonical adapter environment names with at least one usable key; never secret values.
- */
-export async function configuredProduceCredentials(ctx: Context, section: ProduceConfig): Promise<ReadonlySet<string>> {
-  const keys = await resolveProduceKeys(ctx, section)
-  return new Set(keys.filter(key => key.values.length > 0).map(key => key.name))
-}
-
-/**
- * The produce-profile view the video preflight reports: which canonical
- * credential variables resolve to a value, and the speech provider the pinned
- * scripts will read. Resolution matches {@link resolveProduceEnvs}, so the
- * panel describes the same configuration a run receives rather than the Host
- * process environment, which never carries credential-store values.
- * @param ctx - context owning the settings section, credential store and launch environment.
- * @param entry - plugin-configured profile seed, overridden by user settings.
- * @returns configured canonical names and the requested speech provider.
- */
-export async function produceCredentialView(
-  ctx: Context,
-  entry: ProduceConfig,
-): Promise<{ readonly configured: ReadonlySet<string>; readonly ttsProvider: string }> {
-  const section = currentProduceConfig(ctx, entry)
-  const configured = await configuredProduceCredentials(ctx, section)
-  const ttsProvider = text(section.ttsProvider) ?? ctx.get('launchEnvironment')?.get('TTS_PROVIDER')?.value ?? 'auto'
-  return { configured, ttsProvider }
-}
-
-async function resolveProduceKeys(
-  ctx: Context,
-  section: ProduceConfig,
-): Promise<Array<{ readonly name: string; readonly values: string[] }>> {
   const credentials = ctx.get('credentials')
   const launch = ctx.get('launchEnvironment')
-  const rotations: Array<{ readonly name: string; readonly values: string[] }> = []
-  for (const { field, fallback } of KEY_ADDRESSES) {
-    const values: string[] = []
-    for (const ref of keyReferences(section[field], fallback)) {
-      const stored = await credentials?.resolve(credentialRef(ref))
-      const raw = stored?.value ?? launch?.get(ref)?.value
-      if (typeof raw !== 'string') continue
-      values.push(...keyLines(raw))
-    }
-    rotations.push({ name: fallback, values })
+  const values: string[] = []
+  for (const ref of keyReferences(section.makersApiKeyEnv, MAKERS_ENV)) {
+    const stored = await credentials?.resolve(credentialRef(ref))
+    const raw = stored?.value ?? launch?.get(ref)?.value
+    if (typeof raw !== 'string') continue
+    values.push(...keyLines(raw))
   }
-  return rotations
+  if (values.length === 0) return [{}]
+  return values.map(value => ({ [MAKERS_ENV]: value }))
 }
 
 /**
- * Read the currently authoritative profile: the `creative-produce` section the
- * settings service projects from the produce Loader row's Config when that
- * composition mounts it, otherwise the composition entry the creative plugin
- * loaded with.
+ * Inspect whether the Zhuque credential resolves, using the same lookup as execution.
+ * @param ctx - context supplying credential and launch-environment services.
+ * @param section - currently authoritative profile.
+ * @returns `MAKERS_API_KEY` when at least one usable key exists; never secret values.
+ */
+export async function configuredProduceCredentials(ctx: Context, section: ProduceConfig): Promise<ReadonlySet<string>> {
+  const envs = await resolveProduceEnvs(ctx, section)
+  return envs.some(env => env[MAKERS_ENV] !== undefined) ? new Set([MAKERS_ENV]) : new Set()
+}
+
+/**
+ * Read the story plugin's settings section when the settings service projects
+ * it, otherwise the composition entry the plugin loaded with.
  * @param ctx - plugin context optionally carrying the settings service.
  * @param entry - composition entry fallback when no section is served.
  * @returns the resolved profile snapshot.
@@ -333,6 +90,9 @@ async function resolveProduceKeys(
 export function currentProduceConfig(ctx: Context, entry: ProduceConfig): ProduceConfig {
   const settings = ctx.get('settings')
   if (settings === undefined) return entry
-  const section = settings.describe().find(descriptor => descriptor.ns === CREATIVE_PRODUCE_SETTINGS_NAMESPACE)
-  return (section?.value as ProduceConfig | undefined) ?? entry
+  const section = settings.describe().find(descriptor => descriptor.ns === STORY_SETTINGS_NAMESPACE)
+  if (section === undefined) return entry
+  const value = section.value as ProduceConfig | undefined
+  const makersApiKeyEnv = value?.makersApiKeyEnv ?? entry.makersApiKeyEnv
+  return makersApiKeyEnv === undefined ? {} : { makersApiKeyEnv }
 }

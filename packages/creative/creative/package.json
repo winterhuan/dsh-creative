@@ -51,6 +51,7 @@
     "@deepseek-ai/dsh-util-workspace-path": "0.2.0-rc.2",
     "@deepseek-ai/schemastery": "~3.18.4",
     "@winterhuan/dsh-client-ui-settings-creative-produce": "workspace:*",
+    "@winterhuan/dsh-client-ui-settings-story": "workspace:*",
     "@winterhuan/dsh-novel-to-game": "workspace:*",
     "@winterhuan/dsh-short-drama": "workspace:*",
     "@winterhuan/dsh-story": "workspace:*",

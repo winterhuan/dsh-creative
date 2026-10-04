@@ -46,7 +46,7 @@ Select the project workspace in a Session, then open Fiction, Short-drama, Game 
 
 ### Chapter review
 
-Long-form chapters follow outline readiness, a compact scene plan and review of important issues before submission. Review returns ordinary findings with source references, not a mandatory certificate or model record. Chapter scripts retain current wordcount hashes, state revisions and atomic tracking writes; mechanical success does not establish literary quality. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration`. See the [chapter workflow](../story/knowledge/story/references/writing/long/workflow-chapter.md).
+Long-form chapters follow outline readiness, a compact scene plan and review of important issues before submission. Review returns ordinary findings with source references, not a mandatory certificate or model record. Chapter scripts retain current wordcount hashes, state revisions and atomic tracking writes; mechanical success does not establish literary quality. AI-pattern and Zhuque results remain advisory. Project punctuation defaults to preservation; `设定/写作检查.json` can select `normalize-narration`. See the [chapter workflow](../story/knowledge/story/skills/story-write/references/long/workflow-chapter.md).
 
 ### Deliver and verify
 
@@ -125,7 +125,7 @@ Projection intents are tool calls whose results carry the confirmation message; 
 
 #### What the model sees
 
-`creative_produce_status` reports credential presence for the drama adapters, including `agnes-image` and `agnes-video`, the MiMo and Fish video providers and Zhuque detection. It uses the execution profile's credential lookup, returns no keys and launches no process. Ordinary shell environment checks cannot inspect the managed credential store; missing keys belong in the Creative production settings, not chat.
+`creative_produce_status` reports credential presence for the drama adapters, including `agnes-image` and `agnes-video`, and the MiMo and Fish video providers. It uses the execution profile's credential lookup, returns no keys and launches no process. Ordinary shell environment checks cannot inspect the managed credential store; missing keys belong in the Creative production settings, not chat. Zhuque detection uses `story_zhuque` and the story settings page.
 
 #### Token effect
 

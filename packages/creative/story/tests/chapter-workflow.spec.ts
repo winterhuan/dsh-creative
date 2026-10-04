@@ -2,15 +2,15 @@ import { readFile } from 'node:fs/promises'
 import { runInNewContext } from 'node:vm'
 import { describe, expect, it } from 'vitest'
 
-const script = await readFile(new URL('../knowledge/story/workflows/chapter.js', import.meta.url), 'utf8')
+const script = await readFile(new URL('../knowledge/story/skills/story-write/workflows/chapter.js', import.meta.url), 'utf8')
 const source = { body_sha256: 'a'.repeat(64), outline_sha256: 'b'.repeat(64), state_revision: 7 }
 const draft = { status: 'checked', summary: 'Written and checked.', compression_used: false, length_status: 'internal_pass', ...source }
 const ready = { recommendation: 'ready', review: 'No important unresolved issue in the inspected chapter.' }
 const revise = { recommendation: 'revise', review: 'The guard knows the concealed fact. Revise paragraph 2.' }
 const committed = { status: 'committed', summary: 'Tracking and sources verified.', ...source, state_revision: 8 }
 const args = {
-  project: '/book', resource_base: '/resources/story', chapter: 8, body_path: '/book/正文/第8章.md',
-  outline_path: '/book/大纲/细纲_第8章.md', python: '/bin/python3', expected_state_revision: 7,
+  workspace: '/', book: 'book', skills_root: '/resources/story/skills', cli: '/resources/lib/cli.js', chapter: 8, body_path: '/book/正文/第8章.md',
+  outline_path: '/book/大纲/细纲_第8章.md', expected_state_revision: 7,
   instructions: 'Do not reveal the concealed fact.', context_paths: ['/book/追踪/上下文.md'],
   resume: false, compression_used: false,
 }
@@ -171,7 +171,7 @@ describe('native chapter template transitions', () => {
   })
 
   it('rejects incomplete invocation inputs before any child starts', async () => {
-    const { result, calls } = run([], { project: 'relative', chapter: 0 })
+    const { result, calls } = run([], { workspace: 'relative', chapter: 0 })
     await expect(result).rejects.toThrow('absolute path')
     expect(calls).toHaveLength(0)
   })

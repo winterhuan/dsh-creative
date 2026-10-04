@@ -9,22 +9,6 @@ import {
 } from '@deepseek-ai/dsh-skill'
 
 const STORY_PROVIDER_NAME = 'story'
-const DSH_SKILL_ROUTING = [
-  'Load a task Skill with the skill tool and its exact catalog name in the name argument. For a $name or /name reference, omit the prefix. Loading supplies instructions to the current Agent; native workflow stages are assigned tasks, not separate Skills.',
-  'For an independent specialist, follow references/project/delegation.md and use the visible native delegation tools. Put the professional identity, absolute Role file and resource base in the child task; the actual child reads its instructions. Use native Agent Teams only when the user explicitly requests team collaboration.',
-]
-const DSH_SKILL_BRIDGE = [
-  '<creative-dsh-integration>',
-  'This Skill is a native contribution to the current DeepSeek Harness session.',
-  'DSH owns the workspace, model, preset, permissions, Session Log, tools, subagents, cancellation, resume, and Agent UI.',
-  'Never start another Agent runtime, session transport, creator UI, SSE stream, polling loop, or model configuration.',
-  ...DSH_SKILL_ROUTING,
-  'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
-  'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
-  'Roles do not require project-local platform files or deployment markers.',
-  'Use only DSH-visible tools. DSH sandbox and permission policy remain authoritative.',
-  '</creative-dsh-integration>',
-].join('\n')
 
 interface ParsedSkill {
   readonly name: string
@@ -79,10 +63,8 @@ export function parseBundledSkill(source: string): ParsedSkill {
 function createBundledSkillProvider(
   providerName: string,
   skillRoot: string,
-  bridge: string,
 ): SkillProvider {
   const root = resolve(skillRoot)
-  const resourceBase = { kind: 'directory' as const, path: dirname(root) }
   return {
     name: providerName,
     async list(): Promise<readonly SkillCandidate[]> {
@@ -100,7 +82,7 @@ function createBundledSkillProvider(
           invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
           provider: providerName,
           source: 'bundled',
-          resourceBase,
+          resourceBase: { kind: 'directory', path: join(root, directory) },
           rank: BUNDLED_SKILL_RANK,
           locator: pathToFileURL(path),
           path,
@@ -122,9 +104,9 @@ function createBundledSkillProvider(
         invocation: { modelInvocable: true, userInvocable: parsed.userInvocable },
         provider: providerName,
         source: 'bundled',
-        resourceBase,
+        resourceBase: { kind: 'directory', path: dirname(path) },
         path,
-        content: `${bridge}\n\n${parsed.content}`,
+        content: parsed.content,
       }
     },
   }
@@ -138,4 +120,4 @@ export function defaultStorySkillRoot(): string { return resolve(dirname(fileURL
  * @param skillRoot - packaged resource override.
  * @returns the domain provider.
  */
-export function createStorySkillProvider(skillRoot = defaultStorySkillRoot()): SkillProvider { return createBundledSkillProvider(STORY_PROVIDER_NAME, skillRoot, DSH_SKILL_BRIDGE) }
+export function createStorySkillProvider(skillRoot = defaultStorySkillRoot()): SkillProvider { return createBundledSkillProvider(STORY_PROVIDER_NAME, skillRoot) }

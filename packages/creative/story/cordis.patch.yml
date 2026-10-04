@@ -1,7 +1,5 @@
 - insert:
     - id: story
       name: '@winterhuan/dsh-story'
-    - id: creative-produce
-      name: '@winterhuan/dsh-story/produce'
-    - id: ui-settings-creative-produce
-      name: '@winterhuan/dsh-client-ui-settings-creative-produce'
+    - id: ui-settings-story
+      name: '@winterhuan/dsh-client-ui-settings-story'

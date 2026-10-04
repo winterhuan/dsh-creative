@@ -10,13 +10,15 @@
 
 **Skill 与 Role 供给。** 四个 `SkillProvider` 提供打包 Skill 及原生资源提示。专业 Agent 通过 DSH 委派或显式选择的 Team/workflow 工具工作，用原生 `read` 读取打包指令；Creative 不拥有专家执行器或独立模型、权限、协作系统。所选 Skill 或 workflow 负责执行顺序，Role 提供专业方法，写入提醒将追踪交给指定提交者。小说 workflow 模板负责章节准备直至提交验证，准备与提交共用 Python 章文件路径和目标字数解析器。详见[小说包说明](../../packages/creative/story/README.zh.md#model-experience)。
 
-**付费生产。** `story_zhuque`、`drama_produce_run`、`video_produce_run` 及聚合兼容入口 `creative_produce_run` 是模型接触内置 Python 生产脚本及其提供方密钥的唯一途径。密钥存放在凭据库；设置命名空间只保存引用和非敏感配置字段；工具在每次调用时解析引用，并作为显式的子进程环境变量转发，因为其他所有子进程都从清理过的环境启动。短剧运行会消耗一次性的创作者确认，契约结论驱动有界的密钥轮换。
+**付费生产。** `story_zhuque` 读取 `story` 设置命名空间。`drama_produce_run`、`video_produce_run` 和聚合别名 `creative_produce_run` 读取 `creative-produce`。密钥存放在凭据库；这些命名空间只保存引用和非敏感配置字段；工具在每次调用时解析引用，并作为显式的子进程环境变量转发，因为其他所有子进程都从清理过的环境启动。短剧运行会消耗一次性的创作者确认，契约结论驱动有界的密钥轮换。
 
 **投影意图。** `creative_production` 是并发安全的工具，除 Session 日志外没有副作用；浏览器工作台回放其结果来驱动短剧生产视图。它从不编辑创作文档，也不授权付费生成。待处理输入属于 Session 的 `inbox` 投影，持久的生产结果属于 Conversation 投影，展示草稿属于工作台 store。
 
 **工作台路由。** `/creative` 是 Session 级 HTTP API，只信任回环地址或 `trustedHosts`，提供扩展名白名单、解析后路径的包含检查、`FsVersion` compare-and-swap 写入、分段媒体流、视频预检、CSP 隔离的游戏预览，以及核对归属后的作业停止。浏览器工作台只通过普通审批流程发送对话提示词来发起生产。
 
 独立的 `creative-game` 侧边栏拥有仅含游戏状态的 Session store，读取 `/novel-to-game` API。游戏包提供四个任务技能、原著辅助脚本、`game_qa` 和隔离预览。Creative 没有浏览器页面，保留兼容 QA 与预览别名，不自行注册游戏 provider。
+
+小说 Skill 各自拥有参考和 Role。确定性操作使用包内 `dsh-story` CLI；章节与拆文的原生 workflow 归属各自 Skill，父会话校验并保存提取的拆文卡片。小说的长篇和短篇统一使用 `{工作区}/{作品名称}/`。项目发现、文件路由、跳转与写作指引使用同一边界；工作区级拆文库与作品身份分开。
 
 四个领域插件独立安装。Creative 只组合安装并保留 Host 工具和路由兼容，不再提供聚合页面或读取旧草稿。详见[拆分决策](../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。
 

@@ -39,6 +39,7 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {}
  */
 const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/ui-settings-creative-produce': { kind: 'none', reason: 'Browser-side settings surface; registers no model surface.' },
+  'packages/client/ui-settings-story': { kind: 'none', reason: 'Browser-side settings surface; registers no model surface.' },
   'packages/client/ui-skill-viewer': { kind: 'none', reason: 'Browser-side read-only skill panel; viewer reads never enter the session log or model context.' },
   'packages/skill/skill-viewer': { kind: 'none', reason: 'The read-only Session-addressed skill reads serve the human panel only; payloads never enter the session log or a model request.' },
 }

@@ -42,6 +42,7 @@ export function useWorkspace(sessionId: string): {
   readonly workspace: WorkspacePayload | undefined
   readonly error: string | undefined
   readonly reload: () => void
+  readonly refresh: number
 } {
   const [version, setVersion] = useState(0)
   const [result, setResult] = useState<{ readonly sessionId: string; readonly workspace: WorkspacePayload }>()
@@ -65,6 +66,6 @@ export function useWorkspace(sessionId: string): {
   const workspace = result?.sessionId === sessionId ? result.workspace : undefined
   const currentFailure = failure?.sessionId === sessionId ? failure : undefined
   return {
-    workspace, error: currentFailure?.message, reload,
+    workspace, error: currentFailure?.message, reload, refresh: version,
   }
 }

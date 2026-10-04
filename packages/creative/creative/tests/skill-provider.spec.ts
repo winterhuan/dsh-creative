@@ -2,6 +2,7 @@ import { access, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:f
 import { tmpdir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { renderSkillContent } from '@deepseek-ai/dsh-skill'
+import { listReferences, readReference } from '../../../skill/skill-viewer/src/references.ts'
 import { describe, expect, it, onTestFinished } from 'vitest'
 import { createDramaSkillProvider, createNovelToGameSkillProvider, createStorySkillProvider, createVideoRecapSkillProvider, parseBundledSkill } from '../src/skill-provider.ts'
 
@@ -71,7 +72,7 @@ describe.each([
     const updated = await provider.get(candidates[0]!, {})
     expect(updated?.description).toBe('updated description')
     expect(updated?.content).toBe(original?.content.replace('# Original instructions\n', '# Updated instructions\n'))
-    expect(updated?.resourceBase).toEqual({ kind: 'directory', path: skillName === 'novel-to-game' ? directory : dirname(temporaryRoot) })
+    expect(updated?.resourceBase).toEqual({ kind: 'directory', path: skillName === 'novel-to-game' || skillName === 'story' ? directory : dirname(temporaryRoot) })
   })
 })
 
@@ -86,39 +87,34 @@ describe('Novel bundled skill provider', () => {
     expect(candidates.every(candidate => candidate.source === 'bundled' && candidate.invocation.modelInvocable)).toBe(true)
     for (const candidate of candidates) {
       const skill = await provider.get(candidate, {})
-      expect(skill?.content).toContain('DSH owns the workspace, model, preset, permissions, Session Log')
+      expect(skill?.content).not.toContain('creative-dsh-integration')
       for (const obsolete of ['.claude/agents', '.codex/agents', '.opencode/agents', '.agents/agents', 'invoke_subagent', 'creative_bundled_reference']) {
         expect(skill?.content).not.toContain(obsolete)
       }
     }
   })
 
-  it('exposes shared references and scripts through DSH native resource hints', async () => {
+  it('discovers and previews each skill’s local references through the viewer', async () => {
     const provider = createStorySkillProvider(skillRoot)
     const candidates = await provider.list({})
     if (!Array.isArray(candidates)) throw new Error('Expected a complete bundled catalog.')
-    const resourceBase = resolve(skillRoot, '..')
+    const signal = new AbortController().signal
     for (const candidate of candidates) {
-      expect(candidate.resourceBase).toEqual({ kind: 'directory', path: resourceBase })
       const skill = await provider.get(candidate, {})
-      expect(skill?.resourceBase).toEqual(candidate.resourceBase)
-      const rendered = renderSkillContent(skill!)
-      expect(rendered).toContain('<skill_resources>')
-      expect(rendered).toContain(`Base directory for this skill: ${resourceBase}`)
-      const paths = [...skill!.content.matchAll(/`((?:references|scripts)\/[^`<>*]+\.(?:md|py|js))`/gu)]
-      expect(paths.length, `${candidate.name} needs discoverable resources`).toBeGreaterThan(0)
-      for (const match of paths) {
-        await expect(readFile(resolve(resourceBase, match[1]!), 'utf8'), `${candidate.name}: ${match[1]}`)
-          .resolves.toMatch(/\S/u)
+      if (skill?.resourceBase?.kind !== 'directory') throw new Error('Expected local resources.')
+      const base = resolve(skillRoot, candidate.name)
+      expect(skill.resourceBase.path).toBe(base)
+      const listing = await listReferences(base, 1000, signal)
+      expect(listing.truncated).toBe(false)
+      expect(listing.files.length, candidate.name).toBeGreaterThan(0)
+      const paths = [...skill.content.matchAll(/(?:`|\()(references\/[^`<>()*]+\.md)(?:`|\))/gu)]
+      expect(paths.length, candidate.name).toBeGreaterThan(0)
+      for (const [, path] of paths) {
+        expect(listing.files).toContain(path)
+        const preview = await readReference(base, path!, 1024, signal)
+        expect(preview.content.length).toBeGreaterThan(0)
+        expect((await readFile(resolve(base, path!), 'utf8')).startsWith(preview.content)).toBe(true)
       }
-    }
-    for (const reference of ['character-basics.md', 'long-quality.md', 'short-quality.md', 'writing-craft.md', 'outline-methods.md']) {
-      await expect(readFile(resolve(resourceBase, 'references/agent-references', reference), 'utf8'))
-        .resolves.toMatch(/\S/u)
-    }
-    await expect(readFile(resolve(resourceBase, 'references/research/browser-cdp.md'), 'utf8')).resolves.toMatch(/\S/u)
-    for (const script of ['author_memory_commit.py', 'export_novel_txt.py', 'record_lineage.py', 'zhuque_detect.py']) {
-      await expect(readFile(resolve(resourceBase, 'scripts', script), 'utf8')).resolves.toMatch(/\S/u)
     }
   })
 

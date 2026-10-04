@@ -30,8 +30,8 @@ def main():
         for source in sorted((ROOT / 'skills' / skill / 'scripts').glob('*.py')):
             copy(source, PACKAGES / 'short-drama/knowledge/video-recap/skills' / skill / 'scripts' / source.name)
     for name in ('export_novel_txt.py', 'record_lineage.py'):
-        source = PACKAGES / 'story/knowledge/story/scripts' / name
-        for domain in ('short-drama', 'video-recap'):
+        source = PACKAGES / 'story/runtime' / name
+        for domain in ('short-drama', 'video-recap', 'novel-to-game'):
             copy(source, PACKAGES / domain / 'knowledge/source-tools' / name)
     if stale:
         parser.exit(1, 'Stale runtime copies: ' + ', '.join(stale) + '\n')

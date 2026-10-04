@@ -9,7 +9,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { defineStore } from '@deepseek-ai/dsh-client-store'
 import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 import { useEffect, useRef, useState } from 'react'
-import { IconEditOutlineRegular, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconEditOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { registerFileRedirect } from './file-redirect.tsx'
 import { NS, zh, en } from './locales/index.ts'
@@ -20,6 +20,7 @@ import { latestSettledMutation } from './activity.ts'
 import { buildFileTree } from './file-tree.ts'
 import { FileTreeNodes } from './file-tree-view.tsx'
 import { MarkdownPreview } from './markdown-preview.tsx'
+import { ContinuityDashboard } from './continuity-dashboard.tsx'
 import './plugin.css'
 
 declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
@@ -29,16 +30,18 @@ declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
   }
 }
 
-interface StoryMemory { selected: string | undefined; source: boolean; buffers: Record<string, FileBuffer> }
+interface StoryMemory { selected: string | undefined; source: boolean; buffers: Record<string, FileBuffer>; view?: 'overview' | 'files'; project?: string }
 /** Create fiction-only Session state.
  * @returns the persisted fiction editor store.
  */
 export function createStoryStore() {
   return defineStore({
     persist: 'creative.story.v1',
-    init: (): StoryMemory => ({ selected: undefined, source: false, buffers: {} }),
+    init: (): StoryMemory => ({ selected: undefined, source: false, buffers: {}, view: 'overview' }),
     actions: {
-      select: (draft, path: string) => { draft.selected = path },
+      select: (draft, path: string) => { draft.selected = path; draft.view = 'files' },
+      view: (draft, value: 'overview' | 'files') => { draft.view = value },
+      project: (draft, value: string) => { draft.project = value },
       source: (draft, value: boolean) => { draft.source = value },
       buffers: (draft, update: (current: Record<string, FileBuffer>) => Record<string, FileBuffer>) => { draft.buffers = update(draft.buffers) },
     },
@@ -52,7 +55,9 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
   useEffect(() => {
     if (navigation?.creativeFile.sessionId === sessionId) actions.select(navigation.creativeFile.path)
   }, [navigation, sessionId, actions])
-  const { workspace, error, reload } = useWorkspace(sessionId)
+  const { workspace, error, reload, refresh } = useWorkspace(sessionId)
+  const view = useStore(memory => memory.view ?? (memory.selected === undefined ? 'overview' : 'files'))
+  const project = useStore(memory => memory.project)
   const selected = useStore(memory => memory.selected)
   const source = useStore(memory => memory.source)
   const buffers = useStore(memory => memory.buffers)
@@ -77,6 +82,10 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
     reload()
   }, [mutation, reload])
   useEffect(() => {
+    globalThis.addEventListener('focus', reload)
+    return () => { globalThis.removeEventListener('focus', reload) }
+  }, [reload])
+  useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (Object.values(latestBuffers.current).some(value => value.source === 'human' && value.content !== value.saved)) event.preventDefault()
     }
@@ -88,7 +97,7 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
   }, [workspace, actions, t])
   const version = workspace?.files.find(file => file.path === active)?.version
   useEffect(() => {
-    if (active === undefined || version === undefined) return
+    if (view !== 'files' || active === undefined || version === undefined) return
     setReadError(undefined)
     const controller = new AbortController()
     void fetch(endpoint('file', sessionId, active), { signal: controller.signal }).then(response => json<FilePayload>(response)).then(file => {
@@ -97,7 +106,7 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
       if (!controller.signal.aborted) setReadError(String(reason))
     })
     return () => { controller.abort() }
-  }, [active, version, sessionId, t, actions])
+  }, [active, version, sessionId, t, actions, view])
   const save = async () => {
     if (active === undefined || buffer === undefined || inFlight.current || buffer.conflict !== undefined || buffer.missing) return
     const path = active
@@ -124,8 +133,17 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
     } finally { inFlight.current = false; setSaving(false) }
   }
   return <div className="creative-workspace" data-workbench="story">
+    <header className="story-workbench-heading">
+      <span>{t('workbench.title')}</span>
+      <nav className="story-dashboard-tabs" aria-label={t('dashboard.navigation')}>
+        <button aria-pressed={view === 'overview'} onClick={() => actions.view('overview')}>{t('dashboard.title')}</button>
+        <button aria-pressed={view === 'files'} onClick={() => actions.view('files')}>{t('dashboard.files')}</button>
+      </nav>
+      <button className="creative-save" onClick={reload}>{t('workbench.reloadFiles')}</button>
+    </header>
+    {view === 'overview' ? <ContinuityDashboard key={sessionId} sessionId={sessionId} workspace={workspace} workspaceError={error !== undefined}
+      refresh={refresh} selectedProject={project} onProject={actions.project} onSource={actions.select} onRefresh={reload} t={t} /> : <>
     <aside className="creative-tree">
-      <div className="creative-brand"><span className="creative-brand-cluster"><strong>{t('workbench.title')}</strong></span><Tooltip portal label={t('workbench.reloadFiles')}><button onClick={reload} aria-label={t('workbench.reloadFiles')}>↻</button></Tooltip></div>
       <nav aria-label={t('tree.story.files')}>
         <FileTreeNodes nodes={buildFileTree(workspace?.files ?? [], '')} depth={0} expanded={expanded} selected={active}
           onToggle={(path, open) => setExpanded(current => current[path] === open ? current : { ...current, [path]: open })}
@@ -142,6 +160,7 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
         {source || !active?.endsWith('.md') ? <textarea aria-label={active} value={buffer.content} onChange={event => { const content = event.target.value; actions.buffers(current => ({ ...current, [active!]: { ...buffer, content, source: 'human' } })) }} /> : <MarkdownPreview t={t} label={active ?? ""} content={buffer.content} />}
       </>}
     </main>
+    </>}
   </div>
 }
 export const name = 'story'

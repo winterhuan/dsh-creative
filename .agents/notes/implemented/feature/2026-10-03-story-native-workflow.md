@@ -10,7 +10,7 @@ Formal chapters require preparation, writing, checks, review, revision and a tra
 
 ## Decision
 
-The story package supplies a [chapter template](../../../../packages/creative/story/knowledge/story/workflows/chapter.js) for the existing native `workflow` tool, with deferred [invocation guidance](../../../../packages/creative/story/knowledge/story/references/writing/long/native-workflow.md). The six Skills remain the public entry points. `story-write` selects this path only for an explicit task choice or an established user preference. Ordinary writing and review retain their direct paths.
+The story package supplies a [chapter template](../../../../packages/creative/story/knowledge/story/skills/story-write/workflows/chapter.js) for the existing native `workflow` tool, with deferred [invocation guidance](../../../../packages/creative/story/knowledge/story/skills/story-write/references/long/native-workflow.md). The six Skills remain the public entry points. `story-write` selects this path only for an explicit task choice or an established user preference. Ordinary writing and review retain their direct paths.
 
 The parent supplies the project, chapter and current user constraints, with optional known context. It reads the invocation guide and template, then submits the unchanged JavaScript body in a top-level native tool call. DSH owns execution, child sessions, cancellation, background jobs and run presentation. There is no story executor, direct engine consumer, custom dashboard or second job registry. Missing capabilities produce a concrete diagnostic without silently substituting another mode.
 

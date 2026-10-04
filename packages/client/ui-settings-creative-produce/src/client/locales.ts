@@ -6,14 +6,13 @@ import type { SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 export type CreativeProduceSettingsLocaleKey =
   | 'title' | 'description' | 'keySet' | 'keyUnset'
   | 'groupOpenai' | 'groupSeedance' | 'groupMinimax'
-  | 'groupMimo' | 'groupFish' | 'groupAgnes' | 'groupMakers' | 'groupVoice'
+  | 'groupMimo' | 'groupFish' | 'groupAgnes' | 'groupVoice'
   | 'openaiKeyLabel' | 'openaiKeyHint'
   | 'arkKeyLabel' | 'arkKeyHint'
   | 'minimaxKeyLabel' | 'minimaxKeyHint'
   | 'mimoKeyLabel' | 'mimoKeyHint'
   | 'fishKeyLabel' | 'fishKeyHint'
   | 'agnesKeyLabel' | 'agnesKeyHint'
-  | 'makersKeyLabel' | 'makersKeyHint'
   | 'seedanceModel' | 'seedanceModelHint'
   | 'minimaxVideoModel' | 'minimaxVideoModelHint'
   | 'openaiBaseUrl' | 'minimaxBaseUrl' | 'minimaxVideoBaseUrl'
@@ -32,7 +31,7 @@ export type CreativeProduceSettingsLocaleKey =
 /** English copy. */
 export const en: Record<CreativeProduceSettingsLocaleKey, string> = {
   title: 'Creative production',
-  description: 'Keys and runtime profile for short-drama and video production, plus the Zhuque detection key.',
+  description: 'Keys and runtime profile for short-drama and video production.',
   keySet: 'A key is configured.',
   keyUnset: 'No key is configured.',
   groupOpenai: 'OpenAI (image)',
@@ -41,7 +40,6 @@ export const en: Record<CreativeProduceSettingsLocaleKey, string> = {
   groupMimo: 'MiMo (video understanding and voice)',
   groupFish: 'Fish Audio (voice fallback)',
   groupAgnes: 'Agnes (image and video)',
-  groupMakers: 'EdgeOne Makers (Zhuque AI text detection)',
   groupVoice: 'Voice routing',
   openaiKeyLabel: 'OpenAI API key (image)',
   openaiKeyHint: 'Stored outside the settings file. Leave blank to keep the current key. Separate multiple references with commas to rotate across keys, failing over on authentication or rate-limit errors.',
@@ -55,8 +53,6 @@ export const en: Record<CreativeProduceSettingsLocaleKey, string> = {
   fishKeyHint: 'Stored outside the settings file. Leave blank to keep the current key. Separate multiple references with commas to rotate across keys, failing over on authentication or rate-limit errors.',
   agnesKeyLabel: 'Agnes API key (image and video)',
   agnesKeyHint: 'Stored outside the settings file. Leave blank to keep the current key. Separate multiple references with commas to rotate across keys, failing over on authentication or rate-limit errors.',
-  makersKeyLabel: 'EdgeOne Makers API key (Zhuque detection)',
-  makersKeyHint: 'Used by the story-polish skill to check chapters with Tencent Zhuque. Stored outside the settings file. Leave blank to keep the current key; a MAKERS_API_KEY exported in the shell that starts dsh also works. Separate multiple references with commas to rotate across calls.',
   seedanceModel: 'Seedance model',
   seedanceModelHint: 'The exact enabled Seedance model or endpoint id; the adapter defines no default.',
   minimaxVideoModel: 'MiniMax video model',
@@ -103,7 +99,7 @@ export const en: Record<CreativeProduceSettingsLocaleKey, string> = {
 /** Simplified Chinese copy. */
 export const zh: Record<CreativeProduceSettingsLocaleKey, string> = {
   title: '创意生产',
-  description: '短剧与视频生产的密钥与运行时配置，以及朱雀检测密钥。',
+  description: '短剧与视频生产的密钥与运行时配置。',
   keySet: '已配置密钥。',
   keyUnset: '未配置密钥。',
   groupOpenai: 'OpenAI（图片）',
@@ -112,7 +108,6 @@ export const zh: Record<CreativeProduceSettingsLocaleKey, string> = {
   groupMimo: 'MiMo（视频理解与语音）',
   groupFish: 'Fish Audio（语音兜底）',
   groupAgnes: 'Agnes（图片与视频）',
-  groupMakers: 'EdgeOne Makers（朱雀 AI 文本检测）',
   groupVoice: '语音路由',
   openaiKeyLabel: 'OpenAI API Key（图片）',
   openaiKeyHint: '不写入设置文件。留空表示保持当前密钥。多个引用用英文逗号分隔，按顺序轮询，遇鉴权或限流失败自动换下一个。',
@@ -126,8 +121,6 @@ export const zh: Record<CreativeProduceSettingsLocaleKey, string> = {
   fishKeyHint: '不写入设置文件。留空表示保持当前密钥。多个引用用英文逗号分隔，按顺序轮询，遇鉴权或限流失败自动换下一个。',
   agnesKeyLabel: 'Agnes API Key（图片与视频）',
   agnesKeyHint: '不写入设置文件。留空表示保持当前密钥。多个引用用英文逗号分隔，按顺序轮询，遇鉴权或限流失败自动换下一个。',
-  makersKeyLabel: 'EdgeOne Makers API Key（朱雀检测）',
-  makersKeyHint: '供 story-polish 技能调用腾讯朱雀检测章节。不写入设置文件。留空表示保持当前密钥；在启动 dsh 的 shell 里 export 的 MAKERS_API_KEY 同样有效。多个引用用英文逗号分隔，按调用轮流使用。',
   seedanceModel: 'Seedance 模型',
   seedanceModelHint: '已启用的 Seedance 模型或端点 ID（必填，适配器不设默认值）。',
   minimaxVideoModel: 'MiniMax 视频模型',

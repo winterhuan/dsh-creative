@@ -11,7 +11,7 @@ import type {} from '@deepseek-ai/dsh-settings'
 import type { ShellProcess } from '@deepseek-ai/dsh-shell'
 import { defineTool, TOOL_ABORTED, type ToolDefinition } from '@deepseek-ai/dsh-tools'
 import { HarnessError } from '@deepseek-ai/dsh-llm'
-import { defaultDramaSkillRoot, defaultStorySkillRoot, defaultVideoRecapSkillRoot, defaultNovelToGameSkillRoot } from './skill-provider.ts'
+import { defaultDramaSkillRoot, defaultVideoRecapSkillRoot, defaultNovelToGameSkillRoot } from './skill-provider.ts'
 import { configuredProduceCredentials, currentProduceConfig, resolveProduceEnvs, type ProduceConfig } from './produce-settings.ts'
 
 /** Model-facing tool running one pinned creative production script with forwarded credentials. */
@@ -21,7 +21,7 @@ export { CREATIVE_PRODUCE_RUN_TOOL_NAME } from './production-binding.ts'
 export const CREATIVE_PRODUCE_STATUS_TOOL_NAME = 'creative_produce_status'
 
 /** Pinned production scripts this tool may run; anything else is rejected. */
-export const PRODUCE_ENTRIES = ['game-qa', 'drama', 'video-voiceover', 'video-recap', 'video-doctor', 'story-zhuque'] as const
+export const PRODUCE_ENTRIES = ['game-qa', 'drama', 'video-voiceover', 'video-recap', 'video-doctor'] as const
 /** One runnable pinned production script. */
 export type ProduceEntry = typeof PRODUCE_ENTRIES[number]
 
@@ -59,22 +59,6 @@ const DRAMA_CREDENTIALS: Readonly<Record<DramaAdapter, string>> = {
   'agnes-video': 'AGNES_API_KEY',
 }
 
-/** Zhuque detection key; only the story-zhuque entry receives it. */
-const ZHUQUE_CREDENTIAL = 'MAKERS_API_KEY'
-
-/**
- * Narrow one resolved environment to what an entry may receive: the detector
- * runs with its own key alone, and production scripts never see that key.
- * @param entry - the pinned script about to run.
- * @param env - one resolved key rotation attempt.
- * @returns the environment entries forwarded to that script.
- */
-function entryEnv(entry: ProduceEntry, env: Record<string, string>): Record<string, string> {
-  const { [ZHUQUE_CREDENTIAL]: detectorKey, ...production } = env
-  if (entry !== 'story-zhuque') return production
-  return detectorKey === undefined ? {} : { [ZHUQUE_CREDENTIAL]: detectorKey }
-}
-
 /** The tool-call abort failure, shared by every cancellation point. */
 function abortError(): HarnessError {
   const error = new HarnessError('tool call aborted', TOOL_ABORTED)
@@ -95,13 +79,13 @@ export interface ProduceToolOptions {
 /**
  * Build a production status tool that never launches a process or returns credentials.
  * @param options - composition profile used when no settings provider is mounted.
- * @returns presence facts for drama adapters, video providers, and Zhuque detection.
+ * @returns presence facts for drama adapters and video providers.
  */
 export function createCreativeProduceStatusTool(options: ProduceToolOptions = {}): ToolDefinition {
   const entryConfig = options.entry ?? {}
   return defineTool({
     name: CREATIVE_PRODUCE_STATUS_TOOL_NAME,
-    description: 'Inspect configured creative production and Zhuque detection credentials without exposing keys or running production. Use this before asking for a missing key or choosing an adapter. DSH injects credentials from its settings and credential store into creative_produce_run; checking os.environ in an ordinary bash process does not test that store. Credential presence does not validate provider connectivity or authorize a paid run.',
+    description: 'Inspect configured creative production credentials without exposing keys or running production. Use this before asking for a missing key or choosing an adapter. DSH injects credentials from its settings and credential store into creative_produce_run; checking os.environ in an ordinary bash process does not test that store. Credential presence does not validate provider connectivity or authorize a paid run.',
     parameters: {},
     output: {
       schema: {
@@ -120,7 +104,6 @@ export function createCreativeProduceStatusTool(options: ProduceToolOptions = {}
           },
           mimoConfigured: { type: 'boolean', required: true },
           fishAudioConfigured: { type: 'boolean', required: true },
-          zhuqueConfigured: { type: 'boolean', required: true },
         },
       },
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
@@ -140,7 +123,6 @@ export function createCreativeProduceStatusTool(options: ProduceToolOptions = {}
         })),
         mimoConfigured: configured.has('MIMO_API_KEY'),
         fishAudioConfigured: configured.has('FISH_API_KEY'),
-        zhuqueConfigured: configured.has(ZHUQUE_CREDENTIAL),
       }
     },
   })
@@ -148,7 +130,6 @@ export function createCreativeProduceStatusTool(options: ProduceToolOptions = {}
 
 function scriptFor(entry: Exclude<ProduceEntry, 'drama'>): string {
   if (entry === 'game-qa') return resolve(defaultNovelToGameSkillRoot(), 'game-qa/scripts/run_qa.py')
-  if (entry === 'story-zhuque') return resolve(defaultStorySkillRoot(), '../scripts/zhuque_detect.py')
   const videoSkillRoot = defaultVideoRecapSkillRoot()
   if (entry === 'video-voiceover') return resolve(videoSkillRoot, 'video-voiceover/scripts/voiceover.py')
   if (entry === 'video-recap') return resolve(videoSkillRoot, 'video-recap/scripts/recap.py')
@@ -216,12 +197,12 @@ export function createCreativeProduceRunTool(options: ProduceToolOptions = {}): 
   const entryConfig = options.entry ?? {}
   return defineTool({
     name: CREATIVE_PRODUCE_RUN_TOOL_NAME,
-    description: 'Run creative production with configured credentials; inspect creative_produce_status first to discover configured adapters. Agnes image generation uses entry drama and adapter agnes-image. Credentials are injected by DSH, not read from an ordinary bash environment. For drama, prepare and explicitly confirm the exact current job with production_tool.py, then supply its job_id and adapter. The run consumes that confirmation once, snapshots inputs, verifies outputs and writes the production ledger. Configured key pools rotate across calls; within one drama run only an explicit authentication, permission or rate-limit rejection of the initial submission may switch keys, bounded at sixteen attempts. Accepted submissions, polling, downloads and uncertain failures are never automatically resubmitted. Video scripts retain their arguments and require creator confirmation before production. Entry story-zhuque runs Zhuque AIGC text detection on one chapter file with argv such as ["--json", "--out", report, chapter]; it sends that chapter to Tencent EdgeOne Makers, receives only the MAKERS_API_KEY credential (no other entry receives it), never modifies the chapter, and needs no production confirmation. Use drama argv ["--selftest"] only for offline adapter diagnostics.',
+    description: 'Run creative production with configured credentials; inspect creative_produce_status first to discover configured adapters. Agnes image generation uses entry drama and adapter agnes-image. Credentials are injected by DSH, not read from an ordinary bash environment. For drama, prepare and explicitly confirm the exact current job with production_tool.py, then supply its job_id and adapter. The run consumes that confirmation once, snapshots inputs, verifies outputs and writes the production ledger. Configured key pools rotate across calls; within one drama run only an explicit authentication, permission or rate-limit rejection of the initial submission may switch keys, bounded at sixteen attempts. Accepted submissions, polling, downloads and uncertain failures are never automatically resubmitted. Video scripts retain their arguments and require creator confirmation before production. Use drama argv ["--selftest"] only for offline adapter diagnostics.',
     parameters: {
-      entry: { type: 'string', required: true, enum: PRODUCE_ENTRIES, description: 'Pinned script: game-qa (Chrome evidence; argv [game project root]), confirmed drama production (including episode-compose), video voiceover, recap (--draft for keyless previews), doctor, or Zhuque detection.' },
+      entry: { type: 'string', required: true, enum: PRODUCE_ENTRIES, description: 'Pinned script: game-qa (Chrome evidence; argv [game project root]), confirmed drama production (including episode-compose), video voiceover, recap (--draft for keyless previews), or doctor.' },
       adapter: { type: 'string', enum: DRAMA_ADAPTERS, description: 'Required for entry drama; must match the prepared job adapter.' },
       job_id: { type: 'string', description: 'Prepared and explicitly confirmed drama job id. Required for drama production; not accepted by video entries or diagnostics.' },
-      argv: { type: 'array', items: { type: 'string' }, description: 'Game QA, video or story-zhuque script arguments, or exactly ["--selftest"] for offline drama diagnostics. Drama production accepts no extra arguments.' },
+      argv: { type: 'array', items: { type: 'string' }, description: 'Game QA or video script arguments, or exactly ["--selftest"] for offline drama diagnostics. Drama production accepts no extra arguments.' },
       stdin: { type: 'string', description: 'Input for video scripts. Drama reads its prepared job and never accepts replacement job JSON.' },
       workdir: { type: 'string', description: 'Working directory; for drama, the prepared short-drama project or a directory inside it. Defaults to the session workspace.' },
       timeoutMs: { type: 'number', description: 'Executor timeout; background runs ignore it.' },
@@ -296,7 +277,7 @@ export function createCreativeProduceRunTool(options: ProduceToolOptions = {}): 
       const initialEnv = envs[start]
       /* v8 ignore next -- resolveProduceEnvs always yields at least one environment. */
       if (initialEnv === undefined) throw new Error('creative_produce_run resolved no key environment.')
-      const runEnv = entry === 'game-qa' ? gameQaEnvironment(resolveWorkdir(undefined, agent), agent.session.id) : entryEnv(entry, initialEnv)
+      const runEnv = entry === 'game-qa' ? gameQaEnvironment(resolveWorkdir(undefined, agent), agent.session.id) : { ...initialEnv }
       if (production !== undefined) runEnv.DSH_PRODUCTION_CONTEXT = JSON.stringify(production)
       let scriptArgs = [...(adapter === undefined ? [] : [adapter]), ...argv]
       if (entry === 'drama' && !diagnostic && adapter !== undefined && args.job_id !== undefined) {

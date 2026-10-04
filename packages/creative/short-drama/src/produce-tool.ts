@@ -78,7 +78,7 @@ export interface ProduceToolOptions {
 /**
  * Build a production status tool that never launches a process or returns credentials.
  * @param options - composition profile used when no settings provider is mounted.
- * @returns presence facts for drama adapters, video providers, and Zhuque detection.
+ * @returns presence facts for drama adapters and video providers.
  */
 export function createCreativeProduceStatusTool(options: ProduceToolOptions = {}): ToolDefinition {
   const entryConfig = options.entry ?? {}

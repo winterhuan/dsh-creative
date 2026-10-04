@@ -20,9 +20,9 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it, vi, type TestContext } from 'vitest'
 
-const resourceBase = resolve(import.meta.dirname, '../../story/knowledge/story')
-const roleFile = resolve(resourceBase, '../creative/roles/story-architect.md')
-const referenceFile = resolve(resourceBase, 'references/agent-references/outline-methods.md')
+const resourceBase = resolve(import.meta.dirname, '../../story/knowledge/story/skills/story-write')
+const roleFile = resolve(resourceBase, 'references/roles/story-architect.md')
+const referenceFile = resolve(resourceBase, 'references/methods/outline-methods.md')
 const task = `You are the story-architect specialist. Read ${roleFile} first. Resources are based at ${resourceBase}. Review the assigned outline without changing files.`
 
 /** Keep native live/cold observations; these scenarios do not use full-text search. */
@@ -33,7 +33,7 @@ class ReadQuery extends SessionQuery {
 
 class ScriptedAdapter extends LlmAdapter {
   readonly requests: GenerateOptions[] = []
-  async resolveModel(provider: string, model: string) { return { provider, id: model, name: model } }
+  override async resolveModel(provider: string, model: string) { return { provider, id: model, name: model } }
   async *stream(request: GenerateOptions): AsyncIterable<StreamChunk> {
     this.requests.push(request)
     const count = this.requests.filter(item => item.sessionId === request.sessionId).length

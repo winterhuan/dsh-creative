@@ -8,8 +8,12 @@ import { registerWorkspaceRoute } from '../src/workspace-route.ts'
 // Sibling books share chapter names; access must retain each complete project path.
 function fixture(cwd = '/ws') {
   const directories: Record<string, string[]> = {
-    '/ws': ['正文', 'book', 'game-adaptations', 'video-recaps'],
+    '/ws': ['正文', '正文.md', 'book', 'other', '拆文库', 'game-adaptations', 'video-recaps'],
     '/ws/正文': ['chapter.md', 'poster.png'],
+    '/ws/other': ['正文'],
+    '/ws/other/正文': ['chapter.md'],
+    '/ws/拆文库': ['参考书'],
+    '/ws/拆文库/参考书': ['概要.md'],
     '/ws/book': ['正文', '剧集'],
     '/ws/book/正文': ['chapter.md'],
     '/ws/book/剧集': ['EP001'],
@@ -82,10 +86,10 @@ describe('standalone story routes', () => {
     const { request, fs } = fixture()
     const reply = await request('workspace')
     expect(reply.status).toBe(200)
-    expect(reply.body.files.map((file: { path: string }) => file.path).sort()).toEqual(['book/正文/chapter.md', '正文/chapter.md'])
+    expect(reply.body.files.map((file: { path: string }) => file.path).sort()).toEqual(['book/正文/chapter.md', 'other/正文/chapter.md', '拆文库/参考书/概要.md'])
     expect(reply.body).not.toHaveProperty('games')
     expect(reply.body).not.toHaveProperty('videos')
-    expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).toEqual(['/ws/正文', '/ws', '/ws/book/正文'])
+    expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).not.toContain('/ws/正文')
     expect(fs.readBytes).not.toHaveBeenCalled()
   })
 
@@ -105,11 +109,12 @@ describe('standalone story routes', () => {
     ['/collection/book', '正文/第一卷/chapter.md'],
     ['/collection/长篇/书甲', '正文/chapter.md'],
     ['/collection/短篇/书乙', '正文.md'],
-  ])('discovers the project opened directly at %s', async (cwd, file) => {
+  ])('does not treat a project opened directly at %s as a workspace child', async (cwd, file) => {
     const { request } = fixture(cwd)
     const reply = await request('workspace')
     expect(reply.status).toBe(200)
-    expect(reply.body.files.map((value: { path: string }) => value.path)).toContain(file)
+    expect(reply.body.files).toEqual([])
+    expect((await request('file', file)).status).toBeGreaterThanOrEqual(400)
   })
   it('reads and saves a child book using the observed version without changing a sibling chapter', async () => {
     const { request, fs } = fixture()
@@ -118,7 +123,7 @@ describe('standalone story routes', () => {
     expect(file.body.content).toBe('Chapter at /ws/book/正文/chapter.md')
     expect((await request('file', 'book/正文/chapter.md', { content: 'Revised chapter', baseVersion: file.body.version })).status).toBe(200)
     expect((await request('file', 'book/正文/chapter.md')).body.content).toBe('Revised chapter')
-    expect((await request('file', '正文/chapter.md')).body.content).toBe('Chapter at /ws/正文/chapter.md')
+    expect((await request('file', 'other/正文/chapter.md')).body.content).toBe('Chapter at /ws/other/正文/chapter.md')
     expect(fs.writeText).toHaveBeenCalledWith(expect.objectContaining({ displayPath: '/ws/book/正文/chapter.md' }), 'Revised chapter', { kind: 'replaceIfVersion', version: 'v1' }, undefined, {})
     expect((await request('file', 'book/正文/chapter.md', { content: 'Stale chapter', baseVersion: 'v1' })).status).toBe(412)
     expect((await request('file', 'book/正文/chapter.md')).body.content).toBe('Revised chapter')
@@ -150,18 +155,18 @@ describe('standalone story routes', () => {
       ? resolve('/ws/正文') : path === 'book/正文.md' ? resolve('/outside/chapter.md') : resolve(path, options)
     const reply = await request('workspace')
     expect(reply.status).toBe(200)
-    expect(reply.body.files.map((file: { path: string }) => file.path)).toEqual(['正文/chapter.md'])
+    expect(reply.body.files.map((file: { path: string }) => file.path).sort()).toEqual(['other/正文/chapter.md', '拆文库/参考书/概要.md'])
   })
-  it.each(['archive/old/正文/chapter.md', '长篇/书甲/正文/chapter.md', '../book/正文/chapter.md', 'book/../other/正文.md'])('rejects deeper or escaping project access to %s', async path => {
+  it.each(['正文/chapter.md', '正文.md', 'archive/old/正文/chapter.md', '长篇/书甲/正文/chapter.md', '短篇/书乙/正文.md', '../book/正文/chapter.md', 'book/../other/正文.md'])('rejects root, deeper or escaping project access to %s', async path => {
     const { request, fs } = fixture('/collection')
     expect((await request('file', path)).status).toBeGreaterThanOrEqual(400)
     expect((await request('file', path, { content: 'overwrite', baseVersion: 'v1' })).status).toBeGreaterThanOrEqual(400)
     expect(fs.readBytes).not.toHaveBeenCalled()
     expect(fs.writeText).not.toHaveBeenCalled()
   })
-  it('keeps the shared listing limit across root and child projects', async () => {
+  it('keeps the listing limit across the shared library and child projects', async () => {
     const { request, directories } = fixture()
-    directories['/ws/正文'] = Array.from({ length: 1_000 }, (_, i) => `chapter-${i}.md`)
+    directories['/ws/拆文库/参考书'] = Array.from({ length: 1_000 }, (_, i) => `chapter-${i}.md`)
     const reply = await request('workspace')
     expect(reply.body.files).toHaveLength(1_000)
     expect(reply.body.truncated).toBe(true)

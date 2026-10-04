@@ -1,18 +1,16 @@
 /** Pure project discovery shared by the workspace API, writing guards, and Client. */
 
 /** Supported creative domains. */
-export type CreativeDomain = 'story' | 'drama' | 'game' | 'video'
+export type CreativeDomain = 'story' | 'analysis' | 'drama' | 'game' | 'video'
 
-/** Story directories recognized at the workspace or book root. */
+/** Story directories inside one named child of the workspace. */
 export const STORY_DIRECTORIES = ['正文', '大纲', '设定', '追踪', '对标', '参考资料'] as const
 /** Drama directories recognized at the workspace or book root. */
 export const DRAMA_DIRECTORIES = ['输入', '项目开发', '设定集', '剧集', '交付', '创作者决策', '审查'] as const
-/** Optional containers whose immediate children are books. */
-export const BOOK_CONTAINERS = ['长篇', '短篇'] as const
 /** Standalone documents at a project root. */
 export const PROJECT_FILES: readonly string[] = ['正文.md', '设定.md', '小节大纲.md']
-/** Root discovery order keeps small preview manifests ahead of large manuscripts. */
-export const CREATIVE_DIRECTORIES: readonly string[] = ['拆文库', ...STORY_DIRECTORIES]
+/** Shared analysis lives outside book directories. */
+export const STORY_LIBRARY_DIRECTORY = '拆文库'
 
 const storyDirectories = new Set<string>(STORY_DIRECTORIES)
 const dramaDirectories = new Set<string>(DRAMA_DIRECTORIES)
@@ -27,7 +25,7 @@ const mediaTypes: ReadonlyMap<string, string> = new Map([
 /** A normalized workspace path with its owning project and document role. */
 export interface CreativeProjectPath {
   readonly path: string
-  /** Workspace-relative project root; the empty string denotes the workspace itself. */
+  /** Workspace-relative owner; shared analysis has no book and uses the empty string. */
   readonly projectRoot: string
   readonly relativePath: string
   readonly domain: CreativeDomain
@@ -86,14 +84,14 @@ export function workspaceRelativePath(raw: string | undefined, cwd?: string): st
 }
 
 function domainForLeaf(leaf: string, single: boolean): CreativeDomain | undefined {
-  if (storyDirectories.has(leaf) || leaf === '拆文库') return 'story'
+  if (storyDirectories.has(leaf)) return 'story'
   if (dramaDirectories.has(leaf)) return 'drama'
   if (single && projectFiles.has(leaf)) return leaf === 'short-drama.json' ? 'drama' : 'story'
   return undefined
 }
 
 /**
- * Resolve only supported root, single-book, and container/book layouts.
+ * Resolve named workspace-child novels and the separate shared analysis library.
  * @param raw - file or directory path, optionally absolute or a URI.
  * @param cwd - workspace root used to scope absolute paths.
  * @returns project identity and role, or undefined outside the supported layouts.
@@ -103,6 +101,9 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
   if (path === undefined) return undefined
   const segments = path.split('/')
   const [first = ''] = segments
+  if (first === STORY_LIBRARY_DIRECTORY) {
+    return { path, projectRoot: '', relativePath: path, domain: 'analysis', role: 'document' }
+  }
   if (first === 'game-adaptations' || first === 'video-recaps') {
     return {
       path,
@@ -115,17 +116,11 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
   let prefix = 0
   let leaf = first
   let domain = domainForLeaf(first, segments.length === 1)
+  if (domain === 'story') return undefined
   if (domain === undefined) {
     prefix = 1
     leaf = segments[prefix] ?? ''
-    if (leaf === '拆文库') return undefined
     domain = domainForLeaf(leaf, segments.length === prefix + 1)
-    if (domain === undefined && BOOK_CONTAINERS.some(container => container === first)) {
-      prefix = 2
-      leaf = segments[prefix] ?? ''
-      if (leaf === '拆文库') return undefined
-      domain = domainForLeaf(leaf, segments.length === prefix + 1)
-    }
   }
   if (domain === undefined) return undefined
   const projectRoot = segments.slice(0, prefix).join('/')
@@ -143,12 +138,12 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
 }
 
 /**
- * Limit workbench discovery, file access, and Chat redirects to root and immediate-child novels.
+ * Limit workbench files to named child novels and the workspace's shared analysis library.
  * @param path - parsed creative path, including layouts supported by the writing tools.
  * @returns whether the story editor supports this project's depth and domain.
  */
 export function isStoryWorkbenchPath(path: CreativeProjectPath | undefined): path is CreativeProjectPath {
-  return path?.domain === 'story' && !path.projectRoot.includes('/')
+  return path?.domain === 'analysis' || path?.domain === 'story' && path.projectRoot !== '' && !path.projectRoot.includes('/')
 }
 
 /**

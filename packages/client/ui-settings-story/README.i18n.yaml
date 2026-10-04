@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-settings-story/README.md
+/:
+  en: 6d97ef0da9fa11a6
+  zh: 87120a4660e5696b
+/winterhuan-dsh-client-ui-settings-story:
+  en: 7341527f23e8e727
+  zh: d07e27e3c5d8fef8
+/winterhuan-dsh-client-ui-settings-story/summary:
+  en: f65cf4d811273bae
+  zh: a4e8cf8f80f04516
+/winterhuan-dsh-client-ui-settings-story/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/winterhuan-dsh-client-ui-settings-story/use-this-package:
+  en: 84609afe45f78294
+  zh: 0cf36d1f9a4bd804
+/winterhuan-dsh-client-ui-settings-story/understand-the-implementation:
+  en: 6f271c0568321ec7
+  zh: 0c71e5ef7ea55c53
+/winterhuan-dsh-client-ui-settings-story/further-exploration:
+  en: 33ea908357c79b32
+  zh: 7b96c66b6c114baa
+/winterhuan-dsh-client-ui-settings-story/model-experience:
+  en: 6b7c6f82ab6c8435
+  zh: aca6f3e424bbab0a
+/winterhuan-dsh-client-ui-settings-story/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: b4bbe8239b60ddf0
+/winterhuan-dsh-client-ui-settings-story/known-limitations-and-deferred-work:
+  en: 0e49e49c2d091dfc
+  zh: 2e4a5b808e34ba7c
+/winterhuan-dsh-client-ui-settings-story/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e88aeb617ffb74ea

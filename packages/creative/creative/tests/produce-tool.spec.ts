@@ -1,7 +1,5 @@
 import { stat } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { defaultStorySkillRoot } from '../src/skill-provider.ts'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { JobHandle, JobSpec } from '@deepseek-ai/dsh-jobs'
 import type { Context } from '@deepseek-ai/cordis'
@@ -76,7 +74,7 @@ describe('creative_produce_run', () => {
   it('advertises the closed entry set and drama adapters', () => {
     const tool = createCreativeProduceRunTool()
     expect(tool.name).toBe(CREATIVE_PRODUCE_RUN_TOOL_NAME)
-    expect(PRODUCE_ENTRIES).toEqual(['game-qa', 'drama', 'video-voiceover', 'video-recap', 'video-doctor', 'story-zhuque'])
+    expect(PRODUCE_ENTRIES).toEqual(['game-qa', 'drama', 'video-voiceover', 'video-recap', 'video-doctor'])
     expect(DRAMA_ADAPTERS).toEqual(['episode-compose', 'gpt-image-2', 'minimax-h3', 'minimax-music', 'seedance', 'agnes-image', 'agnes-video'])
     expect(tool.isConcurrencySafe?.(dramaArgs)).toBe(false)
   })
@@ -112,58 +110,6 @@ describe('creative_produce_run', () => {
     expect(await tool.execute({}, execWith(agent))).toMatchObject({
       dramaAdapters: expect.arrayContaining([{ adapter: 'agnes-image', credentialConfigured: false }]),
     })
-  })
-
-  it('reports the Zhuque detection key without exposing it', async () => {
-    const credentials = { resolve: async (ref: unknown) => String(ref) === 'MAKERS_POOL' ? { value: 'dummy-makers', source: 'store' } : undefined }
-    const agent = agentWith({
-      credentials,
-      launchEnvironment: { get: () => undefined },
-      settings: { describe: () => [{ ns: 'creative-produce', value: { makersApiKeyEnv: 'MAKERS_POOL' } }] },
-    })
-    const tool = createCreativeProduceStatusTool()
-    const result = await tool.execute({}, execWith(agent))
-    expect(result).toMatchObject({ zhuqueConfigured: true, mimoConfigured: false, fishAudioConfigured: false })
-    expect(JSON.stringify(result)).not.toMatch(/dummy-|MAKERS_POOL/u)
-    const unconfigured = await tool.execute({}, execWith(agentWith({ launchEnvironment: { get: () => undefined } })))
-    expect(unconfigured).toMatchObject({ zhuqueConfigured: false })
-  })
-
-  it('runs Zhuque detection with its own key alone and keeps that key from production scripts', async () => {
-    const { shell } = shellMock()
-    const agent = agentWith({
-      shell,
-      launchEnvironment: { get: () => undefined },
-      credentials: { resolve: async (ref: unknown) => ({ value: `dummy-${String(ref)}`, source: 'store' }) },
-    })
-    const tool = createCreativeProduceRunTool({ entry: { seedanceModel: 'seedance-2-5' } })
-    const argv = ['--json', '--out', '.story-polish/第1章/R0.json', '正文/第1章.md']
-    const result = await tool.execute({ entry: 'story-zhuque', argv, workdir: 'books/demo' }, execWith(agent))
-    expect(result).toMatchObject({ kind: 'foreground', exitCode: 0 })
-    const detection = shell.resolve.mock.calls[0]?.[0] as { command: string; env: Record<string, string>; workdir: string }
-    const detectorPath = resolve(defaultStorySkillRoot(), '../scripts/zhuque_detect.py')
-    expect(detection.command).toContain(shellQuote(detectorPath))
-    expect(existsSync(detectorPath)).toBe(true)
-    expect(detection.command).toContain(argv.map(shellQuote).join(' '))
-    expect(detection.env).toEqual({ MAKERS_API_KEY: 'dummy-MAKERS_API_KEY' })
-    expect(detection.workdir).toBe(resolve('/work/story/books/demo'))
-    await tool.execute({ entry: 'video-doctor' }, execWith(agent))
-    await tool.execute(dramaArgs, execWith(agent))
-    for (const [request] of shell.resolve.mock.calls.slice(1)) {
-      const { env, stdin } = request as { env: Record<string, string>; stdin?: string }
-      expect(env).not.toHaveProperty('MAKERS_API_KEY')
-      expect(env).toMatchObject({ SEEDANCE_MODEL: 'seedance-2-5', ARK_API_KEY: 'dummy-ARK_API_KEY' })
-      expect(stdin ?? '').not.toContain('MAKERS')
-    }
-    await expect(tool.execute({ entry: 'story-zhuque', job_id: 'SHOT-001' }, execWith(agent))).rejects.toThrow('only to drama production')
-    await expect(tool.execute({ entry: 'story-zhuque', adapter: 'seedance' }, execWith(agent))).rejects.toThrow('only to entry drama')
-  })
-
-  it('runs Zhuque detection without an injected key when none is configured', async () => {
-    const { shell } = shellMock()
-    const agent = agentWith({ shell, launchEnvironment: { get: () => undefined } })
-    await createCreativeProduceRunTool().execute({ entry: 'story-zhuque', argv: ['正文/第1章.md'] }, execWith(agent))
-    expect((shell.resolve.mock.calls[0]?.[0] as { env: Record<string, string> }).env).toEqual({})
   })
 
   it('refuses an unaddressed or cancelled status request', async () => {

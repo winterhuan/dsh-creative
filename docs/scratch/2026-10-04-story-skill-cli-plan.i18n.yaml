@@ -1,0 +1,49 @@
+# Bilingual-pair consistency record for 2026-10-04-story-skill-cli-plan.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/scratch/2026-10-04-story-skill-cli-plan.md
+/:
+  en: b4d5da2793e74008
+  zh: f201d750f5c8d9b9
+/dsh-story-skill-resources-and-cli-plan:
+  en: 5474c4d432263958
+  zh: 5763ba42122b7991
+/dsh-story-skill-resources-and-cli-plan/summary:
+  en: 3534a822c8f2749d
+  zh: 7c8736edd3177323
+/dsh-story-skill-resources-and-cli-plan/table-of-contents:
+  en: 1b39ff95d899ca05
+  zh: 752c1f22e10f7349
+/dsh-story-skill-resources-and-cli-plan/problem:
+  en: e152b6b0d055e796
+  zh: 7b6498e9af762e9c
+/dsh-story-skill-resources-and-cli-plan/proposal:
+  en: 0dd394aa6980f9e0
+  zh: c2f66604eeae2d0a
+/dsh-story-skill-resources-and-cli-plan/proposal/skill-local-references:
+  en: 1273c585bda78a87
+  zh: 6b6ab3db1e3a9025
+/dsh-story-skill-resources-and-cli-plan/proposal/one-packaged-cli:
+  en: 7f2649c5c903b6cd
+  zh: 0e590a4764737b53
+/dsh-story-skill-resources-and-cli-plan/proposal/workflow-integration:
+  en: d394bdbe238a2b57
+  zh: 8f0933cf8b45307f
+/dsh-story-skill-resources-and-cli-plan/proposal/target-package-layout:
+  en: 209e122c4999251a
+  zh: d323d96f8405560e
+/dsh-story-skill-resources-and-cli-plan/implementation-order:
+  en: 7268fb6d5c814dd3
+  zh: edec8445c2395ee3
+/dsh-story-skill-resources-and-cli-plan/alternatives-considered:
+  en: 0f55872bf8a776b9
+  zh: 8f8e70806df362a6
+/dsh-story-skill-resources-and-cli-plan/acceptance-criteria:
+  en: 3b3b4759bff22947
+  zh: 3df28a4459132783
+/dsh-story-skill-resources-and-cli-plan/risks:
+  en: da83e67f84e9c61e
+  zh: 9ae3a0ecf1cce31e
+/dsh-story-skill-resources-and-cli-plan/dev-note:
+  en: c6d56691e8d491cd
+  zh: cb626d7eeba357bc

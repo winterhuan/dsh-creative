@@ -23,7 +23,6 @@ export const Config = z.object({
   mimoApiKeyEnv: z.string().role('credential-ref').default('MIMO_API_KEY').volatile(),
   fishApiKeyEnv: z.string().role('credential-ref').default('FISH_API_KEY').volatile(),
   agnesApiKeyEnv: z.string().role('credential-ref').default('AGNES_API_KEY').volatile(),
-  makersApiKeyEnv: z.string().role('credential-ref').default('MAKERS_API_KEY').volatile(),
   openaiBaseUrl: z.string().volatile(),
   minimaxBaseUrl: z.string().volatile(),
   minimaxVideoBaseUrl: z.string().volatile(),

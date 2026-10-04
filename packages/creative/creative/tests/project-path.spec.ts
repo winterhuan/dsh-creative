@@ -8,12 +8,12 @@ describe('Host creative path consumers', () => {
     '正文/第001章.md', '书甲/正文/第001章.md', '长篇/书甲/正文/第001章.md', '短篇/书乙/正文.md', '正文.md',
     '书甲/short-drama.json', '长篇/书甲/追踪/_tracking-state.json', '短篇/书乙/小节大纲.md',
     '书甲/剧集/EP001/分镜.md', '书乙/剧集/EP001/分镜.md',
-  ])('uses the parsed project when validating and guarding %s', (path) => {
+  ])('keeps legacy file lookup separate from the named-child prose guard for %s', (path) => {
     const parsed = parseCreativePath(path)!
     expect(() => { assertCreativePath(path, 'text') }).not.toThrow()
     const mutation = detectStoryMutation('write', { file_path: path }, '/workspace')
-    if (parsed.role === 'body') {
-      expect(mutation).toMatchObject({ root: parsed.projectRoot === '' ? '/workspace' : `/workspace/${parsed.projectRoot}`, path })
+    if (parsed.role === 'body' && parsed.projectRoot !== '' && !parsed.projectRoot.includes('/')) {
+      expect(mutation).toMatchObject({ root: `/workspace/${parsed.projectRoot}`, path })
     } else expect(mutation).toBeUndefined()
   })
 

@@ -1,6 +1,6 @@
 /**
- * The creative production page's controller: seven staged keys (six providers
- * and Zhuque detection) plus the runtime profile, and that no literal ever
+ * The creative production page's controller: six staged provider keys plus the
+ * runtime profile, and that no literal ever
  * reaches the settings section.
  */
 
@@ -41,7 +41,7 @@ function ctxWith(namespaces: object) {
 }
 
 function produceCredentials(configured: Record<string, boolean> = {}) {
-  const refs = ['OPENAI_API_KEY', 'ARK_API_KEY', 'MINIMAX_API_KEY', 'MIMO_API_KEY', 'FISH_API_KEY', 'AGNES_API_KEY', 'MAKERS_API_KEY']
+  const refs = ['OPENAI_API_KEY', 'ARK_API_KEY', 'MINIMAX_API_KEY', 'MIMO_API_KEY', 'FISH_API_KEY', 'AGNES_API_KEY']
   const describe = vi.fn(() => Promise.resolve({
     ok: true as const,
     value: Object.fromEntries(refs.map(ref => [ref, { configured: configured[ref] ?? false, writable: true }])),
@@ -55,9 +55,9 @@ describe('CreativeProduceCardController', () => {
     expect(CREATIVE_PRODUCE_NS).toBe('creative-produce')
   })
 
-  it('reads all seven credential states in one describe call', async () => {
+  it('reads all six credential states in one describe call', async () => {
     const host = stubConfigForm<CreativeProduceSettings>()
-    const credentials = produceCredentials({ ARK_API_KEY: true, MIMO_API_KEY: true, MAKERS_API_KEY: true })
+    const credentials = produceCredentials({ ARK_API_KEY: true, MIMO_API_KEY: true })
     const controller = new CreativeProduceCardController(host.scope, credentials.ctx)
     const state = () => controller.inject().hooks.creativeProduceCard.getSnapshot()
 
@@ -66,7 +66,7 @@ describe('CreativeProduceCardController', () => {
     await vi.waitFor(() => { expect(state().keys.arkApiKey.configured).toBe(true) })
 
     expect(credentials.describe).toHaveBeenCalledWith(
-      ['OPENAI_API_KEY', 'ARK_API_KEY', 'MINIMAX_API_KEY', 'MIMO_API_KEY', 'FISH_API_KEY', 'AGNES_API_KEY', 'MAKERS_API_KEY'],
+      ['OPENAI_API_KEY', 'ARK_API_KEY', 'MINIMAX_API_KEY', 'MIMO_API_KEY', 'FISH_API_KEY', 'AGNES_API_KEY'],
     )
     expect(state()).toMatchObject({
       seedanceModel: { text: 'seedance-2-5', overridden: false },
@@ -74,7 +74,6 @@ describe('CreativeProduceCardController', () => {
         openaiApiKey: { configured: false, writable: true },
         arkApiKey: { configured: true, writable: true },
         mimoApiKey: { configured: true, writable: true },
-        makersApiKey: { configured: true, writable: true },
       },
     })
   })

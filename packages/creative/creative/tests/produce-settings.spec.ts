@@ -26,7 +26,7 @@ describe('creative produce settings', () => {
     const env = await resolveProduceEnv(ctx, { ttsProvider: 'auto' })
     expect(env.OPENAI_API_KEY).toBe('stored-key')
     expect(env.TTS_PROVIDER).toBe('auto')
-    expect(resolve).toHaveBeenCalledTimes(7)
+    expect(resolve).toHaveBeenCalledTimes(6)
   })
 
   it('falls back to the launch environment and skips unset values', async () => {
@@ -108,7 +108,7 @@ describe('creative produce settings', () => {
     expect(envs[0]).toMatchObject({ AGNES_API_KEY: 'stored-AGNES_A', OPENAI_API_KEY: 'stored-OPENAI_API_KEY' })
     expect(envs[1]).toMatchObject({ AGNES_API_KEY: 'stored-AGNES_B', OPENAI_API_KEY: 'stored-OPENAI_API_KEY' })
     expect(envs[1]?.AGNES_A).toBeUndefined()
-    expect(resolve).toHaveBeenCalledTimes(8)
+    expect(resolve).toHaveBeenCalledTimes(7)
   })
 
   it('leaves unresolvable keys unset instead of forwarding blanks', async () => {
@@ -131,6 +131,6 @@ describe('creative produce settings', () => {
     expect(envs).toHaveLength(2)
     expect(envs[0]).toEqual({ AGNES_API_KEY: 'bulk-a' })
     expect(envs[1]).toEqual({ AGNES_API_KEY: 'bulk-b' })
-    expect(resolve).toHaveBeenCalledTimes(7)
+    expect(resolve).toHaveBeenCalledTimes(6)
   })
 })

@@ -5,20 +5,22 @@ description: "分析长篇或短篇小说的结构、人物、情绪、节奏与
 
 # story-analyze — 小说拆解
 
-根据用户要回答的问题确定原文范围和分析深度。先用已有文本和分析结果；缺少原文时说明缺项，不凭书名或搜索摘要声称读过作品。
+根据用户问题确定原文范围与深度。缺少原文说明缺项，不凭书名或搜索摘要声称读过作品。
 
-- 开头、单章或局部问题：读取相关原文，直接给出带位置和引句的结论。需要保存时只写对应文件，不启动全书管道。
-- 多章或全书：读取 `references/analysis/long/workflow.md`。先确认一份章节边界表，再按 `references/analysis/long/native-workflow.md` 循环提交批次模板。不另写 workflow 脚本，也不派后台子代理直接写章节摘要。
-- 系统拆解短篇：读取 `references/analysis/short/workflow.md`。短篇不使用长篇批次模板。篇幅只用于估算处理量，长短篇优先按用户目标和结构判断。
+长篇和短篇都使用 `{工作区}/{作品名}/` 直接子目录。Session 工作区保持在其父级；工作区、`拆文库/` 和长短篇分类容器不是作品。无法从请求确定目标时先确认作品，不按修改时间跨书选择，也不自动迁移文件。
 
-用 DSH 的资源根目录解析路径，以原生 `read` 按需加载资料。长短篇模板分别在 `references/analysis/long/output-templates.md` 和 `references/analysis/short/output-templates.md`，只读取相关章节。
+本 Skill 的参考路径相对 `SKILL.md`；只按当前问题读取 `references/`，不加载其他 Skill 的私有参考。跨任务用 `skill` 加载准确名称。`{CLI}` 是从本 Skill 目录向上四级解析的 `lib/cli.js` 绝对路径；运行 `node {CLI} <命令> --help` 查参数，实际结果以 `--json` 返回为准。作品命令显式传 `--workspace {工作区} --book {作品名}`；不依赖工作区 PATH，不直接运行包内私有脚本。
 
-## 分析边界
+用户明确提供的外部 TXT/Markdown 可以直接分析，无需创建作品。分析命令使用 `--workspace {工作区} --title {来源书名}`，共享产物落在 `拆文库/{来源书名}/`；它不是创作作品，也不自动成为对标。
 
-每条重要结论关联原文位置，区分文本事实、解释和建议；无法覆盖的范围如实列出。不改原文，不把猜测填成设定。分析质量取决于证据和解释力，情节节点、反转、钩子与人物数量按实际作品记录，不为凑数补写。
+- 局部问题：读取相关原文，交付带位置与短引句的结论；需要保存时只写对应文件。
+- 多章或全书：读 [长篇流程](references/long/workflow.md) 与 [批次 workflow](references/long/native-workflow.md)。父会话用 `analysis inspect` 核对至多四章及已有产物；本 Skill 的 `workflows/analyze-batch.js` 返回结构化卡片；父会话再用 `analysis write-cards` 校验原文身份并确定性落盘。
+- 系统拆解短篇：读 [短篇流程](references/short/workflow.md)，不用长篇批次模板；需要方法与产物形状时分别查 [观察方法](references/short/material-decomposition.md)、[产物示例](references/short/output-templates.md)。
 
-`拆文库/<书名>/` 保存分析；用户自己的作品和外部对标作品保持独立。只在用户选定外部对标时绑定它，接入自有作品不自动把本书变成对标。
+重要结论区分原文事实、解释和建议。节点、人物、反转、钩子按实际记录，允许零，不用最低配额补造内容。不改原文，不把猜测填成设定。
 
-已有有效结果按任务复用。多章提取走 `workflows/analyze-batch.js`，调用方式见 `references/analysis/long/native-workflow.md`。单章问答仍可读 `chapter-extractor`，按 `references/project/delegation.md` 处理；不要用它代替批次模板去写多章摘要。依赖前置结果时等待实际任务完成并核对产物，不把成员创建成功当作分析完成。失败记录保留真实原因。批次完成后，按至多 10 个卷段写 `剧情/节奏.md`、`剧情/情绪模块.md`、`文风.md`、`拆文报告.md`。卷段读原文和短卡片。不再生成 `_章节摘要汇总.md`。
+已有结果先复用。长篇批次只处理未完成或明确替换的章；返回卡片不是写入证明，只有 CLI 成功落盘且源身份仍一致才报告完成。失败保留原因为后续恢复提供缺章范围，不另写 workflow、后台摘要器或仅负责排版的模型任务。
 
-交付说明分析范围、核心发现和文件位置。用户只要求分析时，不自动进入写作或跨域改编。
+批次完成后按至多 10 个卷段读原文与卡片，产出节奏、情绪模块、文风和报告；不再生成全章摘要汇总副本。单章需独立提取时委派加载 `story-analyze` 并读取 [章节提取员](references/roles/chapter-extractor.md)，传明确原文范围，不将成员创建成功当完成。
+
+交付实际覆盖范围、核心发现、缺口与文件位置。仅分析不自动进入写作；应用分析创作时加载 `story-write`。

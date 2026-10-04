@@ -46,7 +46,7 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 ### 章节评审
 
-长篇章节提交前检查细纲就绪、准备紧凑场景计划并处理重要审稿问题。审稿返回带原文依据的普通意见，不要求固定证明或模型记录。章节脚本保留当前字数哈希、状态修订号和原子追踪写入；机械提交成功不代表文学质量通过。AI 模式与朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`。参见[章节流程](../story/knowledge/story/references/writing/long/workflow-chapter.md)。
+长篇章节提交前检查细纲就绪、准备紧凑场景计划并处理重要审稿问题。审稿返回带原文依据的普通意见，不要求固定证明或模型记录。章节脚本保留当前字数哈希、状态修订号和原子追踪写入；机械提交成功不代表文学质量通过。AI 模式与朱雀结果仅作建议。项目标点默认保留；`设定/写作检查.json` 可选择 `normalize-narration`。参见[章节流程](../story/knowledge/story/skills/story-write/references/long/workflow-chapter.md)。
 
 ### 交付与验证
 
@@ -125,7 +125,7 @@ Creative 一次安装小说、短剧、游戏和视频解说四个独立工作�
 
 #### 模型看到什么
 
-`creative_produce_status` 报告短剧 adapter（包括 `agnes-image` 和 `agnes-video`）、MiMo 与 Fish 视频提供方以及朱雀检测的凭据是否存在。它使用执行配置的凭据查找，不返回密钥，也不启动进程。普通 shell 环境检查看不到托管的凭据库；缺失的密钥应在 Creative 生产设置里配置，而不是在对话中提供。
+`creative_produce_status` 报告短剧 adapter（包括 `agnes-image` 和 `agnes-video`）以及 MiMo 与 Fish 视频提供方的凭据是否存在。它使用执行配置的凭据查找，不返回密钥，也不启动进程。普通 shell 环境检查看不到托管的凭据库；缺失的密钥应在 Creative 生产设置里配置，而不是在对话中提供。朱雀检测使用 `story_zhuque` 和小说设置页。
 
 #### Token 影响
 

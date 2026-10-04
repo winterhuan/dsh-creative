@@ -2,33 +2,36 @@
 name: story-write
 description: "创作长篇或短篇小说：设定、卷纲、细纲、小节规划、正文、续写和重写。用于开书、写大纲、写第 N 章、日更、写短篇；已有原始文本接入用 story，审稿用 story-review，文字润色用 story-polish。"
 ---
-# story-write：小说创作
 
-先确定本次要交付的设定、大纲或正文，以及长篇/短篇和文件范围；能从请求与项目判断时直接执行。裸调用只诊断当前项目和下一步，不自动写正文。开书、补纲请求完成所需规划即停；明确要求正文时才写。
+# story-write — 小说创作
 
-参考资料与脚本路径相对于 DSH 提供的资源基目录，用原生 `read` 按任务读取。只加载本次工作流和必要项目材料，已读且未变化的参考不反复整份读取。
+先确定本次交付设定、大纲还是正文，以及长短篇和文件范围。裸调用只诊断下一步；开书、补纲请求完成规划即停，明确要求正文才写。
 
-| 当前任务 | 读取资料 | 交付 |
-|---|---|---|
-| 长篇开书、设定、卷纲、补细纲 | 长篇规划（`references/writing/long/workflow-setup.md`） | 已确认范围的设定、大纲与细纲 |
-| 长篇单章正文 | 单章流程（`references/writing/long/workflow-chapter.md`） | 正文、检查、审稿及逐章事务 |
-| 长篇日更、连续续写 | 串行续写（`references/writing/long/workflow-daily.md`） | 按用户范围逐章完成；每章提交后才进下一章 |
-| 修改已写长篇章节 | 修订流程（`references/writing/long/workflow-revision.md`） | 修订正文、重评审及必要的后续影响 |
-| 短篇构思、规划、正文与交付 | 短篇流程（`references/writing/short/writing-workflow.md`） | 设定、小节大纲或完整短篇，按请求停靠 |
+长篇和短篇都使用 `{工作区}/{作品名}/` 直接子目录。Session 工作区保持在其父级；工作区、`拆文库/` 和长短篇分类容器不是作品。无法从请求确定目标时先确认作品，不按修改时间跨书选择，也不自动迁移文件。
+
+本 Skill 的参考路径相对 `SKILL.md`；只按当前问题读取 `references/`，不加载其他 Skill 的私有参考。跨任务用 `skill` 加载准确名称。`{CLI}` 是从本 Skill 目录向上四级解析的 `lib/cli.js` 绝对路径；运行 `node {CLI} <命令> --help` 查参数，实际结果以 `--json` 返回为准。作品命令显式传 `--workspace {工作区} --book {作品名}`；不依赖工作区 PATH，不直接运行包内私有脚本。
+
+| 当前任务 | 读取 |
+|---|---|
+| 长篇开书、设定、卷纲、补细纲 | [规划](references/long/workflow-setup.md) |
+| 长篇单章正文 | [章节流程](references/long/workflow-chapter.md) |
+| 长篇日更、连续续写 | [串行续写](references/long/workflow-daily.md) |
+| 修改已写长篇章节 | [修订](references/long/workflow-revision.md) |
+| 短篇构思、规划、正文和交付 | [短篇流程](references/short/writing-workflow.md) |
+| 缺少具体写作方法 | [方法索引](references/methods/agent-reference-profiles.md)，只取相应体裁与问题 |
+
+用户明确选择原生 workflow 或已有持续偏好时，父会话按 [原生章节 workflow](references/long/native-workflow.md) 读取本 Skill 的 `workflows/chapter.js` 并顶层调用。模板内完成准备、写作、独立审稿、有限修订和提交；父会话不重复准备。子阶段加载自己的 Skill，只执行分配阶段，不再读取或启动模板。
 
 ## 写作约束
 
-用户明确选择原生 workflow 或已有持续偏好时，按 `references/writing/long/native-workflow.md` 提供工程、章号与约束，读取 `workflows/chapter.js` 后顶层调用原生 `workflow`。模板内部完成细纲检查与必要补建、场景计划、写作、独立审稿、最多两轮修订及提交；父会话不预先重复准备。连续章仍串行；普通任务保留上表路径。模板仅在选用时加载。
+- 正式长篇正文前运行 `outline check`，核对读者期待、主角目标、阻碍、关键选择、后果、局部兑现和章尾问题。缺细纲时在已确认卷纲内补建；未知关键事实不能用占位符凑齐。探索稿放本书 `草稿/`，不推进追踪。
+- 按 [写前事实](references/long/continuity-context.md) 查询全部到期伏笔；不能只依赖状态卡的 8 条。角色当前状态、读者已知和未来计划分别核实。
+- 尊重用户字数、设定、必须/禁止事项及停笔点。可调整场景组织、补动作和潜台词，不为凑数新增主线、角色或提前泄露信息。
+- 验收看连续性、主角能动性、信息归属、可读性与用户约束。技法、密度、百分比、道具次数、句式和标点不作为通用配额。
+- 对标可选；只使用明确选定的外部来源。资料分工见 [项目材料](references/long/project-context.md)，多书使用见 [跨书召回](references/cross-book-recall.md)。需要补分析时加载 `story-analyze`，不把本书分析当外部样本。
+- 正式长篇依次 `chapter check` → 加载 `story-review` → 必要修订和重检 → `chapter commit`。检查失败或不可用不算通过；正文变化后旧审稿不能批准新版本。
+- `追踪/_tracking-state.json` 是唯一事实状态，派生 Markdown 不手写。提交携带最新修订号，准确正文和细纲哈希按 [追踪事务](references/long/tracking-transaction.md) 校验；不把未来计划沉淀为既成事实。
 
-- 正式长篇正文先通过细纲就绪检查；七项语义必须具体：读者期待、主角目标、主要阻碍、关键选择、代价或后果、局部兑现、章尾问题。缺项先修纲，不让正文杜撰独立剧情。探索性试写放 `草稿/`，不推进追踪，转正仍需完整验收。
-- 尊重用户字数范围、已确认设定、必发生/禁止发生事项和停笔点。正文可调整场景组织并补战术与潜台词，不为凑字新增主线、角色、承诺或提前泄露后期信息。
-- 连续性、主角能动性、信息归属、可读性及用户约束是验收依据。事件密度、百分比、道具次数、句式、标点与情绪词频是可选技巧，不能覆盖正文证据或成为通用配额。
-- 原创作品不需要对标书。本书文本与外部对标分开；只在明确使用对标时加载相关分析，不将本书分析当作外部参照。项目材料与资源的分工见 项目与对标（`references/writing/long/project-context.md`）。
-- 正式长篇交付按 `storyctl.py chapter check` → `story-review` 审稿与必要修订 → `chapter commit` 执行；检查失败或工具不可用不算通过。文本变更后重检与重评审，未变更不重复整套检查。
-- `追踪/_tracking-state.json` 是唯一事实状态，Markdown 视图由 `scripts/tracking_commit.py` 生成；不手写追踪，不把未来计划写成已发生事实。提交带最新 `expected_state_revision`，字数记录与当前正文绑定；详情见 追踪事务（`references/writing/long/tracking-transaction.md`）。
+已有作者记忆时直接运行 `memory query --workspace {工作区} --book {作品名} --json`，仅把匹配的 active 写法交给实际写手；当前请求、本书设定和质量要求优先，不自动学习审稿告警。保存或忘掉偏好加载 `story`。
 
-作者记忆已存在时，按 作者习惯（`references/project/author-memory.md`） 查询相关 active 条目，传给实际写手；当前请求、本书设定和质量要求优先，不自动学习审查告警。
-
-复杂任务确需独立专家时按 `references/project/delegation.md` 使用原生委派；简单工作直接完成。委派包含专业身份、Role 与资源绝对路径、项目材料、产物路径和成功条件。Team 中复用已有成员，按写作、审稿、修订和提交的依赖推进。写手不直接改追踪；提交前处理重要审稿问题，同一 Agent 换 Role 不算独立评审。
-
-要市场选题或接入已有文本用 `story`；要深度拆解用 `story-analyze`；要审稿用 `story-review`；要文字修改用 `story-polish`。用户只要求规划时不串联后续阶段。
+独立专业任务按 [委派](references/delegation.md) 使用本地 Role；简单任务当前会话完成。前置阶段等待终态，互不依赖时才可并行；Team 仅在用户明确要求时使用。写手不直接改追踪，同一 Agent 换 Role 不算独立审稿。需要审稿、文字润色或接入原文时分别加载 `story-review`、`story-polish`、`story`。

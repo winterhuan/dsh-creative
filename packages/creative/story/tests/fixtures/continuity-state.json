@@ -1,0 +1,205 @@
+{
+  "schema_version": 5,
+  "book_title": "雾港来信",
+  "last_committed_chapter": 500,
+  "imported_through_chapter": 500,
+  "state_revision": 7,
+  "context": {
+    "position": {
+      "volume": "第三卷",
+      "volume_start_chapter": 300,
+      "story_time": "第三日清晨",
+      "scene": "旧港仓库"
+    },
+    "long_term_constraints": [
+      "铜钥匙只能使用一次"
+    ],
+    "active_character_names": [
+      "林舟"
+    ],
+    "continuity_risks": [
+      "证人的行踪尚未核实"
+    ],
+    "recent_chapters": [
+      {
+        "chapter": 498,
+        "summary": "第498章找到了旧港的线索"
+      },
+      {
+        "chapter": 499,
+        "summary": "第499章找到了旧港的线索"
+      },
+      {
+        "chapter": 500,
+        "summary": "第500章找到了旧港的线索"
+      }
+    ],
+    "next_chapter_commitments": [
+      "交代失踪证人的去向"
+    ]
+  },
+  "characters": {
+    "林舟": {
+      "identity": "调查员",
+      "location": "旧港",
+      "goal": "寻找证人",
+      "state": "手臂受伤",
+      "abilities_resources": [
+        "铜钥匙"
+      ],
+      "relationships": [
+        "信任沈音"
+      ],
+      "knowledge": [
+        "船只已离港"
+      ],
+      "open_threads": [
+        "证人失踪"
+      ]
+    }
+  },
+  "foreshadow": {
+    "F001": {
+      "id": "F001",
+      "summary": "线索1：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 501,
+      "status": "已埋",
+      "importance": "低",
+      "updated_chapter": 500
+    },
+    "F002": {
+      "id": "F002",
+      "summary": "线索2：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 499,
+      "status": "已埋",
+      "importance": "低",
+      "updated_chapter": 500
+    },
+    "F003": {
+      "id": "F003",
+      "summary": "线索3：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F004": {
+      "id": "F004",
+      "summary": "线索4：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F005": {
+      "id": "F005",
+      "summary": "线索5：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F006": {
+      "id": "F006",
+      "summary": "线索6：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F007": {
+      "id": "F007",
+      "summary": "线索7：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F008": {
+      "id": "F008",
+      "summary": "线索8：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F009": {
+      "id": "F009",
+      "summary": "线索9：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F010": {
+      "id": "F010",
+      "summary": "线索10：旧港钥匙",
+      "planted_chapter": 1,
+      "planned_resolution_chapter": 550,
+      "status": "已埋",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F011": {
+      "id": "F011",
+      "summary": "未定回收线索",
+      "planted_chapter": 10,
+      "planned_resolution_chapter": null,
+      "status": "已埋",
+      "importance": "中",
+      "updated_chapter": 500
+    },
+    "F012": {
+      "id": "F012",
+      "summary": "已回收线索",
+      "planted_chapter": 10,
+      "planned_resolution_chapter": 450,
+      "status": "已回收",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F013": {
+      "id": "F013",
+      "summary": "放弃的线索",
+      "planted_chapter": 10,
+      "planned_resolution_chapter": 450,
+      "status": "放弃",
+      "importance": "高",
+      "updated_chapter": 500
+    },
+    "F014": {
+      "id": "F014",
+      "summary": "已过期线索",
+      "planted_chapter": 10,
+      "planned_resolution_chapter": 450,
+      "status": "已过期",
+      "importance": "高",
+      "updated_chapter": 500
+    }
+  },
+  "timeline": {
+    "E001": {
+      "id": "E001",
+      "story_time": "第一日夜里",
+      "objective_fact": "SECRET：证人藏在北塔",
+      "reader_knowledge": "证人失踪",
+      "reveal_status": "未揭示",
+      "reveal_chapter": null,
+      "characters": [
+        "林舟"
+      ],
+      "first_recorded_chapter": 500,
+      "updated_chapter": 500
+    }
+  },
+  "wordcount_records": {}
+}

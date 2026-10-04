@@ -9,7 +9,7 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-typert-registry'
 import { isTrustedWorkspaceRequest } from './workspace-request-trust.js'
 import {
-  CREATIVE_DIRECTORIES, STORY_DIRECTORIES,
+  STORY_LIBRARY_DIRECTORY, STORY_DIRECTORIES,
   PROJECT_FILES, creativeMediaMimeType, isCreativeTextPath, isStoryWorkbenchPath, parseCreativePath, projectPath,
   type CreativeProjectPath,
 } from './project-path.ts'
@@ -183,7 +183,7 @@ function skipWorkspaceDirectory(path: string): boolean {
 }
 
 /**
- * List novels in the workspace and its immediate child directories.
+ * List named child novels and shared analysis, excluding workspace-level prose.
  * Each project's standard directories and standalone documents retain their full paths.
  * Recursion within 正文, 大纲 and the other recognized roots preserves volumes.
  * A listing is truncated only when another eligible file exceeds FILE_LIMIT.
@@ -214,7 +214,7 @@ async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
     return false
   }
   const listProject = async (prefix: string, project: FsTarget): Promise<boolean> => {
-    for (const directory of prefix === '' ? CREATIVE_DIRECTORIES : STORY_DIRECTORIES) {
+    for (const directory of STORY_DIRECTORIES) {
       const path = projectPath(prefix, directory)
       const target = await realm.fs.resolve(path, { cwd: realm.cwd })
       if (!realm.fs.contains(project, target)) continue
@@ -233,12 +233,14 @@ async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
     }
     return false
   }
-  let truncated = await listProject('', realm.root)
+  const library = await realm.fs.resolve(STORY_LIBRARY_DIRECTORY, { cwd: realm.cwd })
+  let truncated = realm.fs.contains(realm.root, library) && (await realm.fs.stat(library))?.type === 'directory'
+    ? await walk(STORY_LIBRARY_DIRECTORY, library, library) : false
   if (!truncated) {
     for (const entry of await realm.fs.listDir(realm.root)) {
       if (entry.type !== 'directory' || skipWorkspaceDirectory(entry.name) || !realm.fs.contains(realm.root, entry.target)) continue
       const parsed = parseCreativePath(`${entry.name}/正文`)
-      if (!isStoryWorkbenchPath(parsed) || parsed.projectRoot !== entry.name) continue
+      if (parsed?.domain !== 'story' || !isStoryWorkbenchPath(parsed) || parsed.projectRoot !== entry.name) continue
       if (await listProject(entry.name, entry.target)) { truncated = true; break }
     }
   }

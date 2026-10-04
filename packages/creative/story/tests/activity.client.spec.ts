@@ -17,6 +17,24 @@ function snapshot(...roots: ToolCallBlock[]): ChatSnapshot {
 
 describe('story file refresh signals', () => {
   it.each([
+    "node '/installed plugin/lib/cli.js' 'chapter' 'commit' --workspace /workspace --book 书",
+    'dsh-story chapter accept-current-length --workspace /workspace --book 书',
+    'dsh-story project init --workspace /workspace --book 新书 --kind short',
+    'dsh-story analysis write-cards --workspace /workspace --title 来源',
+    'dsh-story text normalize --file 正文.md --apply',
+  ])('refreshes after a packaged CLI mutation: %s', command => {
+    expect(latestSettledMutation(snapshot(settled('cli', 'bash', { command })))).toBe('cli\0追踪/_tracking-state.json')
+    expect(latestSettledMutation(snapshot(settled('failed', 'bash', { command }, true)))).toBeUndefined()
+  })
+  it.each(['project status', 'project query', 'chapter snapshot', 'chapter check', 'analysis inspect', 'text normalize'])('keeps CLI reads out of refresh signals: %s', command => {
+    expect(latestSettledMutation(snapshot(settled('read', 'bash', { command: `node /plugin/lib/cli.js ${command}` })))).toBeUndefined()
+  })
+  it('refreshes after a chapter transaction, while read-only queries leave the signal unchanged', () => {
+    expect(latestSettledMutation(snapshot(settled('commit', 'bash', { command: "python 'storyctl.py' 'chapter' 'commit' --project /book" })))).toBe('commit\0追踪/_tracking-state.json')
+    expect(latestSettledMutation(snapshot(settled('query', 'bash', { command: 'python storyctl.py project query --kind foreshadow' })))).toBeUndefined()
+    expect(latestSettledMutation(snapshot(settled('failed', 'bash', { command: 'python tracking_commit.py commit' }, true)))).toBeUndefined()
+  })
+  it.each([
     ['write', { file_path: '正文/新章.md', content: '完成' }],
     ['edit', { file_path: '正文/新章.md', old_string: '旧', new_string: '新' }],
     ['str_replace_editor', { command: 'create', path: '正文/新章.md', file_text: '完成' }],

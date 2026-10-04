@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for 2026-10-04-story-continuity-plan.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/scratch/2026-10-04-story-continuity-plan.md
+/:
+  en: 6f7feaf61c82d368
+  zh: 8134b657aba267d8
+/dsh-story-long-form-continuity-plan:
+  en: 855b70345696061b
+  zh: 66cd5476ee554fb1
+/dsh-story-long-form-continuity-plan/summary:
+  en: e49bf136577cb006
+  zh: 1b178fc2874128c0
+/dsh-story-long-form-continuity-plan/table-of-contents:
+  en: c37ce99cb2cbffcc
+  zh: c34e0b0dd41edf12
+/dsh-story-long-form-continuity-plan/scope-and-current-implementation:
+  en: 98ed97f60c0fa338
+  zh: 03fdc82b8ef449a7
+/dsh-story-long-form-continuity-plan/complete-creative-workflow:
+  en: e36e93524245bd9f
+  zh: c73906b2c29368bb
+/dsh-story-long-form-continuity-plan/facts-plans-and-memory:
+  en: 00657fddbea88add
+  zh: 7459d221a93f7059
+/dsh-story-long-form-continuity-plan/queries-and-chapter-preparation:
+  en: 42ce9010c3401e08
+  zh: 27476726a8da9fe1
+/dsh-story-long-form-continuity-plan/read-only-dashboard:
+  en: e1225b43c6bf46ee
+  zh: df5b9451f419da07
+/dsh-story-long-form-continuity-plan/implementation-order:
+  en: 57919f45a871c073
+  zh: facdecf7870eb373
+/dsh-story-long-form-continuity-plan/acceptance-and-verification:
+  en: 80a68fc34114cb17
+  zh: 9bf3feb63df6d36b
+/dsh-story-long-form-continuity-plan/later-scope:
+  en: a8fb7e202598f087
+  zh: 58baf15139e0b336
+/dsh-story-long-form-continuity-plan/dev-note:
+  en: fbe41a4576535596
+  zh: 6e86ee4e6ef45f6e

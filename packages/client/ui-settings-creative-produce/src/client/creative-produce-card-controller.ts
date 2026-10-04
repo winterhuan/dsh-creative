@@ -2,8 +2,7 @@
  * The creative production page's staged form over the `creative-produce`
  * settings namespace.
  *
- * Seven provider keys are staged here — one per production backend plus the
- * Zhuque detection key — and none of their literals ever rides a response: each writes through the credentials
+ * Six provider keys are staged here, and none of their literals ever rides a response: each writes through the credentials
  * domain under the reference its section field names. The runtime profile
  * (models, endpoints, voice routing) stages as ordinary section fields beside
  * them, so one save covers everything the page shows.
@@ -40,8 +39,6 @@ export interface CreativeProduceSettings {
   fishApiKeyEnv?: string
   /** Credential reference naming the Agnes key. */
   agnesApiKeyEnv?: string
-  /** Credential reference naming the EdgeOne Makers key for Zhuque detection. */
-  makersApiKeyEnv?: string
   /** Image endpoint; blank inherits the adapter default. */
   openaiBaseUrl?: string
   /** MiniMax music endpoint; blank inherits the adapter default. */
@@ -77,9 +74,9 @@ export interface CreativeProduceSettings {
 }
 
 /** One staged provider key. */
-export type ProduceKeyField = 'openaiApiKey' | 'arkApiKey' | 'minimaxApiKey' | 'mimoApiKey' | 'fishApiKey' | 'agnesApiKey' | 'makersApiKey'
+export type ProduceKeyField = 'openaiApiKey' | 'arkApiKey' | 'minimaxApiKey' | 'mimoApiKey' | 'fishApiKey' | 'agnesApiKey'
 
-const KEY_FIELDS: readonly ProduceKeyField[] = ['openaiApiKey', 'arkApiKey', 'minimaxApiKey', 'mimoApiKey', 'fishApiKey', 'agnesApiKey', 'makersApiKey']
+const KEY_FIELDS: readonly ProduceKeyField[] = ['openaiApiKey', 'arkApiKey', 'minimaxApiKey', 'mimoApiKey', 'fishApiKey', 'agnesApiKey']
 
 const KEY_REF_FALLBACK: Readonly<Record<ProduceKeyField, string>> = {
   openaiApiKey: 'OPENAI_API_KEY',
@@ -88,7 +85,6 @@ const KEY_REF_FALLBACK: Readonly<Record<ProduceKeyField, string>> = {
   mimoApiKey: 'MIMO_API_KEY',
   fishApiKey: 'FISH_API_KEY',
   agnesApiKey: 'AGNES_API_KEY',
-  makersApiKey: 'MAKERS_API_KEY',
 }
 
 const KEY_REF_FIELD: Readonly<Record<ProduceKeyField, keyof CreativeProduceSettings>> = {
@@ -98,7 +94,6 @@ const KEY_REF_FIELD: Readonly<Record<ProduceKeyField, keyof CreativeProduceSetti
   mimoApiKey: 'mimoApiKeyEnv',
   fishApiKey: 'fishApiKeyEnv',
   agnesApiKey: 'agnesApiKeyEnv',
-  makersApiKey: 'makersApiKeyEnv',
 }
 
 /** What the credentials domain last reported for one key. */

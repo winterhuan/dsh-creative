@@ -10,9 +10,9 @@ Status: implemented
 
 ## Decision
 
-长篇多章拆解通过[批次调用说明](../../../../packages/creative/story/knowledge/story/references/analysis/long/native-workflow.md)加载 `workflows/analyze-batch.js`。父会话先确认一份章节边界表，再以前台运行每次提交至多四章。只读提取员交回一份短卡片：100–300 字概要、3–5 条关键事件、本章出场人物，以及 3–8 个转折锚点。每个锚点有短标题、八种情节类型之一、一句白描、十种基调之一，和可回查的原文定位。基调只标在转折锚点上。写文件阶段把这一份 JSON 渲染到 `章节/第NNN章_摘要.md`，不接收其他章的卡片。
+长篇多章拆解通过[批次调用说明](../../../../packages/creative/story/knowledge/story/skills/story-analyze/references/long/native-workflow.md)加载 Skill 本地 `workflows/analyze-batch.js`。父会话先确认一份章节边界表，再以前台运行每次提交至多四章。只读提取员交回一份短卡片：100–300 字概要、至多五条实际关键事件、本章出场人物，以及至多八个实际转折锚点。稀疏章节允许没有事件或转折锚点。每个锚点有短标题、八种情节类型之一、一句白描、十种基调之一，和可回查的原文定位。基调只标在转折锚点上。父会话使用 `analysis write-cards` 校验并将提取卡片渲染到 `章节/第NNN章_摘要.md`。
 
-脚本不读磁盘。`chapters` 是本批章号。`existing` 是父会话确认已经有摘要文件的章号。`replace` 是允许覆盖的章号。只有属于本批、且不在 `existing` 中或列在 `replace` 中的章才会写文件。子会话返回 null 或抛错时，只让该章失败。开头、单章问题和短篇仍走直接阅读。
+父会话使用 `analysis inspect` 获取原文身份、章节范围与已有产物。workflow 提取所选章节，返回卡片、失败与跳过项。`replace` 列出允许覆盖的章号；CLI 再次核验来源后只发布通过校验的卡片。子会话返回 null 或抛错时只让该章失败，重试保留已完成卡片。开头、单章问题和短篇仍走直接阅读。
 
 卡片齐了之后，父会话按至多十个卷段写 `剧情/节奏.md`、`剧情/情绪模块.md`、`文风.md` 和 `拆文报告.md`，卷段读原文和短卡片。不再生成 `_章节摘要汇总.md`。已经落盘的长摘要，包括完成的《龙蛇演义》拆文库，视为已完成并继续可读。类型为「转折点」的 P 行仍然是有效的关键点锚。缺节奏或情绪模块时，只补那一个卷段文件，不重抽全书。
 
@@ -28,4 +28,4 @@ Status: implemented
 
 ## Consequences
 
-新的多章拆解产出短卡片和四份卷段文件。旧的长摘要仍可作为节奏、情绪和关键点的输入。`analyze-batch.spec.ts` 检查提取 null、写文件隔离、同批其他章仍可写完、批大小和行号拒绝、0 字节和路径不符，以及 `existing` / `replace` 规则。这些检查不能证明文学质量。[单章 workflow](../feature/2026-10-03-story-native-workflow.zh.md)仍是写作模板；本记录不取代它。
+新的多章拆解产出短卡片和四份卷段文件。旧的长摘要仍可作为节奏、情绪和关键点的输入。模板与 CLI 测试覆盖提取 null、稀疏卡片、同批其他章成功、无效范围和定位、原文身份变化、实际写入核验、并发发布和显式替换。这些检查不能证明文学质量。[单章 workflow](../feature/2026-10-03-story-native-workflow.zh.md)仍是写作模板；本记录不取代它。

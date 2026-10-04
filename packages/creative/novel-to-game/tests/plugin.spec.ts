@@ -67,13 +67,13 @@ describe('standalone game plugin', () => {
 
   it('keeps packaged source-exchange helpers identical to their maintained originals', async () => {
     const originals = {
-      'export_novel_txt.py': 'story/scripts/export_novel_txt.py',
-      'record_lineage.py': 'story/scripts/record_lineage.py',
+      'export_novel_txt.py': 'story/runtime/export_novel_txt.py',
+      'record_lineage.py': 'story/runtime/record_lineage.py',
       'novel_index.py': 'drama/skills/short-drama-novel-analyze/scripts/novel_index.py',
     }
     for (const [file, source] of Object.entries(originals)) {
       expect(await readFile(new URL(`../knowledge/source-tools/${file}`, import.meta.url), 'utf8'))
-        .toBe(await readFile(new URL(`../../${source.startsWith('story/') ? 'story' : 'short-drama'}/knowledge/${source}`, import.meta.url), 'utf8'))
+        .toBe(await readFile(new URL(`../../${source.startsWith('story/') ? source : `short-drama/knowledge/${source}`}`, import.meta.url), 'utf8'))
     }
   })
 })

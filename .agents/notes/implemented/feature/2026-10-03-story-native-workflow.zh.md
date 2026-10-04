@@ -10,7 +10,7 @@ Status: implemented
 
 ## Decision
 
-小说包为已有原生 `workflow` 工具提供[单章模板](../../../../packages/creative/story/knowledge/story/workflows/chapter.js)和按需加载的[调用说明](../../../../packages/creative/story/knowledge/story/references/writing/long/native-workflow.md)。公开入口仍是六个 Skill。`story-write` 只在用户明确选择或已有持续偏好时进入此路径，普通写作与审稿保留直接执行方式。
+小说包为已有原生 `workflow` 工具提供[单章模板](../../../../packages/creative/story/knowledge/story/skills/story-write/workflows/chapter.js)和按需加载的[调用说明](../../../../packages/creative/story/knowledge/story/skills/story-write/references/long/native-workflow.md)。公开入口仍是六个 Skill。`story-write` 只在用户明确选择或已有持续偏好时进入此路径，普通写作与审稿保留直接执行方式。
 
 父会话提供工程、章号与当前用户约束，可附已知上下文，读取调用说明和模板后，将原样 JavaScript 正文传给顶层原生工具调用。DSH 负责执行、子会话、取消、后台作业与运行展示。不增加小说执行器、直接引擎调用方、自建面板或第二套作业登记。缺少能力时报告具体诊断，不静默换成另一种模式。
 

@@ -64,7 +64,7 @@ export function createCreativeProduceRunTool(options: { readonly entry?: Produce
       const request = {
         command: ['python3', '-B', resolve(dirname(fileURLToPath(import.meta.url)), '../knowledge', scripts[args.entry]), ...argv].map(quote).join(' '),
         workdir: cwd,
-        env: Object.fromEntries(Object.entries(resolvedEnv).filter(([key]) => key !== 'MAKERS_API_KEY' && !['OPENAI_API_KEY', 'ARK_API_KEY', 'MINIMAX_API_KEY', 'AGNES_API_KEY'].includes(key))),
+        env: Object.fromEntries(Object.entries(resolvedEnv).filter(([key]) => !['OPENAI_API_KEY', 'ARK_API_KEY', 'MINIMAX_API_KEY', 'AGNES_API_KEY'].includes(key))),
         ...(args.stdin === undefined ? {} : { stdin: args.stdin }),
         ...(policy === undefined ? {} : { sandboxPolicy: policy }),
         ...(args.timeoutMs === undefined ? {} : { timeoutMs: args.timeoutMs }),

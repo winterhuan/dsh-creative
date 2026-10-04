@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { execa } from 'execa'
 import { describe, expect, it, type TestContext } from 'vitest'
 
-const knowledge = resolve(import.meta.dirname, '../knowledge/story')
+const runtime = resolve(import.meta.dirname, '../runtime')
 const python = process.platform === 'win32' ? 'python' : 'python3'
 const cleanProse = '她推开木门，把篮子放在桌边。\n'
 const validLongOutline = `- 核心事件：主角必须亲自取回账册
@@ -49,7 +49,7 @@ const validLongOutline = `- 核心事件：主角必须亲自取回账册
 `
 
 function script(filename: string): string {
-  return join(knowledge, 'scripts', filename)
+  return join(runtime, filename)
 }
 
 async function workspace(context: TestContext): Promise<string> {
@@ -134,25 +134,25 @@ describe('bundled novel executable scripts', () => {
     expect(await readFile(body, 'utf8')).toBe(prose)
   })
 
-  it('runs shared entrypoints from a relocated novel knowledge bundle', async (context) => {
+  it('runs internal modules from a relocated story runtime', async (context) => {
     const cwd = await workspace(context)
-    const bundled = join(cwd, 'knowledge/story')
-    await cp(knowledge, bundled, { recursive: true })
+    const bundled = join(cwd, 'runtime')
+    await cp(runtime, bundled, { recursive: true })
     await writeFile(join(cwd, 'package.json'), '{"type":"module"}\n')
     await writeFile(join(cwd, '正文.md'), cleanProse)
     const checked = await run(context, cwd, process.execPath, [
-      join(bundled, 'scripts/check-ai-patterns.js'), '--check', '--json', '正文.md',
+      join(bundled, 'check-ai-patterns.js'), '--check', '--json', '正文.md',
     ])
     expect(checked.exitCode, checked.stderr).toBe(0)
     expect(JSON.parse(checked.stdout)).toMatchObject({ findings: [] })
     const initialized = await run(context, cwd, python, [
-      '-B', join(bundled, 'scripts/author_memory_commit.py'), 'init', '--workspace', cwd,
+      '-B', join(bundled, 'author_memory_commit.py'), 'init', '--workspace', cwd,
     ])
     expect(initialized.exitCode, initialized.stderr).toBe(0)
     expect(JSON.parse(initialized.stdout)).toMatchObject({ ok: true })
     await writeFile(join(cwd, '细纲.md'), validLongOutline)
     const outline = await run(context, cwd, python, [
-      '-B', join(bundled, 'scripts/check_outline_contract.py'), '--json', '细纲.md',
+      '-B', join(bundled, 'check_outline_contract.py'), '--json', '细纲.md',
     ])
     expect(outline.exitCode, outline.stderr).toBe(0)
     expect(JSON.parse(outline.stdout)).toMatchObject({ ok: true })

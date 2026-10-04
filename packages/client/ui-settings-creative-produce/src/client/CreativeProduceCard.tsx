@@ -1,6 +1,6 @@
 /**
- * The creative production page: six production provider keys and the Zhuque
- * detection key, plus the runtime profile (models, endpoints, voice routing)
+ * The creative production page: six production provider keys plus the runtime
+ * profile (models, endpoints, voice routing)
  * they authorize.
  *
  * Controls group by provider, so one provider's key, endpoint, and model sit
@@ -271,17 +271,6 @@ export function CreativeProduceCard(props: CreativeProduceCardProps) {
           onReset={() => { props.resetField('agnesVideoModel') }}
           {...value}
         />
-      </ProduceGroup>
-      <ProduceGroup id="plugin-config-produce-group-makers" title={t('groupMakers')}>
-        <SettingsSecretField
-          id="plugin-config-produce-makers-key"
-          label={t('makersKeyLabel')}
-          hint={t('makersKeyHint')}
-          stateLabel={state.keys.makersApiKey.configured ? t('keySet') : t('keyUnset')}
-          onEdit={(text) => { props.edit('makersApiKey', text) }}
-          {...secret(state.keys.makersApiKey)}
-        />
-        {bulkButton('makersApiKey', t('groupMakers'), t('makersKeyLabel'))}
       </ProduceGroup>
       <ProduceGroup id="plugin-config-produce-group-voice" title={t('groupVoice')}>
         <SettingsValueField

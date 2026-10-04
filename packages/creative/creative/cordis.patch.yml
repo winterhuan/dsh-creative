@@ -13,3 +13,5 @@
       name: '@winterhuan/dsh-creative/produce'
     - id: ui-settings-creative-produce
       name: '@winterhuan/dsh-client-ui-settings-creative-produce'
+    - id: ui-settings-story
+      name: '@winterhuan/dsh-client-ui-settings-story'

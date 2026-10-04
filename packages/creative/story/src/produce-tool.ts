@@ -1,4 +1,4 @@
-/** Pinned domain script execution through the calling DSH Session. */
+/** Credential-backed detection through the packaged story CLI. */
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
@@ -13,8 +13,6 @@ declare module '@deepseek-ai/dsh-jobs' {
   interface JobKindMap { 'produce': 'produce' }
 }
 
-const scripts = {"story-zhuque": "story/scripts/zhuque_detect.py"} as const
-
 function quote(value: string): string { return `'${value.replaceAll("'", "'\"'\"'")}'` }
 
 /**
@@ -25,12 +23,13 @@ function quote(value: string): string { return `'${value.replaceAll("'", "'\"'\"
 export function createCreativeProduceRunTool(options: { readonly entry?: ProduceConfig } = {}): ToolDefinition {
   return defineTool({
     name: 'story_zhuque',
-    description: 'Run Zhuque text detection on a chapter with MAKERS_API_KEY from DSH credentials. Sends the chapter to Tencent EdgeOne Makers; does not edit it. Supply script argv and optional working directory.',
+    description: 'Detect AI-like text in one book chapter using Zhuque and DSH credentials. Sends the chapter to Tencent EdgeOne Makers without editing it. Use when the user requests Zhuque detection.',
     parameters: {
-      entry: { type: 'string', required: true, enum: ['story-zhuque'], description: 'Pinned domain script.' },
-      argv: { type: 'array', items: { type: 'string' }, description: 'Script arguments; use --help for the pinned script contract.' },
-      stdin: { type: 'string', description: 'Optional script input, at most 1 MiB.' },
-      workdir: { type: 'string', description: 'Working directory, relative to the Session workspace when relative.' },
+      book: { type: 'string', required: true, description: 'Book name, a direct child of the Session workspace.' },
+      file: { type: 'string', required: true, description: 'Chapter path inside the book, absolute or relative to its directory.' },
+      out: { type: 'string', description: 'Optional JSON report path inside the book, normally under .story-polish/.' },
+      target: { type: 'number', description: 'AI ratio threshold, from 0 to 1; defaults to 0.5.' },
+      max_chars: { type: 'integer', description: 'Maximum submitted characters; defaults to 20000.' },
       run_in_background: { type: 'boolean', description: 'Return a job ID for job_output and job_kill.' },
       timeoutMs: { type: 'number', description: 'Foreground executor timeout.' },
     },
@@ -51,21 +50,21 @@ export function createCreativeProduceRunTool(options: { readonly entry?: Produce
       if (exec.signal.aborted) throw new HarnessError('tool call aborted', TOOL_ABORTED)
       const agent = exec.agent
       const workspace = agent.session.header.cwd
-      const cwd = workspace === undefined ? undefined : resolve(workspace, args.workdir ?? '.')
-      if (cwd === undefined) throw new Error('story_zhuque requires a Session workspace.')
+      if (workspace === undefined) throw new Error('story_zhuque requires a Session workspace.')
       const shell = agent.ctx.get('shell')
       if (shell === undefined) throw new Error('story_zhuque requires the DSH shell executor.')
       const policy = agent.ctx.get('sandboxPolicy')?.resolve({ session: agent.session })
-      const argv = args.argv ?? []
-      if (argv.length > 64 || argv.some(value => value.length > 8192 || value.includes('\0'))) throw new Error('Invalid script arguments.')
-      if (args.stdin !== undefined && Buffer.byteLength(args.stdin) > 1_048_576) throw new Error('Script input exceeds 1 MiB.')
+      const argv = ['detect', 'zhuque', '--workspace', workspace, '--book', args.book, '--file', args.file, '--json']
+      if (args.out !== undefined) argv.push('--out', args.out)
+      if (args.target !== undefined) argv.push('--target', String(args.target))
+      if (args.max_chars !== undefined) argv.push('--max-chars', String(args.max_chars))
+      if (argv.some(value => value.includes('\0'))) throw new Error('Detection paths must not contain null characters.')
       const section = currentProduceConfig(agent.ctx, options.entry ?? {})
       const resolvedEnv = (await resolveProduceEnvs(agent.ctx, section))[0] ?? {}
       const request = {
-        command: ['python3', '-B', resolve(dirname(fileURLToPath(import.meta.url)), '../knowledge', scripts[args.entry]), ...argv].map(quote).join(' '),
-        workdir: cwd,
+        command: [process.execPath, resolve(dirname(fileURLToPath(import.meta.url)), '../lib/cli.js'), ...argv].map(quote).join(' '),
+        workdir: workspace,
         env: Object.fromEntries(Object.entries(resolvedEnv).filter(([key]) => key === 'MAKERS_API_KEY')),
-        ...(args.stdin === undefined ? {} : { stdin: args.stdin }),
         ...(policy === undefined ? {} : { sandboxPolicy: policy }),
         ...(args.timeoutMs === undefined ? {} : { timeoutMs: args.timeoutMs }),
       }
@@ -77,7 +76,7 @@ export function createCreativeProduceRunTool(options: { readonly entry?: Produce
         const observed = (stream: 'stdout' | 'stderr') => (fromByte: number): JobSourceRead =>
           proc === undefined ? { text: '', nextOffset: fromByte, lossy: false } : proc.observed[stream].readFrom(fromByte)
         const jobId = jobs.start({
-          kind: 'produce', label: args.entry, owner: agent.session.id,
+          kind: 'produce', label: `Zhuque: ${args.book}`, owner: agent.session.id,
           output: [{ channel: 'stdout', read: observed('stdout') }, { channel: 'stderr', read: observed('stderr') }],
           run: () => {
             const done = (async (): Promise<JobOutcome> => {

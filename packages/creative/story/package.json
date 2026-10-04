@@ -12,6 +12,9 @@
   },
   "type": "module",
   "main": "lib/index.js",
+  "bin": {
+    "dsh-story": "lib/cli.js"
+  },
   "types": "lib/types/index.d.ts",
   "exports": {
     ".": {
@@ -21,10 +24,6 @@
     "./client": {
       "types": "./lib/types/client/index.d.ts",
       "default": "./lib/client.js"
-    },
-    "./produce": {
-      "types": "./lib/types/produce-settings-entry.d.ts",
-      "default": "./lib/produce-settings-entry.js"
     },
     "./package.json": "./package.json"
   },
@@ -45,6 +44,7 @@
   },
   "files": [
     "lib",
+    "runtime",
     "knowledge",
     "cordis.patch.yml"
   ],
@@ -62,7 +62,7 @@
     "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
     "@deepseek-ai/dsh-util-workspace-path": "0.2.0-rc.2",
     "@deepseek-ai/schemastery": "~3.18.4",
-    "@winterhuan/dsh-client-ui-settings-creative-produce": "workspace:*"
+    "@winterhuan/dsh-client-ui-settings-story": "workspace:*"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
@@ -105,6 +105,7 @@
     "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tool-bash": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tool-fs": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-skill": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tool-workflow": "0.2.0-rc.2",
     "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
     "@deepseek-ai/dsh-typert-registry": "0.2.0-rc.2",

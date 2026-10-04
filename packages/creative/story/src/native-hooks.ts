@@ -3,7 +3,7 @@ import type { FileSystem, FsTarget } from '@deepseek-ai/dsh-fs'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { ContextFormed } from '@deepseek-ai/dsh-llm'
 import type { PostToolDecision, PreToolDecision, ToolExecution, ToolExecutionResult } from '@deepseek-ai/dsh-tools'
-import { isCreativeTextPath, parseCreativePath, projectPath } from './project-path.ts'
+import { isCreativeTextPath, parseCreativePath, projectPath, workspaceRelativePath, STORY_DIRECTORIES, PROJECT_FILES } from './project-path.ts'
 
 declare module '@deepseek-ai/dsh-llm' {
   interface MessageSourceMap {
@@ -124,7 +124,7 @@ export async function validateStoryMutation(
 }
 
 /**
- * Pre-execute waterfall: deny `正文/` chapter writes whose outline is missing.
+ * Pre-execute waterfall: require named child books and outlines for tracked chapters.
  * @param exec - the pending tool execution.
  * @param next - the rest of the pre-execute waterfall.
  * @returns the downstream decision, possibly replaced by a deny.
@@ -133,6 +133,14 @@ export async function decideStoryMutation(
   exec: ToolExecution,
   next: () => Promise<PreToolDecision>,
 ): Promise<PreToolDecision> {
+  const cwd = exec.agent?.session.header.cwd
+  const path = cwd === undefined ? undefined : workspaceRelativePath(mutationPath(exec.name, exec.arguments), cwd)
+  if (path !== undefined && parseCreativePath(path) === undefined) {
+    const parts = path.split('/')
+    const hasStoryFiles = parts.some((part, index) => STORY_DIRECTORIES.some(directory => directory === part)
+      || index === parts.length - 1 && PROJECT_FILES.includes(part))
+    if (hasStoryFiles) return { kind: 'deny', reason: '小说文件统一放在“工作区/作品名称/”内。请使用作品目录下的正文、设定和大纲；工作区根目录与长篇/短篇分类目录不作为作品。' }
+  }
   const fs = exec.agent?.ctx.get('fs')
   if (fs === undefined) return next()
   const mutation = await storyMutation(exec, fs)

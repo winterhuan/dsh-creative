@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 /**
- * The creative production page chrome: seven write-only key controls plus the
+ * The creative production page chrome: six write-only key controls plus the
  * runtime profile, and that it renders nothing while unserved.
  */
 
@@ -35,7 +35,6 @@ function state(overrides: Partial<CreativeProduceCardState> = {}): CreativeProdu
       mimoApiKey: keyControl(),
       fishApiKey: keyControl(),
       agnesApiKey: keyControl(),
-      makersApiKey: keyControl(),
     },
     seedanceModel: field('seedance-2-5'),
     minimaxVideoModel: field(),
@@ -91,7 +90,7 @@ describe('CreativeProduceCard', () => {
     expect(screen.queryByLabelText('openaiKeyLabel')).toBeNull()
   })
 
-  it('shows seven key controls and the runtime profile', () => {
+  it('shows six key controls and the runtime profile', () => {
     render(<CreativeProduceCard {...propsFor(state())} />)
 
     expect(screen.getByLabelText('openaiKeyLabel')).toHaveProperty('type', 'password')
@@ -99,13 +98,13 @@ describe('CreativeProduceCard', () => {
     expect(screen.getByLabelText('minimaxKeyLabel')).toBeTruthy()
     expect(screen.getByLabelText('mimoKeyLabel')).toBeTruthy()
     expect(screen.getByLabelText('fishKeyLabel')).toBeTruthy()
-    expect(screen.getByLabelText('makersKeyLabel')).toHaveProperty('type', 'password')
+    expect(screen.getByLabelText('agnesKeyLabel')).toHaveProperty('type', 'password')
     expect(screen.getByLabelText('seedanceModel')).toHaveProperty('value', 'seedance-2-5')
     expect(screen.getByLabelText('ttsProvider')).toHaveProperty('value', 'auto')
     expect(screen.getByLabelText('agnesVideoModel')).toHaveProperty('value', 'agnes-video-2.5-flash')
     // A configured key reports its state; an unconfigured one reports the lack.
     expect(screen.getAllByText('keySet')).toHaveLength(1)
-    expect(screen.getAllByText('keyUnset')).toHaveLength(6)
+    expect(screen.getAllByText('keyUnset')).toHaveLength(5)
   })
 
   it('stages edits without writing', () => {
@@ -156,7 +155,6 @@ describe('CreativeProduceCard', () => {
       'groupMimo',
       'groupFish',
       'groupAgnes',
-      'groupMakers',
       'groupVoice',
     ])
     // Key, endpoint, and model share the provider group.
@@ -185,7 +183,6 @@ describe('CreativeProduceCard', () => {
         ['groupMimo', 'mimoKeyLabel'],
         ['groupFish', 'fishKeyLabel'],
         ['groupAgnes', 'agnesKeyLabel'],
-        ['groupMakers', 'makersKeyLabel'],
       ] as const
     ) {
       const section = screen.getByRole('group', { name: group })
@@ -256,7 +253,6 @@ describe('CreativeProduceCard', () => {
         mimoApiKey: keyControl(),
         fishApiKey: keyControl(),
         agnesApiKey: { draft: field(), configured: false, writable: false },
-        makersApiKey: keyControl(),
       },
     }))} />)
     const section = screen.getByRole('group', { name: 'groupAgnes' })
