@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for 2026-10-04-novel-studio-plan.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/scratch/2026-10-04-novel-studio-plan.md
+/:
+  en: 5be36901b97e3e38
+  zh: eebde66e3ac4a9c0
+/novel-workbench-focused-redesign:
+  en: cb855f1b71932efb
+  zh: 5f72743e2325f2bd
+/novel-workbench-focused-redesign/summary:
+  en: 417fc954d43f3640
+  zh: 227f0e943fecfdb5
+/novel-workbench-focused-redesign/architecture:
+  en: c5dff376ff77709a
+  zh: e5dc3f89ba3c0776
+/novel-workbench-focused-redesign/one-core-two-wings:
+  en: 475322f892fce6da
+  zh: 41c66ab52dd3ec2a
+/novel-workbench-focused-redesign/contents:
+  en: 74c58181b72686b0
+  zh: 72fff3da0e81eff1
+/novel-workbench-focused-redesign/design-decision:
+  en: 5905a660e226d2b6
+  zh: 636b4e6f48e0232f
+/novel-workbench-focused-redesign/author-journey:
+  en: cf31f76d31ed6005
+  zh: 3f1aec29a20065b0
+/novel-workbench-focused-redesign/work-and-task-model:
+  en: 3f71dca882f1baf2
+  zh: fed4a08219fdfe70
+/novel-workbench-focused-redesign/quality-loop:
+  en: 9c99fcb2097b5d3a
+  zh: 6e39bf86989e649a
+/novel-workbench-focused-redesign/long-and-short-pipelines:
+  en: 1f00dc4c9609e494
+  zh: c1cd6de386e2f3af
+/novel-workbench-focused-redesign/native-dsh-composition:
+  en: a9d5c1391ffdca83
+  zh: e60a85764cc8a626
+/novel-workbench-focused-redesign/workbench-and-task-states:
+  en: 345a8f5ce8930538
+  zh: de4b35244d01c360
+/novel-workbench-focused-redesign/delivery-sequence:
+  en: 6c4cc244b76d4719
+  zh: 1e1b6429b6002d79
+/novel-workbench-focused-redesign/open-questions-and-evidence:
+  en: 15f140bf396e6609
+  zh: a6bd1103e22e4456
+/novel-workbench-focused-redesign/open-questions-and-evidence/dev-note:
+  en: e9801f184bb8d061
+  zh: 16efbf26554db17a

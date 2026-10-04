@@ -449,6 +449,8 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 | `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |
 | `types/client-build-environment/index.d.ts` | `scripts/types/client-build-environment/index.d.ts` | 仅首行标注 |
 
+`scripts/verify-concrete-terms.ts` 保留上游扫描逻辑，并增加 `webnovel-writer/` 排除项；该目录是同一仓库中独立维护的外部项目，其领域字段不纳入 DSH 主仓库的措辞门禁。
+
 参照上游写的配置文件（没有首行标注）：
 
 | 本仓库文件 | 参照的上游文件 | 差异 |
