@@ -7,9 +7,9 @@ description: "分析长篇或短篇小说的结构、人物、情绪、节奏与
 
 根据用户要回答的问题确定原文范围和分析深度。先用已有文本和分析结果；缺少原文时说明缺项，不凭书名或搜索摘要声称读过作品。
 
-- 只问开头、角色、节奏或某段效果：读取相关原文，直接给出带位置和引句的结论，无需全书管道。
-- 系统拆解长篇：读取 `references/analysis/long/workflow.md`；仅开头分析时停在已请求的范围。
-- 系统拆解短篇：读取 `references/analysis/short/workflow.md`。篇幅只用于估算处理量，长短篇优先按用户目标和结构判断。
+- 开头、单章或局部问题：读取相关原文，直接给出带位置和引句的结论。需要保存时只写对应文件，不启动全书管道。
+- 多章或全书：读取 `references/analysis/long/workflow.md`。先确认一份章节边界表，再按 `references/analysis/long/native-workflow.md` 循环提交批次模板。不另写 workflow 脚本，也不派后台子代理直接写章节摘要。
+- 系统拆解短篇：读取 `references/analysis/short/workflow.md`。短篇不使用长篇批次模板。篇幅只用于估算处理量，长短篇优先按用户目标和结构判断。
 
 用 DSH 的资源根目录解析路径，以原生 `read` 按需加载资料。长短篇模板分别在 `references/analysis/long/output-templates.md` 和 `references/analysis/short/output-templates.md`，只读取相关章节。
 
@@ -19,6 +19,6 @@ description: "分析长篇或短篇小说的结构、人物、情绪、节奏与
 
 `拆文库/<书名>/` 保存分析；用户自己的作品和外部对标作品保持独立。只在用户选定外部对标时绑定它，接入自有作品不自动把本书变成对标。
 
-已有有效结果按任务复用。长篇分块需要独立提取员时，按 `references/project/delegation.md` 委派 `chapter-extractor`；Team 中以原生消息复用成员。依赖前置结果时等待实际任务完成并核对产物，不把成员创建成功当作分析完成。失败记录保留真实原因。
+已有有效结果按任务复用。多章提取走 `workflows/analyze-batch.js`，调用方式见 `references/analysis/long/native-workflow.md`。单章问答仍可读 `chapter-extractor`，按 `references/project/delegation.md` 处理；不要用它代替批次模板去写多章摘要。依赖前置结果时等待实际任务完成并核对产物，不把成员创建成功当作分析完成。失败记录保留真实原因。批次完成后，按至多 10 个卷段写 `剧情/节奏.md`、`剧情/情绪模块.md`、`文风.md`、`拆文报告.md`。卷段读原文和短卡片。不再生成 `_章节摘要汇总.md`。
 
 交付说明分析范围、核心发现和文件位置。用户只要求分析时，不自动进入写作或跨域改编。

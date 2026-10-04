@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-04-story-short-chapter-cards.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-04-story-short-chapter-cards.md
+/agent-note-short-chapter-cards-for-long-form-analysis:
+  en: b5ceba043c028778
+  zh: acf953be74ad8b5f
+/agent-note-short-chapter-cards-for-long-form-analysis/problem:
+  en: 7de23bf15341c324
+  zh: 74fb61279972ad1b
+/agent-note-short-chapter-cards-for-long-form-analysis/decision:
+  en: c33e55c67ed073bc
+  zh: eb58b12ee47fad0d
+/agent-note-short-chapter-cards-for-long-form-analysis/alternatives-considered:
+  en: bda37d49b30980f1
+  zh: 0758a5e664c5c8dd
+/agent-note-short-chapter-cards-for-long-form-analysis/consequences:
+  en: 30f38d12abced4ba
+  zh: 136f3541524d84eb

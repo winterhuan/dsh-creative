@@ -45,6 +45,10 @@ Ask `story-write` to use the native workflow for a new long-form chapter, or sta
 
 Review returns a small routing recommendation within this workflow. Ordinary review stays prose. Submission checks the reviewed body and outline hashes plus the expected tracking revision; stale files require another check and review. No review certificate is added to tracking. Native run completion can contain a non-committed chapter outcome, so callers inspect the returned status before advancing.
 
+### Multi-chapter analysis
+
+For an opening, one chapter, or a local question, `story-analyze` reads the source and answers. It writes a file only when that file was requested. For several chapters or a whole book, the parent confirms one chapter-boundary table in `拆文库/<书名>/_progress.md`, then loads `workflows/analyze-batch.js` through the [batch guide](knowledge/story/references/analysis/long/native-workflow.md) and submits that script unchanged to the native `workflow` tool. Each run receives at most four chapter line ranges. The parent passes `existing` for chapter numbers that already have summary files and `replace` only for chapters that may be overwritten. After the cards exist, the parent writes `剧情/节奏.md`, `剧情/情绪模块.md`, `文风.md`, and `拆文报告.md` from at most ten volume segments, reading the source and the short cards. Short-fiction analysis does not use this template.
+
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 

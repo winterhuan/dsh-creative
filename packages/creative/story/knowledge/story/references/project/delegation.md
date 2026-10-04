@@ -4,7 +4,7 @@
 
 | 任务 | 专业身份 | Role 文件（相对于当前 Skill 资源根） |
 |---|---|---|
-| 章节摘要与情节点 | chapter-extractor | `../creative/roles/chapter-extractor.md` |
+| 单章问答时的短卡片提取 | chapter-extractor | `../creative/roles/chapter-extractor.md` |
 | 角色、动机与对白 | character-designer | `../creative/roles/character-designer.md` |
 | 事实与连续性核查 | consistency-checker | `../creative/roles/consistency-checker.md` |
 | 正文与定点改写 | narrative-writer | `../creative/roles/narrative-writer.md` |
@@ -21,3 +21,5 @@
 专业指令不改变模型、系统 persona 或工具权限。模型与授权由 DSH 管理；同一 Agent 换专业指令不构成独立审稿。
 
 用户选用长篇新章接力时，按 [原生 workflow](../writing/long/native-workflow.md) 读取维护的单章模板，顶层调用原生 `workflow`。模板内由原生 `agent` 创建准备者、写手、独立审稿者及提交者；不另套 subagent、Team 或 Role 执行器，也不把阶段名当成通过证明。
+
+多章或全书提取走 [批次拆解](../analysis/long/native-workflow.md)：父会话把 `workflows/analyze-batch.js` 原样交给原生 `workflow`。单章问答仍可读 `chapter-extractor`。不要派后台子代理直接写多章摘要，也不要另写一份并行脚本。

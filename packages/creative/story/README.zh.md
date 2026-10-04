@@ -45,6 +45,10 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/stor
 
 审稿在此 workflow 内返回少量流程分支字段，普通审稿仍为自然语言。提交校验审稿对应的正文、细纲哈希和预期追踪修订号；文件变化后须重检重评审。追踪不增加审稿证明。原生运行完成可能包含未提交的章节结果，调用方须检查返回状态再推进。
 
+### 多章拆解
+
+开头、单章或局部问题由 `story-analyze` 直接读原文并回答，只在用户要求保存时写入对应文件。多章或全书时，父会话先在 `拆文库/<书名>/_progress.md` 确认一份章节边界表，再按[批次调用说明](knowledge/story/references/analysis/long/native-workflow.md)读取 `workflows/analyze-batch.js`，把脚本原样交给原生 `workflow`。每次最多提交四章的行号范围。已经有摘要文件的章号放入 `existing`，只有允许覆盖的章号放入 `replace`。卡片齐了之后，父会话按至多十个卷段写 `剧情/节奏.md`、`剧情/情绪模块.md`、`文风.md` 和 `拆文报告.md`，卷段读原文和短卡片。短篇拆解不使用这个模板。
+
 <a id="understand-the-implementation"></a>
 ## 理解实现
 

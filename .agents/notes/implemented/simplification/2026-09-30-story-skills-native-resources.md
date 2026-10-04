@@ -33,3 +33,5 @@ Writing preserves outline readiness, current wordcount hashes and atomic trackin
 The catalog shrinks from fourteen to six entries. Exact duplicate consolidation removes 75 reference copies; focused workflow references retain distinct long and short guidance. Skills and helpers remain inside the independently installable story package. Existing Skill commands are intentionally removed; users select one of the six current tasks.
 
 Provider tests verify the exact catalog, native resource base and readable resources; Role tests verify fixed reference paths and the absence of a custom reader. Script tests retain hash invalidation and tracking checks and cover free short fiction without a paywall. Forward checks cover partial-delivery and solo-review boundaries. These checks do not establish live-model prose quality or external detector accuracy.
+
+Long-form multi-chapter extraction uses the short chapter card and batch workflow in [short chapter cards](2026-10-04-story-short-chapter-cards.md). This note still owns the six-entry catalog and native resource reading, and it stays active.
