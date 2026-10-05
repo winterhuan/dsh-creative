@@ -48,4 +48,13 @@ describe('StorySettingsCard', () => {
     const dialog = screen.getByRole('dialog', { name: 'title' })
     expect(within(dialog).getByLabelText('makersKeyLabel')).toBeTruthy()
   })
+  it('explains why an environment key cannot be edited', () => {
+    render(<StorySettingsCard {...propsFor(state({
+      key: { draft: { text: '', overridden: false, invalid: false }, configured: true, writable: false },
+    }))} />)
+    expect(screen.getByLabelText('makersKeyLabel')).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: 'manageKeys' })).toHaveProperty('disabled', true)
+    expect(screen.getByText('makersKeyReadOnlyHint')).toBeTruthy()
+  })
+
 })

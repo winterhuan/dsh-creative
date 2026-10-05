@@ -39,7 +39,7 @@ export function StorySettingsCard(props: StorySettingsCardProps): ReactNode {
       <SettingsSecretField
         id="plugin-config-story-makers-key"
         label={t('makersKeyLabel')}
-        hint={t('makersKeyHint')}
+        hint={t(control.writable ? 'makersKeyHint' : 'makersKeyReadOnlyHint')}
         stateLabel={control.configured ? t('keySet') : t('keyUnset')}
         onEdit={(text) => { props.edit('makersApiKey', text) }}
         disabled={!control.writable}

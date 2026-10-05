@@ -5,7 +5,7 @@ import type { SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 /** Locale keys the page renders. */
 export type StorySettingsLocaleKey =
   | 'title' | 'description' | 'keySet' | 'keyUnset'
-  | 'makersKeyLabel' | 'makersKeyHint'
+  | 'makersKeyLabel' | 'makersKeyHint' | 'makersKeyReadOnlyHint'
   | 'manageKeys' | 'keysDialogDescription' | 'keysDialogPlaceholder'
   | 'keysCount' | 'keysClear' | 'keysCloseLabel'
   | 'readOnly' | 'unavailable'
@@ -19,6 +19,7 @@ export const en: Record<StorySettingsLocaleKey, string> = {
   keyUnset: 'No key is configured.',
   makersKeyLabel: 'EdgeOne Makers API key (Zhuque detection)',
   makersKeyHint: 'Used by story-polish when you ask for a Zhuque check. Stored outside the settings file. Leave blank to keep the current key; a MAKERS_API_KEY exported in the shell that starts dsh also works.',
+  makersKeyReadOnlyHint: 'The startup environment supplies this key, so it cannot be edited here. Remove the key environment variable from the shell that starts dsh and restart, then save the key here.',
   manageKeys: 'Manage keys in bulk',
   keysDialogDescription: 'One key per line. Blank lines are ignored. Saving replaces the stored pool.',
   keysDialogPlaceholder: 'Paste keys, one per line',
@@ -41,6 +42,7 @@ export const zh: Record<StorySettingsLocaleKey, string> = {
   keyUnset: '未配置密钥。',
   makersKeyLabel: 'EdgeOne Makers API Key（朱雀检测）',
   makersKeyHint: '供 story-polish 在你明确要求朱雀检测时使用。不写入设置文件。留空表示保持当前密钥；在启动 dsh 的 shell 里 export 的 MAKERS_API_KEY 同样有效。',
+  makersKeyReadOnlyHint: '当前密钥由启动环境提供，无法在网页修改。请在启动 dsh 的 shell 中取消该密钥环境变量后重启，再在此保存密钥',
   manageKeys: '批量管理密钥',
   keysDialogDescription: '每行一个密钥。空行会被忽略。保存会替换已存的密钥池。',
   keysDialogPlaceholder: '粘贴密钥，每行一个',

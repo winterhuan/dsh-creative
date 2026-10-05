@@ -25,7 +25,7 @@ Open **Plugins** in the sidebar and select **Story** to set the Zhuque detection
 <a id="use-this-package"></a>
 ## Use this package
 
-The **API key** control starts blank on every load and reports only whether a key is configured; a blank draft keeps the stored key. **Manage keys in bulk** opens a dialog that stores a whole key pool as one write, one key per line. Nothing is written until **Save**; leaving the page drops the draft. A `MAKERS_API_KEY` exported in the shell that starts dsh is also accepted.
+The **API key** control starts blank on every load and reports only whether a key is configured; a blank draft keeps the stored key. **Manage keys in bulk** opens a dialog that stores a whole key pool as one write, one key per line. Nothing is written until **Save**; leaving the page drops the draft. A `MAKERS_API_KEY` in the startup environment takes precedence over the credentials file and makes the input and bulk management read-only; the page explains why. Remove that variable from the startup environment and restart to save a key on this page.
 
 -----
 

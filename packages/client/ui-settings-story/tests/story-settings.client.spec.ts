@@ -59,4 +59,23 @@ describe('StorySettingsCardController', () => {
     face.save()
     expect(set).not.toHaveBeenCalled()
   })
+  it('retains the draft when replacing an existing key fails', async () => {
+    const host = stubConfigForm<StorySettings>()
+    const controller = new StorySettingsCardController(host.scope, {
+      remote: { credentials: {
+        describe: vi.fn(async () => ({ ok: true, value: { MAKERS_API_KEY: { configured: true, writable: true } } })),
+        set: vi.fn(async () => ({ ok: false, error: 'write failed' })),
+      } },
+    } as never)
+    host.publish({ status: 'ready', writable: true, value: {}, user: {} })
+    const face = controller.inject()
+    await vi.waitFor(() => { expect(face.hooks.storySettingsCard.getSnapshot().key.configured).toBe(true) })
+    face.edit('makersApiKey', 'replacement')
+    face.save()
+    await vi.waitFor(() => { expect(face.hooks.storySettingsCard.getSnapshot().failed).toBe(true) })
+    expect(face.hooks.storySettingsCard.getSnapshot().key.draft.text).toBe('replacement')
+    expect(await face.saveKeys('replacement')).toBe(false)
+    controller.dispose()
+  })
+
 })

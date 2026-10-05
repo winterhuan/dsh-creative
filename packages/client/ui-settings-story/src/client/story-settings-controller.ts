@@ -153,7 +153,8 @@ export class StorySettingsCardController {
    * @returns whether the Host reports a configured credential afterwards.
    */
   private async writeKey(value: string): Promise<boolean> {
-    await this.ctx.remote.credentials.set(refOf(this.scope.getSnapshot()), value)
+    const response = await this.ctx.remote.credentials.set(refOf(this.scope.getSnapshot()), value)
+    if (!response.ok) return false
     await this.readCredential()
     return this.credentialState.configured
   }
