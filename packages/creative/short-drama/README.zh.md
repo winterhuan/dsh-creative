@@ -33,6 +33,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/shor
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+职责与信任边界见[短剧子系统](../../../docs/subsystems/short-drama.zh.md)。
+
 在仓库根目录运行 `pnpm --filter @winterhuan/dsh-short-drama build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-short-drama test` 可验证此包。
 
 <details>

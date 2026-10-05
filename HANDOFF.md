@@ -21,13 +21,13 @@
 
 ## 1. 现状速览
 
-本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含 Creative 工作台与生产子系统、Skill Viewer，以及它们的客户端包。
+本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
 - 依赖 npm 上发布的 DSH `0.2.1-alpha.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-- 9 个包都位于 `@winterhuan` scope 下。
+- 10 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
 
 2026-10-05 移除聚合包：删除 `@winterhuan/dsh-creative` 包及旧通用生产工具、`/creative` 路由，四个领域按各自包安装。各包提供独立 `build`、`typecheck`、`test` 命令；领域测试归回所属包，跨领域组合和媒体交付验证位于根 `tests/`。四个包独立构建、独立压缩包资源与依赖检查、隔离 profile 独立安装均通过；`typecheck`、`build` 和 77 个文件 712 项测试通过。旧聚合入口的路径与别名测试随入口移除。
@@ -84,6 +84,8 @@ dsh-creative/
 │   │   ├── short-drama/               @winterhuan/dsh-short-drama（Host + Client）
 │   │   ├── video-recap/               @winterhuan/dsh-video-recap（Host + Client）
 │   │   ├── novel-to-game/             @winterhuan/dsh-novel-to-game（Host + Client）
+│   ├── education/
+│   │   └── student/                   @winterhuan/dsh-student（Host + Client，学习工作台与状态）
 │   ├── skill/
 │   │   └── skill-viewer/              @winterhuan/dsh-skill-viewer（Host，skillViewer Remote）
 │   └── client/
@@ -119,7 +121,7 @@ dsh-creative/
 - 四个领域包分别构建、测试和安装，不依赖其他业务插件；`packages/creative/creative` 聚合包及其旧工具、路由已删除。短剧和视频继续使用已有生产设置页及凭据引用。
 - `skill-viewer` 的 `dependencies` 包含 `ui-skill-viewer`；`ui-skill-viewer` 的 `devDependencies` 包含 `skill-viewer`，用它的 `/types` 和 `/remote`。这个结构沿用上游，所以 `pnpm install` 会提示 `There are cyclic workspace dependencies`，这是预期的。
 - 四个领域包各自构建 Host 和 Client；在仓库根目录执行 `pnpm --filter @winterhuan/dsh-story build` 或 `test`，可只开发小说包。其余领域替换包名。跨领域组合验证位于 `tests/`。
-- 包路径固定为（`packages/creative/story`、`packages/creative/short-drama`、`packages/creative/video-recap`、`packages/creative/novel-to-game`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
+- 包路径固定为（`packages/education/student`、`packages/creative/story`、`packages/creative/short-drama`、`packages/creative/video-recap`、`packages/creative/novel-to-game`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
 
 ## 3. 与 DSH 的集成方式
 
@@ -129,7 +131,8 @@ dsh-creative/
 
 | bundle | 行 id | 加载的模块 | 作用 |
 |---|---|---|---|
-| story | `story` | `@winterhuan/dsh-story` | 小说技能、角色、写作检查、朱雀密钥与编辑器 |
+| story | `story` | `@winterhuan/dsh-story` | 小说文件 API 与朱雀凭据配置 |
+| story | `preset-story` | `@deepseek-ai/dsh-agent-preset` | 小说创作模式，作用域内挂载 `@winterhuan/dsh-story/agent` 的技能、工具和钩子 |
 | short-drama | `short-drama` | `@winterhuan/dsh-short-drama` | 短剧技能、确认生产与剧集工作台 |
 | video-recap | `video-recap` | `@winterhuan/dsh-video-recap` | 解说技能、视频交付与工作台 |
 | novel-to-game | `novel-to-game` | `@winterhuan/dsh-novel-to-game` | 游戏技能、QA、路由与独立侧边栏 |
@@ -156,6 +159,10 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 `ui-settings-creative-produce` 编辑 `creative-produce` 设置命名空间，保存短剧和视频的六个提供方密钥引用。`ui-settings-story` 编辑 `story` 命名空间里的朱雀密钥引用。密钥通过 `ctx.remote.credentials` 写入；这个 Remote 由 DSH 内置的 `@deepseek-ai/dsh-api-settings-controller` 提供，由 `api-remotes` 挂载，插件只需要它的类型（见[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
 
+### 学生学习
+
+`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台提供今日学习、错题巩固、成长记录和家长设置；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题与奖励。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。使用方法及计时、教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
+
 ### 模型设置增强
 
 `ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力、提供方重试次数及无效请求、认证、额度错误的重试开关。它复用内置设置、模型目录和重试运行时，不随领域包安装。安装与配置见[包说明](packages/client/ui-settings-model-options/README.zh.md)。
@@ -163,6 +170,8 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 2026-10-03 重试开关验证：`typecheck`、`build`、包内 54 项及全量 65 文件 683 项测试通过。隔离 DSH 的 Chrome 与本地模拟接口确认 400 在关闭开关、开启并设置 3 次、开启并设置 0 次时分别请求 1、4、1 次，413 沿用此开关。QUOTA 关闭时请求 1 次，开启并设置 2 次时请求 3 次，设为 0 时请求 1 次；接口恢复后可成功完成。AUTH 关闭时 401 请求 1 次，开启并设置 1 次时请求 2 次。刷新持久化、深浅色及 720px 窄窗口检查通过，页面脚本错误为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-retry400-2mtl7t6i/` 的 `results.json` 与 `quota-results.json`；未调用付费模型或修改用户 profile。
 
 ### 小说技能与资源
+
+小说包提供原生 `story` 模式；选择小说会话后才显示工作台及小说文件跳转，设置仍全局可用。Host 路由与作用域能力分开加载，详见[模式决策](.agents/notes/implemented/feature/2026-10-06-story-mode.zh.md)。2026-10-06 类型检查、构建、四 worker 全量 755 项测试、文档和规范检查通过；默认并发全量曾有一项原生章节测试 30 秒超时，独立复核通过。隔离 DSH 与 Chrome 验证模式选择、普通会话隐藏入口、跨会话与刷新恢复未保存草稿，无页面脚本错误。证据在 `/tmp/dsh-story-mode.RrT7Cf/`；未调用真实模型或付费服务。
 
 小说包提供 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish`、`story-cover` 六个入口。长短篇流程按需读取；已有工程直接继续，原始文本接入不要求先拆全书。普通润色不调用朱雀，检测需要用户明确请求。
 
@@ -424,7 +433,7 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 
 ### 问题 12：包改名为 `@winterhuan/*`
 
-- 改名涉及：4 个 `package.json` 的 `name` 和相互依赖，两个 `cordis.patch.yml`，源码里的运行时 id（例如 `workbench.tsx` 的 `WORKBENCH_ID`、`file-redirect.tsx` 的 `REDIRECT_ID`、`skill-viewer/src/index.ts`），3 个 `tsdown.config.ts` 的 `clientBundle()` id，测试与 `tests/fixtures/headless/cordis.yml`，以及 README 和 `docs/subsystems/creative*.md`。
+- 改名涉及：4 个 `package.json` 的 `name` 和相互依赖，两个 `cordis.patch.yml`，源码里的运行时 id（例如 `workbench.tsx` 的 `WORKBENCH_ID`、`file-redirect.tsx` 的 `REDIRECT_ID`、`skill-viewer/src/index.ts`），3 个 `tsdown.config.ts` 的 `clientBundle()` id，测试与 `tests/fixtures/headless/cordis.yml`，以及 README 和 `docs/subsystems/` 中的对应文档。
 - 替换时用精确的包名匹配，避免误伤 `@deepseek-ai/dsh-skill` 这类前缀相同的上游包。
 - 没有验证过旧会话或旧布局是否记录过旧 id（`@deepseek-ai/dsh-creative`）。
 
@@ -560,3 +569,9 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 - 隔离安装、压缩包与配置证据位于 `/tmp/dsh-unbundle-qa/`，本地浏览器截图为 `/tmp/dsh-unbundle-local.png`。
 - 隔离 profile 移除短剧后，视频插件与共用生产设置在 Chrome 中仍可使用，无页面脚本错误。临时服务已关闭。
 - 游戏 QA 驱动与工作台统一使用 `/novel-to-game/preview/`；临时 narrative 模板在 Chrome 完成启动、渲染、输入、核心循环、结果和重开六项检查。游戏包 7 个文件 26 项回归通过。
+
+2026-10-05 学习工作台：
+
+- `dsh-student` 的本地链接已存在；本轮构建新增客户端与工作区接口，用户正在运行的 `web` 服务未重启，重启后加载新版。
+- 隔离 profile 在 Chrome 验证家长设置、教材与进度原子保存、开始学习、提示、回答、刷新后恢复反馈、到时停止作答、结束休息、奖励、转录确认及原生图片附件提交。无效图片保留预览并显示错误，有效 PNG 提交成功。深浅色与窄窗口检查通过，无页面脚本错误。
+- 5 个文件共 39 项测试、类型检查和构建通过；题目与评分使用测试数据，未测量真实模型的教学或识图质量，也未下载教材。浏览器证据位于 `/tmp/dsh-student-qa.RjTRvl/panel-results.json`。

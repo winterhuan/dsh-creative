@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for short-drama.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/short-drama.md
+/:
+  en: 4ed0437b2eefb7b3
+  zh: 387b6768febe529f
+/short-drama:
+  en: b67c17976565ea7d
+  zh: 2bdd72e1e5a14b41
+/short-drama/summary:
+  en: e8db56abf269ab02
+  zh: 305d7d356368aaba
+/short-drama/table-of-contents:
+  en: 5c8b2952033854a4
+  zh: 1dd6c527ed580bc6
+/short-drama/packages-and-project-boundary:
+  en: fff1ff4a5244a734
+  zh: 3c856f6b2fc9f4a4
+/short-drama/intent-execution-and-delivery:
+  en: 98fff990ca1f5e7e
+  zh: 6251bf0d98799f5e
+/short-drama/related-contracts:
+  en: 075ef79e530828ed
+  zh: 56d890af1200eb8d
+/short-drama/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

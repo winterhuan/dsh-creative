@@ -33,6 +33,8 @@ Open **Short-drama workbench** from the right sidebar. The plugin uses the curre
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Short drama subsystem](../../../docs/subsystems/short-drama.md).
+
 From the repository root, run `pnpm --filter @winterhuan/dsh-short-drama build` to build this package and `pnpm --filter @winterhuan/dsh-short-drama test` to test it.
 
 <details>

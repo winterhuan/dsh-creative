@@ -10,7 +10,7 @@ describe('story file redirects', () => {
     let registration: Parameters<Context['sidebarRightTabs']['register']>[0] | undefined
     const context = {
       effect: (effect: () => () => void) => effect(),
-      sessions: { list: { getSnapshot: () => ({ byId: { session: { cwd: '/ws' } } }) } },
+      sessions: { list: { getSnapshot: () => ({ byId: { session: { cwd: '/ws', projectionValues: { agentPreset: 'story' } } } }) } },
       sidebarRightTabs: { register: (value: typeof registration) => { registration = value; return () => {} } },
       slots: { inject: () => () => {} },
     } as Context

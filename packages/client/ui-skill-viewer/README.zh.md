@@ -32,6 +32,8 @@ kind: "package-reference"
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+职责与信任边界见[Skill Viewer子系统](../../../docs/subsystems/skill-viewer.zh.md)。
+
 控制器按会话缓存并单飞请求：一次落定的 `listDetails` 读取在重开时本地重放，正文按会话与名称缓存。preset 切换丢弃该会话的条目（目录属于组合），连接重置清空全部，面板打开时会话切换会选择新会话的已缓存目录，或获取该会话的目录。每次落定先核对当前可寻址会话，因此飞行中的切换绝不会画出旧数据；失败的请求绝不污染缓存键，下次打开自然重试。
 
 参考文件每次选中时重新读取。离开参考文件、切换技能或 Session、关闭查看器或释放组件时取消该读取，迟到的响应不能替换当前选择。列表和预览达到配置上限时明确提示截断；二进制和不可用资源显示读取错误。

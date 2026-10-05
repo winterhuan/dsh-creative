@@ -31,7 +31,7 @@ kind: "package-group"
 ## 关联文档
 
 - [DeepSeek Harness 架构](../../upstream/docs/architecture.md)
-- [Creative 子系统](../../docs/subsystems/creative.zh.md)
+- [小说](../../docs/subsystems/story.zh.md)、[短剧](../../docs/subsystems/short-drama.zh.md)、[游戏](../../docs/subsystems/novel-to-game.zh.md)与[视频解说](../../docs/subsystems/video-recap.zh.md) — 各子系统的独立职责与信任边界。
 - [创意工作台 Agent Note](../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md) — 工作区归属、生产、知识库与技能查看。
 
 <a id="dev-note"></a>

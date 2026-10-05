@@ -43,6 +43,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+职责与信任边界见[小说转游戏子系统](../../../docs/subsystems/novel-to-game.zh.md)。
+
 在仓库根目录运行 `pnpm --filter @winterhuan/dsh-novel-to-game build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-novel-to-game test` 可验证此包。
 
 <details>

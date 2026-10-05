@@ -35,6 +35,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/vide
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+职责与信任边界见[视频解说子系统](../../../docs/subsystems/video-recap.zh.md)。
+
 在仓库根目录运行 `pnpm --filter @winterhuan/dsh-video-recap build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-video-recap test` 可验证此包。
 
 <details>

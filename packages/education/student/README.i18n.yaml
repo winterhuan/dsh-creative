@@ -1,0 +1,55 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/education/student/README.md
+/:
+  en: 3b4a850b79bac2df
+  zh: f07e6f375aa90ceb
+/winterhuan-dsh-student:
+  en: a5ec18b584b87d9a
+  zh: 927b5f91fc230a5d
+/winterhuan-dsh-student/summary:
+  en: 87a882b2357ec556
+  zh: ffaac1e5fc57cdd8
+/winterhuan-dsh-student/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: b3ad7867f23dad1c
+/winterhuan-dsh-student/use-this-package:
+  en: 59ccf16dfebc102d
+  zh: 2c92bc17fd34a55e
+/winterhuan-dsh-student/use-this-package/use-the-learning-desk:
+  en: a6f1e9df749e6169
+  zh: 3d5de9aaa0a34f6c
+/winterhuan-dsh-student/use-this-package/confirm-the-learner-and-materials:
+  en: 65e41df8c9b25927
+  zh: d96c2e641da7fec6
+/winterhuan-dsh-student/use-this-package/learn-rest-and-review:
+  en: 10fa1ab370d53efc
+  zh: 0d912ee3b96258ec
+/winterhuan-dsh-student/understand-the-implementation:
+  en: a880aaf262f4814e
+  zh: c715f8ff1ca16389
+/winterhuan-dsh-student/further-exploration:
+  en: 8d6ea905f202ec82
+  zh: d6323a3cc26adeb2
+/winterhuan-dsh-student/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/winterhuan-dsh-student/model-experience/study-guidance-and-records:
+  en: cc51be71883c8c73
+  zh: 3b0cb38a8f2a85a2
+/winterhuan-dsh-student/model-experience/study-guidance-and-records/what-the-model-sees:
+  en: b8b14a9c719ca0c8
+  zh: dbe7032d11330b9b
+/winterhuan-dsh-student/model-experience/study-guidance-and-records/token-effect:
+  en: 02af75bbc38e4de5
+  zh: 034b20671394ea58
+/winterhuan-dsh-student/model-experience/study-guidance-and-records/kv-cache-effect:
+  en: aa76a5796ac4c7e4
+  zh: dd36da5b240c25ef
+/winterhuan-dsh-student/known-limitations-and-deferred-work:
+  en: 5e090d7c16a19c16
+  zh: dffd8e9ad896c2fb
+/winterhuan-dsh-student/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914

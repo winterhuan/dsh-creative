@@ -32,6 +32,8 @@ Research uses the native web tools, and a browser-dependent source returns to th
 <a id="workspace-and-sidebar"></a>
 ### Workspace and Sidebar
 
+The [novel mode decision](2026-10-06-story-mode.md) scopes story capabilities and workbench discovery to novel Sessions; other domains retain their existing activation.
+
 Four independent domain pages contribute to `sidebar.right.pane.tab`. The Sidebar owns placement, resizing, splitting, floating, fullscreen and visibility; Conversation retains the transcript and composer. Story and drama own their file redirects; other files use ordinary preview.
 
 The game plugin owns the `creative-game` page and its independent `creative.game.v1` Session store.

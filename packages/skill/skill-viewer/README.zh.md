@@ -38,6 +38,8 @@ composer 侧的 `skills` Remote 命名空间继续服务斜杠来源。那份载
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+职责与信任边界见[Skill Viewer子系统](../../../docs/subsystems/skill-viewer.zh.md)。
+
 每个请求在触碰注册表前先解析观察位置。活跃 Agent 寻址其 preset 作用域的注册表；冷会话解析其记录 preset 的常备作用域；未知或不可用的记录 preset 回退到无作用域的全局注册表。这里从不构造或唤醒 Agent。
 
 `listDetails` 把注册表快照过滤为用户可调用条目，并在提供方观察不完整时报告 `stale: true`，让调用方按「上次可用覆盖」而非权威目录呈现。`get` 校验名称、隐藏对用户调用关闭的技能，并把提供方持有的资源基（目录、URL 或 opaque）拆成 JSON 安全的线上数据随正文返回。

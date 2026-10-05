@@ -24,6 +24,9 @@
     },
     {
       "path": "./packages/client/ui-settings-model-options"
+    },
+    {
+      "path": "packages/education/student/tsconfig.client.json"
     }
   ]
 }

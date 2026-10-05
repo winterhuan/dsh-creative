@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for video-recap.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/video-recap.md
+/:
+  en: 4cb0f87674c9e5e0
+  zh: 231338fc0eccb5c5
+/video-recap:
+  en: 3d10648a061d22f7
+  zh: f7e029be623e8bd3
+/video-recap/summary:
+  en: 76d2db3c25a17a4f
+  zh: 4dab109b08a79b58
+/video-recap/table-of-contents:
+  en: 3bdf2ad2395214ca
+  zh: ae7e20bc5c3774e2
+/video-recap/packages-and-media-access:
+  en: 44ea57cbac342d94
+  zh: 1b966865abe63047
+/video-recap/execution-and-evidence:
+  en: 653f6213edbc5005
+  zh: ed7ef6b6221ba555
+/video-recap/related-contracts:
+  en: aee16662fdbd8f5d
+  zh: 6697262520116af0
+/video-recap/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

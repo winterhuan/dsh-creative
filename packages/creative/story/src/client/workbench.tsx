@@ -11,6 +11,7 @@ import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-cli
 import { useEffect, useRef, useState } from 'react'
 import { IconEditOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import { registerStoryTab } from './story-mode.ts'
 import { registerFileRedirect } from './file-redirect.tsx'
 import { NS, zh, en } from './locales/index.ts'
 import { endpoint } from './workbench-ui.ts'
@@ -49,7 +50,7 @@ export function createStoryStore() {
 }
 
 type Props = PropsRuntime<'sidebar.right.pane.tab'> & PropsStore<ReturnType<typeof createStoryStore>> & PropsLocale<typeof NS>
-function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: Props) {
+function StoryEditorContent({ sessionId, t, useStore, actions, useChat, useTabInfo }: Props) {
   const { tab } = useTabInfo()
   const navigation = tab.navigation.params
   useEffect(() => {
@@ -163,8 +164,15 @@ function StoryEditor({ sessionId, t, useStore, actions, useChat, useTabInfo }: P
     </>}
   </div>
 }
+/** A restored tab in an ordinary Session closes without loading novel files. */
+function StoryEditor(props: Props) {
+  const preset = props.useSessions(state => state.byId[props.sessionId]?.projectionValues?.agentPreset)
+  const { tab } = props.useTabInfo()
+  useEffect(() => { if (typeof preset === 'string' && preset !== 'story') tab.actions.close() }, [preset, tab.actions])
+  return preset === 'story' ? <StoryEditorContent {...props} /> : null
+}
 export const name = 'story'
-export const inject = ['slots', 'sessions', 'locale', 'sidebarRightTabs']
+export const inject = ['slots', 'sessions', 'uiSession', 'locale', 'sidebarRightTabs']
 /** Register the fiction sidebar.
  * @param context - DSH browser services.
  */
@@ -172,6 +180,6 @@ export function apply(context: Context): void {
   context.effect(() => context.locale.register(NS, { zh, en }), 'story: locales')
   registerFileRedirect(context, 'story')
   const t = context.locale.bind(NS)
-  context.effect(() => context.sidebarRightTabs.register({ id: '@winterhuan/dsh-story', kind: 'story', title: () => t('workbench.title'), guide: [{ id: 'story', order: 21, title: () => t('workbench.title'), description: () => t('workbench.description'), icon: IconEditOutlineRegular }] }), 'story: sidebar')
+  context.effect(() => registerStoryTab(context, { id: '@winterhuan/dsh-story', kind: 'story', title: () => t('workbench.title'), guide: [{ id: 'story', order: 21, title: () => t('workbench.title'), description: () => t('workbench.description'), icon: IconEditOutlineRegular }] }), 'story: sidebar')
   context.slots.inject('sidebar.right.pane.tab', () => context.slots.register({ name: 'sidebar.right.pane.tab', key: '@winterhuan/dsh-story', locale: NS, store: createStoryStore }, StoryEditor))
 }

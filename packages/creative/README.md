@@ -31,7 +31,7 @@ The creative group owns the fiction/short-drama/game/video production workbenche
 ## Related documentation
 
 - [DeepSeek Harness Architecture](../../upstream/docs/architecture.md) — composition and extension points.
-- [Creative subsystem](../../docs/subsystems/creative.md) — the four creative-production seams and their trust boundaries.
+- [Story](../../docs/subsystems/story.md), [short drama](../../docs/subsystems/short-drama.md), [game](../../docs/subsystems/novel-to-game.md), and [video recap](../../docs/subsystems/video-recap.md) — independent subsystem responsibilities and trust boundaries.
 - [Creative Workbench Agent Note](../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md) — workspace ownership, production, knowledge and skill inspection.
 
 <a id="dev-note"></a>

@@ -1,5 +1,5 @@
 ---
-description: "小说工作台，可独立安装技能、工具与浏览器界面。"
+description: "小说创作模式，提供按需写作技能和会话专属工作台。"
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。只读概览展示长篇进度、角色、伏笔和双时间线。可选用原生 workflow 完成细纲准备、写作、独立审稿和带版本保护的章节提交。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 独立安装。
+选择小说创作模式，通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。只读概览展示长篇进度、角色、伏笔和双时间线。可选用原生 workflow 完成细纲准备、写作、独立审稿和带版本保护的章节提交。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 独立安装。
 
 ## 目录
 
@@ -28,7 +28,7 @@ kind: "package-bundle"
 dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/story
 ```
 
-从右侧栏打开**小说工作台**。插件使用当前 DSH Session、文件系统、模型和权限。在小说设置页配置朱雀，密钥保留在 DSH 凭据库。
+在新会话或空白会话选择**小说创作**，再从右侧栏打开**小说工作台**。工作台入口与小说文件跳转只在小说会话中提供。切换会话保留各小说会话的作品、文件和未保存草稿。小说设置全局可用，朱雀密钥保留在 DSH 凭据库。
 
 长篇和短篇统一使用 `{工作区}/{作品名称}/`。打开 `shenji/` 后，概览列出 `神机诸天录`；长篇正文放在 `神机诸天录/正文/`，短篇可使用 `另一作品/正文.md`。工作区本身不是作品，`长篇/作品/` 或 `短篇/作品/` 不作为额外分类层；若直接打开了作品目录，应切回其父工作区。作品内部的分卷继续递归显示，文件和草稿保留完整路径。工作区级 `拆文库/` 在文件页可见，不进入作品选择框。
 
@@ -74,12 +74,14 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+职责与信任边界见[小说子系统](../../../docs/subsystems/story.zh.md)。
+
 在仓库根目录运行 `pnpm --filter @winterhuan/dsh-story build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-story test` 可验证此包。
 
 <details>
 <summary>实现细节 — 点击展开</summary>
 
-[补丁](cordis.patch.yml)挂载领域行和小说设置页。朱雀密钥写在 `story` 设置命名空间，默认凭据引用是 `MAKERS_API_KEY`。`editorMaxBytes` 默认为 2097152；`trustedHosts` 扩展默认回环地址列表。`/story` API 将文档访问限定在本领域项目路径中。
+[补丁](cordis.patch.yml)注册 `story` 预设，不改变默认模式。其 `/agent` 入口负责作用域内的技能、工具和写作钩子。Host 入口负责文件 API 与凭据配置，客户端依据所选会话的预设投影显示。预设提供文件系统、Shell、搜索、作业、技能、原生委派和工作流工具，并隔离压缩与工作流服务。朱雀密钥写在 `story` 设置命名空间，默认凭据引用是 `MAKERS_API_KEY`。`editorMaxBytes` 默认为 2097152；`trustedHosts` 扩展默认回环地址列表。`/story` API 将文档访问限定在本领域项目路径中。
 
 写作守卫与专家 Role 属于此包。用户明确要求的朱雀检测会将选定章节发送到腾讯 EdgeOne Makers，只接收配置的 MAKERS_API_KEY。
 
@@ -96,7 +98,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 #### 模型看到什么
 
-领域目录列出六个 Skill，加载时向当前 Agent 提供指令和资源路径。所选 Skill 或 workflow 分配执行顺序和检查，Role 提供专业方法。写入 hook 要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。只有父会话读取调用说明，子会话接收阶段职责和选定参考。Prepare 返回实际路径、场景计划和已检查的细纲身份；写手接收这些结果及完整检查命令。workflow 子会话以 `structured_output` 结束，缺少结果时提示父会话查看失败子会话。委派失败保留已有产物并报告诊断，模型服务认证或地址错误需修复提供商配置。前置委派须完成且产物检查通过后才推进。只读的 `story-explorer` 用自然语言交回事实、来源和缺口。`story_zhuque` 调用包内检测 CLI，后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
+小说预设提供小说协作者身份，区分讨论、审稿和已授权正文工作。领域目录列出六个 Skill；其他预设不获得小说目录、工具或写作钩子。加载时向当前 Agent 提供指令和资源路径。所选 Skill 或 workflow 分配执行顺序和检查，Role 提供专业方法。写入 hook 要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。只有父会话读取调用说明，子会话接收阶段职责和选定参考。Prepare 返回实际路径、场景计划和已检查的细纲身份；写手接收这些结果及完整检查命令。workflow 子会话以 `structured_output` 结束，缺少结果时提示父会话查看失败子会话。委派失败保留已有产物并报告诊断，模型服务认证或地址错误需修复提供商配置。前置委派须完成且产物检查通过后才推进。只读的 `story-explorer` 用自然语言交回事实、来源和缺口。`story_zhuque` 调用包内检测 CLI，后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
 
 #### Token 影响
 
@@ -110,12 +112,15 @@ Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工�
 
 <a id="known-limitations-and-deferred-work"></a>
 
+- 已有对话保留原预设；可在新小说会话接续同一本书。已有非小说会话的草稿仍保留存储，但没有小说工作台入口。预设显式列出工具，升级 DSH 时须核对。
 - 原生 Team 工具需要显式启用团队组合和持久 Session。专业指令进入任务上下文，不由插件覆盖系统 persona。审稿输出普通意见；章节脚本校验机械条件，不认证文学质量或评审模型元数据。
 - CLI 需要 Node 和 Python 3.9+。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
-- 原生单章模板需要 DSH 组合提供 `workflow` 和子 Agent 结构化输出。它处理长篇新章及其未提交稿；已提交章修改沿用现有修订路径。模板复用与审稿只读依靠指令，不是 Host 强制机制或单独审稿权限策略。取消保留产物，恢复核对真实文件和追踪，不恢复旧脚本栈。文件校验不隔离任意外部写入者。
+- 小说预设为原生单章模板提供 `workflow` 和子 Agent 结构化输出。它处理长篇新章及其未提交稿；已提交章修改沿用现有修订路径。模板复用与审稿只读依靠指令，不是 Host 强制机制或单独审稿权限策略。取消保留产物，恢复核对真实文件和追踪，不恢复旧脚本栈。文件校验不隔离任意外部写入者。
 - 概览通过现有文件 API 读取状态，受 `editorMaxBytes` 限制；大列表在界面分页，不新增数据库或服务器。它校验展示字段，完整追踪体检仍使用 `dsh-story project check`。历史查询提供已有逐章记录，不重建任意章的完整世界状态；原文和缺失记录需定点核查。
 
 <a id="dev-note"></a>
 ### 开发笔记
 
 按 DSH token-meter 的固定密度估算，`story_zhuque` 输入 schema 为 249 token，引入作品和文件参数前为 226；首轮其他内容相同时估算增加 23 token。这是 schema 估算，不是提供商分词结果。未引入独立公共运行时包。
+
+按每四字符一个 token 估算，小说身份提示为 298 token，标准预设身份提示为 14 token，均为变量插值前的文本。这只比较身份提示；工具组合和已加载技能也影响首次请求。

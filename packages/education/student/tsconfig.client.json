@@ -1,0 +1,20 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo",
+    "types": [
+      "node",
+      "client-build-environment"
+    ]
+  },
+  "include": [
+    "src/client/**/*"
+  ],
+  "references": [
+    {
+      "path": "tsconfig.host.json"
+    }
+  ]
+}

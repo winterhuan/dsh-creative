@@ -38,6 +38,8 @@ The plugin requires `sessionQuery`, `agents`, and `typert`. `agentPresets` is op
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Skill Viewer subsystem](../../../docs/subsystems/skill-viewer.md).
+
 Each request resolves a view position before touching a registry. A live Agent addresses its own preset-scoped registry; a cold Session resolves its recorded preset's standing scope; an unknown or unusable recorded preset falls back to the global registry with no scope. Nothing here constructs or resumes an Agent.
 
 `listDetails` filters the registry snapshot to user-invocable summaries and reports `stale: true` when a provider observation was incomplete, so callers can present last-good coverage rather than an authoritative catalog. `get` validates the name, hides skills disabled for user invocation, and detaches the provider-owned resource base (directory, URL, or opaque) into JSON-safe wire data alongside the body.

@@ -64,6 +64,8 @@ Edits remain drafts until Save. Switching models retains their drafts; leaving o
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Model options subsystem](../../../docs/subsystems/model-options.md).
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 

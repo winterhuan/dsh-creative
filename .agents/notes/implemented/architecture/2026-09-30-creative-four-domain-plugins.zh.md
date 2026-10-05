@@ -10,7 +10,7 @@ Status: implemented
 
 ## Decision
 
-`dsh-story`、`dsh-short-drama`、`dsh-novel-to-game` 和 `dsh-video-recap` 四个可独立安装的 bundle 分别拥有 Host 工具、技能、资源、路由、浏览器入口和 Session 状态，各有直接侧栏入口。DSH 继续拥有会话、文件系统授权、任务、凭据与模型配置。领域包不依赖 Creative 聚合包或其他业务插件。
+`dsh-story`、`dsh-short-drama`、`dsh-novel-to-game` 和 `dsh-video-recap` 四个可独立安装的 bundle 分别拥有 Host 工具、技能、资源、路由、浏览器入口和 Session 状态，各有直接侧栏入口。DSH 继续拥有会话、文件系统授权、任务、凭据与模型配置。领域包不依赖 Creative 聚合包或其他业务插件。 [小说模式决策](../feature/2026-10-06-story-mode.zh.md)将小说入口和 agent 能力限定于小说会话。
 
 四个包分别开发、构建、测试和安装。聚合包及其旧路由和生产别名已删除，领域 provider 只在所属包注册。已有生产设置页和命名空间继续共用；它不安装任何领域插件。
 

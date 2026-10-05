@@ -64,6 +64,8 @@ dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/clien
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+职责与信任边界见[模型设置增强子系统](../../../docs/subsystems/model-options.zh.md)。
+
 <details>
 <summary>实现细节 — 点击展开</summary>
 

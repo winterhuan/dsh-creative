@@ -1,0 +1,31 @@
+# Bilingual-pair consistency record for story.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/story.md
+/:
+  en: fa117b9e3ca7ad59
+  zh: f9dc6365b7364ddb
+/story:
+  en: 212649d28d835132
+  zh: d7d8ef6858e62486
+/story/summary:
+  en: ae25d2795abaac30
+  zh: b20e41c45955fff0
+/story/table-of-contents:
+  en: 9c27976ef4dd79be
+  zh: 816ab2fd8cd48563
+/story/packages-and-execution:
+  en: eb282aa527a1abe2
+  zh: f39f88b986262fed
+/story/book-identity-and-continuity:
+  en: f318cf3105653d88
+  zh: 384c635b1e27ca05
+/story/settings-and-detection:
+  en: e88980234eb83451
+  zh: 44016537655760d8
+/story/related-contracts:
+  en: 55193f6e6db03e7d
+  zh: 6abdf584be2e2cb8
+/story/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

@@ -43,6 +43,8 @@ The bundle mounts one `novel-to-game` row. Its optional `editorMaxBytes` default
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Novel to game subsystem](../../../docs/subsystems/novel-to-game.md).
+
 From the repository root, run `pnpm --filter @winterhuan/dsh-novel-to-game build` to build this package and `pnpm --filter @winterhuan/dsh-novel-to-game test` to test it.
 
 <details>

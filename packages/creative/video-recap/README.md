@@ -35,6 +35,8 @@ Open **Video-recap workbench** from the right sidebar. The plugin uses the curre
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Video recap subsystem](../../../docs/subsystems/video-recap.md).
+
 From the repository root, run `pnpm --filter @winterhuan/dsh-video-recap build` to build this package and `pnpm --filter @winterhuan/dsh-video-recap test` to test it.
 
 <details>

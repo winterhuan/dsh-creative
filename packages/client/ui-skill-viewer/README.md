@@ -32,6 +32,8 @@ The modal uses the available viewport height. Wide screens keep the catalog besi
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Skill Viewer subsystem](../../../docs/subsystems/skill-viewer.md).
+
 The controller caches per session with single-flight fetches: one settled `listDetails` read replays locally on reopen, and bodies cache per session and name. A preset switch drops that session's entries (the catalog belongs to the composition), a connection reset drops everything, and a session switch under an open panel selects the new session's cached or fetched catalog. Settlements check the currently addressable session first, so a mid-flight switch never paints stale data; a failed fetch never poisons its cache key, so the next open retries.
 
 Reference previews are read afresh when selected. Leaving a reference, changing the skill or Session, closing the viewer, or disposing it cancels that read. Late responses cannot replace the current selection. The list and preview show explicit notices when a configured limit truncates them; binary and unavailable resources report read errors.

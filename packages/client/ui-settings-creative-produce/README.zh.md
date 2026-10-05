@@ -32,6 +32,8 @@ kind: "package-reference"
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+职责与信任边界见[生产设置子系统](../../../docs/subsystems/production-settings.zh.md)。
+
 <details>
 <summary>实现细节——点击展开</summary>
 

@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for production-settings.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/production-settings.md
+/:
+  en: f60cbbf252b311c8
+  zh: 601030fa17406b81
+/production-settings:
+  en: 201bf2f585bb5a10
+  zh: 2a37966fb1de2d9d
+/production-settings/summary:
+  en: d4bcb74176728372
+  zh: 6d6f0c66612c3ec0
+/production-settings/table-of-contents:
+  en: 519df6f45dcb9ced
+  zh: cc4afdc6f97de68d
+/production-settings/packages-and-namespace:
+  en: 702d12830ff64108
+  zh: 2ecb31267c16e38a
+/production-settings/credentials-and-execution:
+  en: 710bd24bac19f612
+  zh: 1207e2548435c012
+/production-settings/related-contracts:
+  en: a8ac3d36b31ea2ee
+  zh: d8597970538bfa4c
+/production-settings/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

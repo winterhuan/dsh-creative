@@ -32,6 +32,8 @@ Controls group by provider — OpenAI (image), Seedance video (Volcengine Ark), 
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Production settings subsystem](../../../docs/subsystems/production-settings.md).
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 

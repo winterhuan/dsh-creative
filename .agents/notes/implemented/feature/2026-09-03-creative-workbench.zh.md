@@ -32,6 +32,8 @@ Status: implemented
 <a id="workspace-and-sidebar"></a>
 ### 工作区与 Sidebar
 
+[小说模式决策](2026-10-06-story-mode.zh.md)将小说能力和工作台入口限定于小说会话；其他领域保留既有启用方式。
+
 四个独立领域页面向 `sidebar.right.pane.tab` 提供界面。右侧栏负责位置、缩放、分栏、浮动、全屏和显隐；Conversation 保留对话与输入框。小说和短剧拥有各自文件跳转；其他文件使用普通预览。
 
 `creative-game` 页面由游戏插件拥有，使用独立的 `creative.game.v1` Session store。

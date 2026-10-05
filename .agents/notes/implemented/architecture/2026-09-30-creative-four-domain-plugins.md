@@ -10,7 +10,7 @@ A single Creative package made creators install four workflows together. Its com
 
 ## Decision
 
-Four independently installable bundles own their Host tools, Skills, resources, routes, browser entries and Session state: `dsh-story`, `dsh-short-drama`, `dsh-novel-to-game` and `dsh-video-recap`. Each provides a direct sidebar entry. DSH retains Sessions, filesystem authorization, jobs, credentials and model configuration. No domain depends on the Creative aggregate or another business plugin.
+Four independently installable bundles own their Host tools, Skills, resources, routes, browser entries and Session state: `dsh-story`, `dsh-short-drama`, `dsh-novel-to-game` and `dsh-video-recap`. Each owns a sidebar entry; the [novel mode decision](../feature/2026-10-06-story-mode.md) limits story discovery and agent capabilities to novel Sessions. DSH retains Sessions, filesystem authorization, jobs, credentials and model configuration. No domain depends on the Creative aggregate or another business plugin.
 
 Each package is developed, built, tested and installed separately. The aggregate package, legacy routes and production aliases are removed. Domain providers register only in their owning packages. The existing production settings page and namespace remain shared; they install no domain plugin.
 

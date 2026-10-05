@@ -32,6 +32,8 @@ The **API key** control starts blank on every load and reports only whether a ke
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Story subsystem](../../../docs/subsystems/story.md).
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 

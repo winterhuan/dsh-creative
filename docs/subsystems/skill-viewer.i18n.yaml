@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for skill-viewer.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/skill-viewer.md
+/:
+  en: afeb50f8b301598d
+  zh: 4e1c7d55659f64e4
+/skill-viewer:
+  en: 0075a249f27e0927
+  zh: 6f5b775395c6917d
+/skill-viewer/summary:
+  en: cd9ae436f7716f33
+  zh: 16bc9ec1cb366ffe
+/skill-viewer/table-of-contents:
+  en: d021c9b67ab450a5
+  zh: 01948e8e7ab9cb3e
+/skill-viewer/host-and-client:
+  en: 6531f8d6efcf92dc
+  zh: 5ef6f07af950bf5b
+/skill-viewer/read-boundary-and-failures:
+  en: c85f87ac21964065
+  zh: 35cb25147b9bb4b5
+/skill-viewer/browser-state-and-lifecycle:
+  en: b6e0b0bd405b39fd
+  zh: c3b1f2e7416d483c
+/skill-viewer/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

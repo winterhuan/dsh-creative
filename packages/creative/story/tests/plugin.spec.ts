@@ -3,7 +3,7 @@ import SkillRegistry from '@deepseek-ai/dsh-skill'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import { describe, expect, it, onTestFinished } from 'vitest'
-import * as plugin from '../src/index.ts'
+import * as plugin from '../src/agent.ts'
 
 describe('story independent ownership', () => {
   it('loads only its catalog and tools and releases them on unload', async () => {

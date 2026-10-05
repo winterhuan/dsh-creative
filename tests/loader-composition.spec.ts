@@ -2,7 +2,6 @@ import * as story from '@winterhuan/dsh-story'
 import * as drama from '@winterhuan/dsh-short-drama'
 import * as video from '@winterhuan/dsh-video-recap'
 import { Context } from '@deepseek-ai/cordis'
-import { readFile } from 'node:fs/promises'
 import Include from '@deepseek-ai/cordis-plugin-include'
 import Loader from '@deepseek-ai/cordis-plugin-loader'
 import SkillRegistry from '@deepseek-ai/dsh-skill'
@@ -47,13 +46,11 @@ describe('Independent domain Loader composition', () => {
     expect(context.get('webServer')).toBeUndefined()
     expect(context.get('typert')).toBeUndefined()
     expect((await context.skills.list()).map(skill => skill.name)).toEqual(expect.arrayContaining([
-      'story', 'short-drama', 'novel-to-game', 'video-recap',
+      'short-drama', 'novel-to-game', 'video-recap',
     ]))
-    const source = await readFile(new URL('../packages/creative/story/knowledge/story/skills/story-write/SKILL.md', import.meta.url), 'utf8')
-    expect(await context.skills.get('story-write')).toMatchObject({
-      content: expect.stringContaining(source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/u, '').trim()),
-    })
-    expect(await context.skills.list()).toHaveLength(17)
+    expect(await context.skills.get('story-write')).toBeUndefined()
+    expect(context.tools.get('story_zhuque')).toBeUndefined()
+    expect(await context.skills.list()).toHaveLength(11)
     expect(context.tools.get('game_qa')).toBeDefined()
     expect(context.tools.get('creative_produce_run')).toBeUndefined()
     expect(context.tools.get('drama_produce_run')).toBeDefined()

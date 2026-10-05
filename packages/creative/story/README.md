@@ -1,5 +1,5 @@
 ---
-description: "Fiction workbench with independently installed skills, tools and browser UI."
+description: "Novel creation mode with on-demand writing Skills and a Session-specific workbench."
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Write and review fiction with six Skills, seven specialist Roles and a dedicated editor. A read-only overview shows long-form progress, characters, foreshadowing and dual timelines. Opt into a native workflow for outline preparation, writing, independent review and guarded chapter submission. Drafts remain in the current DSH Session, and saves use observed file versions. Install this bundle independently.
+Choose novel creation mode to write and review fiction with six Skills, seven specialist Roles and a dedicated editor. A read-only overview shows long-form progress, characters, foreshadowing and dual timelines. Opt into a native workflow for outline preparation, writing, independent review and guarded chapter submission. Drafts remain in the current DSH Session, and saves use observed file versions. Install this bundle independently.
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ Build the repository, then install the local bundle into a web profile:
 dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/story
 ```
 
-Open **Fiction workbench** from the right sidebar. The plugin uses the current DSH Session, filesystem, model and permissions. Configure Zhuque in Story settings; secrets stay in the DSH credential store.
+Select **小说创作** (novel creation) for a new or blank Session, then open **story workbench** from the right sidebar. The entry and novel file redirects appear only in novel Sessions. Switching Sessions preserves each novel Session’s selected book, file and unsaved drafts. Story settings remain available globally; Zhuque secrets stay in the DSH credential store.
 
 Long and short fiction both use `{workspace}/{book name}/`. Opening `shenji/` lists `神机诸天录` in Overview; long-form chapters belong in `神机诸天录/正文/`, while a short story can use `另一作品/正文.md`. The workspace itself is not a book, and `长篇/book/` or `短篇/book/` are not extra collection levels. If a book directory is open directly, switch to its parent workspace. Volumes inside a book remain recursive, and files and drafts retain full paths. Workspace-level `拆文库/` remains visible in Files but never appears in the book selector.
 
@@ -74,12 +74,14 @@ For an opening, one chapter, or a local question, `story-analyze` reads the sour
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+Ownership and trust boundaries: [Story subsystem](../../../docs/subsystems/story.md).
+
 From the repository root, run `pnpm --filter @winterhuan/dsh-story build` to build this package and `pnpm --filter @winterhuan/dsh-story test` to test it.
 
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The [patch](cordis.patch.yml) mounts the domain row and the story settings page. The Zhuque key lives in the `story` settings namespace; the default credential reference is `MAKERS_API_KEY`. `editorMaxBytes` defaults to 2097152; `trustedHosts` extends the default loopback authority list. The `/story` API limits document access to this domain's project paths.
+The [patch](cordis.patch.yml) registers the `story` preset without changing the default. Its `/agent` entry owns scoped Skills, tools and writing hooks. The Host entry owns the file API and credential configuration, while the client follows the selected Session’s preset projection. The preset supplies filesystem, shell, search, jobs, Skills, native delegation and workflow tools, with isolated compaction and workflow services. The Zhuque key lives in the `story` settings namespace; the default credential reference is `MAKERS_API_KEY`. `editorMaxBytes` defaults to 2097152; `trustedHosts` extends the default loopback authority list. The `/story` API limits document access to this domain's project paths.
 
 The writing guards and specialist Roles belong to this package. Explicitly requested Zhuque detection sends the selected chapter to Tencent EdgeOne Makers; it receives only the configured MAKERS_API_KEY.
 
@@ -96,7 +98,7 @@ Each Skill owns its `references/`; specialist Roles live under the owning Skill�
 
 #### What the model sees
 
-The domain catalog lists six Skills. Loading supplies instructions and resource paths to the current Agent. The selected Skill or workflow assigns task order and checks; Roles supply professional methods. The post-write hook requests fresh checks and review, then tracking updates by the assigned submitter through the chapter transaction. Only the parent reads the invocation guide; children receive stage duties and selected references. Prepare returns actual paths, a scene plan and checked outline identity; writers receive these with complete check commands. Workflow children finish with `structured_output`; missing results direct the parent to the failed child's Session. Delegation failures preserve partial work and report diagnostics; provider authentication or endpoint errors require provider repair. Prerequisite delegations must finish and their artifacts pass checks before work advances. Read-only `story-explorer` returns facts, sources and gaps in prose. `story_zhuque` invokes the packaged detection CLI; background execution returns a DSH job ID for `job_output` and `job_kill`.
+The novel preset supplies a novelist persona that distinguishes discussion, review and authorized manuscript work. Its domain catalog lists six Skills; other presets do not receive the novel catalog, tools or writing hooks. Loading supplies instructions and resource paths to the current Agent. The selected Skill or workflow assigns task order and checks; Roles supply professional methods. The post-write hook requests fresh checks and review, then tracking updates by the assigned submitter through the chapter transaction. Only the parent reads the invocation guide; children receive stage duties and selected references. Prepare returns actual paths, a scene plan and checked outline identity; writers receive these with complete check commands. Workflow children finish with `structured_output`; missing results direct the parent to the failed child's Session. Delegation failures preserve partial work and report diagnostics; provider authentication or endpoint errors require provider repair. Prerequisite delegations must finish and their artifacts pass checks before work advances. Read-only `story-explorer` returns facts, sources and gaps in prose. `story_zhuque` invokes the packaged detection CLI; background execution returns a DSH job ID for `job_output` and `job_kill`.
 
 #### Token effect
 
@@ -110,12 +112,15 @@ The plugin uses DSH tool and Skill history. It does not rewrite previous message
 
 <a id="known-limitations-and-deferred-work"></a>
 
+- Existing conversations retain their preset; continue the same book in a new novel Session. Drafts in an existing non-novel Session remain stored but have no novel workbench entry. The preset explicitly lists its tools and must be checked when upgrading DSH.
 - Native Team tools require an explicitly enabled Team composition and persistent Sessions. Specialist instructions enter task context, not a plugin-owned system persona. Review returns ordinary findings; chapter scripts validate mechanical conditions, not literary approval or reviewer model metadata.
 - The CLI requires Node and Python 3.9+. Paid services require creator authorization and configured credentials. Independent sidebars own their state; old aggregate drafts are not migrated.
-- The native chapter template needs a DSH composition exposing `workflow` with structured child output. It handles new long-form chapters and their uncommitted drafts; committed-chapter revisions use the existing revision path. Template reuse and review-only duties follow instructions, not Host enforcement or a separate reviewer permission policy. Cancellation retains artifacts; recovery inspects real files and tracking rather than resuming an old script stack. File guards do not isolate arbitrary external writers.
+- The novel preset supplies `workflow` with structured child output for the native chapter template. It handles new long-form chapters and their uncommitted drafts; committed-chapter revisions use the existing revision path. Template reuse and review-only duties follow instructions, not Host enforcement or a separate reviewer permission policy. Cancellation retains artifacts; recovery inspects real files and tracking rather than resuming an old script stack. File guards do not isolate arbitrary external writers.
 - Overview reads state through the existing file API and its `editorMaxBytes` limit. Large lists paginate in the interface without another database or server. It validates displayed fields; full tracking inspection still uses `dsh-story project check`. Historical queries return existing chapter records rather than reconstructing complete world state at any chapter; inspect prose and missing records separately.
 
 <a id="dev-note"></a>
 ### Dev Note
 
 DSH’s fixed-density token-meter estimate for the `story_zhuque` input schema is 249 tokens, versus 226 before named book/file parameters; with other first-turn content held constant, the estimated increase is 23 tokens. This is a schema estimate, not provider tokenization. No separate common runtime package is introduced.
+
+The novel persona text estimates to 298 tokens at four characters per token, versus 14 for the standard preset persona, before variable interpolation. This compares persona text only; tool composition and loaded Skills also affect the first request.

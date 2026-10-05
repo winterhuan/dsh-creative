@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for novel-to-game.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/novel-to-game.md
+/:
+  en: ce070e788d5badca
+  zh: 8b9354616ae67970
+/novel-to-game:
+  en: cbdc0862ac19bde5
+  zh: a9264fd3ebb4a238
+/novel-to-game/summary:
+  en: 9835096370c9a6f7
+  zh: 963d594b4ff5f1df
+/novel-to-game/table-of-contents:
+  en: 321a8c3f4b9f6395
+  zh: 2cbfe31ab8b700e4
+/novel-to-game/package-and-project-boundary:
+  en: c4aa8a092f4f9ebc
+  zh: cbc92185ed347373
+/novel-to-game/qa-and-evidence-ownership:
+  en: 8a861182a6a8f18b
+  zh: a8f8180925f2a261
+/novel-to-game/related-contracts:
+  en: a5d29336e2d7a2a2
+  zh: bc287933fcab41ee
+/novel-to-game/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

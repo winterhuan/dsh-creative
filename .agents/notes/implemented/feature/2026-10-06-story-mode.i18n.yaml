@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-06-story-mode.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-06-story-mode.md
+/agent-note-novel-creation-mode:
+  en: 347e43a01dab4d7f
+  zh: 6bfe3ff3f29f6c55
+/agent-note-novel-creation-mode/problem:
+  en: d238944bcd2331a6
+  zh: d7e58431ab745a63
+/agent-note-novel-creation-mode/decision:
+  en: eb30664e94085502
+  zh: 393bbd6e2e69fda9
+/agent-note-novel-creation-mode/alternatives-considered:
+  en: 961daf367861b256
+  zh: 2aabe7dfdd0975b6
+/agent-note-novel-creation-mode/consequences:
+  en: 9158f745994dd98c
+  zh: 28e0075d7788c3b9
+/agent-note-novel-creation-mode/verification:
+  en: 0227bf4e63607339
+  zh: 269a682b3b056089
