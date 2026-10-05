@@ -10,6 +10,8 @@ Installing the novel bundle exposed writing capabilities and a workbench indepen
 
 ## Decision
 
+The [domain mode decision](2026-10-06-domain-modes.md) owns activation for short-drama, game, video-recap and learning Sessions.
+
 The existing bundle declares the `story` Agent preset without changing the new-task default. Its scoped `/agent` entry owns novel Skills, production tools and writing hooks. A concise novelist persona distinguishes discussion, critique and authorized writing; detailed methods stay in six on-demand Skills. Native filesystem, shell, search, job, delegation and workflow tools support those Skills. Compaction and workflow services use separate isolation groups.
 
 The Host entry retains the file API and credential settings so retained preset revisions cannot register duplicate routes. The browser reads the Session's `agentPreset` projection, including selections made after blank-session creation. Only novel Sessions expose the workbench guide entry and novel file redirects. The editor hides while the projection is unknown and closes a restored tab when a known different preset owns it. Global settings remain available.

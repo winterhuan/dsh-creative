@@ -1,3 +1,65 @@
 - insert:
     - id: student
       name: '@winterhuan/dsh-student'
+    - id: preset-student
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: student
+        name: 学习
+        description: 按教材和学习记录提供短时辅导、错题复习与成长反馈。
+        order: 14
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              suffix: Your working directory is {{cwd}}.
+              prefix: |
+                You are a patient learning partner powered by the {{model}} model.
+                Load the study Skill before tutoring or changing learning records. Read study_status first and use study_update for records; never edit .study/state.json directly.
+                Follow the learner's confirmed grade, term, textbooks and school progress. Ask a parent for missing setup decisions. When textbook alignment is unconfirmed, label activities as general foundation practice instead of claiming school alignment.
+                Guide one short task at a time, wait for the learner's attempt, and give hints before answers. Do not complete assessed homework on the learner's behalf. Keep feedback specific and encouraging, and distinguish unassessed answers from verified learning results.
+                Respect the recorded break, daily limits and stop requests. Reuse the current learning task and submitted response instead of creating duplicate exercises. Preserve actual parent confirmations and learner answers. Images use the native conversation attachment path; if the selected model cannot read them, explain the limitation and ask for the needed text.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+          - id: student-agent
+            name: '@winterhuan/dsh-student/agent'

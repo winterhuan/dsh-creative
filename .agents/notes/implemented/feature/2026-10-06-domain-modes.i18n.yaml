@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-06-domain-modes.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-06-domain-modes.md
+/agent-note-creative-and-learning-modes:
+  en: 02395a7c02f9e4bd
+  zh: 57616609a6396f4b
+/agent-note-creative-and-learning-modes/problem:
+  en: b49bae8bc41f82c6
+  zh: aca7694f72629808
+/agent-note-creative-and-learning-modes/decision:
+  en: 7e21379751153287
+  zh: 1b6b731c373e8d36
+/agent-note-creative-and-learning-modes/alternatives-considered:
+  en: 367dfc1478837bec
+  zh: c006488e33f5f8ce
+/agent-note-creative-and-learning-modes/consequences:
+  en: 1a3075b2d9d88618
+  zh: 9b52d13452f8a886
+/agent-note-creative-and-learning-modes/verification:
+  en: 0c9546e111d42737
+  zh: 7c3cff095162f037

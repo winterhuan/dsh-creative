@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-05。
+最后更新：2026-10-06。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -127,15 +127,22 @@ dsh-creative/
 
 ### Bundle 与插件行
 
-四个领域包和 `skill-viewer` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
+五个业务包均通过独立原生模式激活：`story`、`short-drama`、`novel-to-game`、`video-recap`、`student`。Host 负责路由和全局设置，`/agent` 负责模式内技能与工具；工作台跟随会话模式。边界及取舍见[领域模式决策](.agents/notes/implemented/feature/2026-10-06-domain-modes.zh.md)。
+
+五个业务包和 `skill-viewer` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
 
 | bundle | 行 id | 加载的模块 | 作用 |
 |---|---|---|---|
 | story | `story` | `@winterhuan/dsh-story` | 小说文件 API 与朱雀凭据配置 |
 | story | `preset-story` | `@deepseek-ai/dsh-agent-preset` | 小说创作模式，作用域内挂载 `@winterhuan/dsh-story/agent` 的技能、工具和钩子 |
-| short-drama | `short-drama` | `@winterhuan/dsh-short-drama` | 短剧技能、确认生产与剧集工作台 |
-| video-recap | `video-recap` | `@winterhuan/dsh-video-recap` | 解说技能、视频交付与工作台 |
-| novel-to-game | `novel-to-game` | `@winterhuan/dsh-novel-to-game` | 游戏技能、QA、路由与独立侧边栏 |
+| short-drama | `short-drama` | `@winterhuan/dsh-short-drama` | 短剧文件与生产预检 API |
+| video-recap | `video-recap` | `@winterhuan/dsh-video-recap` | 视频文件、交付与播放 API |
+| novel-to-game | `novel-to-game` | `@winterhuan/dsh-novel-to-game` | 游戏文件与隔离预览路由 |
+| short-drama | `preset-short-drama` | `@deepseek-ai/dsh-agent-preset` | 短剧创作模式，作用域内挂载 `/agent` 技能和工具 |
+| novel-to-game | `preset-novel-to-game` | `@deepseek-ai/dsh-agent-preset` | 游戏创作模式，作用域内挂载 `/agent` 技能和工具 |
+| video-recap | `preset-video-recap` | `@deepseek-ai/dsh-agent-preset` | 视频解说模式，作用域内挂载 `/agent` 技能和工具 |
+| student | `preset-student` | `@deepseek-ai/dsh-agent-preset` | 学习模式，作用域内挂载 `/agent` 技能和工具 |
+| student | `student` | `@winterhuan/dsh-student` | 学习工作区 API |
 | story | `ui-settings-story` | `@winterhuan/dsh-client-ui-settings-story` | 小说设置页，编辑 `story` 命名空间里的朱雀密钥引用 |
 | short-drama / video-recap | `ui-settings-creative-produce` | `@winterhuan/dsh-client-ui-settings-creative-produce` | 短剧与视频生产设置页的 Node 入口，负责登记浏览器 bundle |
 | skill-viewer | `skill-viewer` | `@winterhuan/dsh-skill-viewer` | Host 服务 `SkillViewerCatalog`（继承 `TypertRemoteService`，Remote 命名空间 `skillViewer`） |

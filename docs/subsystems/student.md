@@ -21,6 +21,8 @@ Guide short learning activities while keeping course identity, learner answers a
 <a id="ownership"></a>
 ## Ownership
 
+The `student` Agent preset owns model capabilities through the scoped `/agent` entry. Host routes and settings remain global. Sidebar discovery follows the selected Session projection; hidden workbenches retain their existing stores. Mode selection does not migrate history or grant filesystem permissions.
+
 The independently installed [student package](../../packages/education/student/README.md) owns its Skill, references, learning tools, interactive sidebar and workspace state. It lives under `packages/education`, with no creative plugin dependency. DSH owns the conversation, model, image attachments, tool history and filesystem authorization. The plugin neither downloads textbooks nor provides a separate tutoring runtime.
 
 <a id="evidence"></a>

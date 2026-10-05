@@ -26,7 +26,11 @@
       "types": "./lib/types/produce-settings-entry.d.ts",
       "default": "./lib/produce-settings-entry.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./agent": {
+      "types": "./lib/types/agent.d.ts",
+      "default": "./lib/agent.js"
+    }
   },
   "dsh": {
     "bundle": {
@@ -56,20 +60,44 @@
     "@deepseek-ai/dsh-tools": "0.2.1-alpha.1"
   },
   "dependencies": {
+    "@deepseek-ai/cordis-plugin-group": "~1.0.5-alpha.1",
+    "@deepseek-ai/dsh-agent-instructions": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-agent-preset": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-command-compact": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-compaction-basic": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-compaction-tool-result-pruner": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-credentials": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-launch-environment": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-persona": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-session": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-skill": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-skill-filesystem": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-time-context": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-ask-user": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-bash": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-fs": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-fs-search": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-jobs": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-present": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-pwsh": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-skill": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-subagent": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-subagent-control": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-todo": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-web": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tool-workflow": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-util-workspace-path": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-workflow-ptc": "0.2.1-alpha.1",
     "@deepseek-ai/schemastery": "~3.18.5-alpha.1",
-    "js-yaml": "^4.2.0",
-    "@winterhuan/dsh-client-ui-settings-creative-produce": "workspace:*"
+    "@winterhuan/dsh-client-ui-settings-creative-produce": "workspace:*",
+    "js-yaml": "^4.2.0"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.5-alpha.1",
     "@deepseek-ai/cordis-plugin-include": "~1.0.10-alpha.1",
     "@deepseek-ai/cordis-plugin-loader": "~1.0.6-alpha.1",
     "@deepseek-ai/dsh-agent": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-agent-preset-registry": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-api-job-controller": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-api-session-controller": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-brand": "0.2.1-alpha.1",

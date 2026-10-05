@@ -1,10 +1,7 @@
 /** Independently installed video-recap workflow and workbench. */
 import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-skill'
 import z from '@deepseek-ai/schemastery'
-import { createVideoRecapSkillProvider } from './skill-provider.ts'
 import { registerWorkspaceRoute } from './workspace-route.ts'
-import { registerCreativeProduceRunTool } from './produce-tool.ts'
 import { ProduceSettingsSchema, type ProduceConfig } from './produce-settings.ts'
 import { assertTrustedWorkspaceAuthority } from './workspace-request-trust.ts'
 
@@ -14,7 +11,7 @@ export { registerWorkspaceRoute } from './workspace-route.ts'
 export * from './video-project.ts'
 
 export const name = 'video-recap'
-export const inject = ['skills', 'tools']
+export const inject = []
 /** File budgets, trusted authorities and initial credential references. */
 export interface Config { readonly editorMaxBytes?: number; readonly trustedHosts?: string[]; readonly produce?: ProduceConfig }
 export const Config = z.object({ editorMaxBytes: z.natural().min(65_536).max(8_388_608).default(2_097_152), trustedHosts: z.array(z.string()).default([]), produce: ProduceSettingsSchema }) as z<Config>
@@ -24,7 +21,5 @@ export const Config = z.object({ editorMaxBytes: z.natural().min(65_536).max(8_3
  */
 export async function apply(context: Context, config: Config = {}): Promise<void> {
   for (const host of config.trustedHosts ?? []) assertTrustedWorkspaceAuthority(host)
-  context.effect(() => context.skills.registerProvider(() => createVideoRecapSkillProvider()), 'video-recap: skills')
-  registerCreativeProduceRunTool(context, { entry: config.produce ?? {} })
   context.inject(['webServer', 'typert'], ctx => registerWorkspaceRoute(ctx, { maxBytes: config.editorMaxBytes ?? 2_097_152, trustedHosts: config.trustedHosts ?? [], produce: config.produce ?? {} }))
 }

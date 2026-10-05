@@ -23,6 +23,8 @@ kind: "package-bundle"
 <a id="use-this-package"></a>
 ## 使用此包
 
+在新建或空白会话的原生模式菜单中选择**游戏创作**，再从右侧栏打开对应工作台。工作台及领域技能、工具只在该模式中可用。已有会话保留原模式；要继续已有项目文件，请在该模式中新建会话。会话状态和项目文件不迁移。全局设置仍可使用。
+
 构建本仓库后，将本地 bundle 安装到 web profile：
 
 ```sh
@@ -38,7 +40,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 | 实现设计或用白盒验证具体风险 | `game-build` |
 | 独立验证实际浏览器构建 | `game-qa` |
 
-此 bundle 挂载一行 `novel-to-game`。可选配置 `editorMaxBytes` 默认为 2097152；`trustedHosts` 默认为空列表，用于扩展默认仅允许回环地址的 API 主机列表。它不安装小说、短剧或视频工具。
+此 bundle 挂载 `novel-to-game` Host 行和 `preset-novel-to-game` 模式行。可选配置 `editorMaxBytes` 默认为 2097152；`trustedHosts` 默认为空列表，用于扩展默认仅允许回环地址的 API 主机列表。它不安装小说、短剧或视频工具。
 
 <a id="understand-the-implementation"></a>
 ## 理解实现
@@ -47,10 +49,12 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 
 在仓库根目录运行 `pnpm --filter @winterhuan/dsh-novel-to-game build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-novel-to-game test` 可验证此包。
 
+Host 入口负责工作区路由和配置。`./agent` 导出在 `novel-to-game` preset 及继承它的原生子 Agent 组合内注册领域技能和工具。preset 提供任务专属 persona 和显式原生工具组合，不改变默认模式。
+
 <details>
 <summary>实现细节 — 点击展开</summary>
 
-[Profile 补丁](cordis.patch.yml)加载 [Host 插件](src/index.ts)。Host 拥有 Skill 资源、`game_qa`、`/novel-to-game/workspace`、`/novel-to-game/file` 和隔离预览路由。QA 通过 DSH shell 和 jobs 运行，无需生产凭据。预览证据由当前 Host 进程签名，并核对当前构建和证据字节。
+[Profile 补丁](cordis.patch.yml)加载 [Host 插件](src/index.ts)。作用域内的 Agent 入口拥有 Skill 资源与 `game_qa`；Host 拥有 `/novel-to-game/workspace`、`/novel-to-game/file` 和隔离预览路由。QA 通过 DSH shell 和 jobs 运行，无需生产凭据。预览证据由当前 Host 进程签名，并核对当前构建和证据字节。
 
 [浏览器入口](src/client/index.ts)注册仅含游戏的侧边栏，拥有独立 Session 状态。原著导出、谱系与索引辅助脚本随 `knowledge/source-tools` 分发；测试核对这些副本与维护源的一致性。
 
@@ -68,7 +72,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 
 #### 模型看到什么
 
-DSH 目录展示四个 Skill 描述。加载 Skill 时提供随包指令、供原生 read 读取任务资料的 DSH 资源目录，以及本地辅助脚本路径。`game_qa` 接受项目路径、可选后台执行和超时参数，返回进程输出或作业 ID。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
+所选模式加入领域 persona 与原生工具 schema。稳定 persona 记录在[提示词快照](../../../tests/fixtures/novel-to-game-persona.txt)中；标准模式和其他领域模式不包含本领域能力。前缀与 schema 在按需加载技能之前占用上下文，原生压缩管理累积历史。 DSH 目录展示四个 Skill 描述。加载 Skill 时提供随包指令、供原生 read 读取任务资料的 DSH 资源目录，以及本地辅助脚本路径。`game_qa` 接受项目路径、可选后台执行和超时参数，返回进程输出或作业 ID。加载后的技能要求前置阶段采用前台委派，并在进入下一阶段前核对子 Agent 的最终结果和产物。委派失败时报告具体诊断并保留已有产物；DSH 模型服务的认证和地址错误需修复提供商配置。
 
 #### Token 影响
 

@@ -1,4 +1,5 @@
 /** Standalone video sidebar, using session files and conversation activity. */
+import { registerModeTab } from './mode.ts'
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-chat/client'
@@ -43,6 +44,10 @@ function VideoSession({ t, sessionId, useStore, actions, useChat, useTabInfo }: 
 }
 
 function VideoSidebar(props: VideoSidebarProps) {
+  const preset = props.useSessions(state => state.byId[props.sessionId]?.projectionValues?.agentPreset)
+  const { tab } = props.useTabInfo()
+  useEffect(() => { if (typeof preset === 'string' && preset !== 'video-recap') tab.actions.close() }, [preset, tab.actions])
+  if (preset !== 'video-recap') return null
   return <div className="creative-workspace" data-workbench="video"><VideoSession key={props.sessionId} {...props} /></div>
 }
 
@@ -53,7 +58,7 @@ function VideoSidebar(props: VideoSidebarProps) {
 export function apply(context: Context): void {
   context.effect(() => context.locale.register(NS, { zh, en }), 'video-recap: dictionaries')
   const t = context.locale.bind(NS)
-  context.effect(() => context.sidebarRightTabs.register({
+  context.effect(() => registerModeTab(context, {
     id: '@winterhuan/dsh-video-recap',
     kind: 'video-recap',
     title: () => t('workbench.title'),
@@ -70,4 +75,4 @@ export function apply(context: Context): void {
 /** Browser plugin identity. */
 export const name = 'video-recap'
 /** Services used by the video sidebar. */
-export const inject = ['slots', 'sessions', 'locale', 'sidebarRightTabs']
+export const inject = ['slots', 'sessions', 'uiSession', 'locale', 'sidebarRightTabs']

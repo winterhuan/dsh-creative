@@ -12,7 +12,7 @@ import { describe, expect, it, onTestFinished } from 'vitest'
 import * as game from '@winterhuan/dsh-novel-to-game'
 
 describe('Independent domain Loader composition', () => {
-  it.each([undefined, 'story', 'short-drama', 'video-recap', 'novel-to-game'])('registers each catalog once with a separate domain layer: %s', async separateDomain => {
+  it.each([undefined, 'story', 'short-drama', 'video-recap', 'novel-to-game'])('keeps Host domain layers free of model capabilities: %s', async separateDomain => {
     const context = new Context()
     onTestFinished(async () => { await context.fiber.dispose() })
     context.baseUrl = new URL('./fixtures/domains/', import.meta.url).href
@@ -45,17 +45,8 @@ describe('Independent domain Loader composition', () => {
     await context.loader.await()
     expect(context.get('webServer')).toBeUndefined()
     expect(context.get('typert')).toBeUndefined()
-    expect((await context.skills.list()).map(skill => skill.name)).toEqual(expect.arrayContaining([
-      'short-drama', 'novel-to-game', 'video-recap',
-    ]))
-    expect(await context.skills.get('story-write')).toBeUndefined()
-    expect(context.tools.get('story_zhuque')).toBeUndefined()
-    expect(await context.skills.list()).toHaveLength(11)
-    expect(context.tools.get('game_qa')).toBeDefined()
-    expect(context.tools.get('creative_produce_run')).toBeUndefined()
-    expect(context.tools.get('drama_produce_run')).toBeDefined()
-    expect(context.tools.get('video_produce_run')).toBeDefined()
-    expect(context.tools.get('creative_production')).toBeDefined()
+    expect(await context.skills.list()).toEqual([])
+    for (const name of ['story_zhuque', 'game_qa', 'drama_produce_run', 'video_produce_run', 'creative_production']) expect(context.tools.get(name)).toBeUndefined()
     expect(context.tools.get('creative_bundled_reference')).toBeUndefined()
   })
 })

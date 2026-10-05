@@ -20,6 +20,8 @@ Adapt a novel into a playable browser game and inspect it in Game Studio. QA exe
 <a id="ownership"></a>
 ## Package and project boundary
 
+The `novel-to-game` Agent preset owns model capabilities through the scoped `/agent` entry. Host routes and settings remain global. Sidebar discovery follows the selected Session projection; hidden workbenches retain their existing stores. Mode selection does not migrate history or grant filesystem permissions.
+
 The [novel-to-game package](../../packages/creative/novel-to-game/README.md) owns four Skills, source helpers, `game_qa`, its routes and the game-only Session store. It installs independently of the story, short-drama and video plugins. Source adaptation exchanges files and lineage rather than another plugin’s private state. DSH owns Session authorization, shell execution and jobs.
 
 Projects use `game-adaptations/<project>/`; the browser entry is `build/app/index.html`. `/novel-to-game` exposes read-only project APIs, and `/novel-to-game/preview/` serves preview assets. Trusted navigation, allowed paths, resolved containment and byte limits protect those reads. The preview and QA runner share a content security policy that restricts resources to the preview asset prefix and permitted local data.

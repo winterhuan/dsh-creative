@@ -55,7 +55,7 @@ function fakeSession(outcome: 'accepted' | 'rejected' | 'throws'): FakeSession {
   } }
 }
 
-async function bench(session?: FakeSession) {
+async function bench(session?: FakeSession, mode = 'short-drama') {
   const context = new Context()
   const renderer = context.plugin(SlotRegistry)
   onTestFinished(async () => { await renderer.dispose() })
@@ -73,9 +73,10 @@ async function bench(session?: FakeSession) {
   context.provide('sidebarRight', { openTab })
   context.provide('locale', new LocaleRuntime(context))
   context.provide('sessions', {
-    list: createSnapshotStore({ byId: { [SESSION_ID]: { cwd: '/workspace' } } }),
+    list: createSnapshotStore({ byId: { [SESSION_ID]: { cwd: '/workspace', projectionValues: { agentPreset: mode } } } }),
     binding: () => ({ session: session?.session ?? {} }),
   })
+  context.provide('uiSession', { adapter: { current: createSnapshotStore({ key: SESSION_ID }) } })
   context.provide('conversation', {})
   context.provide('uiConversation', {
     events: { register: vi.fn() },
@@ -122,6 +123,12 @@ describe('Short-drama Sidebar integration', () => {
     expect(face.consumeFileNavigation(tabId, 1)).toBe(false)
     expect(face.consumeFileNavigation(tabId, 2)).toBe(true)
     expect(face.consumeFileNavigation('another-tab' as TabId, 1)).toBe(true)
+  })
+
+  it.each(['standard', 'story', 'novel-to-game', 'video-recap', 'student'])('leaves drama files in %s Sessions to the normal preview', async mode => {
+    const { tabs } = await bench(undefined, mode)
+    expect(tabs.get('short-drama')?.guide).toEqual([])
+    expect(tabs.get('drama-file')?.canOpen?.(fileAddressFor(SESSION_ID, '/workspace', '/workspace/剧集/EP001/剧本.md'))).toBe(false)
   })
 
   it.each(['README.md', '/another-workspace/正文/第001章.md'])('leaves %s to the normal file preview', async (path) => {

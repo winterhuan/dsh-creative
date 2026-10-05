@@ -11,6 +11,7 @@ import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { parseFileAddress } from '@deepseek-ai/dsh-util-workspace-path'
 import { useEffect } from 'react'
+import { isModeSession } from './mode.ts'
 import { creativeMediaMimeType, isCreativeTextPath, parseCreativePath } from '../project-path.ts'
 
 /** Implementation identity of the redirect tab type. */
@@ -28,6 +29,7 @@ function creativeFileOf(context: ClientContext, address: string): { readonly ses
   const file = parseFileAddress(address)
   if (file?.scope !== 'session') return undefined
   const sessionId = file.sessionId as SessionId
+  if (!isModeSession(context, sessionId)) return undefined
   const cwd = context.sessions.list.getSnapshot().byId[sessionId]?.cwd
   const parsed = parseCreativePath(file.path, cwd)
   if (parsed?.domain !== 'drama' || (!isCreativeTextPath(parsed) && creativeMediaMimeType(parsed.path) === undefined)) return undefined

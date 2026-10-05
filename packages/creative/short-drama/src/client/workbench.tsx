@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { registerModeTab } from './mode.ts'
 import { IconPlayOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { ISessions, SubmissionHandle } from '@deepseek-ai/dsh-api-session-controller/client'
@@ -18,13 +20,13 @@ import { endpoint } from './workbench-ui.js'
 import { createSaveState } from './editor-buffer.ts'
 import { createWorkbenchStore } from './workbench-store.ts'
 import { json } from './workspace-client.ts'
-import { CreativeWorkspace, type ProductionConversationFace } from './workbench-session.tsx'
+import { CreativeWorkspace, type ProductionConversationFace, type WorkbenchSlotProps } from './workbench-session.tsx'
 import './plugin.css'
 
 export { createWorkbenchStore } from './workbench-store.ts'
 
 export const name = 'short-drama'
-export const inject = ['slots', 'sessions', 'conversation', 'uiConversation', 'jobs', 'locale', 'sidebarRight', 'sidebarRightTabs']
+export const inject = ['slots', 'sessions', 'uiSession', 'conversation', 'uiConversation', 'jobs', 'locale', 'sidebarRight', 'sidebarRightTabs']
 
 const WORKBENCH_KIND = 'short-drama' as const
 const WORKBENCH_ID = '@winterhuan/dsh-short-drama'
@@ -50,7 +52,7 @@ declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
 export function apply(context: ClientContext): void {
   context.effect(() => context.locale.register(NS, { zh, en }), 'creative: dictionaries')
   const translate = context.locale.bind(NS)
-  context.effect(() => context.sidebarRightTabs.register({
+  context.effect(() => registerModeTab(context, {
     id: WORKBENCH_ID,
     kind: WORKBENCH_KIND,
     title: () => translate('workbench.title'),
@@ -134,11 +136,19 @@ export function apply(context: ClientContext): void {
           },
         }
       },
-    }, CreativeWorkspace)
+    }, ModeWorkspace)
   })
   context.slots.inject('tool.call.toolview', () => context.slots.register({
     name: 'tool.call.toolview',
     key: CREATIVE_PRODUCTION_TOOL_NAME,
     locale: NS,
   }, ProductionToolView))
+}
+
+/** Mount production UI only after the Session's mode is known. */
+function ModeWorkspace(props: WorkbenchSlotProps) {
+  const preset = props.useSessions(state => state.byId[props.sessionId]?.projectionValues?.agentPreset)
+  const { tab } = props.useTabInfo()
+  useEffect(() => { if (typeof preset === 'string' && preset !== 'short-drama') tab.actions.close() }, [preset, tab.actions])
+  return preset === 'short-drama' ? <CreativeWorkspace {...props} /> : null
 }

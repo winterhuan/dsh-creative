@@ -25,17 +25,19 @@ Guide a primary-school learner through short Chinese, mathematics and English ac
 <a id="use-this-package"></a>
 ## Use this package
 
+In a new or blank conversation, select **学习** (Learning) from the native mode menu, then open its workbench in the right sidebar. The workbench and domain Skills/tools are available only in this mode. Existing conversations retain their selected mode; start a new conversation in this mode to continue existing project files. Session state and project files are not migrated. Global settings remain available.
+
 Install the built package into a DSH `0.2.1-alpha.1` profile, open a dedicated learning workspace and invoke `/study`.
 
 ```sh
 dsh plugin --profile student add /Users/winter/dsh-creative/packages/education/student
 ```
 
-The profile must already provide Skills, tools, a Session filesystem and sandbox policy. A web profile also supplies chat, image attachments and the Learning desk sidebar. The bundle adds one `student` row and does not install any creative package. Restart the profile after installing or rebuilding.
+The profile must already provide Skills, tools, a Session filesystem and sandbox policy. A web profile also supplies chat, image attachments and the Learning desk sidebar. The bundle adds the `student` Host row and the `preset-student` mode row and does not install any creative package. Restart the profile after installing or rebuilding.
 
 ### Use the Learning desk
 
-Open an existing conversation in the learning workspace, then choose Learning desk from the right sidebar. Parent setup creates the learner profile; Today starts a block and shows one saved question at a time. Submit an answer or request a hint in the panel; DSH chat supplies teaching and assessment. Ask tutor to continue resumes an existing block or retries a request without starting another block. Submission acceptance does not mean the model completed its reply; model errors remain visible in chat.
+Select 学习 in a new conversation in the learning workspace, then choose Learning desk from the right sidebar. Parent setup creates the learner profile; Today starts a block and shows one saved question at a time. Submit an answer or request a hint in the panel; DSH chat supplies teaching and assessment. Ask tutor to continue resumes an existing block or retries a request without starting another block. Submission acceptance does not mean the model completed its reply; model errors remain visible in chat.
 
 Mistakes sends a selected PNG, JPEG or WebP image (up to 8 MiB) through native DSH attachments, then lists transcriptions awaiting confirmation and due reviews. Progress displays stars and recent answer evidence. Parent setup saves limits and verified textbook editions with school progress. Refresh reloads the forms; copy unsaved edits before refreshing after a conflict. Lists show at most 20 recent or pending records; request complete history in chat.
 
@@ -64,6 +66,8 @@ Ask `/study` to review progress, continue due mistakes or explore a child's ques
 
 Ownership and trust boundaries: [Student subsystem](../../../docs/subsystems/student.md). From the repository root, build with `pnpm --filter @winterhuan/dsh-student build` and test with `pnpm --filter @winterhuan/dsh-student test`.
 
+The Host entry owns workspace routes and configuration. The `./agent` export registers domain Skills and tools inside the `student` preset and inherited native child compositions. The preset supplies a task-specific persona and explicit native tools; it does not change the default mode. Learning uses filesystem, search, web, questions and presentation tools without a default shell, delegation or creative production workflow.
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 
@@ -91,7 +95,7 @@ The [workspace API](src/route.ts) resolves a main DSH Session and accepts loopba
 
 #### What the model sees
 
-The catalog exposes one `study` Skill. Loading it supplies setup, short tutoring, photo confirmation and exploration instructions plus two local references. `study_status` reads status or a collection; `study_update` accepts one typed setup, source, course, session, task, answer, hint, assessment or mistake action. Tool descriptions require actual user confirmation and actual learner responses. Source pages and images remain data, not instructions.
+The selected mode adds a domain persona and native tool schemas. Its stable persona is recorded in the [prompt snapshot](../../../tests/fixtures/student-persona.txt); domain capabilities are absent from Standard and sibling modes. The prefix and schemas add context before on-demand Skill loading, and native compaction manages accumulated history. The catalog exposes one `study` Skill. Loading it supplies setup, short tutoring, photo confirmation and exploration instructions plus two local references. `study_status` reads status or a collection; `study_update` accepts one typed setup, source, course, session, task, answer, hint, assessment or mistake action. Tool descriptions require actual user confirmation and actual learner responses. Source pages and images remain data, not instructions.
 
 #### Token effect
 

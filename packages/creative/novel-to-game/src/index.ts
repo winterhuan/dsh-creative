@@ -1,9 +1,6 @@
 /** Independently installable novel-to-game skills, QA and workspace previews. */
 import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-skill'
 import z from '@deepseek-ai/schemastery'
-import { createNovelToGameSkillProvider } from './skill-provider.ts'
-import { registerGameQaTool } from './qa-tool.ts'
 import { registerGameRoutes } from './routes.ts'
 import { assertTrustedWorkspaceAuthority } from './workspace-request-trust.ts'
 
@@ -13,7 +10,7 @@ export { gameQaEnvironment, validateGameEvidence, WorkspaceVerificationTracker, 
 export { gameRoot, previewContentSecurityPolicy, workspaceGameProjects, serveGamePreview, registerGameRoutes } from './routes.ts'
 
 export const name = 'novel-to-game'
-export const inject = ['skills', 'tools']
+export const inject = []
 
 /** Game metadata read limits and allowed additional host authorities. */
 export interface Config {
@@ -34,7 +31,5 @@ export const Config = z.object({
 export function apply(context: Context, config: Config = {}): void {
   const trustedHosts = config.trustedHosts ?? []
   for (const host of trustedHosts) assertTrustedWorkspaceAuthority(host)
-  context.effect(() => context.skills.registerProvider(() => createNovelToGameSkillProvider()), 'novel-to-game: skills')
-  registerGameQaTool(context)
   context.inject(['webServer', 'typert'], ctx => registerGameRoutes(ctx, { maxBytes: config.editorMaxBytes ?? 2_097_152, trustedHosts }))
 }

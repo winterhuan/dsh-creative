@@ -6,7 +6,7 @@ import SubagentRuntime from '@deepseek-ai/dsh-subagent'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
-import * as plugin from '../src/index.ts'
+import * as plugin from '../src/agent.ts'
 import { createVideoRecapSkillProvider } from '../src/skill-provider.ts'
 
 describe('video-recap independent ownership', () => {

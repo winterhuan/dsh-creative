@@ -10,6 +10,8 @@ Young learners need short, encouraging practice that preserves mistakes and lear
 
 ## Decision
 
+The [domain mode decision](2026-10-06-domain-modes.md) owns activation for short-drama, game, video-recap and learning Sessions.
+
 The repository provides an independently installed `@winterhuan/dsh-student` in `packages/education/student`. An interactive native sidebar starts and stops learning, accepts answers and photo attachments, shows progress and collects parent-confirmed settings. Native DSH Skills guide Chinese, mathematics and English; tools retain one learner's term in each workspace. The first teaching reference targets Shanghai, grade two, first term. Parents confirm the school year, each textbook and current unit. Generic practice remains available while course alignment is unconfirmed.
 
 Course records retain source identity, edition, scope, location and user confirmation. Parents use official entry points or provide relevant textbook pages; the plugin neither downloads nor redistributes textbooks. Image intake uses DSH vision and requires correction of uncertain transcription before review scheduling.

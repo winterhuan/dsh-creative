@@ -22,6 +22,8 @@ Create video recaps with two task-focused Skills, source previews and artifact i
 <a id="use-this-package"></a>
 ## Use this package
 
+In a new or blank conversation, select **视频解说** (Video recap) from the native mode menu, then open its workbench in the right sidebar. The workbench and domain Skills/tools are available only in this mode. Existing conversations retain their selected mode; start a new conversation in this mode to continue existing project files. Session state and project files are not migrated. Global settings remain available.
+
 Build the repository, then install the local bundle into a web profile:
 
 ```sh
@@ -39,10 +41,12 @@ Ownership and trust boundaries: [Video recap subsystem](../../../docs/subsystems
 
 From the repository root, run `pnpm --filter @winterhuan/dsh-video-recap build` to build this package and `pnpm --filter @winterhuan/dsh-video-recap test` to test it.
 
+The Host entry owns workspace routes and configuration. The `./agent` export registers domain Skills and tools inside the `video-recap` preset and inherited native child compositions. The preset supplies a task-specific persona and explicit native tools; it does not change the default mode.
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The [patch](cordis.patch.yml) mounts the domain row, the `creative-produce` configuration row and its existing settings page. Repeated configuration row IDs resolve through DSH Loader composition. `editorMaxBytes` defaults to 2097152; `trustedHosts` extends the default loopback authority list. The `/video-recap` API limits document and media access to this domain's project paths.
+The [patch](cordis.patch.yml) mounts the domain Host row, the `preset-video-recap` mode row, the `creative-produce` configuration row and its existing settings page. Repeated configuration row IDs resolve through DSH Loader composition. `editorMaxBytes` defaults to 2097152; `trustedHosts` extends the default loopback authority list. The `/video-recap` API limits document and media access to this domain's project paths.
 
 The package owns video scripts and previews under video-recaps/. Speech production reads only MiMo and Fish credential references; keyless draft delivery remains available.
 
@@ -57,7 +61,7 @@ This package is developed, built and installed independently; required helper sc
 
 #### What the model sees
 
-The catalog registers `video-recap` and `video-script` for both user and model invocation. Their shared resource base is `knowledge/video-recap`; native `read` loads the required references. Media scripts retain their packaged paths and are not separate registered Skills. `video_produce_run` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
+The selected mode adds a domain persona and native tool schemas. Its stable persona is recorded in the [prompt snapshot](../../../tests/fixtures/video-recap-persona.txt); domain capabilities are absent from Standard and sibling modes. The prefix and schemas add context before on-demand Skill loading, and native compaction manages accumulated history. The catalog registers `video-recap` and `video-script` for both user and model invocation. Their shared resource base is `knowledge/video-recap`; native `read` loads the required references. Media scripts retain their packaged paths and are not separate registered Skills. `video_produce_run` runs a pinned domain script; background execution returns a DSH job ID for `job_output` and `job_kill`. Loaded Skills use foreground delegation for prerequisite stages and require the child’s terminal result plus artifact checks before advancing. A failed delegation reports its diagnostic and preserves partial work; DSH provider authentication and endpoint failures require provider configuration repair.
 
 #### Token effect
 

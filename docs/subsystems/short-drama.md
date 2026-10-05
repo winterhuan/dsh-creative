@@ -20,6 +20,8 @@ Develop episodes, inspect their documents and follow confirmed media production 
 <a id="ownership"></a>
 ## Packages and project boundary
 
+The `short-drama` Agent preset owns model capabilities through the scoped `/agent` entry. Host routes and settings remain global. Sidebar discovery follows the selected Session projection; hidden workbenches retain their existing stores. Mode selection does not migrate history or grant filesystem permissions.
+
 The [short-drama package](../../packages/creative/short-drama/README.md) owns its Skills, tools, `/short-drama` routes and sidebar. Its bundle includes [production settings](production-settings.md); the other creative plugins are independent. DSH owns Session identity, filesystem authorization, shell execution and jobs.
 
 Full project and episode paths identify documents and targets; repeated names such as `EP001` or `SHOT-001` are not global identities. The Host reads five episode documents as one checked revision. Routes enforce trusted hosts, allowed paths, resolved containment and file budgets; editor writes use `FsVersion` compare-and-swap and retain conflicting drafts. Media supports ranged reads, and stopping production verifies the job owner.

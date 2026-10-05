@@ -9,6 +9,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { describe, expect, it, onTestFinished } from 'vitest'
 import * as game from '../src/index.ts'
+import * as gameAgent from '../src/agent.ts'
 
 const run = promisify(execFile)
 
@@ -19,7 +20,7 @@ describe('standalone game plugin', () => {
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
     await ctx.plugin(SkillRegistry)
-    const plugin = ctx.plugin(game)
+    const plugin = ctx.plugin(gameAgent)
     await plugin.await()
     expect((await ctx.skills.list()).map(skill => skill.name).sort()).toEqual([
       'game-build', 'game-design', 'game-qa', 'novel-to-game',

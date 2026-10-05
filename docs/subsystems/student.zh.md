@@ -21,6 +21,8 @@ description: "学生学习系统的职责：已确认课程、本地证据、每
 <a id="ownership"></a>
 ## 职责归属
 
+`student` Agent preset 通过作用域内的 `/agent` 入口拥有模型能力。Host 路由和设置保持全局注册。侧栏入口跟随所选会话的投影；隐藏工作台保留原有存储。模式选择不迁移历史，也不授予文件系统权限。
+
 独立安装的[学生插件](../../packages/education/student/README.zh.md)拥有技能、参考、学习工具、交互侧栏与工作区状态。包位于 `packages/education`，不依赖创作插件。DSH 负责对话、模型、图片附件、工具历史和文件系统授权。插件不下载教材，也不提供独立辅导运行时。
 
 <a id="evidence"></a>

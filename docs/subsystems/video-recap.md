@@ -20,6 +20,8 @@ Create recaps and voiceovers, inspect source media and review delivered artifact
 <a id="ownership"></a>
 ## Packages and media access
 
+The `video-recap` Agent preset owns model capabilities through the scoped `/agent` entry. Host routes and settings remain global. Sidebar discovery follows the selected Session projection; hidden workbenches retain their existing stores. Mode selection does not migrate history or grant filesystem permissions.
+
 The [video-recap package](../../packages/creative/video-recap/README.md) owns its Skills, tools, `/video-recap` API and sidebar. Its bundle includes [production settings](production-settings.md). DSH owns Sessions, permissions, filesystem access, shell execution and jobs; the other creative plugins are not required.
 
 Routes restrict listings and reads to this domain, check trusted hosts and resolved containment, enforce file budgets, and support ranged media reads. Editable text uses observed file versions. Video preflight probes runtime dependencies and configured provider credentials; credential presence alone does not establish connectivity or authorize production.

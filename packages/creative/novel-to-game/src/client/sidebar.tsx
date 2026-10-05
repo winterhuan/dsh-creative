@@ -1,4 +1,5 @@
 /** Standalone game sidebar, using session files and conversation activity. */
+import { registerModeTab } from './mode.ts'
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-chat/client'
@@ -44,6 +45,10 @@ function GameSession({ t, sessionId, useStore, actions, useChat, useTabInfo }: G
 }
 
 function GameSidebar(props: GameSidebarProps) {
+  const preset = props.useSessions(state => state.byId[props.sessionId]?.projectionValues?.agentPreset)
+  const { tab } = props.useTabInfo()
+  useEffect(() => { if (typeof preset === 'string' && preset !== 'novel-to-game') tab.actions.close() }, [preset, tab.actions])
+  if (preset !== 'novel-to-game') return null
   return <div className="game-workspace"><GameSession key={props.sessionId} {...props} /></div>
 }
 
@@ -54,7 +59,7 @@ function GameSidebar(props: GameSidebarProps) {
 export function apply(context: Context): void {
   context.effect(() => context.locale.register(NS, { zh, en }), 'novel-to-game: dictionaries')
   const t = context.locale.bind(NS)
-  context.effect(() => context.sidebarRightTabs.register({
+  context.effect(() => registerModeTab(context, {
     id: '@winterhuan/dsh-creative/game',
     kind: 'creative-game',
     title: () => t('game.sidebar.title'),
@@ -71,4 +76,4 @@ export function apply(context: Context): void {
 /** Browser plugin identity. */
 export const name = 'novel-to-game'
 /** Services used by the game sidebar. */
-export const inject = ['slots', 'sessions', 'locale', 'sidebarRightTabs']
+export const inject = ['slots', 'sessions', 'uiSession', 'locale', 'sidebarRightTabs']
