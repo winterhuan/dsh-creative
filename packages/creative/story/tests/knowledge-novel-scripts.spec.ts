@@ -396,8 +396,10 @@ describe('bundled novel executable scripts', () => {
     expect(JSON.parse(result.stdout)).toMatchObject({ metric: 'visible_chars_v1', actual: 3, status: 'measured' })
   })
 
-  it('runs storyctl chapter checks through shared tracking and real Node checkers', async (context) => {
-    const cwd = await workspace(context)
+  it('runs chapter checks through the shipped CLI and real Node checkers', async (context) => {
+    const root = await workspace(context)
+    const cwd = join(root, '离线回归')
+    await mkdir(cwd)
     const input = join(cwd, 'initial.json')
     await writeFile(input, JSON.stringify({
       schema_version: 1,
@@ -420,7 +422,7 @@ describe('bundled novel executable scripts', () => {
     await writeFile(join(cwd, '大纲/细纲_第1章.md'), validLongOutline)
     const body = join(cwd, '正文/第1章.md')
     await writeFile(body, cleanProse)
-    const args = ['-B', script('storyctl.py'), 'chapter', 'check', '--project', cwd, '--chapter', '1']
+    const args = ['-B', script('cli.py'), 'chapter', 'check', '--workspace', root, '--book', '离线回归', '--chapter', '1']
     const clean = await run(context, cwd, python, args)
     expect(clean.exitCode, clean.stderr).toBe(0)
     expect(JSON.parse(clean.stdout)).toMatchObject({
@@ -430,7 +432,7 @@ describe('bundled novel executable scripts', () => {
     })
     await writeFile(body, 'TODO：补完这一段。\n')
     const blocked = await run(context, cwd, python, args)
-    expect(blocked.exitCode, blocked.stderr).toBe(2)
+    expect(blocked.exitCode, blocked.stderr).toBe(1)
     expect(JSON.parse(blocked.stdout)).toMatchObject({
       quality: { status: 'fail', blocking_findings: [expect.objectContaining({ source: 'degeneration', severity: 'blocking' })] },
       available_actions: [],
@@ -440,13 +442,15 @@ describe('bundled novel executable scripts', () => {
       await writeFile(join(cwd, '大纲/细纲_第1章.md'), validLongOutline.replace('字数目标：500', `字数目标：${target}`))
       const invalid = await run(context, cwd, python, args)
       expect(invalid.exitCode, invalid.stderr).toBe(2)
-      expect(JSON.parse(invalid.stdout)).toMatchObject({ error_code: 'CHECK_FAILED' })
+      expect(JSON.parse(invalid.stdout)).toMatchObject({ error_code: 'INVALID_INPUT' })
       expect(JSON.parse(invalid.stdout).message).toContain('字数目标 must appear exactly once with one value')
     }
   })
 
   it.for(['commit', 'accept-current-length'])('%s preserves mechanical checks without requiring a review record', async (action, context) => {
-    const cwd = await workspace(context)
+    const root = await workspace(context)
+    const cwd = join(root, '缺页账册')
+    await mkdir(cwd)
     const initial = join(cwd, 'initial.json')
     await writeFile(initial, JSON.stringify({
       schema_version: 1,
@@ -505,8 +509,8 @@ describe('bundled novel executable scripts', () => {
     }
     await writeFile(transactionPath, JSON.stringify(transaction))
     const command = [
-      '-B', script('storyctl.py'), 'chapter', action,
-      '--project', cwd, '--chapter', '1', '--input', transactionPath,
+      '-B', script('cli.py'), 'chapter', action,
+      '--workspace', root, '--book', '缺页账册', '--chapter', '1', '--input', transactionPath,
     ]
     const committed = await run(context, cwd, python, command)
     expect(committed.exitCode, `${committed.stdout}\n${committed.stderr}`).toBe(0)
@@ -563,7 +567,7 @@ describe('bundled novel executable scripts', () => {
       '-B', resolve(import.meta.dirname, 'fixtures/knowledge-chapter-freshness.py'), script('storyctl.py'),
     ])
     expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
-    expect(result.stderr).toContain('Ran 9 tests')
+    expect(result.stderr).toContain('Ran 11 tests')
   })
 
   it('classifies Zhuque detection reports and failures offline', async (context) => {

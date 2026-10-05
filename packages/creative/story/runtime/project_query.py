@@ -48,8 +48,8 @@ def project_query(project: Path, tracking: Any, *, kind: str | None = None, sear
     tracking.require(chapter is None or chapter > 0, "chapter must be positive")
     tracking.require(kind != "chapter" or chapter is not None, "--kind chapter requires --chapter")
     path = source_path(project, STATE_SOURCE, tracking)
-    lock = source_path(project, "追踪/.tracking-commit.lock", tracking)
-    tracking.require(not lock.exists(), "tracking commit is in progress; retry the query after it finishes")
+    source_path(project, "追踪/.tracking-commit.lock", tracking)
+    tracking.require(not tracking.project_commit_in_progress(project), "tracking commit is in progress; retry the query after it finishes")
     if not path.exists():
         tracking.require(expected_revision is None, "tracking state disappeared; restart the query")
         return {"schema": "story-project-query/v1", "initialized": False, "source": STATE_SOURCE}
@@ -121,5 +121,5 @@ def project_query(project: Path, tracking: Any, *, kind: str | None = None, sear
         result["omitted"] = len(rows) - count
         result["next_offset"] = offset + count if offset + count < len(rows) else None
     tracking.require(len(encoded(result)) <= QUERY_MAX_BYTES, "query exceeds byte budget; narrow its scope")
-    tracking.require(not lock.exists() and path.read_bytes() == original, "tracking changed during query; restart from offset 0")
+    tracking.require(not tracking.project_commit_in_progress(project) and path.read_bytes() == original, "tracking changed during query; restart from offset 0")
     return result

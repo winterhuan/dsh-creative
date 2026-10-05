@@ -1,5 +1,4 @@
 """Read-only continuity queries use actual state across 500 chapters without loading prose."""
-import importlib.util
 import json
 import sys
 import tempfile
@@ -7,9 +6,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-spec = importlib.util.spec_from_file_location("storyctl", sys.argv.pop(1))
-storyctl = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(storyctl)
+# The argument is the storyctl.py path; the query modules live beside it.
+sys.path.insert(0, str(Path(sys.argv.pop(1)).resolve().parent))
+
+import project_query
+import tracking_commit
+
 fixture = Path(__file__).with_name("continuity-state.json")
 
 
@@ -21,8 +23,8 @@ class ProjectQuery(unittest.TestCase):
         (self.project / "追踪/逐章记录").mkdir(parents=True)
         self.path = self.project / "追踪/_tracking-state.json"
         self.path.write_bytes(fixture.read_bytes())
-        self.tracking = storyctl._tracking_module()
-        self.query_module = storyctl._load_local_module("project_query", "project_query.py")
+        self.tracking = tracking_commit
+        self.query_module = project_query
 
     def query(self, **kwargs):
         return self.query_module.project_query(self.project, self.tracking, **kwargs)
@@ -92,11 +94,10 @@ class ProjectQuery(unittest.TestCase):
     def test_rejects_changed_revision_busy_commit_and_unsafe_path(self):
         with self.assertRaisesRegex(self.tracking.TrackingError, "revision changed"):
             self.query(expected_revision=6)
-        lock = self.project / "追踪/.tracking-commit.lock"
-        lock.touch()
-        with self.assertRaisesRegex(self.tracking.TrackingError, "in progress"):
-            self.query()
-        lock.unlink()
+        with self.tracking.project_write_lock(self.project):
+            with self.assertRaisesRegex(self.tracking.TrackingError, "in progress"):
+                self.query()
+        self.assertEqual(self.query()["through_chapter"], 500)
         with self.assertRaisesRegex(self.tracking.TrackingError, "leaves"):
             self.query_module.source_path(self.project, "../other-book", self.tracking)
 

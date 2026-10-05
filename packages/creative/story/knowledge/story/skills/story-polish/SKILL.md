@@ -9,7 +9,7 @@ description: "小说润色与去 AI 腔：根据原文问题改善表达、对�
 
 长篇和短篇都使用 `{工作区}/{作品名}/` 直接子目录。Session 工作区保持在其父级；工作区、`拆文库/` 和长短篇分类容器不是作品。无法从请求确定目标时先确认作品，不按修改时间跨书选择，也不自动迁移文件。
 
-本 Skill 的参考路径相对 `SKILL.md`；只按当前问题读取 `references/`，不加载其他 Skill 的私有参考。跨任务用 `skill` 加载准确名称。`{CLI}` 是从本 Skill 目录向上四级解析的 `lib/cli.js` 绝对路径；运行 `node {CLI} <命令> --help` 查参数，实际结果以 `--json` 返回为准。作品命令显式传 `--workspace {工作区} --book {作品名}`；不依赖工作区 PATH，不直接运行包内私有脚本。
+本 Skill 的参考相对 `SKILL.md` 解析，只按当前问题读取 `references/`，不加载其他 Skill 的私有参考；跨任务用 `skill` 加载准确名称。`{CLI}` 由本 Skill 目录上四级定位 `lib/cli.js`，参数查 `--help`、结果以 `--json` 为准；作品命令显式传 `--workspace` 与 `--book`，不依赖 PATH，不直接运行包内私有脚本。
 
 1. 读取目标正文、前后文和必要细纲，直接用 `memory query` 查询已有且匹配的 active 作者写法，无需创建偏好。
 2. 用原文引句定位空泛、重复、同质对白、节奏或信息关系问题。按需读 [表达诊断](references/methods/anti-ai-writing.md)，短篇特有表达读 [短篇润色](references/short-expression.md)；它们是诊断提示，不是清零清单。

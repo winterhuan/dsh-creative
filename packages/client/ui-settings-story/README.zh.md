@@ -64,7 +64,6 @@ kind: "package-reference"
 <a id="known-limitations-and-deferred-work"></a>
 
 - **命名空间覆盖范围** — 页面编辑小说插件上的朱雀凭据引用。该命名空间里的文件大小和受信任主机字段不在此显示。
-- **运行时不变量：** 不发布 companion。本包不拥有自有关系：它显示的内容来自设置镜像与凭据域，写入的内容由 Host 校验。
 
 <a id="dev-note"></a>
 ### 开发备注

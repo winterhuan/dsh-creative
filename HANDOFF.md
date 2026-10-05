@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-04。
+最后更新：2026-10-05。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -25,10 +25,12 @@
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
-- 依赖 npm 上发布的 DSH `0.2.0-rc.2`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
+- 依赖 npm 上发布的 DSH `0.2.1-alpha.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-- 9 个包都位于 `@winterhuan` scope 下。
+- 10 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
+
+2026-10-05 DSH 升级：10 个插件包的 247 处 DSH 依赖声明统一为 `0.2.1-alpha.1`，插件自身版本不变；对齐配套 Cordis 依赖，迁移 typert 补丁，移除 invariant 构建入口，构建显式使用 native config loader。短剧生产投影适配工具结果的 `name` 与 `PartialArguments`。清理构建后 `typecheck`、`build`、75 个文件 762 项测试通过，peer 检查无冲突。隔离新版 DSH 已验证聚合安装、小说独立安装配置、500 章概览、六个小说技能参考预览、正文保存和外部修改冲突，以及四个工作台入口；小说、创意生产设置与模型思考／重试控件可见，页面脚本错误为零。文档 16 项和规范 3 项检查通过。概览阶段写请求为零，追踪哈希不变。媒体生产和真实模型调用未验证。
 
 2026-09-30 四领域拆分验证：清理构建产物后 `typecheck`、`build` 通过；全量 59 个文件、577 项测试通过。文档 16 项、规范 3 项通过，归档完整性通过。四个领域均有独立包与侧栏；Creative 聚合页面已移除；通过聚合包安装的小说保存、短剧生产页、视频播放和游戏独立入口在临时 web profile 验证，无页面脚本异常。三个新包的压缩包安装、浏览器检查与 16 项包内资源检查通过；已有设置包尚未发布到 npm，压缩包验证用临时 profile 的 pnpm override 指向它的本地压缩包。游戏此前的独立包、压缩包、聚合与三种模板 Chrome QA 已通过。未修改用户 profile。
 
@@ -55,7 +57,7 @@
 
 仓库远程为 `git@github.com:winterhuan/dsh-creative.git`。
 
-本次接口核对基于 `dsh-v0.1.7-rc.2..dsh-v0.2.0-rc.2`：
+2026-09-29 接口核对基于 `dsh-v0.1.7-rc.2..dsh-v0.2.0-rc.2`：
 
 | 插件接入点 | 上游变化与适配结论 |
 |---|---|
@@ -67,7 +69,7 @@
 
 游戏页在没有项目时显示空状态，并保留鼠标及键盘切换其他模式的入口。
 
-上游新增功能的使用说明由上游维护：[自动化任务](upstream/packages/experimental/schedule-bundle/README.zh.md)默认禁用，[限时提问](upstream/packages/interaction/tool-ask-user/README.zh.md)需显式选择 timed 模式；本次版本适配不改变 Creative 的默认生产流程。
+上游新增功能的使用说明由上游维护：[自动化任务迁移](upstream/docs/upgrade-guide/v0.2.0-rc.2/schedule-bundle-retired/guide.zh.md)说明提醒工具的 preset 接入，[限时提问](upstream/packages/interaction/tool-ask-user/README.zh.md)需显式选择 timed 模式；本次版本适配不改变 Creative 的默认生产流程。
 
 ## 2. 仓库结构
 
@@ -98,7 +100,7 @@ dsh-creative/
 │   └── vitest-upstream-client.ts      仅测试用：从 upstream/ 读取 DSH 客户端源码（本仓库自有）
 ├── types/client-build-environment/    客户端构建期 process.env 的环境声明（上游拷贝）
 ├── patches/                           typert 生成器补丁（pnpm patchedDependencies）
-├── upstream/                          子模块，固定在 dsh-v0.2.0-rc.2；只读
+├── upstream/                          子模块，固定在 dsh-v0.2.1-alpha.1；只读
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
@@ -259,10 +261,10 @@ pnpm run clean                # 删除 packages/*/*/lib
 
 ## 5. 在 DSH 中安装、调试和移除
 
-下面的步骤已在 DSH `0.2.0-rc.2` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
+下面的安装与启动步骤已在 DSH `0.2.1-alpha.1` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
 
 ```sh
-# 使用已安装的 DSH 0.2.0-rc.2
+# 使用已安装的 DSH 0.2.1-alpha.1
 cd ~/dsh-creative && pnpm run build
 
 # 从 web 模板创建 profile，--dump-config 使它只创建、不启动
@@ -281,7 +283,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 - 必须先从 web 模板创建 profile。profile 不存在时，第一次 `dsh plugin add` 会建一个只有 `@deepseek-ai/dsh-base` 的 profile，没有 web 应用。
 - `dsh plugin add <路径>` 用 `link:` 安装。改代码后 `pnpm run build`，再重启 dsh 即可生效。
 - 想不碰 `~/.dsh` 做隔离测试，就给每条命令加上 `DSH_HOME=/tmp/<目录>`。
-- 确认浏览器 bundle 已加载：页面 HTML 的 `plugins/??...` 列表里应有 `@winterhuan/dsh-creative/client.js`、`@winterhuan/dsh-client-ui-skill-viewer/client.js`、`@winterhuan/dsh-client-ui-settings-creative-produce/client.js` 和 `@winterhuan/dsh-client-ui-settings-story/client.js`。
+- 确认浏览器 bundle 已加载：页面 HTML 的 `plugins/??...` 列表里应有 四个领域包的 `client.js`、`@winterhuan/dsh-client-ui-skill-viewer/client.js`、`@winterhuan/dsh-client-ui-settings-creative-produce/client.js` 和 `@winterhuan/dsh-client-ui-settings-story/client.js`。
 - 用 curl 检查本地服务时：本机设置了 SOCKS 形式的 `all_proxy`，curl 访问 127.0.0.1 也会走代理，需要加 `--noproxy '*'`。token 地址会先 303 跳转到 `./`，还需要 `-L` 和 cookie（`-c`/`-b`）。
 - 移除：
 
@@ -292,13 +294,13 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 
 ## 6. 依赖策略
 
-- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.0-rc.2`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
-- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.4`，`cordis-plugin-loader` 写 `~1.0.5`，`cordis-plugin-include` 写 `~1.0.9`，`schemastery` 写 `~3.18.4`，与 DSH `0.2.0-rc.2` 声明的范围一致。
+- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.1-alpha.1`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
+- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.5-alpha.1`，`cordis-plugin-loader` 写 `~1.0.6-alpha.1`，`cordis-plugin-include` 写 `~1.0.10-alpha.1`，`schemastery` 写 `~3.18.5-alpha.1`。根开发依赖显式提供 `cordis-plugin-group` 的 `~1.0.5-alpha.1`，满足 `dsh-app-boot` 的 peer 范围。
 - **分类**：沿用上游的分类，上游已用 `package-dependency-policy` 检查过。
   - 需要与宿主共享实例的 DSH 包同时放进 `peerDependencies` 和 `devDependencies`。运行时 peer 由正在运行的 dsh 安装提供，devDependencies 只给类型检查和测试用。
   - 无状态工具放 `dependencies`。这是 DSH 发布文档（`upstream/docs/user/develop/basic/publish.md`）的规则。
 - **仓库内部包**之间用 `workspace:*`。
-- **新发布版本**：pnpm 11 为本次选定的 89 个 DSH 包自动记录了精确到 `0.2.0-rc.2` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
+- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.1-alpha.1` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
 - **根 `package.json` 的 devDependencies** 分三类：
   1. 工具链：`typescript` ^6.0.3、`tsdown` ^0.22.2、`vitest` ^4.1.8、`jsdom` 29.1.1、`lightningcss`、`@types/node`、`@testing-library/dom`、`@testing-library/react`，以及 `@deepseek-ai/dsh-typert-generator`。
   2. DSH 平台模块在 Node 里要用、却没有声明的依赖（浏览器里由 web 前端打包提供）：
@@ -342,7 +344,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
   - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
 
   从 npm 安装时，协议包在 `node_modules` 里，两个条件都不满足，skill-viewer 的 `@Remote` 方法被忽略。这是生成器只考虑 monorepo 场景造成的缺口。
-- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.0-rc.2.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
+- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.1-alpha.1.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
 
   ```diff
            if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
@@ -447,11 +449,11 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 
 ## 8. 从上游复制的文件及本地改动
 
-下面 7 个文件的第一行记录原始复制版本 `dsh-v0.1.7-rc.2`。已比较该版本到 `dsh-v0.2.0-rc.2` 的对应上游文件，没有变化，因此保留复制版本标注和现有本地改动。
+下面 7 个文件已核对至 `dsh-v0.2.1-alpha.1`。`scripts/tsdown.client.ts` 同步移除 invariant 构建说明并更新复制版本标注；其余 6 个文件的上游内容未变，保留原始 `dsh-v0.1.7-rc.2` 标注和现有本地改动。
 
 | 本仓库文件 | 上游来源 | 本地改动 |
 |---|---|---|
-| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)` |
+| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；与新版同步移除 invariant 参数说明 |
 | `scripts/client-build-environment.ts` | `scripts/client-build-environment.ts` | `CLIENT_ARTIFACT_PATTERNS` 删掉 `apps/web/dist/**/*` |
 | `scripts/bundle-input-isolation.ts` | `scripts/bundle-input-isolation.ts` | 仅首行标注 |
 | `scripts/platform.ts` | `packages/client/web/src/platform.ts` | 仅首行标注 |
@@ -467,7 +469,7 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 |---|---|---|
 | `tsconfig.base.json` | `tsconfig.base.json` | 去掉 `paths` |
 | `tsconfig.base.client.json` | `tsconfig.base.client.json` | `typeRoots` 指向本仓库的 `./types` |
-| `tsdown.config.ts` | `tsdown.config.ts` | `workspace` 为 `packages/*/*`；`typertPlugin` 从 npm 包 `@deepseek-ai/dsh-typert-generator/tsdown` 导入 |
+| `tsdown.config.ts` | `tsdown.config.ts` | `workspace` 为 `packages/*/*`；`typertPlugin` 从 npm 包 `@deepseek-ai/dsh-typert-generator/tsdown` 导入；入口为 `{index,startup}`，构建命令显式使用 `--config-loader native` |
 
 对比上游当前版本：
 
@@ -542,3 +544,9 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 
 - 读取本机全局 DSH 的 `package.json`，版本已为 `0.2.0-rc.2`；本轮未修改全局安装或用户 profile。
 - 联网后安装了仓库的目标依赖，并在临时 `DSH_HOME` 和临时项目中完成浏览器验证。临时设置与项目内容不写入用户 profile。
+
+2026-10-05：
+
+- 在 `/tmp/dsh-alpha-qa.SvMvfU` 安装 DSH `0.2.1-alpha.1`，使用独立 `DSH_HOME`、profile 与临时作品完成 Chrome 验证；结果和截图保留在该目录。
+- macOS 本地启动默认使用原生目录选择器；自动化验证在临时 profile 禁用 `directory-picker`，另挂 browse Host 与 Client 两行。
+- 隔离浏览器和服务已关闭。本轮未升级全局 DSH、未修改用户 profile 或真实小说文件。

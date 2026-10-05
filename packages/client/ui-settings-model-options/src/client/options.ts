@@ -22,7 +22,7 @@ export interface ReasoningDraft {
 /** Restore the inherited retry limit or set a finite number of additional attempts. */
 export type RetryDraft = { mode: 'inherit' } | { mode: 'normal'; count: string }
 
-// Normal-mode defaults when retryableCodes is omitted in DSH 0.2.0-rc.2.
+// Normal-mode defaults when retryableCodes is omitted in DSH 0.2.1-alpha.1.
 const DEFAULT_RETRYABLE_CODES = ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT'] as const
 
 /** Edits retain the exact snapshot from which the first field was changed. */

@@ -4,8 +4,8 @@
 
 ## 必须遵守
 
-- 不修改 `upstream/`。它是固定在 `dsh-v0.2.0-rc.2`的子模块，只用作代码参考和客户端单元测试的源码。
-- DSH 包统一写精确版本 `0.2.0-rc.2`，不要写 `*` 或 `latest`：npm 上 DSH 包的 `latest` 标签指向过期版本。
+- 不修改 `upstream/`。它是固定在 `dsh-v0.2.1-alpha.1`的子模块，只用作代码参考和客户端单元测试的源码。
+- DSH 包统一写精确版本 `0.2.1-alpha.1`，不要写 `*` 或 `latest`：该版本发布在 `alpha` 通道，升级时核对目标版本与 Cordis 配套范围。
 - 新用到 `ctx.remote.<命名空间>` 时，把提供它的 DSH 包加进该包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。
 - `scripts/` 和 `types/` 里首行标着 `Copied from deepseek-harness` 的文件是上游拷贝；修改或重新同步后，更新 HANDOFF.md 第 8 节的改动表。
 - 客户端 UI 的改动要在真实 dsh 里验证（HANDOFF.md 第 5 节）；单元测试覆盖不到浏览器里的行为。

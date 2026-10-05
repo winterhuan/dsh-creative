@@ -35,7 +35,7 @@ node {CLI} chapter accept-current-length --workspace {工作区} --book {作品�
 - `chapter accept-current-length`：只接受带外但 quality pass 的章节，接受动作发生时重新读取、重新计数并立即原子提交，不保存可陈旧的历史决议。
 - `check`：严格验证 state schema、逐章记录连续性/规范名/体积、固定 7 栏、角色快照硬上限、派生文件集合，以及所有派生视图与 state 的逐字一致性。
 
-每本书由 `追踪/.tracking-commit.lock` 串行写事务，`expected_state_revision` 再拒绝基于旧状态构造的 stale transaction。两个不同事务并发时至多一个修订成功。字数记录也在锁内对当前正文和目标重新验证，正文或目标变化会让预先构造的记录直接失败。
+每本书通过 `追踪/.tracking-commit.lock` 上的操作系统文件锁串行写事务；进程退出即释放锁，锁文件常驻磁盘，不应删除。提交中断时先读取 `project status`：修订号未变则保留原输入重试提交，再执行 `project check`；修订号已变则重读状态和实际文件，不能盲目重放。`expected_state_revision` 再拒绝基于旧状态构造的 stale transaction。两个不同事务并发时至多一个修订成功。字数记录也在锁内对当前正文和目标重新验证，正文或目标变化会让预先构造的记录直接失败。
 
 事务 JSON 在成功前必须保留；审稿意见留在原生会话或按用户需要交付的 Markdown 中，不混入故事事实追踪。初始化临时文件和正文片段可在验证成功后清理。若文件写入失败，`_tracking-state.json` 尚未推进；修正环境后直接重跑**同一份** `commit`。append 重跑只接受内容完全相同的既有逐章记录，不维护 `dirty/pending/repair` 状态机。
 

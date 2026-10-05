@@ -68,7 +68,6 @@ None; viewer reads assemble no provider request.
 - **Bodies are served verbatim** — rendering stays in the client package.
 - **Ranks and shadowed names stay hidden** — the registry exposes only the winning summary per name, so the viewer cannot show duplicate resolution or per-provider diagnostics.
 
-**Runtime invariant:** No companion is published. This package is a read-only projection of the `skills` registry onto one Remote namespace. It emits no Cordis events and owns no cross-plugin mutable state.
 
 <a id="dev-note"></a>
 ### Dev Note

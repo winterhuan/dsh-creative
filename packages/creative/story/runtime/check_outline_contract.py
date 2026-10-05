@@ -9,18 +9,17 @@ judge whether the outlined actions or consequences make a good story.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import re
 import sys
 from pathlib import Path
 from typing import Any
 
-_CORE_SPEC = importlib.util.spec_from_file_location("story_outline_wordcount", Path(__file__).with_name("wordcount_core.py"))
-if _CORE_SPEC is None or _CORE_SPEC.loader is None:
-    raise RuntimeError("unable to load wordcount core")
-core = importlib.util.module_from_spec(_CORE_SPEC)
-_CORE_SPEC.loader.exec_module(core)
+_RUNTIME = Path(__file__).resolve().parent
+if str(_RUNTIME) not in sys.path:
+    sys.path.insert(0, str(_RUNTIME))
+
+import wordcount_core as core
 
 # The outline template lives in references/long/workflow-setup.md.
 FIELDS = (

@@ -1,5 +1,6 @@
 /** Incremental projection of existing native and PTC results into production requests. */
 import type { Context } from '@deepseek-ai/cordis'
+import { PartialArguments } from '@deepseek-ai/dsh-util-values'
 import type { SessionEventLike } from '@deepseek-ai/dsh-api-session-controller/client'
 import type {
   ConversationNodeContext, ConversationNodeDefinition, ConversationViewDefinition,
@@ -30,12 +31,14 @@ function decode(event: SessionEventLike, call: ToolResultNode['call'] = null, ca
     result = {
       kind: 'tool-result', seq: event.seq, time: event.time,
       callId: String(event.data.message.source.callId),
+      name: call?.name ?? '', args: call === null ? PartialArguments.EMPTY : PartialArguments.fromText(call.argsRaw),
       call, callTime, content: event.data.message.content,
       isError: event.data.message.isError === true, meta: event.data.meta, subCalls: [],
     }
   } else if (event.type === 'tool/ptc-dispatch') {
     result = {
       kind: 'tool-result', seq: event.seq, time: event.time, callId: String(event.data.subCallId),
+      name: event.data.name, args: PartialArguments.fromObject(event.data.arguments),
       call: { name: event.data.name, argsRaw: JSON.stringify(event.data.arguments) },
       callTime: null, content: event.data.content, isError: event.data.isError, subCalls: [],
     }

@@ -2,17 +2,22 @@
 
 import copy
 import hashlib
-import importlib.util
 import json
+import os
+import selectors
+import signal
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-spec = importlib.util.spec_from_file_location("storyctl", sys.argv.pop(1))
-storyctl = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(storyctl)
+# The argument is the storyctl.py path; the runtime modules live beside it.
+sys.path.insert(0, str(Path(sys.argv.pop(1)).resolve().parent))
+
+import storyctl
+import tracking_commit
 
 
 class ChapterFreshness(unittest.TestCase):
@@ -26,7 +31,7 @@ class ChapterFreshness(unittest.TestCase):
         self.outline = self.project / "大纲/细纲_第1章.md"
         self.body.write_bytes("甲乙丙丁。\r\n".encode("utf-8"))
         self.outline.write_text("- 字数目标：5\n- 字数口径：visible_chars_v1\n", encoding="utf-8")
-        self.tracking = storyctl._tracking_module()
+        self.tracking = tracking_commit
         self.tracking.initialize(self.project, {
             "schema_version": 1, "book_title": "版本检查", "last_chapter": 0,
             "context": {"position": {"volume": "第一卷", "volume_start_chapter": 1, "story_time": "清晨", "scene": "门外"}},
@@ -141,6 +146,67 @@ class ChapterFreshness(unittest.TestCase):
     def test_direct_transaction_without_hashes_still_works(self):
         state = self.tracking.apply_transaction(self.project, copy.deepcopy(self.transaction))
         self.assertEqual(state["last_committed_chapter"], 1)
+
+    def interrupted_commit(self, termination_signal):
+        document = self.checked_transaction()
+        transaction_path = self.project / "transaction.json"
+        transaction_path.write_text(json.dumps(document), encoding="utf-8")
+        runtime = Path(self.tracking.__file__).parent
+        child_code = '''
+import json, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+import tracking_commit as tracking
+project = Path(sys.argv[2])
+write = tracking.atomic_write_text
+def pause_before_state(path, payload):
+    if path == tracking.state_path(project):
+        print("ready", flush=True)
+        sys.stdin.read()
+    write(path, payload)
+tracking.atomic_write_text = pause_before_state
+tracking.apply_transaction(project, json.loads((project / "transaction.json").read_text()))
+'''
+        child = subprocess.Popen([sys.executable, "-B", "-c", child_code, str(runtime), str(self.project)],
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        def cleanup():
+            if child.poll() is None:
+                child.kill()
+            child.communicate(timeout=30)
+        self.addCleanup(cleanup)
+        with selectors.DefaultSelector() as selector:
+            selector.register(child.stdout, selectors.EVENT_READ)
+            self.assertTrue(selector.select(timeout=30), "commit did not reach the state-write barrier")
+        self.assertEqual(child.stdout.readline().strip(), "ready")
+        self.assertTrue(self.tracking.project_commit_in_progress(self.project))
+        with self.assertRaisesRegex(self.tracking.TrackingError, "in progress"):
+            with self.tracking.project_write_lock(self.project, timeout_seconds=0):
+                self.fail("concurrent writer acquired the lock")
+        cli = [sys.executable, "-B", str(runtime / "cli.py"), "project", "status",
+               "--workspace", str(self.project.parent), "--book", self.project.name, "--json"]
+        busy = subprocess.run(cli, capture_output=True, text=True, timeout=30)
+        self.assertEqual(busy.returncode, 2, busy.stderr)
+        self.assertIn("in progress", busy.stdout)
+        child.send_signal(termination_signal)
+        child.wait(timeout=30)
+        self.assertEqual(child.returncode, -termination_signal)
+        self.assertFalse(self.tracking.project_commit_in_progress(self.project))
+        self.assertTrue((self.project / "追踪/逐章记录/第001章.md").exists())
+        status = subprocess.run(cli, capture_output=True, text=True, timeout=30)
+        self.assertEqual(status.returncode, 0, status.stderr)
+        self.assertEqual(json.loads(status.stdout)["state_revision"], 0)
+        self.assertTrue(self.commit(document)["tracking_committed"])
+        state = self.tracking.check_project(self.project)
+        self.assertEqual(state["state_revision"], 1)
+        self.assertEqual(state["last_committed_chapter"], 1)
+
+    @unittest.skipIf(os.name == "nt", "POSIX signals and pipe readiness")
+    def test_sigterm_releases_lock_and_same_transaction_repairs_partial_commit(self):
+        self.interrupted_commit(signal.SIGTERM)
+
+    @unittest.skipIf(os.name == "nt", "POSIX signals and pipe readiness")
+    def test_sigkill_releases_lock_and_same_transaction_repairs_partial_commit(self):
+        self.interrupted_commit(signal.SIGKILL)
 
 
 if __name__ == "__main__":

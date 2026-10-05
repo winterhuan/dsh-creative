@@ -27,7 +27,7 @@ kind: "package-bundle"
 
 ### 安装
 
-构建本仓库后，将本地组合包安装到已有的 DSH web profile。将 `model-options` 替换为你的 profile 名称。DSH 依赖固定为 `0.2.0-rc.2`；本包可独立安装，Creative 不包含本包。
+构建本仓库后，将本地组合包安装到已有的 DSH web profile。将 `model-options` 替换为你的 profile 名称。DSH 依赖固定为 `0.2.1-alpha.1`；本包可独立安装，Creative 不包含本包。
 
 ```sh
 dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/client/ui-settings-model-options
@@ -71,7 +71,7 @@ dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/clien
 
 [草稿操作](src/client/options.ts)通过现有数组元素寻址自定义模型，通过 `modelOverrides` 寻址内置模型。每次保存携带首次编辑或打开批量预览时的版本号，仅修改所选字段。更改内置模型不会复制整个目录，凭据和重试退避保持原值。无效请求、认证和额度错误选项分别只增加或移除对应的错误分类。未配置分类时采用固定版本的 DSH 默认值；若移除可选分类后留下空列表，界面说明将恢复默认的临时错误分类。适配器验证保存的设置，并向已有聊天选择器发布实时能力。
 
-本包不拥有独立可观测的 Host 状态，因此不提供运行时不变量安装器。测试覆盖字段编辑、运行时能力报告、重试默认值一致性、错误分类保留、只读控件、草稿保留、版本冲突和插槽释放。
+测试覆盖字段编辑、运行时能力报告、重试默认值一致性、错误分类保留、只读控件、草稿保留、版本冲突和插槽释放。
 
 </details>
 

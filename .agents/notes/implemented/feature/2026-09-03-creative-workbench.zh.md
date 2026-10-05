@@ -60,7 +60,7 @@ Creative 保留这些 HTTP 路由，因为通用的 `workspaceFiles` Remote 没�
 
 执行状态只来自 DSH `jobs` store 中该 Session 的行，通过 `jobs.watchRows` 监听；监听开始前，作业卡片显示加载中。历史上未绑定的请求仍然只是请求；Host 重启后找不到的已绑定作业显示为不可用，而不是完成或自动重启。一张卡片可以拥有多个作业，已结束作业的数量、Turn、文件或估算百分比都不能证明计划的产出已经成功。前台结果分别保留退出码、超时、信号和有界输出；退出码非零或未知时生产失败。
 
-停止路由要求作业属于当前 Session，并核对精确的 `jobId` 和 `startedAt`，引用过期时拒绝，然后调用 `jobs.kill`。已接纳但还没有作业的请求没有停止操作。停止既不取消对话，也不消费输出；框架的 kill 语义把终止投递标记为已报告，不注入模型可见的结果，这条控制流由 [后台作业展示决定](../../../../upstream/.agents/notes/implemented/feature/2026-08-08-web-background-job-display.md) 负责。
+停止路由要求作业属于当前 Session，并核对精确的 `jobId` 和 `startedAt`，引用过期时拒绝，然后调用 `jobs.kill`。已接纳但还没有作业的请求没有停止操作。停止既不取消对话，也不消费输出；框架的 kill 语义把终止投递标记为已报告，不注入模型可见的结果，这条控制流由 [后台作业展示决定](../../../../upstream/.agents/notes/archived/feature/2026-08-08-web-background-job-display.md) 负责。
 
 [短剧成片决策](2026-09-27-short-drama-finished-episode.zh.md)拥有一致文档快照、Python 结构诊断、媒体验证和输出清单。[游戏证据决策](2026-09-27-novel-to-game-playability-evidence.zh.md)拥有 Chrome QA 与认证；[视频交付决策](2026-09-27-video-recap-delivery-and-compliance.zh.md)拥有本地草稿、交付度量证据和共享媒体运行时。
 

@@ -168,7 +168,7 @@ description: |
 - 已知角色列表（从设定文件提取）
 - 检查重点（可选：只检查某类冲突）
 
-输出格式（S1-S4 分级）：
+普通审稿用可读报告并按 S1-S4 标注严重度；调用方要求固定字段时再给出下列形状（S1-S4 分级）：
 ```
 VERDICT: APPROVE / CONCERNS / REJECT
 CONFLICTS:

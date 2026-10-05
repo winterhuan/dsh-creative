@@ -7,12 +7,12 @@ export interface WorkspaceFile {
   readonly path: string
   readonly bytes: number
   readonly version: string
-  readonly kind: 'text' | 'media'
-  readonly mimeType?: string | undefined
 }
 /** Session workspace index with an explicit completeness flag. */
 export interface WorkspacePayload {
   readonly cwd: string
+  /** Absent while the running host still serves the file-only response. */
+  readonly books?: readonly string[]
   readonly files: readonly WorkspaceFile[]
   readonly truncated: boolean
   readonly mode: 'dsh-session'

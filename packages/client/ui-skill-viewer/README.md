@@ -57,7 +57,6 @@ None; the package never assembles or sends provider requests.
 - **Search filters catalog metadata only** — it does not scan instruction bodies.
 - **There is no watch** — reopening preserves settled caches; use Refresh to read on-disk changes.
 
-**Runtime invariant:** No companion is published. This package is a read-only browser projection of the `skillViewer` Remote namespace onto one sidebar slot entry. It emits no Cordis events and owns no cross-plugin mutable state.
 
 <a id="dev-note"></a>
 ### Dev Note

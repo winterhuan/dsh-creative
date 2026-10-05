@@ -83,7 +83,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
 
-每个 Skill 拥有自己的 `references/`，专业 Role 放在所属 Skill 的 `references/roles/`。`story-write` 与 `story-analyze` 各自拥有 workflow 模板，Skill Viewer 直接发现并预览本地参考。包内 `lib/cli.js` 启动 `runtime/` 中的 Python 调度器，并向进程组转发取消信号。内部 Python 与 JavaScript 模块保留既有追踪事务、共用章文件路径和目标字数解析。小说工作区响应包含文件列表和截断状态。
+每个 Skill 拥有自己的 `references/`，专业 Role 放在所属 Skill 的 `references/roles/`。`story-write` 与 `story-analyze` 各自拥有 workflow 模板，Skill Viewer 直接发现并预览本地参考。包内 `lib/cli.js` 启动 `runtime/` 中的 Python 调度器，并向进程组转发取消信号。内部 Python 与 JavaScript 模块保留既有追踪事务、共用章文件路径和目标字数解析。小说工作区响应包含独立作品列表、上限为 1,000 项的文件列表及文件截断状态。作品发现检查直属子目录中的标准目录或独立文档，达到文件上限后仍继续；概览直接读取所选作品的追踪。运行中的 Host 未提供作品列表时，客户端从文件列表识别作品，直到 Host 重启。事务写入使用进程退出时释放的操作系统文件锁；锁文件常驻磁盘，不应删除。写入中断后，先重试原事务，再检查派生视图。
 
 </details>
 

@@ -18,7 +18,7 @@
 
 独立的 `creative-game` 侧边栏拥有仅含游戏状态的 Session store，读取 `/novel-to-game` API。游戏包提供四个任务技能、原著辅助脚本、`game_qa` 和隔离预览。Creative 没有浏览器页面，保留兼容 QA 与预览别名，不自行注册游戏 provider。
 
-小说 Skill 各自拥有参考和 Role。确定性操作使用包内 `dsh-story` CLI；章节与拆文的原生 workflow 归属各自 Skill，父会话校验并保存提取的拆文卡片。小说的长篇和短篇统一使用 `{工作区}/{作品名称}/`。项目发现、文件路由、跳转与写作指引使用同一边界；工作区级拆文库与作品身份分开。
+小说 Skill 各自拥有参考和 Role。确定性操作使用包内 `dsh-story` CLI；章节与拆文的原生 workflow 归属各自 Skill，父会话校验并保存提取的拆文卡片。小说的长篇和短篇统一使用 `{工作区}/{作品名称}/`。项目发现、文件路由、跳转与写作指引使用同一边界；工作区级拆文库与作品身份分开。作品列表独立于有数量上限的文件列表，文件截断不会隐藏概览中的作品。
 
 四个领域插件独立安装。Creative 只组合安装并保留 Host 工具和路由兼容，不再提供聚合页面或读取旧草稿。详见[拆分决策](../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。
 

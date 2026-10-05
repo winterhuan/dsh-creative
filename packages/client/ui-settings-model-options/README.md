@@ -27,7 +27,7 @@ Configure the thinking levels a custom model supports and the number of retries 
 
 ### Install
 
-Build this repository, then install the local bundle into an existing DSH web profile. Replace `model-options` with your profile name. DSH dependencies are pinned to `0.2.0-rc.2`; the bundle is independently installable and is not included by Creative.
+Build this repository, then install the local bundle into an existing DSH web profile. Replace `model-options` with your profile name. DSH dependencies are pinned to `0.2.1-alpha.1`; the bundle is independently installable and is not included by Creative.
 
 ```sh
 dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/client/ui-settings-model-options
@@ -71,7 +71,7 @@ The [bundle patch](cordis.patch.yml) installs one browser plugin. It registers i
 
 [Draft operations](src/client/options.ts) address custom models through their existing array entries and built-in models through `modelOverrides`. Each save carries the revision captured on the first edit or when opening a batch preview, and changes only the selected fields. No catalog is copied to change a built-in model, and credentials and retry backoff are preserved. The invalid-request, authentication, and quota options add or remove only their respective error classes from the existing policy. Omitted classes use the pinned DSH defaults; if removing the optional classes would leave an empty list, the UI restores the default transient error classes. The adapters validate saved settings and publish their live capabilities to the existing chat selector.
 
-The package owns no independently observable Host state, so it exposes no runtime invariant installer. Its tests cover field edits, runtime capability reporting, retry-default parity, error-class preservation, read-only controls, retained drafts, revision conflicts, and slot disposal.
+Tests cover field edits, runtime capability reporting, retry-default parity, error-class preservation, read-only controls, retained drafts, revision conflicts, and slot disposal.
 
 </details>
 

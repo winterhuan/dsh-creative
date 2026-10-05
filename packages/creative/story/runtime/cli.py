@@ -119,7 +119,7 @@ def snapshot(project: Path, chapter: int, *, outline_only: bool = False) -> dict
     lock = project / "追踪/.tracking-commit.lock"
     file_path(state_file, project)
     file_path(lock, project, output=True)
-    if lock.exists():
+    if tracking.project_commit_in_progress(project):
         raise CliError("tracking commit is in progress; retry after it finishes")
     before = state_file.read_bytes()
     state = tracking.normalize_state(json.loads(before.decode("utf-8")))
@@ -145,7 +145,7 @@ def snapshot(project: Path, chapter: int, *, outline_only: bool = False) -> dict
         words.require(source == collect(), "outline changed during source identity check")
     else:
         words.require_chapter_sources_unchanged(project, chapter, source)
-    words.require(not lock.exists() and state_file.read_bytes() == before,
+    words.require(not tracking.project_commit_in_progress(project) and state_file.read_bytes() == before,
                   "tracking changed during source identity check")
     return {"schema": "story-chapter-snapshot/v1", "chapter": chapter,
             "body_path": str(body_path), "outline_path": str(outline_path),

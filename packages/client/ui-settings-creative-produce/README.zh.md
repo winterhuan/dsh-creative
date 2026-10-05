@@ -66,7 +66,6 @@ kind: "package-reference"
 <a id="known-limitations-and-deferred-work"></a>
 
 - **命名空间覆盖范围** — 页面编辑六个提供方密钥与生产适配器声明的运行时配置字段；该节之外的提供方特定能力不在此呈现。
-- **运行时不变量：** 不发布 companion。本包不拥有自有关系：它显示的内容来自设置镜像与凭据域，写入的内容由 Host 校验。
 
 <a id="dev-note"></a>
 ### 开发备注

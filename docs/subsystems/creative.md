@@ -18,7 +18,7 @@ Source: [`packages/creative/creative/src/index.ts`](../../packages/creative/crea
 
 The standalone `creative-game` sidebar owns a game-only Session store and reads `/novel-to-game` APIs. The game package supplies four task Skills, packaged source helpers, `game_qa` and isolated previews. Creative retains legacy QA and preview aliases without a browser page; it does not register the game provider itself.
 
-Story Skills own local references and Roles. Deterministic story operations use the packaged `dsh-story` CLI; native chapter and analysis workflows belong to their Skills, while the parent validates and saves extracted analysis cards. Story owns one book layout, `{workspace}/{book name}/`, for both long and short fiction. Its discovery, file routes, redirects and writing guidance use that boundary; the workspace-level analysis library remains separate from book identity.
+Story Skills own local references and Roles. Deterministic story operations use the packaged `dsh-story` CLI; native chapter and analysis workflows belong to their Skills, while the parent validates and saves extracted analysis cards. Story owns one book layout, `{workspace}/{book name}/`, for both long and short fiction. Its discovery, file routes, redirects and writing guidance use that boundary; the workspace-level analysis library remains separate from book identity. The book catalog is independent of the bounded file listing, so truncation does not hide books from Overview.
 
 The four domain plugins install independently. Creative composes installation and retains Host tool and route compatibility without an aggregate page or legacy draft reads. See the [split decision](../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.md).
 

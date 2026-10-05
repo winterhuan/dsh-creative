@@ -1,10 +1,11 @@
 import { EMPTY_CHAT_SNAPSHOT, type ChatConversationViewNode, type ChatSnapshot } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { PartialArguments } from '@deepseek-ai/dsh-util-values'
 import { describe, expect, it } from 'vitest'
 import { latestSettledMutation } from '../src/client/activity.ts'
 
 function settled(callId: string, name: string, args: Record<string, unknown>, isError = false): ToolCallBlock {
-  return { kind: 'tool-result', seq: 1, time: 1, callTime: 0, content: [], callId, isError, call: { name, argsRaw: JSON.stringify(args) }, subCalls: [] }
+  return { kind: 'tool-result', seq: 1, time: 1, callTime: 0, content: [], callId, isError, name, args: PartialArguments.fromObject(args), call: { name, argsRaw: JSON.stringify(args) }, subCalls: [] }
 }
 
 function snapshot(...roots: ToolCallBlock[]): ChatSnapshot {
@@ -54,7 +55,7 @@ describe('story file refresh signals', () => {
   })
 
   it('finds settled mutations inside a running Code Mode call', () => {
-    const root: ToolCallBlock = { callId: 'code', phase: 'start', name: 'run_code', turn: 1, step: 1, time: 1, argsRaw: '{}', subCalls: [
+    const root: ToolCallBlock = { callId: 'code', phase: 'start', name: 'run_code', turn: 1, step: 1, time: 1, argsRaw: '{}', args: PartialArguments.EMPTY, subCalls: [
       settled('first', 'write', { file_path: '正文/第一章.md' }),
       settled('second', 'edit', { file_path: '正文/第二章.md' }),
     ] }

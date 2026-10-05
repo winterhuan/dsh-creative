@@ -9,7 +9,7 @@ description: "设计并生成小说封面，处理书名、作者名、题材风
 
 长篇和短篇都使用 `{工作区}/{作品名}/` 直接子目录。Session 工作区保持在其父级；工作区、`拆文库/` 和长短篇分类容器不是作品。无法从请求确定目标时先确认作品，不按修改时间跨书选择，也不自动迁移文件。
 
-本 Skill 的参考路径相对 `SKILL.md`；只按当前问题读取 `references/`，不加载其他 Skill 的私有参考。跨任务用 `skill` 加载准确名称。`{CLI}` 是从本 Skill 目录向上四级解析的 `lib/cli.js` 绝对路径；运行 `node {CLI} <命令> --help` 查参数，实际结果以 `--json` 返回为准。作品命令显式传 `--workspace {工作区} --book {作品名}`；不依赖工作区 PATH，不直接运行包内私有脚本。
+本 Skill 的参考相对 `SKILL.md` 解析，只按当前问题读取 `references/`，不加载其他 Skill 的私有参考；跨任务用 `skill` 加载准确名称。`{CLI}` 由本 Skill 目录上四级定位 `lib/cli.js`，参数查 `--help`、结果以 `--json` 为准；作品命令显式传 `--workspace` 与 `--book`，不依赖 PATH，不直接运行包内私有脚本。
 
 读取 [封面流程](references/workflow.md)，需要题材视觉参考时再读 [风格](references/cover-styles.md)。封面默认保存本书 `covers/`；用户指定其他路径仅作为导出位置，不据此改变作品目录。
 

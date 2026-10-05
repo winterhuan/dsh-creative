@@ -52,10 +52,6 @@ export function assertTrustedWorkspaceAuthority(entry: string): void {
 /**
  * Same browser trust boundary as DSH's native API: every request must address a
  * loopback or explicitly trusted Host, and browser markers must be same-origin.
- */
-/**
- * Same browser trust boundary as DSH's native API: every request must address a
- * loopback or explicitly trusted Host, and browser markers must be same-origin.
  * @param request - the incoming request to judge.
  * @param trustedHosts - extra non-loopback authorities allowed by configuration.
  * @returns whether the request may reach workspace API routes.
@@ -74,32 +70,4 @@ export function isTrustedWorkspaceRequest(
   if (origin === undefined) return true
   try { return new URL(origin).host === host.host }
   catch { return false }
-}
-
-/**
- * Permit a generated-game document to navigate from one loopback alias to
- * another (127.0.0.1 ↔ localhost). Subresources then become same-origin with
- * the isolated preview document and use the stricter path above.
- */
-/**
- * Permit a generated-game document to navigate from one loopback alias to
- * another (127.0.0.1 ↔ localhost). Subresources then become same-origin with
- * the isolated preview document and use the stricter path above.
- * @param request - the incoming navigation request to judge.
- * @param trustedHosts - extra non-loopback authorities allowed by configuration.
- * @returns whether the navigation may reach game preview documents.
- */
-export function isTrustedPreviewNavigation(
-  request: WorkspaceTrustRequest,
-  trustedHosts: readonly string[],
-): boolean {
-  if (isTrustedWorkspaceRequest(request, trustedHosts)) return true
-  const authority = header(request.headers, 'host')
-  if (authority === undefined) return false
-  const host = parseAuthority(authority)
-  if (host === undefined || (!isLoopbackHostname(host.hostname) && !isTrustedAuthority(host, trustedHosts))) return false
-  return header(request.headers, 'origin') === undefined
-    && header(request.headers, 'sec-fetch-site') === 'cross-site'
-    && header(request.headers, 'sec-fetch-mode') === 'navigate'
-    && ['document', 'iframe'].includes(header(request.headers, 'sec-fetch-dest') ?? '')
 }

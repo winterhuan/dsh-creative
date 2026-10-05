@@ -19,6 +19,6 @@
 - 核心角色快照保留身份、位置、目标、资源、关系、已知信息与未结事项的完整当前状态，不能让一条变化覆盖其他维度。
 - 客观事实、读者截至 M 的认知与实际揭示状态在同一事件中更新；未来揭示计划仍留大纲，不手改作者/读者派生视图。
 - 修订接入截止章内的章节时产生该章覆盖记录，不改变导入截止章；revision 不声明当前项退役。
-- 使用最新 `expected_state_revision` ，通过 `node {CLI} chapter commit --workspace {工作区} --book {作品名} --chapter {N} --json`（或用户明确接受长度后的 `chapter accept-current-length`）原子提交。状态变更须重读重构；写入失败保留原事务重跑，成功后验证派生视图一致。
+- 使用最新 `expected_state_revision` ，通过 `node {CLI} chapter commit --workspace {工作区} --book {作品名} --chapter {N} --input {事务JSON路径} --json`（或用户明确接受长度后，将子命令换成 `accept-current-length`，保留全部参数）提交。状态变更须重读重构；写入失败保留原事务重跑，成功后验证派生视图一致。
 
 列出具体受影响后续章节及原因，在授权范围内修复。不能把结构性冲突只记进追踪后继续写，也不因一次局部措辞修改全量重审整本。连续修多章时串行执行，前章提交成功后处理下一章。

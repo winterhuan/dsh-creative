@@ -64,7 +64,6 @@ None; this package neither assembles nor sends a provider request.
 <a id="known-limitations-and-deferred-work"></a>
 
 - **Namespace coverage** — the page edits the Zhuque credential reference on the story plugin. File-size and trusted-host fields of that namespace are not shown here.
-- **Runtime invariant:** No companion is published. The page holds no owned relationship of its own: what it shows derives from the settings mirror and the credentials domain, and what it writes the Host validates.
 
 <a id="dev-note"></a>
 ### Dev Note

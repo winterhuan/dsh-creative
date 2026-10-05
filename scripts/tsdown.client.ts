@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-alpha.1; re-sync when the DSH dependency version changes.
 /**
  * Shared tsdown preset for UI plugin client bundles. Emits a closure-factory
  * artifact: the bundle calls window.__ModuleLoader__.load({id, factory})
@@ -101,9 +101,7 @@ function browserSourcePath(source: string, sourcemapPath: string): string {
  * original source content, into the standalone plugin map.
  * @param id - plugin id (package name), stamped into the __ModuleLoader__.load
  * handoff and onto the injected style tags.
- * @param libEntry - node-half entries, spelled at the call site so the
- * package-invariants gate can see `lib/types/invariant.js` in each package's
- * own tsdown.config.ts (a preset-side glob hides it from the mechanical check).
+ * @param libEntry - node-half entries.
  * @param options - phase placement, lib overrides, companion Node configs, and optional per-file Client banner.
  * @returns ENV-selected tsdown config for the current build face.
  */

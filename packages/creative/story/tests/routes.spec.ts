@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { FsError } from '@deepseek-ai/dsh-fs'
-import type { Context } from '@deepseek-ai/cordis'
+import { Context } from '@deepseek-ai/cordis'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { describe, expect, it, vi } from 'vitest'
 import { registerWorkspaceRoute } from '../src/workspace-route.ts'
@@ -61,11 +61,11 @@ function fixture(cwd = '/ws') {
   let handler: Parameters<Context['webServer']['register']>[0]['handler'] | undefined
   const dispose = vi.fn()
   let cleanup: (() => void) | undefined
-  const context = {
+  const context = Object.assign(new Context(), {
     effect: (effect: () => () => void) => { cleanup = effect() },
     webServer: { register: (route: { handler: typeof handler }) => { handler = route.handler; return dispose } },
     typert: { lookups: { get: () => ({ resolve: async () => agent }) } },
-  } as Context
+  })
   registerWorkspaceRoute(context, { maxBytes: 2_097_152 })
   return {
     fs, directories, contents, dispose, unload: () => cleanup!(),
@@ -101,6 +101,7 @@ describe('standalone story routes', () => {
       'book/正文/第一卷/chapter.md', 'book/追踪/_tracking-state.json', 'other/正文.md', 'other/追踪/_tracking-state.json',
     ])
     expect(reply.body).not.toHaveProperty('projects')
+    expect(reply.body.books).toEqual(['book', 'other'])
     expect(fs.readBytes).not.toHaveBeenCalled()
     expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).not.toContain('/collection/archive')
     expect(fs.listDir.mock.calls.map(([path]) => path.displayPath)).not.toContain('/collection/长篇')
@@ -170,6 +171,18 @@ describe('standalone story routes', () => {
     const reply = await request('workspace')
     expect(reply.body.files).toHaveLength(1_000)
     expect(reply.body.truncated).toBe(true)
+    expect(reply.body.books).toEqual(['book', 'other'])
+  })
+  it('discovers later and newly initialized books after an earlier book exhausts the file budget', async () => {
+    const { request, directories } = fixture('/collection')
+    directories['/collection/book/正文'] = Array.from({ length: 1_001 }, (_, i) => `chapter-${i}.md`)
+    directories['/collection']!.push('new-book')
+    directories['/collection/new-book'] = ['正文']
+    directories['/collection/new-book/正文'] = []
+    const reply = await request('workspace')
+    expect(reply.body.files).toHaveLength(1_000)
+    expect(reply.body.truncated).toBe(true)
+    expect(reply.body.books).toEqual(['book', 'new-book', 'other'])
   })
   it.each(['book/剧集/EP001/剧本.md', 'game-adaptations/demo/design/GAME_DESIGN.md', 'video-recaps/demo/work/plan.json'])('rejects another domain before reading %s', async path => {
     const { request, fs } = fixture()

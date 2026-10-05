@@ -14,8 +14,8 @@ const t: CreativeTranslate = (key, params = {}) => zh[key].replace(/\{(\w+)\}/gu
 const tEn: CreativeTranslate = (key, params = {}) => en[key].replace(/\{(\w+)\}/gu, (_, name: string) => String(params[name] ?? ''))
 const sourcePaths = ['追踪/_tracking-state.json', '追踪/上下文.md', '追踪/伏笔.md', '追踪/角色状态/林舟.md',
   '追踪/时间线/读者已知.md', '追踪/时间线/作者真相.md', '大纲/卷纲.md', '设定/世界观.md']
-const workspace: WorkspacePayload = { cwd: '/books', files: ['神机诸天录/', 'other/'].flatMap(prefix => sourcePaths.map(path => ({
-  path: prefix + path, bytes: 100, version: 'v1', kind: 'text' as const,
+const workspace: WorkspacePayload = { cwd: '/books', books: ['other', '神机诸天录'], files: ['神机诸天录/', 'other/'].flatMap(prefix => sourcePaths.map(path => ({
+  path: prefix + path, bytes: 100, version: 'v1',
 }))), truncated: false, mode: 'dsh-session' }
 const response = (content = source) => new Response(JSON.stringify({ content, version: 'v1' }))
 
@@ -57,12 +57,44 @@ describe('continuity display data', () => {
 })
 
 describe('read-only continuity dashboard', () => {
+  it('uses named child files when an older running host omits the book catalog', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => response())
+    vi.stubGlobal('fetch', fetcher)
+    const files = ['正文.md', '追踪/_tracking-state.json', '拆文库/参考书/概要.md', '神机诸天录/追踪/_tracking-state.json']
+      .map(path => ({ path, bytes: 100, version: 'v1' }))
+    const view = harness({ listing: { cwd: '/Users/winter/workspace/shenji', files, truncated: false, mode: 'dsh-session' } })
+    await view.findByText('雾港来信')
+    expect(view.getAllByRole('option').map(option => option.textContent)).toEqual(['神机诸天录'])
+    expect(new URL(String(fetcher.mock.calls[0]![0])).searchParams.get('path')).toBe('神机诸天录/追踪/_tracking-state.json')
+  })
+
+  it('honors an empty book catalog even when stale files contain a book path', () => {
+    const fetcher = vi.fn<typeof fetch>()
+    vi.stubGlobal('fetch', fetcher)
+    const view = harness({ listing: { ...workspace, books: [] } })
+    expect(view.getByRole('combobox').textContent).toBe('暂无作品')
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
+  it.each([t, tEn])('selects books and reads tracking even when only library files fit in the listing', async translate => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => response())
+    vi.stubGlobal('fetch', fetcher)
+    const files = [{ path: '拆文库/参考书/概要.md', bytes: 1, version: 'v1' }]
+    const view = harness({ translate, listing: { ...workspace, files, truncated: true } })
+    await view.findByText('雾港来信')
+    expect(view.getAllByRole('option').map(option => option.textContent)).toEqual(['other', '神机诸天录'])
+    expect(view.getByText(translate('dashboard.truncated'))).toBeTruthy()
+    fireEvent.change(view.getByRole('combobox', { name: translate('dashboard.book') }), { target: { value: 'other' } })
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2))
+    expect(new URL(String(fetcher.mock.calls[1]![0])).searchParams.get('path')).toBe('other/追踪/_tracking-state.json')
+  })
+
   it('lists named child books without treating the workspace or shared analysis as a book', async () => {
     const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => response())
     vi.stubGlobal('fetch', fetcher)
     const files = ['拆文库/龙蛇演义/概要.md', '追踪/_tracking-state.json', '正文.md', '神机诸天录/追踪/_tracking-state.json', '雨夜/正文.md']
-      .map(path => ({ path, bytes: 100, version: 'v1', kind: 'text' as const }))
-    const view = harness({ listing: { ...workspace, cwd: '/workspace/shenji', files } })
+      .map(path => ({ path, bytes: 100, version: 'v1' }))
+    const view = harness({ listing: { ...workspace, cwd: '/workspace/shenji', books: ['神机诸天录', '雨夜'], files } })
     await view.findByText('雾港来信')
     expect(view.getAllByRole('option').map(option => option.textContent)).toEqual(['神机诸天录', '雨夜'])
     expect(fetcher.mock.calls.every(([url]) => new URL(String(url)).searchParams.get('path') === '神机诸天录/追踪/_tracking-state.json')).toBe(true)
@@ -71,7 +103,7 @@ describe('read-only continuity dashboard', () => {
   it('shows no books for an empty workspace or a shared library without querying workspace tracking', () => {
     const fetcher = vi.fn<typeof fetch>()
     vi.stubGlobal('fetch', fetcher)
-    const view = harness({ listing: { ...workspace, cwd: '/workspace/shenji', files: [{ path: '拆文库/参考书/概要.md', bytes: 1, version: 'v1', kind: 'text' }] } })
+    const view = harness({ listing: { ...workspace, cwd: '/workspace/shenji', books: [], files: [{ path: '拆文库/参考书/概要.md', bytes: 1, version: 'v1' }] } })
     expect(view.getByRole('combobox').textContent).toBe('暂无作品')
     expect(view.getByText(/请打开作品目录的上一级工作区/)).toBeTruthy()
     expect(fetcher).not.toHaveBeenCalled()

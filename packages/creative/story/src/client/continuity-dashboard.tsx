@@ -32,7 +32,7 @@ interface Props {
  * @returns overview, filtered lists or an actionable empty/error state.
  */
 export function ContinuityDashboard({ sessionId, workspace, workspaceError, refresh, selectedProject, onProject, onSource, onRefresh, t }: Props) {
-  const roots = [...new Set((workspace?.files ?? []).flatMap(file => {
+  const roots = workspace?.books ?? [...new Set((workspace?.files ?? []).flatMap(file => {
     const parsed = parseCreativePath(file.path)
     return isStoryWorkbenchPath(parsed) && parsed.domain === 'story' ? [parsed.projectRoot] : []
   }))].sort()

@@ -1,26 +1,17 @@
 /** Pure project discovery shared by the workspace API, writing guards, and Client. */
 
 /** Supported creative domains. */
-export type CreativeDomain = 'story' | 'analysis' | 'drama' | 'game' | 'video'
+export type CreativeDomain = 'story' | 'analysis'
 
 /** Story directories inside one named child of the workspace. */
 export const STORY_DIRECTORIES = ['正文', '大纲', '设定', '追踪', '对标', '参考资料'] as const
-/** Drama directories recognized at the workspace or book root. */
-export const DRAMA_DIRECTORIES = ['输入', '项目开发', '设定集', '剧集', '交付', '创作者决策', '审查'] as const
 /** Standalone documents at a project root. */
 export const PROJECT_FILES: readonly string[] = ['正文.md', '设定.md', '小节大纲.md']
 /** Shared analysis lives outside book directories. */
 export const STORY_LIBRARY_DIRECTORY = '拆文库'
 
 const storyDirectories = new Set<string>(STORY_DIRECTORIES)
-const dramaDirectories = new Set<string>(DRAMA_DIRECTORIES)
 const projectFiles = new Set<string>(PROJECT_FILES)
-const creatorDocuments = new Set(['剧本.md', '视觉设定.md', '分镜.md', '图片提示词.md', '视频提示词.md'])
-const mediaTypes: ReadonlyMap<string, string> = new Map([
-  ['.png', 'image/png'], ['.jpg', 'image/jpeg'], ['.jpeg', 'image/jpeg'], ['.webp', 'image/webp'], ['.gif', 'image/gif'],
-  ['.mp4', 'video/mp4'], ['.webm', 'video/webm'], ['.mov', 'video/quicktime'], ['.mkv', 'video/x-matroska'],
-  ['.mp3', 'audio/mpeg'], ['.wav', 'audio/wav'], ['.m4a', 'audio/mp4'],
-])
 
 /** A normalized workspace path with its owning project and document role. */
 export interface CreativeProjectPath {
@@ -29,9 +20,7 @@ export interface CreativeProjectPath {
   readonly projectRoot: string
   readonly relativePath: string
   readonly domain: CreativeDomain
-  readonly role: 'body' | 'outline' | 'tracking' | 'drama-config' | 'creator-document' | 'episode' | 'document'
-  /** Full episode path, also attached to that episode's delivery files. */
-  readonly episodePath?: string | undefined
+  readonly role: 'body' | 'outline' | 'tracking' | 'document'
 }
 
 function pathText(raw: string): string | undefined {
@@ -85,8 +74,7 @@ export function workspaceRelativePath(raw: string | undefined, cwd?: string): st
 
 function domainForLeaf(leaf: string, single: boolean): CreativeDomain | undefined {
   if (storyDirectories.has(leaf)) return 'story'
-  if (dramaDirectories.has(leaf)) return 'drama'
-  if (single && projectFiles.has(leaf)) return leaf === 'short-drama.json' ? 'drama' : 'story'
+  if (single && projectFiles.has(leaf)) return 'story'
   return undefined
 }
 
@@ -104,15 +92,6 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
   if (first === STORY_LIBRARY_DIRECTORY) {
     return { path, projectRoot: '', relativePath: path, domain: 'analysis', role: 'document' }
   }
-  if (first === 'game-adaptations' || first === 'video-recaps') {
-    return {
-      path,
-      projectRoot: segments.slice(0, 2).join('/'),
-      relativePath: segments.slice(2).join('/'),
-      domain: first === 'game-adaptations' ? 'game' : 'video',
-      role: 'document',
-    }
-  }
   let prefix = 0
   let leaf = first
   let domain = domainForLeaf(first, segments.length === 1)
@@ -126,15 +105,11 @@ export function parseCreativePath(raw: string | undefined, cwd?: string): Creati
   const projectRoot = segments.slice(0, prefix).join('/')
   const body = segments.slice(prefix)
   const relativePath = body.join('/')
-  const episode = (leaf === '剧集' || leaf === '交付') && /^EP\d{3,}$/u.test(body[1] ?? '') ? body[1] : undefined
-  const episodePath = episode === undefined ? undefined : projectPath(projectRoot, `剧集/${episode}`)
   const role = leaf === '正文' || leaf === '正文.md' ? 'body'
     : leaf === '大纲' || leaf === '小节大纲.md' ? 'outline'
       : leaf === '追踪' ? 'tracking'
-        : leaf === 'short-drama.json' ? 'drama-config'
-          : leaf === '剧集' && episode !== undefined && body.length === 3 && creatorDocuments.has(body[2] ?? '') ? 'creator-document'
-            : episode !== undefined && body.length === 2 ? 'episode' : 'document'
-  return { path, projectRoot, relativePath, domain, role, episodePath }
+        : 'document'
+  return { path, projectRoot, relativePath, domain, role }
 }
 
 /**
@@ -162,16 +137,5 @@ export function projectPath(root: string, relativePath: string): string {
  * @returns whether the workbench can edit this file as text.
  */
 export function isCreativeTextPath(path: CreativeProjectPath): boolean {
-  if (/\.(?:md|txt|json|jsonl)$/iu.test(path.path)) return true
-  if (path.domain === 'game') return /\.(?:html|css|[cm]?js|tsx?|jsx)$/iu.test(path.path)
-  return path.domain === 'video' && /\.(?:srt|ass)$/iu.test(path.path)
-}
-
-/**
- * Resolve the shared media-extension allowlist without filesystem access.
- * @param path - File path whose final extension determines its media type.
- * @returns The preview MIME type, or undefined for unsupported files.
- */
-export function creativeMediaMimeType(path: string): string | undefined {
-  return mediaTypes.get(path.slice(path.lastIndexOf('.')).toLowerCase())
+  return /\.(?:md|txt|json|jsonl)$/iu.test(path.path)
 }

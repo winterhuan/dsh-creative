@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import argparse
 import copy
-import importlib.util
+import errno
 import json
 import os
 import re
@@ -24,17 +24,11 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+_RUNTIME = Path(__file__).resolve().parent
+if str(_RUNTIME) not in sys.path:
+    sys.path.insert(0, str(_RUNTIME))
 
-_WORDCOUNT_CORE_PATH = Path(__file__).with_name("wordcount_core.py")
-if not _WORDCOUNT_CORE_PATH.is_file():  # pragma: no cover - broken deployment
-    raise RuntimeError("TOOL_UNAVAILABLE: wordcount_core.py")
-_WORDCOUNT_CORE_SPEC = importlib.util.spec_from_file_location(
-    "story_wordcount_core", _WORDCOUNT_CORE_PATH
-)
-if _WORDCOUNT_CORE_SPEC is None or _WORDCOUNT_CORE_SPEC.loader is None:  # pragma: no cover
-    raise RuntimeError("unable to load wordcount core")
-wordcount_core = importlib.util.module_from_spec(_WORDCOUNT_CORE_SPEC)
-_WORDCOUNT_CORE_SPEC.loader.exec_module(wordcount_core)
+import wordcount_core
 
 
 INPUT_SCHEMA_VERSION = 1
@@ -199,32 +193,49 @@ def state_path(project: Path) -> Path:
     return tracking_root(project) / "_tracking-state.json"
 
 
+def try_file_lock(descriptor: int, *, exclusive: bool) -> bool:
+    """Acquire a nonblocking OS lock, released when the descriptor or process closes."""
+    try:
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK if exclusive else msvcrt.LK_NBRLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(descriptor, (fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH) | fcntl.LOCK_NB)
+        return True
+    except OSError as error:
+        if error.errno not in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
+            raise
+        return False
+
+
+def project_commit_in_progress(project: Path) -> bool:
+    """Probe without creating or changing files; an idle lock file is not a writer."""
+    try:
+        descriptor = os.open(tracking_root(project) / ".tracking-commit.lock", os.O_RDONLY)
+    except FileNotFoundError:
+        return False
+    try:
+        return not try_file_lock(descriptor, exclusive=False)
+    finally:
+        os.close(descriptor)
+
+
 @contextmanager
 def project_write_lock(project: Path, *, timeout_seconds: float = 10.0):
     tracking = tracking_root(project)
     tracking.mkdir(parents=True, exist_ok=True)
-    path = tracking / ".tracking-commit.lock"
-    deadline = time.monotonic() + timeout_seconds
-    descriptor: int | None = None
-    while descriptor is None:
-        try:
-            descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-        except FileExistsError:
-            if time.monotonic() >= deadline:
-                raise TrackingError(
-                    "tracking commit lock is busy or stale; retry, or remove 追踪/.tracking-commit.lock after confirming no commit is running"
-                )
-            time.sleep(0.05)
+    # Keep the inode stable: unlinking lets concurrent openers lock different files.
+    descriptor = os.open(tracking / ".tracking-commit.lock", os.O_CREAT | os.O_RDWR, 0o644)
     try:
-        os.write(descriptor, f"pid={os.getpid()}\n".encode("ascii"))
-        os.fsync(descriptor)
+        deadline = time.monotonic() + timeout_seconds
+        while not try_file_lock(descriptor, exclusive=True):
+            if time.monotonic() >= deadline:
+                raise TrackingError("tracking commit is in progress; retry after it finishes")
+            time.sleep(0.05)
         yield
     finally:
         os.close(descriptor)
-        try:
-            path.unlink()
-        except FileNotFoundError:
-            pass
 
 
 def delta_path(tracking: Path, chapter: int) -> Path:
