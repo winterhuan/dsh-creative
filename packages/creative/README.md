@@ -22,7 +22,6 @@ The creative group owns the fiction/short-drama/game/video production workbenche
 
 | Package | Role | ctx key |
 |---|---|---|
-| [`creative/`](creative/README.md) | Four-domain installation bundle and Host compatibility, without an aggregate page | `creative` |
 | [`novel-to-game/`](novel-to-game/README.md) | Independently installable game Skills, authenticated QA and Game Studio | — |
 | [`story/`](story/README.md) | Independent fiction Skills, Roles, writing guards and editor | — |
 | [`short-drama/`](short-drama/README.md) | Independent drama Skills, confirmed production and episode workbench | — |

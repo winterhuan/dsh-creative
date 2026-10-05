@@ -22,7 +22,6 @@ kind: "package-group"
 
 | 包 | 职责 | ctx key |
 |---|---|---|
-| [`creative/`](creative/README.zh.md) | 四领域插件安装组合及 Host 兼容入口，无聚合页面 | `creative` |
 | [`novel-to-game/`](novel-to-game/README.zh.md) | 可独立安装的游戏技能、签名 QA 与游戏工作台 | — |
 | [`story/`](story/README.zh.md) | 独立小说技能、角色、写作检查与编辑器 | — |
 | [`short-drama/`](short-drama/README.zh.md) | 独立短剧技能、确认生产与剧集工作台 | — |

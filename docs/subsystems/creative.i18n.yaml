@@ -3,11 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/creative.md
 /creative:
-  en: eb971e22e24c8f9f
-  zh: 24341a1434888c8f
+  en: 9e87adadae8987b2
+  zh: 32eb0af1b8bff64f
 /creative/the-four-seams:
-  en: ba36fb5cbca3fd9d
-  zh: 82c24855ab76b648
+  en: d53241515b1b74f3
+  zh: 24f408d3ca8ff397
 /creative/delivery-evidence:
   en: 031fe65090c41209
   zh: 0477d6bc78e0532a

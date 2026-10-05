@@ -363,7 +363,7 @@ function previewContentType(path: string): string {
 function previewAssetSources(request: IncomingMessage): string {
   const authority = request.headers.host
   if (authority === undefined) return "'none'"
-  const prefix = `${authority}${request.url?.startsWith('/creative/') ? '/creative/game-preview/' : '/novel-to-game/preview/'}`
+  const prefix = `${authority}/novel-to-game/preview/`
   return `http://${prefix} https://${prefix}`
 }
 
@@ -435,7 +435,7 @@ function mapFsError(error: unknown): WorkspaceHttpError | undefined {
 }
 
 /**
- * Serve the current or legacy game-preview URL with the same security checks.
+ * Serve game preview assets after validating the navigation and workspace path.
  * @param context - DSH Agent lookup and filesystem services.
  * @param request - incoming game preview request.
  * @param response - response receiving the preview bytes.

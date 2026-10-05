@@ -14,7 +14,7 @@ if (!relative(workspace, app) || relative(workspace, app).startsWith('..')) thro
 await mkdir(qa, { recursive: true })
 const plan = JSON.parse(await readFile(join(qa, 'plan.json'), 'utf8'))
 if (!Array.isArray(plan.inputs) || !plan.inputs.length || plan.inputs.length > 200 || !Array.isArray(plan.outcomes) || !plan.outcomes.length || !Number.isInteger(plan.minTurns) || plan.minTurns < 1) throw new Error('QA plan requires inputs, outcomes and positive minTurns')
-const prefix = `/creative/game-preview/workspace/${Buffer.from(process.env.DSH_GAME_QA_SESSION ?? 'qa').toString('base64url')}/${Buffer.from(relative(workspace, root)).toString('base64url')}/`
+const prefix = `/novel-to-game/preview/workspace/${Buffer.from(process.env.DSH_GAME_QA_SESSION ?? 'qa').toString('base64url')}/${Buffer.from(relative(workspace, root)).toString('base64url')}/`
 const directives = JSON.parse(await readFile(new URL('./preview-policy.json', import.meta.url), 'utf8'))
 const failures = []
 const served = new Set()
@@ -25,7 +25,7 @@ const server = createServer(async (request, response) => {
     const file = await realpath(join(app, decodeURIComponent(path.slice(prefix.length))))
     if (relative(app, file).startsWith('..')) throw new Error('Resource leaves build/app')
     const mime = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.wav': 'audio/wav' }[extname(file)] ?? 'application/octet-stream'
-    response.writeHead(200, { 'content-type': mime, 'content-security-policy': directives.map(rule => rule.replaceAll('$assets', `http://127.0.0.1:${server.address().port}/creative/game-preview/`)).join('; '), 'cache-control': 'no-store' })
+    response.writeHead(200, { 'content-type': mime, 'content-security-policy': directives.map(rule => rule.replaceAll('$assets', `http://127.0.0.1:${server.address().port}/novel-to-game/preview/`)).join('; '), 'cache-control': 'no-store' })
     served.add(relative(app, file))
     response.end(await readFile(file))
   } catch (error) {

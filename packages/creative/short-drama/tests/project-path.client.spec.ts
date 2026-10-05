@@ -3,14 +3,7 @@ import { parseCreativePath, workspaceRelativePath } from '../src/project-path.ts
 import { episodeDirectoryForPath, isCreatorDocumentPath } from '../../short-drama/src/client/drama-production.ts'
 
 const layouts = [
-  ['', '正文/第001章.md', 'story', 'body'],
-  ['书甲', '正文/第001章.md', 'story', 'body'],
-  ['长篇/书甲', '正文/第001章.md', 'story', 'body'],
-  ['短篇/书乙', '正文.md', 'story', 'body'],
-  ['', '正文.md', 'story', 'body'],
   ['书甲', 'short-drama.json', 'drama', 'drama-config'],
-  ['长篇/书甲', '追踪/_tracking-state.json', 'story', 'tracking'],
-  ['短篇/书乙', '小节大纲.md', 'story', 'outline'],
   ['书甲', '剧集/EP001/分镜.md', 'drama', 'creator-document'],
   ['书乙', '剧集/EP001/分镜.md', 'drama', 'creator-document'],
 ] as const

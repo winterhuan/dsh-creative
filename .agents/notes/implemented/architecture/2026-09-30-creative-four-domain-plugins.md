@@ -12,9 +12,9 @@ A single Creative package made creators install four workflows together. Its com
 
 Four independently installable bundles own their Host tools, Skills, resources, routes, browser entries and Session state: `dsh-story`, `dsh-short-drama`, `dsh-novel-to-game` and `dsh-video-recap`. Each provides a direct sidebar entry. DSH retains Sessions, filesystem authorization, jobs, credentials and model configuration. No domain depends on the Creative aggregate or another business plugin.
 
-Creative composes the four packages and retains legacy routes and production aliases. It has no aggregate page, browser entry or combined state store. Domain providers register only in their owning packages. Stable bundle row IDs prevent duplicate registrations. The existing production settings page and namespace remain shared; the split adds no common runtime package.
+Each package is developed, built, tested and installed separately. The aggregate package, legacy routes and production aliases are removed. Domain providers register only in their owning packages. The existing production settings page and namespace remain shared; they install no domain plugin.
 
-Story owns six Skills, seven Roles, writing hooks and `story_zhuque`. Drama owns five Skills, `creative_production`, confirmation handling, projection and `drama_produce_run`. Game owns four Skills, templates, authenticated `game_qa` and previews. Video owns two Skills, delivery measurements, playback and `video_produce_run`. The aggregate retains `creative_produce_run` and `creative_produce_status`; standalone Skill bridges name their domain tools.
+Story owns six Skills, seven Roles, writing hooks and `story_zhuque`. Drama owns five Skills, `creative_production`, confirmation handling, projection and `drama_produce_run`. Game owns four Skills, templates, authenticated `game_qa` and previews. Video owns two Skills, delivery measurements, playback and `video_produce_run`. Skill bridges name their domain tools.
 
 Each route preserves Session lookup, trusted requests, resolved-path containment and file budgets; editors preserve versioned writes. Domain listings and reads reject unrelated domain documents. Drama replay accepts both its own producer results and legacy aggregate results. Cross-domain adaptation exchanges project files and source identities, never another plugin's private store.
 
@@ -34,9 +34,9 @@ Independent pages use `creative.story.v1`, `creative.drama.v1`, `creative.game.v
 
 ## Consequences
 
-Creators can install one workflow. Maintainers own more manifests and build entries, and shared script changes must pass synchronization checks. The aggregate retains only Host compatibility code; independent packages must not import it. Unsaved content from the retired aggregate page has no UI entry.
+Creators can install one workflow. Maintainers own more manifests and build entries, and shared script changes must pass synchronization checks. Cross-domain composition tests live in repository `tests/`; domain regressions live in their owning package. Unsaved content from the retired aggregate page has no UI entry.
 
-Standalone registration/disposal tests and Loader composition tests cover domain catalogs and aggregate-plus-domain installation. Route tests reject unrelated files. The existing workflow tests exercise chapter checks, synthetic decoded episode delivery, local recap delivery and authenticated game evidence. Real Chrome checks exercise standalone novel editing and saving, the drama production page, video playback and the four entries installed through the aggregate. Paid provider calls and artistic quality are outside this evidence.
+Standalone registration/disposal tests and Loader composition tests cover domain catalogs and simultaneous domain installation. Route tests reject unrelated files. The existing workflow tests exercise chapter checks, synthetic decoded episode delivery, local recap delivery and authenticated game evidence. HANDOFF records Chrome verification of standalone installation, simultaneous installation and removal. Paid provider calls and artistic quality are outside this evidence.
 
 ### Related decisions
 

@@ -64,7 +64,7 @@ function fixture(
     if (handler === undefined) throw new Error('workspace route is not registered')
     const request = Object.assign(Readable.from([]), {
       method: options.method ?? 'GET',
-      url: `/creative/media?${new URLSearchParams({ sessionId: 'media-session', path }).toString()}`,
+      url: `/short-drama/media?${new URLSearchParams({ sessionId: 'media-session', path }).toString()}`,
       headers: { host: 'localhost:3000', ...(options.range === undefined ? {} : { range: options.range }) },
     }) as IncomingMessage
     const chunks: Buffer[] = []

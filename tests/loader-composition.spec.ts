@@ -11,13 +11,12 @@ import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import { describe, expect, it, onTestFinished } from 'vitest'
 import * as game from '@winterhuan/dsh-novel-to-game'
-import * as creative from '../src/index.ts'
 
-describe('Creative headless Loader composition', () => {
+describe('Independent domain Loader composition', () => {
   it.each([undefined, 'story', 'short-drama', 'video-recap', 'novel-to-game'])('registers each catalog once with a separate domain layer: %s', async separateDomain => {
     const context = new Context()
     onTestFinished(async () => { await context.fiber.dispose() })
-    context.baseUrl = new URL('./fixtures/headless/', import.meta.url).href
+    context.baseUrl = new URL('./fixtures/domains/', import.meta.url).href
     await context.plugin(Loader)
     context.loader.builtins.include = Include
     const modules = new Map<string, unknown>([
@@ -25,7 +24,6 @@ describe('Creative headless Loader composition', () => {
       ['@deepseek-ai/dsh-tools', ToolRuntime],
       ['@deepseek-ai/dsh-skill', SkillRegistry],
       ['@deepseek-ai/dsh-subagent', SubagentRuntime],
-      ['@winterhuan/dsh-creative', creative],
       ['@winterhuan/dsh-story', story],
       ['@winterhuan/dsh-short-drama', drama],
       ['@winterhuan/dsh-video-recap', video],
@@ -43,7 +41,7 @@ describe('Creative headless Loader composition', () => {
     context.loader.internal = internal as InternalLoader
     await context.loader.create({
       name: 'cordis:include',
-      config: { path: new URL('./fixtures/headless/cordis.yml', import.meta.url).href, ...(separateDomain ? { patches: [{ insert: [{ id: separateDomain, name: `@winterhuan/dsh-${separateDomain}` }] }] } : {}) },
+      config: { path: new URL('./fixtures/domains/cordis.yml', import.meta.url).href, ...(separateDomain ? { patches: [{ insert: [{ id: separateDomain, name: `@winterhuan/dsh-${separateDomain}` }] }] } : {}) },
     })
     await context.loader.await()
     expect(context.get('webServer')).toBeUndefined()
@@ -51,13 +49,15 @@ describe('Creative headless Loader composition', () => {
     expect((await context.skills.list()).map(skill => skill.name)).toEqual(expect.arrayContaining([
       'story', 'short-drama', 'novel-to-game', 'video-recap',
     ]))
-    const source = await readFile(new URL('../../story/knowledge/story/skills/story-write/SKILL.md', import.meta.url), 'utf8')
+    const source = await readFile(new URL('../packages/creative/story/knowledge/story/skills/story-write/SKILL.md', import.meta.url), 'utf8')
     expect(await context.skills.get('story-write')).toMatchObject({
       content: expect.stringContaining(source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/u, '').trim()),
     })
     expect(await context.skills.list()).toHaveLength(17)
     expect(context.tools.get('game_qa')).toBeDefined()
-    expect(context.tools.get('creative_produce_run')).toBeDefined()
+    expect(context.tools.get('creative_produce_run')).toBeUndefined()
+    expect(context.tools.get('drama_produce_run')).toBeDefined()
+    expect(context.tools.get('video_produce_run')).toBeDefined()
     expect(context.tools.get('creative_production')).toBeDefined()
     expect(context.tools.get('creative_bundled_reference')).toBeUndefined()
   })

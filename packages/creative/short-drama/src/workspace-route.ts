@@ -328,7 +328,7 @@ function skipWorkspaceDirectory(path: string): boolean {
  * @param realm - the session's workspace realm supplying the filesystem view.
  * @returns the complete or truncated listing in workspace-relative paths.
  */
-async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
+export async function listFiles(realm: WorkspaceRealm): Promise<WorkspaceListing> {
   const files: WorkspaceFile[] = []
   // Returns true when the listing is truncated: an eligible file appeared once
   // `files` already held the limit.
@@ -449,7 +449,7 @@ async function metadata(
  * @param maxBytes - maximum bytes per metadata document.
  * @returns metadata keyed by full project root, including project-local read errors.
  */
-async function workspaceProjects(
+export async function workspaceProjects(
   realm: WorkspaceRealm, files: readonly WorkspaceFile[], maxBytes: number,
 ): Promise<CreativeProjectSummary[]> {
   const projects = new Map<string, Set<CreativeProjectSummary['domains'][number]>>()

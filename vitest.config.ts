@@ -18,7 +18,7 @@ export default defineConfig({
   },
   plugins: [standardDecoratorPlugin(), upstreamClientSource()],
   test: {
-    include: ['packages/*/*/tests/**/*.spec.{ts,tsx}'],
+    include: ['packages/*/*/tests/**/*.spec.{ts,tsx}', 'tests/**/*.spec.ts'],
     setupFiles: ['./scripts/test-dom-environment.ts'],
     pool: 'forks',
     execArgv: vitestExecArgv,

@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过两个按任务划分的 Skill、原片预览和产物查看制作视频解说。流程支持带标记的本地草稿与交付度量证据。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过两个按任务划分的 Skill、原片预览和产物查看制作视频解说。流程支持带标记的本地草稿与交付度量证据。此 bundle 独立安装。
 
 ## 目录
 
@@ -35,6 +35,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/vide
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+在仓库根目录运行 `pnpm --filter @winterhuan/dsh-video-recap build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-video-recap test` 可验证此包。
+
 <details>
 <summary>实现细节 — 点击展开</summary>
 
@@ -42,7 +44,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/vide
 
 此包拥有视频脚本与 video-recaps/ 下的预览。语音生产只读取 MiMo 和 Fish 凭据引用；无密钥本地草稿仍然可用。
 
-此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
+此包独立开发、构建和安装，不依赖其他领域插件；必需辅助脚本作为包资源分发。
 
 </details>
 

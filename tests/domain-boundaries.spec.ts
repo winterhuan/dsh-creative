@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const domains = ['story', 'short-drama', 'novel-to-game', 'video-recap']
-const group = fileURLToPath(new URL('../../', import.meta.url))
+const group = fileURLToPath(new URL('../packages/creative/', import.meta.url))
 
 async function sources(directory: string): Promise<string[]> {
   const result: string[] = []
@@ -17,12 +17,8 @@ async function sources(directory: string): Promise<string[]> {
 }
 
 describe('independently distributable domains', () => {
-  it('installs the domain pages without publishing an aggregate browser entry', async () => {
-    const manifest = JSON.parse(await readFile(resolve(group, 'creative/package.json'), 'utf8'))
-    expect(manifest.dsh).not.toHaveProperty('client')
-    expect(manifest.exports).not.toHaveProperty('./client')
-    for (const domain of domains) expect(manifest.dependencies).toHaveProperty(`@winterhuan/dsh-${domain}`)
-    expect(await readdir(resolve(group, 'creative/src'))).not.toContain('client')
+  it('has no aggregate package', async () => {
+    expect(await readdir(group)).not.toContain('creative')
   })
   it.each(domains)('%s neither depends on nor imports a sibling business package', async domain => {
     const root = resolve(group, domain)

@@ -2,7 +2,6 @@
 - name: '@deepseek-ai/dsh-tools'
 - name: '@deepseek-ai/dsh-skill'
 - name: '@deepseek-ai/dsh-subagent'
-- name: '@winterhuan/dsh-creative'
 - id: novel-to-game
   name: '@winterhuan/dsh-novel-to-game'
 - id: story

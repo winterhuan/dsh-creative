@@ -10,16 +10,16 @@ Status: implemented
 
 ## 决策
 
-Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、工具、文件系统、设置和作业之上，界面放在右侧 Sidebar。另有一个独立、可选的只读技能查看器，用来查看 Session 的技能组合，不调用工具，也不恢复 Agent。
+四个领域插件建立在 DSH 已有的 Agent、工具、文件系统、设置和作业之上，界面放在右侧 Sidebar。另有一个独立、可选的只读技能查看器，用来查看 Session 的技能组合，不调用工具，也不恢复 Agent。
 
 [四领域插件提案](../../implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)重新讨论包与页面组合，同时保留本记录的 DSH 归属、授权和项目文件契约。
 
 <a id="composition-and-knowledge"></a>
 ### 组合与知识库
 
-[`dsh-creative`](../../../../packages/creative/creative/README.zh.md) 只注入 `skills` 和 `tools`；`/creative` 路由注册在独立的 `webServer` 加 `typert` 作用域里，因此无头组合也保留 Skill、Role 和生产工具，而不需要 Web 服务。注册随插件释放。插件不发布运行时不变量伴生项：文件、请求和作业检查都在它们所授权的操作内部执行。
+[四个领域包](../../../../packages/creative/README.zh.md)分别拥有技能、工具和路由；Web 路由在需要 `webServer` 与 `typert` 的作用域内注册，因此无头运行可使用技能和工具。注册随所属插件释放。
 
-`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 保留各自领域的发现名称，通过 Creative 聚合；各 provider 属于对应的独立领域包。每份 `SKILL.md` 拥有自己的描述和完整正文。小说 provider 原样提供这份正文，各小说技能在需要调用的步骤写明技能加载、委派和 workflow 边界。短剧、游戏和视频 provider 在前面加上共享的 DSH 集成说明，这些说明把目录中的 Skill 名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH，有测试拒绝其中出现其他 Agent 宿主或独立 Dashboard 的引用。
+`story`、`short-drama`、`novel-to-game` 和 `video-recap` 四个 provider 在各自独立安装的包内保留领域发现名称。每份 `SKILL.md` 拥有自己的描述和完整正文。小说 provider 原样提供这份正文，各小说技能在需要调用的步骤写明技能加载、委派和 workflow 边界。短剧、游戏和视频 provider 在前面加上共享的 DSH 集成说明，这些说明把目录中的 Skill 名称以及 `$name`、`/name` 引用解析为 `skill` 加载。Provider 测试要求每条发现到的描述都不超过目录的 500 字符上限。内置的 Skill、Role 和脚本只面向 DSH。
 
 七份打包 Role 文件为真实的原生子 Agent 或 Team 成员提供专业指令。[原生协作决策](2026-10-01-creative-role-agents.zh.md) 移除专用 Role 执行器及角色模型/工具策略。委派任务提供 Role 路径和领域资源根，由原生 read 读取所需材料。原生 workflow 阶段是分配的任务，只加载履行职责所需的 Skill 和参考。
 
@@ -32,7 +32,7 @@ Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、
 <a id="workspace-and-sidebar"></a>
 ### 工作区与 Sidebar
 
-四个独立领域页面向 `sidebar.right.pane.tab` 提供界面。右侧栏负责位置、缩放、分栏、浮动、全屏和显隐；Conversation 保留对话与输入框。小说和短剧拥有各自文件跳转；其他文件使用普通预览。Creative 只组合安装，不提供聚合页面。
+四个独立领域页面向 `sidebar.right.pane.tab` 提供界面。右侧栏负责位置、缩放、分栏、浮动、全屏和显隐；Conversation 保留对话与输入框。小说和短剧拥有各自文件跳转；其他文件使用普通预览。
 
 `creative-game` 页面由游戏插件拥有，使用独立的 `creative.game.v1` Session store。
 
@@ -43,7 +43,7 @@ Creative 是一个覆盖四个领域的插件，建立在 DSH 已有的 Agent、
 <a id="project-and-file-ownership"></a>
 ### 项目与文件归属
 
-[共享解析器](../../../../packages/creative/creative/src/project-path.ts)在支持的发现深度内识别根项目、直接的书目录、`长篇|短篇/<book>`、独立短篇，以及游戏和视频入口。元数据、选择、草稿和素材过滤都用完整的项目与剧集路径寻址，因此 `EP001`、`SHOT-001` 这类重复名称永远不是全局身份。章节正文、必需大纲和追踪文件必须属于同一项目。短篇从第一份标准文档起就可见，编辑器对章节目录和独立短篇都优先展示正文和大纲。写入后的提醒是记入日志、模型可见的上下文，要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。
+[小说解析器](../../../../packages/creative/story/src/project-path.ts)以工作区下的作品名目录识别长篇和短篇；其他领域各自解析路径。元数据、选择、草稿和素材过滤都用完整的项目与剧集路径寻址，因此 `EP001`、`SHOT-001` 这类重复名称永远不是全局身份。章节正文、必需大纲和追踪文件必须属于同一项目。短篇从第一份标准文档起就可见，编辑器对章节目录和独立短篇都优先展示正文和大纲。写入后的提醒是记入日志、模型可见的上下文，要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。
 
 工作区请求只接受回环地址或加载时配置并校验过的 `trustedHosts`。Host 操作强制执行扩展名白名单和解析后的文件系统包含关系，包括符号链接。文本保存使用 `FsVersion` compare-and-swap。列表最多统计 1,000 个符合条件的创作文件，只有在看到下一个符合条件的文件后才设置 `truncated`，所以恰好 1,000 个文件仍算完整；这个警告不提供分页。依赖目录、Python 缓存、隐藏目录和视频工作区既不占用这个上限，也不影响游戏预览的新鲜度。
 
@@ -67,7 +67,7 @@ Creative 保留这些 HTTP 路由，因为通用的 `workspaceFiles` Remote 没�
 <a id="production-and-credentials"></a>
 ### 付费生产与凭据
 
-`creative_produce_run` 通过 DSH shell 执行一组封闭的入口：短剧、配音、视频解说、游戏 QA 和诊断，并负责参数引用、工作区解析和沙箱策略。因为调用可能花钱，它不是并发安全的；缺少执行服务时在调用时失败。短剧要求一个已准备、已明确确认的 `job_id` 和匹配的 adapter；替换 job JSON 和额外参数都会被拒绝，只有恰好 `argv: ["--selftest"]` 会选择离线诊断，且诊断不接受 job、stdin 或生产绑定。前台和后台调用共用同一个执行器：在项目锁内，`production_tool.py` 检查 job 及其未使用的回执，快照已确认的输入，在调用提供方之前消耗确认，校验暂存输出，发布产出并写入档案。准备和确认共用按文档区分的 `CREATOR_SOURCE_ENTRIES` 映射，因此分镜 `SHOT-` 图片任务仍然有效，而跨模态绑定会失败。
+`drama_produce_run` 通过 DSH shell 执行包内的短剧 adapter 和诊断，并负责参数引用、工作区解析和沙箱策略。因为调用可能花钱，它不是并发安全的；缺少执行服务时在调用时失败。短剧要求一个已准备、已明确确认的 `job_id` 和匹配的 adapter；替换 job JSON 和额外参数都会被拒绝，只有恰好 `argv: ["--selftest"]` 会选择离线诊断，且诊断不接受 job、stdin 或生产绑定。前台和后台调用共用同一个执行器：在项目锁内，`production_tool.py` 检查 job 及其未使用的回执，快照已确认的输入，在调用提供方之前消耗确认，校验暂存输出，发布产出并写入档案。准备和确认共用按文档区分的 `CREATOR_SOURCE_ENTRIES` 映射，因此分镜 `SHOT-` 图片任务仍然有效，而跨模态绑定会失败。
 
 Agnes 与其他 adapter 使用相同的执行器、确认和设置。它的视频模型在未设置或为空时解析为免费的 `agnes-video-2.5-flash`，显式配置可以选择计费的 `agnes-video-2.5`。在消耗回执或写入尝试之前，执行器先用 adapter 的请求编译器编译已确认的快照，因此本地的模型、参数和参考错误会保留诊断和未消耗的确认。提供方子进程会再编译一次同一份快照，以保留 adapter 的 stdin 格式，代价是多一次有界读取。提交、轮询和下载失败仍遵守一次性规则。
 
@@ -75,7 +75,7 @@ Agnes 与其他 adapter 使用相同的执行器、确认和设置。它的视�
 
 `creative-produce` profile 保存六个生产提供方的凭据引用和非敏感的运行设置；朱雀引用在 `story` 命名空间。密钥明文存放在凭据库里。引用在每次调用时解析为 adapter 的规范变量，所以名为 `AGNES_POOL` 的引用也能提供 `AGNES_API_KEY`。密钥只通过子进程环境和私有的密钥池 stdin 传递，从不出现在命令文本、模型参数或全局 `process.env` 中，普通 `bash` 也拿不到。逗号分隔的引用和换行分隔的已存密钥组成密钥池。每次调用轮换起始密钥；一次短剧运行最多使用十六个不同的密钥，只有在同一 URL 的首次提交返回 HTTP 401、403 或 429 并标记为 `submission_rejected` 时才切换。已被接受的请求、轮询、下载和结果不确定的失败都不会自动重新提交，执行器用自己的超时限制尝试次数和等待时间。
 
-`creative_produce_status` 使用与执行相同的 profile 和凭据查找，报告非敏感的提供方凭据是否存在，不启动子进程，也不消耗确认。经过凭据清理的 shell 看不到凭据库，因此 Skill 用这个工具检查缺失的密钥，并通过带 `adapter: agnes-image` 的 `creative_produce_run` 运行已配置的 Agnes 图片任务。生产设置卡片把非敏感的修改一起暂存，一次读取全部六个凭据引用，并让每条响应对应它描述的引用，因此重命名引用不会发布旧结果。密钥草稿初始为空，空值表示不写入，批量密钥文本在保存前只留在对话框里。插件配置作为 profile 的初始值，用户设置覆盖它，高级视频调参留在经过校验的环境变量选项中。
+`drama_produce_status` 使用与执行相同的 profile 和凭据查找，报告非敏感的提供方凭据是否存在，不启动子进程，也不消耗确认。经过凭据清理的 shell 看不到凭据库，因此 Skill 用这个工具检查缺失的密钥，并通过带 `adapter: agnes-image` 的 `drama_produce_run` 运行已配置的 Agnes 图片任务。生产设置卡片把非敏感的修改一起暂存，一次读取全部六个凭据引用，并让每条响应对应它描述的引用，因此重命名引用不会发布旧结果。密钥草稿初始为空，空值表示不写入，批量密钥文本在保存前只留在对话框里。插件配置作为 profile 的初始值，用户设置覆盖它，高级视频调参留在经过校验的环境变量选项中。
 
 <a id="adaptation-and-source-material"></a>
 ### 改编与来源记录
@@ -134,9 +134,9 @@ Skill 把小说改短剧路由到导出包，把小说改游戏路由到小说�
 
 ## 验证
 
-[Creative 测试](../../../../packages/creative/creative/tests/)覆盖 provider 正文、内置知识库的宿主引用检查、共享脚本、项目分类、符号链接与媒体 provider 隔离、精确的列表上限、草稿协调和释放。[Loader 组合测试](../../../../packages/creative/creative/tests/loader-composition.spec.ts)证明无头组合在没有 Web 服务时也能注册。视频预检测试覆盖探测映射、Python 回退和 30 秒缓存；native-hook 测试固定了正文写入成功后记录的追踪提醒，以及写入失败或被拒绝时不出现提醒。
+[领域测试](../../../../packages/creative/short-drama/tests/)覆盖生产、元数据、符号链接及媒体隔离，各包的技能测试验证自己的资源。[Loader 组合测试](../../../../tests/loader-composition.spec.ts)验证四个独立包在无头环境同时注册。
 
-[生产执行器测试](../../../../packages/creative/creative/tests/produce-contract.spec.ts)用离线 fixture 运行内置的 Python 路径，检查规范凭据、确认、不可变输入、重试和产出发布。Agnes 视频用例覆盖免费默认值、显式的付费选择、三张参考图，以及本地拒绝后确认保持不变、没有尝试也没有网络调用。导出器自测能重建章节范围并拒绝无效输入，与 `novel_index.py` 的 20 章交叉核对保留了全部 20 章；谱系自测覆盖往返和六种无效输入。分镜确认另有记录在案的证据：一个 SHOT、IMG、MOTION 与图片、视频组合的六例矩阵和一次真实的准备到确认运行，但这个矩阵不是已提交的回归测试。
+[生产执行器测试](../../../../packages/creative/short-drama/tests/produce-contract.spec.ts)用离线 fixture 运行内置的 Python 路径，检查规范凭据、确认、不可变输入、重试和产出发布。Agnes 视频用例覆盖免费默认值、显式的付费选择、三张参考图，以及本地拒绝后确认保持不变、没有尝试也没有网络调用。导出器自测能重建章节范围并拒绝无效输入，与 `novel_index.py` 的 20 章交叉核对保留了全部 20 章；谱系自测覆盖往返和六种无效输入。分镜确认另有记录在案的证据：一个 SHOT、IMG、MOTION 与图片、视频组合的六例矩阵和一次真实的准备到确认运行，但这个矩阵不是已提交的回归测试。
 
 聚焦的 Client 测试覆盖 Inbox 映射、`next-turn` 中的精确 `rpcId` 关联、排除 `next-step`、投影缺失、撤回只作用于精确队列项、抛出与被拒绝的提示词派发、sequence 顺序、首次只应用一次、游标之上的增量应用、重新挂载不重复导航、拒绝已退役的持久化字段、一个请求对应多个作业，以及从 Chat 节点推导运行中根调用，包括嵌套 PTC 修改、快速结算和隐藏行。
 

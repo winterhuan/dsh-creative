@@ -50,32 +50,11 @@ async function runSelftest(context: TestContext, args: string[]) {
   }
 }
 
-describe('bundled video-recap offline selftests', () => {
-  for (const skill of skills) {
-    it(`runs ${skill} with isolated temporary files and no network`, async (context) => {
-      const entry = resolve(
-        import.meta.dirname,
-        '../../video-recap/knowledge/video-recap/skills',
-        skill,
-        'scripts/selftest.py',
-      )
-      const result = await runSelftest(context, [entry])
-      expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
-      expect(result.stdout.trim().split('\n').at(-1)).toMatch(/^\d+ self-tests passed$/u)
-    })
-  }
-
+describe('cross-domain media delivery', () => {
   it('renders a synthetic keyless draft and finished episode with real media streams', async (context) => {
     const result = await runSelftest(context, [resolve(import.meta.dirname, 'fixtures/media-delivery.py')])
     expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
     expect(result.stdout.trim()).toBe('15 self-tests passed')
   }, 120_000)
 
-  it('rejects network access before opening a connection', async (context) => {
-    const result = await runSelftest(context, [
-      '-c', 'import socket; socket.socket().connect(("127.0.0.1", 1))',
-    ])
-    expect(result.exitCode).toBe(1)
-    expect(result.stderr).toContain('Offline knowledge self-test attempted network access: socket.connect')
-  })
 })

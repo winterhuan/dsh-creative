@@ -15,9 +15,6 @@
     },
     {
       "path": "./packages/skill/skill-viewer"
-    },
-    {
-      "path": "./packages/creative/creative/tsconfig.host.json"
     }
   ]
 }

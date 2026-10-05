@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Write and review fiction with six Skills, seven specialist Roles and a dedicated editor. A read-only overview shows long-form progress, characters, foreshadowing and dual timelines. Opt into a native workflow for outline preparation, writing, independent review and guarded chapter submission. Drafts remain in the current DSH Session, and saves use observed file versions. Install this bundle on its own or through Creative.
+Write and review fiction with six Skills, seven specialist Roles and a dedicated editor. A read-only overview shows long-form progress, characters, foreshadowing and dual timelines. Opt into a native workflow for outline preparation, writing, independent review and guarded chapter submission. Drafts remain in the current DSH Session, and saves use observed file versions. Install this bundle independently.
 
 ## Table of Contents
 
@@ -74,6 +74,8 @@ For an opening, one chapter, or a local question, `story-analyze` reads the sour
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+From the repository root, run `pnpm --filter @winterhuan/dsh-story build` to build this package and `pnpm --filter @winterhuan/dsh-story test` to test it.
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 
@@ -81,7 +83,7 @@ The [patch](cordis.patch.yml) mounts the domain row and the story settings page.
 
 The writing guards and specialist Roles belong to this package. Explicitly requested Zhuque detection sends the selected chapter to Tencent EdgeOne Makers; it receives only the configured MAKERS_API_KEY.
 
-The package has no dependency on the Creative aggregate or another domain plugin. Required helper scripts ship as package resources. The [aggregate](../creative/README.md) preserves legacy tool names and routes without a separate browser page.
+This package is developed, built and installed independently; required helper scripts ship as package resources without a dependency on another domain plugin.
 
 Each Skill owns its `references/`; specialist Roles live under the owning Skill’s `references/roles/`. `story-write` and `story-analyze` each own their workflow template. Skill Viewer discovers and previews these local references directly. The package’s `lib/cli.js` launches the Python dispatcher in `runtime/` and forwards cancellation to its process group. Internal Python and JavaScript modules retain the existing tracking transactions and shared chapter-path and word-target parser. The fiction workspace response carries an independent book catalog, a file listing capped at 1,000 entries, and file truncation status. Book discovery checks standard directories or standalone documents in each direct child and continues after the file limit; Overview reads the selected book’s tracking directly. If a running host omits the catalog, the client derives book names from its file listing until the host restarts. Transaction writers use OS file locks that release on process exit; the lock file stays on disk and must not be deleted. After an interrupted write, retry the original transaction before checking derived views.
 

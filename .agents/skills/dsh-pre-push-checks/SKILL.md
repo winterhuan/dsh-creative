@@ -33,7 +33,7 @@ A change that moves or renames files also affects the configuration that names t
 Pass Vitest file and name filters directly after the script name; do not insert a standalone `--`, which reaches Vitest and can disable `-t` filtering:
 
 ```sh
-pnpm test packages/creative/creative/tests/produce-tool.spec.ts -t 'rotates'
+pnpm test packages/creative/short-drama/tests/produce-tool.spec.ts -t 'rotates'
 ```
 
 Check the reported test count before treating a filtered run as evidence.

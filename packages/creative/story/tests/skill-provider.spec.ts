@@ -4,19 +4,11 @@ import { dirname, resolve } from 'node:path'
 import { renderSkillContent } from '@deepseek-ai/dsh-skill'
 import { listReferences, readReference } from '../../../skill/skill-viewer/src/references.ts'
 import { describe, expect, it, onTestFinished } from 'vitest'
-import { createDramaSkillProvider, createNovelToGameSkillProvider, createStorySkillProvider, createVideoRecapSkillProvider, parseBundledSkill } from '../src/skill-provider.ts'
+import { createStorySkillProvider, parseBundledSkill } from '../src/skill-provider.ts'
 
-const skillRoot = resolve(import.meta.dirname, '../../story/knowledge/story/skills')
-const dramaRoot = resolve(import.meta.dirname, '../../short-drama/knowledge/drama/skills')
-const gameRoot = resolve(import.meta.dirname, '../../novel-to-game/knowledge/skills')
-const videoRoot = resolve(import.meta.dirname, '../../video-recap/knowledge/video-recap/skills')
+const skillRoot = resolve(import.meta.dirname, '../knowledge/story/skills')
 
-describe.each([
-  { name: 'story', create: createStorySkillProvider, root: skillRoot, skillName: 'story', count: 6 },
-  { name: 'short-drama', create: createDramaSkillProvider, root: dramaRoot, skillName: 'short-drama', count: 5 },
-  { name: 'novel-to-game', create: createNovelToGameSkillProvider, root: gameRoot, skillName: 'novel-to-game', count: 4 },
-  { name: 'video-recap', create: createVideoRecapSkillProvider, root: videoRoot, skillName: 'video-recap', count: 2 },
-])('$name skill source', ({ create, root, skillName, count }) => {
+describe.each([{ name: 'story', create: createStorySkillProvider, root: skillRoot, skillName: 'story', count: 6 }])('$name skill source', ({ create, root, skillName, count }) => {
   it('resolves local Markdown links in its packaged knowledge', async () => {
     const knowledge = resolve(root, skillName === 'novel-to-game' ? '..' : '../..')
     for (const file of await readdir(knowledge, { recursive: true })) {
@@ -141,81 +133,5 @@ describe('Novel bundled skill provider', () => {
       locator: new URL('file:///tmp/SKILL.md'),
       path: resolve(skillRoot, '../SKILL.md'),
     }, {})).rejects.toThrow(/escaped/u)
-  })
-})
-
-describe('Drama Skills bundled provider', () => {
-  it('publishes five task entries through DSH', async () => {
-    const provider = createDramaSkillProvider(dramaRoot)
-    const listed = await provider.list({})
-    if (!Array.isArray(listed)) throw new Error('Expected a complete Drama Skills catalog.')
-    expect(listed).toHaveLength(5)
-    expect(listed.map(candidate => candidate.name)).toEqual(expect.arrayContaining([
-      'short-drama', 'short-drama-produce', 'short-drama-review', 'short-drama-visual', 'short-drama-write',
-    ]))
-    for (const candidate of listed) {
-      const skill = await provider.get(candidate, {})
-      expect(skill?.content).toContain('DSH owns the workspace')
-      expect(skill?.content).toContain('drama_produce_run')
-      expect(skill?.content).toContain('creative_production')
-    }
-    const routeCandidate = listed.find(candidate => candidate.name === 'short-drama')
-    const route = await provider.get(routeCandidate!, {})
-    expect(route?.resourceBase).toEqual({ kind: 'directory', path: dirname(dramaRoot) })
-    for (const provider of ['gpt-image-2', 'minimax-h3-video', 'minimax-music', 'seedance']) {
-      const reference = await readFile(resolve(dramaRoot, `../references/produce/providers/${provider}.md`), 'utf8')
-      expect(reference).toContain('"job_id":')
-      expect(reference).not.toContain('"stdin":')
-    }
-
-  })
-})
-
-describe('NovelToGame bundled provider', () => {
-  it('publishes four playable adaptation tasks through DSH', async () => {
-    const provider = createNovelToGameSkillProvider(gameRoot)
-    const listed = await provider.list({})
-    if (!Array.isArray(listed)) throw new Error('Expected a complete NovelToGame catalog.')
-    expect(listed.map(candidate => candidate.name)).toEqual([
-      'game-build',
-      'game-design',
-      'game-qa',
-      'novel-to-game',
-    ])
-    for (const candidate of listed) {
-      const skill = await provider.get(candidate, {})
-      expect(skill?.content).toContain('The 游戏 tab is the playable Game Studio')
-      expect(skill?.content).toContain('game-adaptations/<project>/')
-      expect(skill?.content).toContain('qa/verification.json remains the sole machine QA truth')
-      expect(skill?.content).toContain('Adapt games from the novel')
-      expect(skill?.content).toContain('record_lineage.py')
-      expect(skill?.resourceBase).toEqual({ kind: 'directory', path: resolve(gameRoot, candidate.name) })
-    }
-    const qa = await provider.get(listed.find(candidate => candidate.name === 'game-qa')!, {})
-    for (const check of ['launch', 'render', 'input', 'coreLoop', 'outcome', 'restart']) {
-      expect(qa?.content).toContain(check)
-    }
-  })
-})
-
-describe('video-recap bundled provider', () => {
-  it('publishes two tasks with native DSH boundaries', async () => {
-    const provider = createVideoRecapSkillProvider(videoRoot)
-    const listed = await provider.list({})
-    if (!Array.isArray(listed)) throw new Error('Expected a complete video-recap catalog.')
-    expect(listed.map(candidate => candidate.name)).toEqual([
-      'video-recap',
-      'video-script',
-    ])
-    expect(listed.find(candidate => candidate.name === 'video-recap')?.invocation.userInvocable).toBe(true)
-    for (const candidate of listed) {
-      const skill = await provider.get(candidate, {})
-      expect(skill?.content).toContain('The Video Studio is a preview and artifact surface')
-      expect(skill?.content).toContain('video-recaps/<project>/')
-      expect(skill?.content).toContain('MIMO_API_KEY, FISH_API_KEY')
-      expect(skill?.content).toContain('Short-drama production outputs are ready recap sources')
-      expect(skill?.content).toContain('record_lineage.py')
-      expect(skill?.resourceBase).toEqual({ kind: 'directory', path: dirname(videoRoot) })
-    }
   })
 })

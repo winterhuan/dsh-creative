@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过五个 Skill、剧集编辑器和生产看板创作短剧。确认后的作业通过 DSH 工具生产媒体与合成剧集。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过五个 Skill、剧集编辑器和生产看板创作短剧。确认后的作业通过 DSH 工具生产媒体与合成剧集。此 bundle 独立安装。
 
 ## 目录
 
@@ -33,6 +33,8 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/shor
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+在仓库根目录运行 `pnpm --filter @winterhuan/dsh-short-drama build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-short-drama test` 可验证此包。
+
 <details>
 <summary>实现细节 — 点击展开</summary>
 
@@ -40,7 +42,7 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/shor
 
 生产只消费一次已准备作业的确认。此包携带成片与媒体审查所需的视频运行脚本，不安装视频工作流插件。
 
-此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
+此包独立开发、构建和安装，不依赖其他领域插件；必需辅助脚本作为包资源分发。
 
 </details>
 

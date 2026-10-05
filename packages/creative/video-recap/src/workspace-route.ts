@@ -68,7 +68,7 @@ class WorkspaceHttpError extends Error {
 }
 
 /** One host command probe. `undefined` means the command could not run. */
-type PreflightCommandRunner = (command: string, args: readonly string[]) => Promise<string | undefined>
+export type PreflightCommandRunner = (command: string, args: readonly string[]) => Promise<string | undefined>
 
 async function commandOutput(command: string, args: readonly string[]): Promise<string | undefined> {
   try {
@@ -106,7 +106,7 @@ function effectiveSpeechProvider(requested: string, mimo: boolean, fish: boolean
  * @param credentials - the produce profile's resolved credentials and speech routing.
  * @returns the probe summary consumed by the VideoStudio preflight panel.
  */
-async function runVideoPreflight(
+export async function runVideoPreflight(
   runner: PreflightCommandRunner,
   credentials: ProduceCredentialView | Readonly<Record<string, string>>,
 ): Promise<VideoPreflightSummary> {
@@ -148,7 +148,7 @@ async function runVideoPreflight(
  * @param now - monotonic-enough clock source; injectable for cache tests.
  * @returns the cached or freshly probed capability summary.
  */
-async function videoPreflight(
+export async function videoPreflight(
   credentials: ProduceCredentialView | PreflightCommandRunner,
   runner: PreflightCommandRunner | (() => number) = commandOutput,
   now: (() => number) = Date.now,

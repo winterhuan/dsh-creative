@@ -2,25 +2,25 @@
 
 English | [中文](creative.zh.md)
 
-Fiction, short drama, novel-to-game and video recap belong to `dsh-story`, `dsh-short-drama`, `dsh-novel-to-game` and `dsh-video-recap`. Each owns its Skills, tools, routes and sidebar; [`@winterhuan/dsh-creative`](../../packages/creative/creative/README.md) composes them. DSH owns models, Sessions, tools, permissions and roots. Package READMEs own configuration and usage.
+Fiction, short drama, novel-to-game and video recap belong to `dsh-story`, `dsh-short-drama`, `dsh-novel-to-game` and `dsh-video-recap`. Each owns its Skills, tools, routes and sidebar and installs and uninstalls independently. DSH owns models, Sessions, tools, permissions and roots. Package READMEs own configuration and usage.
 
-Source: [`packages/creative/creative/src/index.ts`](../../packages/creative/creative/src/index.ts)
+Entry points: [story](../../packages/creative/story/README.md), [drama](../../packages/creative/short-drama/README.md), [game](../../packages/creative/novel-to-game/README.md), [video](../../packages/creative/video-recap/README.md)
 
 ## The four seams
 
 **Skill and Role supply.** Four `SkillProvider`s serve bundled Skills with native resource hints. Professional Agents use DSH delegation or explicitly selected Team/workflow tools and read their packaged instructions with native `read`; Creative owns neither an expert executor nor a separate model, permission or collaboration system. The selected Skill or workflow owns task order, Roles supply professional methods, and post-write reminders defer tracking to the assigned submitter. The story workflow template owns chapter preparation through verified submission; preparation and submission share the Python chapter-path and word-target parser. See the [story package](../../packages/creative/story/README.md#model-experience).
 
-**Paid production.** `story_zhuque` reads the `story` settings namespace. `drama_produce_run`, `video_produce_run`, and the aggregate alias `creative_produce_run` read `creative-produce`. Keys live in the credentials store; those namespaces hold references and non-secret profile fields; each tool resolves references per call and forwards them as explicit child environment variables, because every other subprocess starts from a scrubbed environment. Drama runs consume a single-use creator confirmation, and contract verdicts drive bounded key rotation.
+**Paid production.** `story_zhuque` reads the `story` settings namespace. `drama_produce_run` and `video_produce_run` read `creative-produce`. Keys live in the credentials store; those namespaces hold references and non-secret profile fields; each tool resolves references per call and forwards them as explicit child environment variables, because every other subprocess starts from a scrubbed environment. Drama runs consume a single-use creator confirmation, and contract verdicts drive bounded key rotation.
 
 **Projection intents.** `creative_production` is a concurrency-safe tool with no side effects outside the Session log; the browser workbench replays its results to drive the short-drama production views. It never edits creator documents or authorizes paid generation. Pending input belongs to the Session's `inbox` projection, durable production results to the Conversation projection, and presentation drafts to the workbench store.
 
-**Workbench routes.** `/creative` is a Session-scoped HTTP API trusted only from loopback or `trustedHosts`, with extension allowlists, resolved-path containment, `FsVersion` compare-and-swap writes, ranged media streaming, video preflight, CSP-isolated game previews, and an owner-checked job stop. The browser workbench dispatches production only as chat prompts through the normal approval flow.
+**Workbench routes.** `/story`, `/short-drama`, `/video-recap` and `/novel-to-game` are domain-owned Session-scoped HTTP APIs trusted only from loopback or `trustedHosts`, with extension allowlists, resolved-path containment, `FsVersion` compare-and-swap writes, ranged media streaming, video preflight, CSP-isolated game previews, and an owner-checked job stop. The browser workbench dispatches production only as chat prompts through the normal approval flow.
 
-The standalone `creative-game` sidebar owns a game-only Session store and reads `/novel-to-game` APIs. The game package supplies four task Skills, packaged source helpers, `game_qa` and isolated previews. Creative retains legacy QA and preview aliases without a browser page; it does not register the game provider itself.
+The standalone `creative-game` sidebar owns a game-only Session store and reads `/novel-to-game` APIs. The game package supplies four task Skills, packaged source helpers, `game_qa` and isolated previews. Only the game package registers its provider.
 
 Story Skills own local references and Roles. Deterministic story operations use the packaged `dsh-story` CLI; native chapter and analysis workflows belong to their Skills, while the parent validates and saves extracted analysis cards. Story owns one book layout, `{workspace}/{book name}/`, for both long and short fiction. Its discovery, file routes, redirects and writing guidance use that boundary; the workspace-level analysis library remains separate from book identity. The book catalog is independent of the bounded file listing, so truncation does not hide books from Overview.
 
-The four domain plugins install independently. Creative composes installation and retains Host tool and route compatibility without an aggregate page or legacy draft reads. See the [split decision](../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.md).
+The four domain plugins install independently. Each package provides its own installation manifest, build and test commands. See the [split decision](../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.md).
 
 ## Delivery evidence
 

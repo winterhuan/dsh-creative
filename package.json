@@ -39,7 +39,14 @@
     "verify-export-jsdoc": "tsx scripts/verify-export-jsdoc.ts"
   },
   "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5-alpha.1",
     "@deepseek-ai/cordis-plugin-group": "~1.0.5-alpha.1",
+    "@deepseek-ai/cordis-plugin-include": "~1.0.10-alpha.1",
+    "@deepseek-ai/cordis-plugin-loader": "~1.0.6-alpha.1",
+    "@deepseek-ai/dsh-skill": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-subagent": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-system-prompt": "0.2.1-alpha.1",
+    "@deepseek-ai/dsh-tools": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-typert-generator": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-util-code-language": "0.2.1-alpha.1",
     "@deepseek-ai/dsh-util-workspace-path": "0.2.1-alpha.1",
@@ -60,6 +67,7 @@
     "clsx": "^2.0.0",
     "diff": "^9.0.0",
     "dompurify": "^3.4.11",
+    "execa": "^10.0.0",
     "fflate": "^0.8.2",
     "immer": "^10.1.1",
     "js-yaml": "^4.2.0",

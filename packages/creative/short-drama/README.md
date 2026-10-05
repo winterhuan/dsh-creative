@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Develop short dramas with five Skills, an episode editor and a production board. Confirmed jobs produce media and composed episodes through DSH tools. Install this bundle on its own or through Creative.
+Develop short dramas with five Skills, an episode editor and a production board. Confirmed jobs produce media and composed episodes through DSH tools. Install this bundle independently.
 
 ## Table of Contents
 
@@ -33,6 +33,8 @@ Open **Short-drama workbench** from the right sidebar. The plugin uses the curre
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+From the repository root, run `pnpm --filter @winterhuan/dsh-short-drama build` to build this package and `pnpm --filter @winterhuan/dsh-short-drama test` to test it.
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 
@@ -40,7 +42,7 @@ The [patch](cordis.patch.yml) mounts the domain row, the `creative-produce` conf
 
 Production consumes a prepared job confirmation once. The package includes the video runtime scripts needed for composition and media review, without installing the video workflow plugin.
 
-The package has no dependency on the Creative aggregate or another domain plugin. Required helper scripts ship as package resources. The [aggregate](../creative/README.md) preserves legacy tool names and routes without a separate browser page.
+This package is developed, built and installed independently; required helper scripts ship as package resources without a dependency on another domain plugin.
 
 </details>
 

@@ -27,8 +27,10 @@
 
 - 依赖 npm 上发布的 DSH `0.2.1-alpha.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-- 10 个包都位于 `@winterhuan` scope 下。
+- 9 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
+
+2026-10-05 移除聚合包：删除 `@winterhuan/dsh-creative` 包及旧通用生产工具、`/creative` 路由，四个领域按各自包安装。各包提供独立 `build`、`typecheck`、`test` 命令；领域测试归回所属包，跨领域组合和媒体交付验证位于根 `tests/`。四个包独立构建、独立压缩包资源与依赖检查、隔离 profile 独立安装均通过；`typecheck`、`build` 和 77 个文件 712 项测试通过。旧聚合入口的路径与别名测试随入口移除。
 
 2026-10-05 DSH 升级：10 个插件包的 247 处 DSH 依赖声明统一为 `0.2.1-alpha.1`，插件自身版本不变；对齐配套 Cordis 依赖，迁移 typert 补丁，移除 invariant 构建入口，构建显式使用 native config loader。短剧生产投影适配工具结果的 `name` 与 `PartialArguments`。清理构建后 `typecheck`、`build`、75 个文件 762 项测试通过，peer 检查无冲突。隔离新版 DSH 已验证聚合安装、小说独立安装配置、500 章概览、六个小说技能参考预览、正文保存和外部修改冲突，以及四个工作台入口；小说、创意生产设置与模型思考／重试控件可见，页面脚本错误为零。文档 16 项和规范 3 项检查通过。概览阶段写请求为零，追踪哈希不变。媒体生产和真实模型调用未验证。
 
@@ -82,7 +84,6 @@ dsh-creative/
 │   │   ├── short-drama/               @winterhuan/dsh-short-drama（Host + Client）
 │   │   ├── video-recap/               @winterhuan/dsh-video-recap（Host + Client）
 │   │   ├── novel-to-game/             @winterhuan/dsh-novel-to-game（Host + Client）
-│   │   └── creative/                  @winterhuan/dsh-creative（安装组合 + Host 兼容）
 │   ├── skill/
 │   │   └── skill-viewer/              @winterhuan/dsh-skill-viewer（Host，skillViewer Remote）
 │   └── client/
@@ -104,8 +105,8 @@ dsh-creative/
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
-├── tsconfig.host.json                 Host 编译面聚合：skill-viewer、creative host
-├── tsconfig.client.json               Client 编译面聚合：ui-skill-viewer、ui-settings-creative-produce、ui-settings-story、creative client
+├── tsconfig.host.json                 Host 编译面聚合：skill-viewer 与四个领域 Host
+├── tsconfig.client.json               Client 编译面聚合：ui-skill-viewer、ui-settings-creative-produce、ui-settings-story、四个领域 Client
 ├── tsconfig.json                      编辑器入口，引用上面两个聚合
 ├── tsdown.config.ts                   Host 面打包 + typert 生成；Client 面交给各包自己的 tsdown.config.ts
 ├── vitest.config.ts
@@ -115,27 +116,25 @@ dsh-creative/
 
 包之间的关系：
 
-- `creative` 依赖四个领域包和已有生产设置页；四个领域包均可独立安装，不依赖 Creative 或其他业务插件。没有新增公共运行时包。
+- 四个领域包分别构建、测试和安装，不依赖其他业务插件；`packages/creative/creative` 聚合包及其旧工具、路由已删除。短剧和视频继续使用已有生产设置页及凭据引用。
 - `skill-viewer` 的 `dependencies` 包含 `ui-skill-viewer`；`ui-skill-viewer` 的 `devDependencies` 包含 `skill-viewer`，用它的 `/types` 和 `/remote`。这个结构沿用上游，所以 `pnpm install` 会提示 `There are cyclic workspace dependencies`，这是预期的。
-- `creative` 仅构建 Host 兼容入口；四个领域包各自构建 Host 和 Client，聚合包不导出 `/client`。
-- 包路径固定为（`packages/creative/creative`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
+- 四个领域包各自构建 Host 和 Client；在仓库根目录执行 `pnpm --filter @winterhuan/dsh-story build` 或 `test`，可只开发小说包。其余领域替换包名。跨领域组合验证位于 `tests/`。
+- 包路径固定为（`packages/creative/story`、`packages/creative/short-drama`、`packages/creative/video-recap`、`packages/creative/novel-to-game`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
 
 ## 3. 与 DSH 的集成方式
 
 ### Bundle 与插件行
 
-`creative` 和 `skill-viewer` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
+四个领域包和 `skill-viewer` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
 
 | bundle | 行 id | 加载的模块 | 作用 |
 |---|---|---|---|
-| creative / story | `story` | `@winterhuan/dsh-story` | 小说技能、角色、写作检查、朱雀密钥与编辑器 |
-| creative / short-drama | `short-drama` | `@winterhuan/dsh-short-drama` | 短剧技能、确认生产与剧集工作台 |
-| creative / video-recap | `video-recap` | `@winterhuan/dsh-video-recap` | 解说技能、视频交付与工作台 |
-| creative / novel-to-game | `novel-to-game` | `@winterhuan/dsh-novel-to-game` | 游戏技能、QA、路由与独立侧边栏 |
-| creative | `creative` | `@winterhuan/dsh-creative` | 主插件（`lib/index.js`） |
-| creative | `creative-produce` | `@winterhuan/dsh-creative/produce` | Loader 行，它的 Config 声明就是 `creative-produce` 设置命名空间（`lib/produce-settings-entry.js`） |
-| creative / story | `ui-settings-story` | `@winterhuan/dsh-client-ui-settings-story` | 小说设置页，编辑 `story` 命名空间里的朱雀密钥引用 |
-| creative | `ui-settings-creative-produce` | `@winterhuan/dsh-client-ui-settings-creative-produce` | 短剧与视频生产设置页的 Node 入口，负责登记浏览器 bundle |
+| story | `story` | `@winterhuan/dsh-story` | 小说技能、角色、写作检查、朱雀密钥与编辑器 |
+| short-drama | `short-drama` | `@winterhuan/dsh-short-drama` | 短剧技能、确认生产与剧集工作台 |
+| video-recap | `video-recap` | `@winterhuan/dsh-video-recap` | 解说技能、视频交付与工作台 |
+| novel-to-game | `novel-to-game` | `@winterhuan/dsh-novel-to-game` | 游戏技能、QA、路由与独立侧边栏 |
+| story | `ui-settings-story` | `@winterhuan/dsh-client-ui-settings-story` | 小说设置页，编辑 `story` 命名空间里的朱雀密钥引用 |
+| short-drama / video-recap | `ui-settings-creative-produce` | `@winterhuan/dsh-client-ui-settings-creative-produce` | 短剧与视频生产设置页的 Node 入口，负责登记浏览器 bundle |
 | skill-viewer | `skill-viewer` | `@winterhuan/dsh-skill-viewer` | Host 服务 `SkillViewerCatalog`（继承 `TypertRemoteService`，Remote 命名空间 `skillViewer`） |
 | skill-viewer | `ui-skill-viewer` | `@winterhuan/dsh-client-ui-skill-viewer` | Skill Viewer 面板的 Node 入口 |
 
@@ -159,7 +158,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 ### 模型设置增强
 
-`ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力、提供方重试次数及无效请求、认证、额度错误的重试开关。它复用内置设置、模型目录和重试运行时，不随 Creative 聚合包安装。安装与配置见[包说明](packages/client/ui-settings-model-options/README.zh.md)。
+`ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力、提供方重试次数及无效请求、认证、额度错误的重试开关。它复用内置设置、模型目录和重试运行时，不随领域包安装。安装与配置见[包说明](packages/client/ui-settings-model-options/README.zh.md)。
 
 2026-10-03 重试开关验证：`typecheck`、`build`、包内 54 项及全量 65 文件 683 项测试通过。隔离 DSH 的 Chrome 与本地模拟接口确认 400 在关闭开关、开启并设置 3 次、开启并设置 0 次时分别请求 1、4、1 次，413 沿用此开关。QUOTA 关闭时请求 1 次，开启并设置 2 次时请求 3 次，设为 0 时请求 1 次；接口恢复后可成功完成。AUTH 关闭时 401 请求 1 次，开启并设置 1 次时请求 2 次。刷新持久化、深浅色及 720px 窄窗口检查通过，页面脚本错误为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-retry400-2mtl7t6i/` 的 `results.json` 与 `quota-results.json`；未调用付费模型或修改用户 profile。
 
@@ -203,7 +202,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 ### 从 Chat 打开文件
 
-小说和短剧通过各自的 `src/client/file-redirect.tsx` 注册文件跳转，使用 `story-file`、`drama-file` 标签类型。它们匹配 `dsh-resource://file/session/**`，只接管对应领域支持的文件，再通过 `params.creativeFile` 打开 `story` 或 `short-drama` 页面。其他文件交给 DSH 自带预览；Creative 聚合包不注册文件跳转或页面。
+小说和短剧通过各自的 `src/client/file-redirect.tsx` 注册文件跳转，使用 `story-file`、`drama-file` 标签类型。它们匹配 `dsh-resource://file/session/**`，只接管对应领域支持的文件，再通过 `params.creativeFile` 打开 `story` 或 `short-drama` 页面。其他文件交给 DSH 自带预览。
 
 ## 4. 开发命令与构建流程
 
@@ -211,7 +210,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 - Node `^22.19.0 || >=24`（本机是 nvm 管理的 v22.22.2）。
 - pnpm 11.7.0（`package.json` 的 `packageManager` 字段，通过 corepack）。
-- `python3`：`packages/creative/creative/tests/knowledge-*.spec.ts` 会执行 `knowledge/` 下的 Python 脚本。
+- `python3`：`packages/creative/*/tests/knowledge-*.spec.ts` 会执行 `knowledge/` 下的 Python 脚本。
 - 子模块已检出：只有客户端单元测试需要，构建和类型检查不需要。
 
 ### 命令
@@ -228,7 +227,7 @@ pnpm run clean                # 删除 packages/*/*/lib
 ### 构建顺序
 
 1. `build:host`：
-   - `tsc -b tsconfig.host.json` 编译 skill-viewer 和 creative 的 host 面，输出 `lib/types/*.js` 与 `*.d.ts`。
+   - `tsc -b tsconfig.host.json` 编译 skill-viewer 和 creative 的 Host 面，输出 `lib/types/*.js` 与 `*.d.ts`。
    - `tsdown --env.DSH_BUILD_FACE host`：根 `tsdown.config.ts` 把各包的 `lib/types/index.js` 打成 `lib/index.js`，并由 `typertPlugin({ mode: 'workspace', faces: ['host'] })` 生成 skill-viewer 的 `lib/typert.host.{js,d.ts}` 和 `lib/typert.remote-client.{js,d.ts}`。
 2. `build:client`：
    - `tsc -b tsconfig.client.json` 编译四个领域工作台和四个独立 UI 包的客户端编译面。`ui-skill-viewer` 要用第 1 步生成的 `@winterhuan/dsh-skill-viewer/remote` 声明，所以 client 面必须排在 host 构建之后，`typecheck` 也因此先跑 `build:host`。
@@ -269,10 +268,13 @@ cd ~/dsh-creative && pnpm run build
 
 # 从 web 模板创建 profile，--dump-config 使它只创建、不启动
 dsh --profile creative --from-default-profile web --dump-config > /dev/null
-dsh plugin --profile creative add ~/dsh-creative/packages/creative/creative
+dsh plugin --profile creative add ~/dsh-creative/packages/creative/story
+dsh plugin --profile creative add ~/dsh-creative/packages/creative/short-drama
+dsh plugin --profile creative add ~/dsh-creative/packages/creative/video-recap
+dsh plugin --profile creative add ~/dsh-creative/packages/creative/novel-to-game
 dsh plugin --profile creative add ~/dsh-creative/packages/skill/skill-viewer
 
-# 确认合成配置里有两层 @winterhuan
+# 确认合成配置里有独立的 @winterhuan 安装层
 dsh --profile creative --dump-config | grep -E '^# == @winterhuan|name: .@winterhuan'
 
 dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，终端打印带 token 的地址
@@ -288,7 +290,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 - 移除：
 
   ```sh
-  dsh plugin --profile creative remove @winterhuan/dsh-creative
+  dsh plugin --profile creative remove @winterhuan/dsh-story  # 仅移除小说；其他领域使用各自包名
   dsh plugin --profile creative remove @winterhuan/dsh-skill-viewer
   ```
 
@@ -338,7 +340,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 
 ### 问题 5：typert 生成器报 `publishes Remote artifacts but has no Remote methods`
 
-- **现象**：`build:host` 里 host 面编译通过，typert 插件报 `TypertAnalysisError: typert(host): @winterhuan/dsh-skill-viewer publishes Remote artifacts but has no Remote methods`。
+- **现象**：`build:host` 里 Host 面编译通过，typert 插件报 `TypertAnalysisError: typert(host): @winterhuan/dsh-skill-viewer publishes Remote artifacts but has no Remote methods`。
 - **原因**：生成器通过 `FaceAnalyzer.isTypeMetaSymbol()` 识别 `@Remote`、`TypertRemoteService`、`bindTypertRemote`，只接受两种情况：
   - 声明所在文件属于一个名为 `@deepseek-ai/dsh-typert-protocol` 的 workspace 包。workspace 包的登记来自根 `tsconfig.host.json` / `tsconfig.client.json` 引用的、位于 `<根>/packages` 下的项目。
   - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
@@ -501,10 +503,10 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 
 ## 10. 已知限制与待办
 
-- **四领域插件拆分**：方案见[Agent Note](.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。四个领域包已提取；游戏包拥有技能、随包原著辅助脚本、`game_qa`、独立 `/novel-to-game` 路由和侧边栏；Creative 保留安装组合和 Host 兼容入口。小说、视频、短剧也已拥有各自技能、工具、路由和侧栏；聚合页面已移除，四个侧栏独立保存状态，不迁移旧聚合草稿。`scripts/sync-video-runtime.py` 同步视频运行时、短剧媒体副本及小说导出/溯源辅助脚本。
+- **四领域独立开发与安装**：各包拥有技能、工具、路由和侧栏；聚合包及其兼容入口已删除。详细边界见[四领域决策](.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。
 - **浏览器验证范围**：新版已验证技能列表、生产设置、小说读写与模式/工作区切换。此次没有调用模型、付费生产或实际媒体生成；从 Chat 打开文件的重定向尚未单独复验，重定向内容组件也没有单元测试覆盖。
 - **录制会话快照与 web e2e 未配置**：本仓库目前没有快照或 e2e 测试设施；浏览器内交互仍需手动验证。
-- **版本号继承自 DSH**：`creative`、`skill-viewer`、`ui-skill-viewer` 是 `0.1.5-rc.2`，`ui-settings-creative-produce` 是 `0.1.7-rc.2`。发布前改成插件自己的版本号；发布到 npm 的 `@winterhuan` scope 需要对应的 npm 账号。
+- **版本号继承自 DSH**：`skill-viewer`、`ui-skill-viewer` 是 `0.1.5-rc.2`，`ui-settings-creative-produce` 是 `0.1.7-rc.2`。发布前改成插件自己的版本号；发布到 npm 的 `@winterhuan` scope 需要对应的 npm 账号。
 - **`exports` 里的 `"./src/*"`** 沿用上游写法，但 `files` 不包含 `src`，发布后这个导出无效。
 - **README 链接**：
   - 包 README 里的 `../../../upstream/...` 链接在子模块检出时有效，但在 GitHub 网页上不会解析到子模块里的文件；发布到 npm 后也会失效。
@@ -550,3 +552,11 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 - 在 `/tmp/dsh-alpha-qa.SvMvfU` 安装 DSH `0.2.1-alpha.1`，使用独立 `DSH_HOME`、profile 与临时作品完成 Chrome 验证；结果和截图保留在该目录。
 - macOS 本地启动默认使用原生目录选择器；自动化验证在临时 profile 禁用 `directory-picker`，另挂 browse Host 与 Client 两行。
 - 隔离浏览器和服务已关闭。本轮未升级全局 DSH、未修改用户 profile 或真实小说文件。
+
+2026-10-05 四领域本地安装：
+
+- `web` profile 已卸载聚合包并分别链接小说、短剧、视频解说、游戏包；Skill Viewer、模型设置和 Inspector 保持原安装。profile 备份为 `~/.dsh/profiles/web.backup-unbundle-20261005-143518`。
+- 本地服务在 `127.0.0.1:3080` 重启；Chrome 验证四个工作台可打开，`shenji` 仅显示神机诸天录（第 11 章、修订 24），Makers 密钥可编辑，页面脚本错误为零。未写入作品文件或调用付费服务。
+- 隔离安装、压缩包与配置证据位于 `/tmp/dsh-unbundle-qa/`，本地浏览器截图为 `/tmp/dsh-unbundle-local.png`。
+- 隔离 profile 移除短剧后，视频插件与共用生产设置在 Chrome 中仍可使用，无页面脚本错误。临时服务已关闭。
+- 游戏 QA 驱动与工作台统一使用 `/novel-to-game/preview/`；临时 narrative 模板在 Chrome 完成启动、渲染、输入、核心循环、结果和重开六项检查。游戏包 7 个文件 26 项回归通过。

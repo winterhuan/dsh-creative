@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Turn a novel into a playable browser game with four task-oriented Skills, Chrome QA and a dedicated Game Studio sidebar. Install this bundle independently or through Creative. The plugin uses the current DSH Session, workspace and permissions; Chrome and Python are required for QA.
+Turn a novel into a playable browser game with four task-oriented Skills, Chrome QA and a dedicated Game Studio sidebar. Install this bundle independently. The plugin uses the current DSH Session, workspace and permissions; Chrome and Python are required for QA.
 
 ## Table of Contents
 
@@ -43,19 +43,20 @@ The bundle mounts one `novel-to-game` row. Its optional `editorMaxBytes` default
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+From the repository root, run `pnpm --filter @winterhuan/dsh-novel-to-game build` to build this package and `pnpm --filter @winterhuan/dsh-novel-to-game test` to test it.
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 
 The [profile patch](cordis.patch.yml) loads the [host plugin](src/index.ts). The host owns its Skill resources, `game_qa`, `/novel-to-game/workspace`, `/novel-to-game/file` and isolated preview routes. QA runs through DSH shell and jobs, without production credentials. Preview evidence is signed by the current host process and checked against current build and evidence bytes.
 
-The [browser entry](src/client/index.ts) registers a game-only sidebar with independent Session state. Creative delegates its legacy game preview route to this package and has no browser page. Source export, lineage and index helpers ship in `knowledge/source-tools`; tests compare these copies with their maintained sources.
+The [browser entry](src/client/index.ts) registers a game-only sidebar with independent Session state. Source export, lineage and index helpers ship in `knowledge/source-tools`; tests compare these copies with their maintained sources.
 
 </details>
 
 <a id="further-exploration"></a>
 ## Further Exploration
 
-- [Creative aggregate](../creative/README.md)
 - [Four-plugin proposal](../../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.md)
 
 <a id="model-experience"></a>
@@ -84,4 +85,4 @@ The plugin uses normal DSH Skill and tool history. It does not rewrite earlier m
 <a id="dev-note"></a>
 ### Dev Note
 
-All four domain plugins install independently; Creative provides the aggregate and compatibility entry.
+All four domain plugins are developed, built, tested and installed independently.

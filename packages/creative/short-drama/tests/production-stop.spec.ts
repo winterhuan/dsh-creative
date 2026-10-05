@@ -29,7 +29,7 @@ function fixture() {
   registerWorkspaceRoute(context, { maxBytes: 1_024 })
   const stop = async (body: unknown, origin = 'http://localhost:3000') => {
     const request = Object.assign(Readable.from([Buffer.from(JSON.stringify(body))]), {
-      method: 'POST', url: '/creative/job/stop?sessionId=own', headers: { host: 'localhost:3000', origin },
+      method: 'POST', url: '/short-drama/job/stop?sessionId=own', headers: { host: 'localhost:3000', origin },
     }) as IncomingMessage
     let status = 0
     let result = ''

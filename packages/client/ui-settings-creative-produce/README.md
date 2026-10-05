@@ -48,7 +48,7 @@ The Host half is an empty `apply`, present only so the package holds a Loader ro
 - [ui-settings](../../../upstream/packages/client/ui-settings/README.md) — the settings scope and the served-namespace watch the page rides.
 - [ui-primitives](../../../upstream/packages/client/ui-primitives/README.md) — the settings form model and fields the page renders.
 - [credentials](../../../upstream/packages/credentials/README.md) — the credential-reference seam the keys write through.
-- [creative](../../creative/creative/README.md) — the production adapters that register the namespace.
+- [short-drama](../../creative/short-drama/README.md) / [video-recap](../../creative/video-recap/README.md) — the production adapters that register the namespace.
 
 -----
 

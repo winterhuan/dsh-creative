@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Create video recaps with two task-focused Skills, source previews and artifact inspection. The pipeline supports a labeled local draft and measured delivery evidence. Install this bundle on its own or through Creative.
+Create video recaps with two task-focused Skills, source previews and artifact inspection. The pipeline supports a labeled local draft and measured delivery evidence. Install this bundle independently.
 
 ## Table of Contents
 
@@ -35,6 +35,8 @@ Open **Video-recap workbench** from the right sidebar. The plugin uses the curre
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
 
+From the repository root, run `pnpm --filter @winterhuan/dsh-video-recap build` to build this package and `pnpm --filter @winterhuan/dsh-video-recap test` to test it.
+
 <details>
 <summary>Implementation internals — click to expand</summary>
 
@@ -42,7 +44,7 @@ The [patch](cordis.patch.yml) mounts the domain row, the `creative-produce` conf
 
 The package owns video scripts and previews under video-recaps/. Speech production reads only MiMo and Fish credential references; keyless draft delivery remains available.
 
-The package has no dependency on the Creative aggregate or another domain plugin. Required helper scripts ship as package resources. The [aggregate](../creative/README.md) preserves legacy tool names and routes without a separate browser page.
+This package is developed, built and installed independently; required helper scripts ship as package resources without a dependency on another domain plugin.
 
 </details>
 

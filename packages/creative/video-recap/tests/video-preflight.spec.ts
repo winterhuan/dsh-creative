@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { runVideoPreflight, videoPreflight, type PreflightCommandRunner } from '../src/workspace-route.js'
+import { runVideoPreflight, videoPreflight, type PreflightCommandRunner } from '../src/workspace-route.ts'
 
 const PROBE_OUTPUTS = {
   'python3 --version': 'Python 3.11.4',

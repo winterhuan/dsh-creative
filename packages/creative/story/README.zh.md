@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。只读概览展示长篇进度、角色、伏笔和双时间线。可选用原生 workflow 完成细纲准备、写作、独立审稿和带版本保护的章节提交。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 可以独立安装，也可以通过 Creative 安装。
+通过六个 Skill、七个专家 Role 和独立编辑器写作与审查小说。只读概览展示长篇进度、角色、伏笔和双时间线。可选用原生 workflow 完成细纲准备、写作、独立审稿和带版本保护的章节提交。草稿保留在当前 DSH Session，保存使用已观察的文件版本。此 bundle 独立安装。
 
 ## 目录
 
@@ -74,6 +74,8 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+在仓库根目录运行 `pnpm --filter @winterhuan/dsh-story build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-story test` 可验证此包。
+
 <details>
 <summary>实现细节 — 点击展开</summary>
 
@@ -81,7 +83,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 写作守卫与专家 Role 属于此包。用户明确要求的朱雀检测会将选定章节发送到腾讯 EdgeOne Makers，只接收配置的 MAKERS_API_KEY。
 
-此包不依赖 Creative 聚合包或其他领域插件。必需辅助脚本作为包资源分发。[聚合包](../creative/README.zh.md)保留兼容工具名和路由，自身没有聚合页面。
+此包独立开发、构建和安装，不依赖其他领域插件；必需辅助脚本作为包资源分发。
 
 每个 Skill 拥有自己的 `references/`，专业 Role 放在所属 Skill 的 `references/roles/`。`story-write` 与 `story-analyze` 各自拥有 workflow 模板，Skill Viewer 直接发现并预览本地参考。包内 `lib/cli.js` 启动 `runtime/` 中的 Python 调度器，并向进程组转发取消信号。内部 Python 与 JavaScript 模块保留既有追踪事务、共用章文件路径和目标字数解析。小说工作区响应包含独立作品列表、上限为 1,000 项的文件列表及文件截断状态。作品发现检查直属子目录中的标准目录或独立文档，达到文件上限后仍继续；概览直接读取所选作品的追踪。运行中的 Host 未提供作品列表时，客户端从文件列表识别作品，直到 Host 重启。事务写入使用进程退出时释放的操作系统文件锁；锁文件常驻磁盘，不应删除。写入中断后，先重试原事务，再检查派生视图。
 

@@ -1,4 +1,4 @@
-import fixture from '../../creative/tests/fixtures/creator-episode.json'
+import fixture from './fixtures/creator-episode.json'
 import { describe, expect, it } from 'vitest'
 import {
   creatorDocumentPaths,

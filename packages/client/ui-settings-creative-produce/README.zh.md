@@ -48,7 +48,7 @@ kind: "package-reference"
 - [ui-settings](../../../upstream/packages/client/ui-settings/README.md) — 页面搭乘的设置 scope 与被提供命名空间监视。
 - [ui-primitives](../../../upstream/packages/client/ui-primitives/README.md) — 页面渲染的设置表单模型与字段。
 - [credentials](../../../upstream/packages/credentials/README.md) — 密钥写入所经的凭据引用 seam。
-- [creative](../../creative/creative/README.zh.md) — 注册该命名空间的生产适配器。
+- [short-drama](../../creative/short-drama/README.zh.md) / [video-recap](../../creative/video-recap/README.zh.md) — 注册该命名空间的生产适配器。
 
 -----
 

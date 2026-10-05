@@ -15,7 +15,7 @@ function response() {
 }
 
 describe('game route boundaries', () => {
-  it.each(['/novel-to-game/preview/workspace/a/b/index.html', '/creative/game-preview/workspace/a/b/index.html'])(
+  it.each(['/novel-to-game/preview/workspace/a/b/index.html', '/novel-to-game/preview/workspace/a/b/assets/main.js'])(
     'returns forbidden for an untrusted navigation through %s', async url => {
       const reply = response()
       await serveGamePreview({} as Context, { url, headers: { host: 'attacker.example', 'sec-fetch-site': 'cross-site' } } as IncomingMessage, reply.value)

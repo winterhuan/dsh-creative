@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { type FileSystem, type FsDirEntry, type FsInfo, type FsTarget } from '@deepseek-ai/dsh-fs'
 import { routeContext, type RouteHandler } from './route-context.ts'
-import { listFiles, registerWorkspaceRoute, workspaceProjects } from '../src/workspace-route.js'
+import { listFiles, workspaceProjects, registerWorkspaceRoute } from '../src/workspace-route.ts'
 
 type ListingRealm = Parameters<typeof listFiles>[0]
 
@@ -74,23 +74,7 @@ function allFiles(tree: Readonly<Record<string, readonly string[]>>): Set<string
   return files
 }
 
-describe('creative workspace listing', () => {
-  it('omits symlink targets in another project or outside the workspace', async () => {
-    const realm = memoryRealm({
-      '/ws': ['书甲', '书乙'],
-      '/ws/书甲': ['正文', '追踪'],
-      '/ws/书甲/正文': ['own.md', 'foreign.md', 'outside.md'],
-      '/ws/书甲/追踪': [],
-      '/ws/书乙': ['正文', '追踪'],
-      '/ws/书乙/正文': ['secret.md'],
-      '/ws/书乙/追踪': ['_tracking-state.json'],
-    }, new Set(), {
-      '/ws/书甲/正文/foreign.md': '/ws/书乙/正文/secret.md',
-      '/ws/书甲/正文/outside.md': '/outside/secret.md',
-      '/ws/书甲/追踪': '/ws/书乙/追踪',
-    })
-    expect((await listFiles(realm)).files.map(file => file.path).filter(path => path.startsWith('书甲/'))).toEqual(['书甲/正文/own.md'])
-  })
+describe('short-drama workspace listing', () => {
   it('reads metadata from each full project root, including metadata outside the file page', async () => {
     const realm = memoryRealm({
       '/ws': ['书甲', '长篇'],
@@ -112,7 +96,7 @@ describe('creative workspace listing', () => {
     expect(listing.files.map(file => file.path)).toContain('长篇/书乙/short-drama.json')
     const withoutConfig = listing.files.filter(file => !file.path.endsWith('short-drama.json'))
     const projects = await workspaceProjects(realm, withoutConfig, 1_024)
-    expect(projects.find(project => project.root === '书甲')).toMatchObject({ tracking: { project: '甲' }, shortDrama: { project: '甲' }, metadataErrors: [] })
+    expect(projects.find(project => project.root === '书甲')).toMatchObject({ shortDrama: { project: '甲' }, metadataErrors: [] })
     expect(projects.find(project => project.root === '长篇/书乙')).toMatchObject({ tracking: null, shortDrama: { project: '乙' }, metadataErrors: [] })
     expect(reads).not.toContain('/ws/short-drama.json')
   })
@@ -132,63 +116,9 @@ describe('creative workspace listing', () => {
     expect(listing.files.map(file => file.path)).toEqual([
       '剧集/EP001/剧本.md',
       '剧集/EP001/poster.png',
-      '正文/第001章.md',
       'short-drama.json',
-      'video-recaps/demo/project.json',
     ])
     expect(listing.files.find(file => file.path === '剧集/EP001/poster.png')).toMatchObject({ kind: 'media', mimeType: 'image/png' })
-  })
-
-  it.each(['node_modules', '__pycache__', '.cache'])('prunes %s before dependencies can hide manuscripts or game deliverables', async (directory) => {
-    const ignoredPath = `/ws/game-adaptations/demo/build/app/${directory}`
-    const realm = memoryRealm({
-      '/ws': ['game-adaptations', '正文'],
-      '/ws/game-adaptations': ['demo'],
-      '/ws/game-adaptations/demo': ['build', 'dist', 'qa'],
-      '/ws/game-adaptations/demo/build': ['app'],
-      '/ws/game-adaptations/demo/build/app': [directory, 'index.html', 'assets'],
-      [ignoredPath]: Array.from({ length: 1_001 }, (_, index) => `dependency-${String(index)}.json`),
-      '/ws/game-adaptations/demo/build/app/assets': ['scene.png', 'main.js'],
-      '/ws/game-adaptations/demo/dist': ['index.html'],
-      '/ws/game-adaptations/demo/qa': ['verification.json'],
-      '/ws/正文': ['第001章.md'],
-    })
-    const listDir = vi.spyOn(realm.fs, 'listDir')
-    const listing = await listFiles(realm)
-    expect(listing.truncated).toBe(false)
-    expect(listing.files.map(file => file.path).sort()).toEqual([
-      'game-adaptations/demo/build/app/assets/main.js',
-      'game-adaptations/demo/build/app/assets/scene.png',
-      'game-adaptations/demo/build/app/index.html',
-      'game-adaptations/demo/dist/index.html',
-      'game-adaptations/demo/qa/verification.json',
-      '正文/第001章.md',
-    ].sort())
-    expect(listDir.mock.calls.map(([target]) => target.displayPath)).not.toContain(ignoredPath)
-  })
-
-  it('prunes dependency directories during book discovery and nested chapter scans', async () => {
-    const realm = memoryRealm({
-      '/ws': ['node_modules', '__pycache__', '长篇'],
-      '/ws/node_modules': ['正文'],
-      '/ws/node_modules/正文': ['dependency.md'],
-      '/ws/__pycache__': ['正文'],
-      '/ws/__pycache__/正文': ['cache.md'],
-      '/ws/长篇': ['node_modules', '灯下'],
-      '/ws/长篇/node_modules': ['正文'],
-      '/ws/长篇/node_modules/正文': ['dependency.md'],
-      '/ws/长篇/灯下': ['正文'],
-      '/ws/长篇/灯下/正文': ['第001章.md', '__pycache__'],
-      '/ws/长篇/灯下/正文/__pycache__': ['cache.json'],
-    })
-    const listDir = vi.spyOn(realm.fs, 'listDir')
-    const listing = await listFiles(realm)
-    expect(listing.files.map(file => file.path)).toEqual(['长篇/灯下/正文/第001章.md'])
-    for (const directory of [
-      '/ws/node_modules', '/ws/__pycache__', '/ws/长篇/node_modules', '/ws/长篇/灯下/正文/__pycache__',
-    ]) {
-      expect(listDir.mock.calls.map(([target]) => target.displayPath)).not.toContain(directory)
-    }
   })
 
   it.each([false, true])('associates renamed media only through matching manifest bytes (changed=%s)', async (changed) => {
@@ -213,7 +143,7 @@ describe('creative workspace listing', () => {
     registerWorkspaceRoute(context, { maxBytes: 100_000 })
     let status = 0
     let body: unknown
-    await handler!({ method: 'GET', url: `/creative/workspace?sessionId=${randomUUID()}`, headers: { host: 'localhost:3000' } } as IncomingMessage, {
+    await handler!({ method: 'GET', url: `/short-drama/workspace?sessionId=${randomUUID()}`, headers: { host: 'localhost:3000' } } as IncomingMessage, {
       writeHead: (value: number) => { status = value }, end: (value: string) => { body = JSON.parse(value) },
     } as ServerResponse)
     expect(status).toBe(200)
@@ -254,7 +184,7 @@ describe('creative workspace listing', () => {
     registerWorkspaceRoute(context, { maxBytes: 100_000 })
     let status = 0
     let body: unknown
-    await handler!({ method: 'GET', url: `/creative/episode?sessionId=${randomUUID()}&path=${encodeURIComponent('剧集/EP001')}`, headers: { host: 'localhost:3000' } } as IncomingMessage, {
+    await handler!({ method: 'GET', url: `/short-drama/episode?sessionId=${randomUUID()}&path=${encodeURIComponent('剧集/EP001')}`, headers: { host: 'localhost:3000' } } as IncomingMessage, {
       writeHead: (value: number) => { status = value }, end: (value: string) => { body = JSON.parse(value) },
     } as ServerResponse)
     if (mode.startsWith('changed-')) expect(status).toBe(409)
@@ -266,168 +196,19 @@ describe('creative workspace listing', () => {
     }
   })
 
-  it('keeps a game preview ready without walking its installed dependencies', async () => {
-    const dependencyPath = '/ws/game-adaptations/demo/build/app/node_modules'
-    const realm = memoryRealm({
-      '/ws/game-adaptations': ['demo'],
-      '/ws/game-adaptations/demo': ['build'],
-      '/ws/game-adaptations/demo/build': ['app'],
-      '/ws/game-adaptations/demo/build/app': ['node_modules', '__pycache__', 'index.html'],
-      [dependencyPath]: Array.from({ length: 5_001 }, (_, index) => `dependency-${String(index)}.json`),
-      '/ws/game-adaptations/demo/build/app/__pycache__': ['cache.json'],
-    })
-    const listDir = vi.spyOn(realm.fs, 'listDir')
-    const services = { fs: realm.fs, sandboxPolicy: realm.sandboxPolicy }
-    const agent = { session: { header: { cwd: realm.cwd } }, ctx: { get: (key: keyof typeof services) => services[key] } }
-    let handler: RouteHandler | undefined
-    const context = routeContext({
-      effect: (effect: () => () => void) => { onTestFinished(effect()) },
-      webServer: { register: (entry: { handler: RouteHandler }) => {
-        handler = entry.handler
-        return () => { handler = undefined }
-      } },
-      typert: { lookups: new Map([['agent', { resolve: async () => agent }]]) },
-      logger: () => ({ error: vi.fn() }),
-    })
-    registerWorkspaceRoute(context, { maxBytes: 1_024 })
-    if (handler === undefined) throw new Error('workspace route is not registered')
-    let status = 0
-    let body: unknown
-    await handler({
-      method: 'GET', url: `/creative/workspace?sessionId=${randomUUID()}`, headers: { host: 'localhost:3000' },
-    } as IncomingMessage, {
-      writeHead: (value: number) => { status = value },
-      end: (value: string) => { body = JSON.parse(value) },
-    } as ServerResponse)
-    expect(status).toBe(200)
-    expect(body).toMatchObject({
-      truncated: false,
-      games: expect.arrayContaining([expect.objectContaining({ root: 'game-adaptations/demo', previewReady: true })]),
-    })
-    const visited = listDir.mock.calls.map(([target]) => target.displayPath)
-    expect(visited).not.toContain(dependencyPath)
-    expect(visited).not.toContain('/ws/game-adaptations/demo/build/app/__pycache__')
-  })
-
-  it('does not count excluded video files as unseen content at the file limit', async () => {
-    const realm = memoryRealm({
-      '/ws/video-recaps': ['demo'],
-      '/ws/video-recaps/demo': ['sources', 'frames', 'cache'],
-      '/ws/video-recaps/demo/sources': [
-        ...Array.from({ length: 1_000 }, (_, index) => `source-${String(index)}.mp4`),
-        'notes.json',
-      ],
-      '/ws/video-recaps/demo/frames': ['frame.png'],
-      '/ws/video-recaps/demo/cache': ['recap_run_manifest.json'],
-    })
-    const listing = await listFiles(realm)
-    expect(listing.files).toHaveLength(1_000)
-    expect(listing.truncated).toBe(false)
-  })
-
   it('marks the listing truncated when an eligible file exists beyond the limit', async () => {
-    const realm = memoryRealm({ '/ws/正文': [...chapters(1_001), '附录.md'] })
+    const realm = memoryRealm({ '/ws/剧集': [...chapters(1_001), '附录.md'] })
     const listing = await listFiles(realm)
     expect(listing.files).toHaveLength(1_000)
     expect(listing.truncated).toBe(true)
   })
 
   it('does not mark truncation when the workspace holds exactly the limit', async () => {
-    const realm = memoryRealm({ '/ws/正文': chapters(1_000) })
+    const realm = memoryRealm({ '/ws/剧集': chapters(1_000) })
     const listing = await listFiles(realm)
     expect(listing.files).toHaveLength(1_000)
     expect(listing.truncated).toBe(false)
   })
 
-  it('discovers book directories holding long-form leaves', async () => {
-    const tree = {
-      '/ws': ['洪荒：开天余烬', 'notes'],
-      '/ws/洪荒：开天余烬': ['大纲', '设定', '追踪'],
-      '/ws/洪荒：开天余烬/大纲': ['大纲.md', '细纲_第001章.md'],
-      '/ws/洪荒：开天余烬/设定': ['题材定位.md'],
-      '/ws/洪荒：开天余烬/追踪': ['上下文.md'],
-      '/ws/notes': ['草稿.md'],
-    } as const
-    const realm = memoryRealm(tree, allFiles(tree))
-    const listing = await listFiles(realm)
-    expect(listing.truncated).toBe(false)
-    expect(listing.files.map(file => file.path)).toEqual([
-      '洪荒：开天余烬/大纲/大纲.md',
-      '洪荒：开天余烬/大纲/细纲_第001章.md',
-      '洪荒：开天余烬/设定/题材定位.md',
-      '洪荒：开天余烬/追踪/上下文.md',
-    ])
-  })
 
-  it('discovers books below 长篇/短篇 containers and short-story single files', async () => {
-    const tree = {
-      '/ws': ['长篇', '短篇', '拆文库', '.git'],
-      '/ws/.git': ['config'],
-      '/ws/长篇': ['仙缘', 'notes.txt', '.draft'],
-      '/ws/长篇/仙缘': ['正文', '大纲'],
-      '/ws/长篇/仙缘/正文': ['第001章_开篇.md'],
-      '/ws/长篇/仙缘/大纲': ['大纲.md'],
-      '/ws/长篇/.draft': ['正文'],
-      '/ws/长篇/.draft/正文': ['草稿.md'],
-      '/ws/短篇': ['灯下'],
-      '/ws/短篇/灯下': ['正文.md', '设定.md'],
-      '/ws/拆文库': ['旧书'],
-      '/ws/拆文库/旧书': ['拆文报告.md'],
-    } as const
-    const realm = memoryRealm(tree, allFiles(tree))
-    const listing = await listFiles(realm)
-    expect(listing.truncated).toBe(false)
-    expect(listing.files.map(file => file.path)).toEqual([
-      '拆文库/旧书/拆文报告.md',
-      '短篇/灯下/设定.md',
-      '短篇/灯下/正文.md',
-      '长篇/仙缘/大纲/大纲.md',
-      '长篇/仙缘/正文/第001章_开篇.md',
-    ])
-  })
-
-  it.each([
-    { documents: ['设定.md'] },
-    { documents: ['小节大纲.md'] },
-    { documents: ['正文.md'] },
-    { documents: ['设定.md', '小节大纲.md'] },
-  ])('discovers short stories containing only $documents', async ({ documents }) => {
-    const realm = memoryRealm({
-      '/ws': ['灯下', '短篇', 'notes'],
-      '/ws/灯下': documents,
-      '/ws/短篇': ['未完'],
-      '/ws/短篇/未完': documents,
-      '/ws/notes': ['草稿.md'],
-    })
-    const listing = await listFiles(realm)
-    expect(listing.truncated).toBe(false)
-    expect(listing.files.map(file => file.path).sort()).toEqual(documents.flatMap(name => [
-      `灯下/${name}`, `短篇/未完/${name}`,
-    ]).sort())
-  })
-
-  it('marks the listing truncated when a book holds files beyond the limit', async () => {
-    const realm = memoryRealm({
-      '/ws': ['大书'],
-      '/ws/大书': ['正文'],
-      '/ws/大书/正文': chapters(1_001),
-    })
-    const listing = await listFiles(realm)
-    expect(listing.files).toHaveLength(1_000)
-    expect(listing.truncated).toBe(true)
-  })
-
-  it('marks the listing truncated while collecting short-story single files', async () => {
-    const realm = memoryRealm({
-      '/ws': ['正文', '短篇'],
-      '/ws/正文': chapters(999),
-      '/ws/短篇': ['灯下'],
-      '/ws/短篇/灯下': ['正文.md', '设定.md', '小节大纲.md'],
-    })
-    const listing = await listFiles(realm)
-    expect(listing.files).toHaveLength(1_000)
-    expect(listing.truncated).toBe(true)
-    expect(listing.files.map(file => file.path)).toContain('短篇/灯下/正文.md')
-    expect(listing.files.map(file => file.path)).not.toContain('短篇/灯下/小节大纲.md')
-  })
 })

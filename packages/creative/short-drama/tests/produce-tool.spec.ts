@@ -65,7 +65,7 @@ function shellMock() {
   }
 }
 
-describe('creative_produce_run', () => {
+describe('drama_produce_run', () => {
   beforeEach(() => {
     mockedStat.mockReset()
     mockedStat.mockResolvedValue({ isFile: () => true } as Awaited<ReturnType<typeof stat>>)
@@ -74,7 +74,7 @@ describe('creative_produce_run', () => {
   it('advertises the closed entry set and drama adapters', () => {
     const tool = createCreativeProduceRunTool()
     expect(tool.name).toBe(CREATIVE_PRODUCE_RUN_TOOL_NAME)
-    expect(PRODUCE_ENTRIES).toEqual(['game-qa', 'drama', 'video-voiceover', 'video-recap', 'video-doctor'])
+    expect(PRODUCE_ENTRIES).toEqual(['drama'])
     expect(DRAMA_ADAPTERS).toEqual(['episode-compose', 'gpt-image-2', 'minimax-h3', 'minimax-music', 'seedance', 'agnes-image', 'agnes-video'])
     expect(tool.isConcurrencySafe?.(dramaArgs)).toBe(false)
   })
@@ -102,7 +102,7 @@ describe('creative_produce_run', () => {
     expect(JSON.stringify(result)).not.toMatch(/dummy-|AGNES_POOL/u)
     expect(tool.output.render({}, result as Parameters<typeof tool.output.render>[1]))
       .toEqual([{ type: 'text', text: JSON.stringify(result) }])
-    expect(tool.presentCall?.({})).toEqual({ card: 'generic', title: 'creative_produce_status', kind: 'read' })
+    expect(tool.presentCall?.({})).toEqual({ card: 'generic', title: 'drama_produce_status', kind: 'read' })
     expect(tool.isConcurrencySafe?.({})).toBe(true)
     expect(shell.execute).not.toHaveBeenCalled()
     expect(mockedStat).not.toHaveBeenCalled()
@@ -183,7 +183,7 @@ describe('creative_produce_run', () => {
     expect(shell.execute).not.toHaveBeenCalled()
   })
 
-  it.each(['drama', 'video-recap'])('never retries the whole %s command after an adapter failure', async (entry) => {
+  it.each(['drama'])('never retries the whole %s command after an adapter failure', async (entry) => {
     const { shell } = shellMock()
     shell.execute.mockResolvedValue({
       kill: vi.fn(() => true), done: Promise.resolve(), exitCode: 2, readOutput: () => ({ delta: '', lossy: false, nextOffset: 0 }),
@@ -221,22 +221,6 @@ describe('creative_produce_run', () => {
     expect(result).toEqual({ kind: 'foreground', ...completion, stdout: 'out', stderr: 'err' })
   })
 
-  it('forwards profile settings and preserves video stdin, paths and policy', async () => {
-    const { shell } = shellMock()
-    const resolvePolicy = vi.fn(() => ({ mode: 'workspace-write' }))
-    const agent = agentWith({ shell, sandboxPolicy: { resolve: resolvePolicy } })
-    const tool = createCreativeProduceRunTool({ entry: { seedanceModel: 'seedance-2-5', ttsProvider: 'auto' } })
-    await tool.execute({ entry: 'video-voiceover', argv: ['--help'], stdin: 'input', workdir: resolve('/abs/studio'), timeoutMs: 60_000 }, execWith(agent))
-    const first = shell.resolve.mock.calls[0]?.[0] as Record<string, unknown>
-    expect(first).toMatchObject({ workdir: resolve('/abs/studio'), timeoutMs: 60_000, stdin: 'input', sandboxPolicy: { mode: 'workspace-write' } })
-    expect(first.env).toEqual({ SEEDANCE_MODEL: 'seedance-2-5', TTS_PROVIDER: 'auto' })
-    expect(first.command).toContain('voiceover.py')
-    await tool.execute({ entry: 'video-recap' }, execWith(agent))
-    expect((shell.resolve.mock.calls[1]?.[0] as Record<string, unknown>).command).toContain('recap.py')
-    await tool.execute({ entry: 'video-doctor', workdir: 'video-recaps/demo' }, execWith(agent))
-    expect(shell.resolve.mock.calls[2]?.[0]).toMatchObject({ workdir: resolve('/work/story/video-recaps/demo'), command: expect.stringContaining('doctor.py') })
-  })
-
   it('starts background jobs with the same confirmed-job command and pool', async () => {
     const { shell } = shellMock()
     const start = vi.fn((_spec: JobSpec) => 'produce-1')
@@ -258,8 +242,6 @@ describe('creative_produce_run', () => {
     // The background path runs exactly one execution; the foreground branch
     // never re-runs the same confirmed job.
     expect(shell.execute).toHaveBeenCalledTimes(1)
-    await tool.execute({ entry: 'video-doctor', run_in_background: true }, execWith(agent))
-    expect(start.mock.calls[1]?.[0]?.label).toBe('produce video-doctor')
   })
 
   it.each([0, 3, null])('records background exit %s without consuming output', async (exitCode) => {
@@ -306,7 +288,7 @@ describe('creative_produce_run', () => {
     }
     await expect(tool.execute({ ...dramaArgs, stdin: '{}' }, exec)).rejects.toThrow('cannot replace')
     await expect(tool.execute({ ...dramaArgs, argv: ['--adapter-config', 'override.json'] }, exec)).rejects.toThrow('cannot replace')
-    await expect(tool.execute({ entry: 'video-doctor', job_id: 'SHOT-001' }, exec)).rejects.toThrow('only to drama production')
+    await expect(tool.execute({ entry: 'video-doctor', job_id: 'SHOT-001' }, exec)).rejects.toThrow('entry')
     expect(shell.execute).not.toHaveBeenCalled()
   })
 
@@ -317,9 +299,9 @@ describe('creative_produce_run', () => {
     const noCwd = { session: { header: {} }, ctx: { get: (name: string) => name === 'shell' ? shellMock().shell : undefined } } as Agent
     await expect(tool.execute(dramaArgs, execWith(noCwd))).rejects.toThrow('working directory')
     const exec = execWith(agentWith(shellMock()))
-    await expect(tool.execute({ entry: 'video-recap', run_in_background: true }, exec)).rejects.toThrow('background produce jobs unavailable')
+    await expect(tool.execute({ ...dramaArgs, run_in_background: true }, exec)).rejects.toThrow('background produce jobs unavailable')
     await expect(tool.execute({ entry: 'drama' }, exec)).rejects.toThrow('requires adapter')
-    await expect(tool.execute({ entry: 'video-doctor', adapter: 'seedance' }, exec)).rejects.toThrow('only to entry drama')
+    await expect(tool.execute({ entry: 'video-doctor', adapter: 'seedance' }, exec)).rejects.toThrow('entry')
     await expect(tool.execute({ ...dramaArgs, argv: Array.from({ length: 65 }, () => 'x') }, exec)).rejects.toThrow('at most 64 entries')
     for (const argument of ['', 'x'.repeat(8_193)]) {
       await expect(tool.execute({ ...dramaArgs, argv: [argument] }, exec)).rejects.toThrow('non-empty and short')

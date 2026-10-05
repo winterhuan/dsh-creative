@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 摘要
 
-通过四个按任务划分的 Skill、Chrome QA 和独立游戏工作台侧边栏，将小说改编为可试玩的浏览器游戏。此 bundle 可以独立安装，也可以通过 Creative 安装。插件使用当前 DSH Session、工作区和权限；QA 需要 Chrome 与 Python。
+通过四个按任务划分的 Skill、Chrome QA 和独立游戏工作台侧边栏，将小说改编为可试玩的浏览器游戏。此 bundle 独立安装。插件使用当前 DSH Session、工作区和权限；QA 需要 Chrome 与 Python。
 
 ## 目录
 
@@ -43,19 +43,20 @@ dsh plugin --profile smoke add /Users/winter/dsh-creative/packages/creative/nove
 <a id="understand-the-implementation"></a>
 ## 理解实现
 
+在仓库根目录运行 `pnpm --filter @winterhuan/dsh-novel-to-game build` 可单独构建，运行 `pnpm --filter @winterhuan/dsh-novel-to-game test` 可验证此包。
+
 <details>
 <summary>实现细节 — 点击展开</summary>
 
 [Profile 补丁](cordis.patch.yml)加载 [Host 插件](src/index.ts)。Host 拥有 Skill 资源、`game_qa`、`/novel-to-game/workspace`、`/novel-to-game/file` 和隔离预览路由。QA 通过 DSH shell 和 jobs 运行，无需生产凭据。预览证据由当前 Host 进程签名，并核对当前构建和证据字节。
 
-[浏览器入口](src/client/index.ts)注册仅含游戏的侧边栏，拥有独立 Session 状态。Creative 将兼容游戏预览路由委托给此包，自身没有浏览器页面。原著导出、谱系与索引辅助脚本随 `knowledge/source-tools` 分发；测试核对这些副本与维护源的一致性。
+[浏览器入口](src/client/index.ts)注册仅含游戏的侧边栏，拥有独立 Session 状态。原著导出、谱系与索引辅助脚本随 `knowledge/source-tools` 分发；测试核对这些副本与维护源的一致性。
 
 </details>
 
 <a id="further-exploration"></a>
 ## 进一步阅读
 
-- [Creative 聚合包](../creative/README.zh.md)
 - [四插件提案](../../../.agents/notes/implemented/architecture/2026-09-30-creative-four-domain-plugins.zh.md)
 
 <a id="model-experience"></a>
@@ -84,4 +85,4 @@ Skill 正文按需加载。QA 输出成为普通工具结果；浏览器预览�
 <a id="dev-note"></a>
 ### 开发笔记
 
-四个领域插件均可独立安装；Creative 提供聚合与兼容入口。
+四个领域插件分别开发、构建、测试和安装。

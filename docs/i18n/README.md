@@ -54,7 +54,7 @@ This repository has no generated documentation. If a generator is added, its gen
 - `docs/AGENTS.md`, `.agents/notes/**/AGENTS.md`, and their `CLAUDE.md` instruction symlinks — agent instructions, maintained in English only like the root `AGENTS.md`.
 - `docs/i18n/terminology.md` and [style-samples.md](style-samples.md) — both are bilingual by construction.
 - [translation-prompt.md](translation-prompt.md) — the automated pipeline's prompt template; its body is machine-consumed verbatim, so a paired translation would change pipeline behavior.
-- `packages/creative/creative/knowledge/` — pinned skill trees shipped to models verbatim; their READMEs keep the language layout of the repositories they come from.
+- `packages/creative/{story,short-drama,novel-to-game,video-recap}/knowledge/` — pinned skill trees shipped to models verbatim; their READMEs keep the language layout of the repositories they come from.
 - `.agents/notes/archived/` — frozen historical triplets. [`verify-archived-agent-notes`](../../scripts/verify-archived-agent-notes.ts) validates their completeness and content seals; translation maintenance must never rewrite them.
 
 **Universal requirement**: every current or future document in scope must merge as a complete bilingual pair. [scripts/translation-pairing.manifest.json](../../scripts/translation-pairing.manifest.json) contains only explicit exclusions; there is no per-file rollout list, date cutoff, or README-specific policy class.
