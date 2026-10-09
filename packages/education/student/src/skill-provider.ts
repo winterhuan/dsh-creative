@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { BUNDLED_SKILL_RANK, type SkillProvider } from '@deepseek-ai/dsh-skill'
 
-/** Provide the packaged study Skill and its locally owned subject and source references. */
+/** Provide the study Skill, teaching references and default textbook pages from the installed package. */
 export function createStudySkillProvider(): SkillProvider {
   const root = fileURLToPath(new URL('../knowledge/skills/study/', import.meta.url))
   const path = `${root}SKILL.md`

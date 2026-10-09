@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ParentSettings } from '../src/client/forms.tsx'
 import { StudyDesk } from '../src/client/desk.tsx'
 import { dashboard } from '../src/dashboard.ts'
 import { updateStudy } from '../src/learning.ts'
 import { en } from '../src/client/locales.ts'
-import { NOW, setup, start, attempt } from './fixtures.ts'
+import { NOW, DAY, setup, start, attempt, mistake, confirm } from './fixtures.ts'
 
 const t = (key: keyof typeof en) => en[key]
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks() })
@@ -39,7 +40,7 @@ describe('learning workbench', () => {
     expect(ask).toHaveBeenCalledTimes(1)
     view.unmount()
     render(<StudyDesk sessionId="two" visible running={false} ask={ask} t={t} />)
-    await screen.findByText(attempt.response)
+    await screen.findByText(`My answer: ${attempt.response}`)
     expect(screen.queryByRole('button', { name: 'Submit answer' })).toBeNull()
     expect(backend.requests).toHaveLength(1)
   })
@@ -101,4 +102,85 @@ it('allows editing and explicitly confirming an image transcription including th
   fireEvent.click(screen.getByRole('button', { name: 'Confirm and schedule review' }))
   await screen.findByRole('heading', { name: 'Awaiting confirmation · 0' })
   expect(backend.read().mistakes[0]).toMatchObject({ prompt: '8 + 7?', learnerAnswer: '13', uncertainties: '' })
+})
+
+it('requires an explicit school year and saves an empty optional course note', async () => {
+  const change = vi.fn(async (command: unknown) => dashboard(updateStudy(undefined, command, NOW), NOW))
+  render(<ParentSettings data={dashboard(undefined, NOW)} change={change} t={t} />)
+  const year = screen.getByRole('combobox', { name: 'School year' }) as HTMLSelectElement
+  expect(year.value).toBe('')
+  expect(year.validity.valueMissing).toBe(true)
+  expect([...year.options].map(option => option.value)).toContain('2026–2027')
+  fireEvent.change(year, { target: { value: '2026–2027' } })
+  fireEvent.change(screen.getByLabelText('Nickname'), { target: { value: '小禾' } })
+  fireEvent.change(screen.getByLabelText('Parent confirmation'), { target: { value: '家长确认以上档案和时长' } })
+  expect((screen.getByLabelText('Course note (optional)') as HTMLInputElement).required).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await screen.findByText('Saved')
+  expect(change).toHaveBeenCalledWith(expect.objectContaining({ action: 'setup', profile: expect.objectContaining({ schoolYear: '2026–2027', schoolAlias: '' }) }), 0)
+})
+
+it('offers the preceding school year before September without silently selecting it', () => {
+  const beforeSeptember = Date.parse('2026-08-31T23:00:00+08:00')
+  render(<ParentSettings data={dashboard(undefined, beforeSeptember)} change={vi.fn()} t={t} />)
+  const year = screen.getByRole('combobox', { name: 'School year' }) as HTMLSelectElement
+  expect(year.value).toBe('')
+  expect([...year.options].map(option => option.value)).toEqual(['', '2026–2027', '2025–2026', '2024–2025', '2023–2024', '2022–2023', '2021–2022', '2020–2021'])
+})
+
+it('carries the due subject into review without starting until the learner chooses', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  let state = updateStudy(undefined, setup, NOW - DAY)
+  state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, subject: 'english' } }, NOW - DAY)
+  state = updateStudy(state, confirm, NOW - DAY)
+  const backend = installFetch(state)
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="review" visible running={false} ask={ask} t={t} />)
+  await screen.findByRole('button', { name: 'Start learning' })
+  fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Due review · English' }))
+  expect((screen.getByRole('combobox', { name: 'Subject' }) as HTMLSelectElement).value).toBe('english')
+  expect((screen.getByRole('combobox', { name: 'Learning mode' }) as HTMLSelectElement).value).toBe('review')
+  expect(backend.requests).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: 'Start learning' }))
+  await waitFor(() => expect(ask).toHaveBeenCalledOnce())
+  expect(backend.read().sessions[0]).toMatchObject({ subject: 'english', mode: 'review' })
+})
+
+it('keeps due review unavailable during a break', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  let state = updateStudy(undefined, setup, NOW - DAY)
+  state = updateStudy(state, { action: 'mistake', mistake }, NOW - DAY)
+  state = updateStudy(state, confirm, NOW - DAY)
+  state = updateStudy(state, start, NOW)
+  state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW)
+  const backend = installFetch(state)
+  render(<StudyDesk sessionId="break" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByText(/Take a break away/)
+  fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
+  expect((screen.getByRole('button', { name: 'Due review · Math' }) as HTMLButtonElement).disabled).toBe(true)
+  expect(backend.requests).toHaveLength(0)
+})
+
+it('shows the saved answer with feedback and offers the next question', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  let state = initial()
+  state = updateStudy(state, { action: 'answer', taskId: attempt.id, response: attempt.response }, NOW)
+  state = updateStudy(state, { action: 'record', attempt }, NOW)
+  installFetch(state)
+  render(<StudyDesk sessionId="feedback" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByText(`My answer: ${attempt.response}`)
+  expect(screen.getByText(attempt.feedback)).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Next question' })).toBeTruthy()
+  expect(screen.getByText('Time left today: 20:00 · Due for review: 0')).toBeTruthy()
+})
+
+it('uses the server clock immediately without showing more than the block limit', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  const serverNow = NOW + 5000
+  const state = updateStudy(updateStudy(undefined, setup, serverNow), start, serverNow)
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(dashboard(state, serverNow)))))
+  render(<StudyDesk sessionId="clock" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByText('Time left: 10:00')
+  expect(screen.getByText('Time left today: 20:00 · Due for review: 0')).toBeTruthy()
 })

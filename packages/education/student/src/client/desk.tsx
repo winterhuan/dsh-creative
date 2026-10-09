@@ -6,22 +6,24 @@ import { Field, MistakeConfirmation, ParentSettings, subjects } from './forms.ts
 import type { Translate } from './locales.ts'
 import { useStudy } from './workspace.ts'
 
+type Activity = { subject: 'chinese' | 'math' | 'english'; mode: 'foundation' | 'school' | 'review' | 'explore' }
 type Study = NonNullable<Dashboard['study']>
 function time(ms: number) { const seconds = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
-const continuePrompt = '请加载 study 技能，查询当前工作区 study_status。继续已开始的学习段，不重复 start；如有已保存答案先核对并 record，如请求了提示则在对话中给提示。每道新题先用 task 保存，一次一题。到时先停止并建议休息。'
+const continuePrompt = '请加载 study 技能，查询当前工作区 study_status。继续已开始的学习段，不重复 start；先核对当前题目：未反馈的已保存答案先评估并 record；无答案且已请求提示时先在对话中给提示；已有反馈或尚未出题时才准备下一题。每道新题先用 task 保存，一次一题。到时先停止并建议休息。'
 
 /** Workbench actions share the same persisted state as the native tutoring tools. */
 export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: string; visible: boolean; ask: AskTutor; running: boolean; t: Translate }) {
   const workspace = useStudy(sessionId, visible, t('networkError'))
   const { data, busy, change } = workspace
   const [tab, setTab] = useState<'today' | 'mistakes' | 'growth' | 'parent'>('today')
+  const [activity, setActivity] = useState<Activity>({ subject: 'math', mode: 'foundation' })
   const [epoch, setEpoch] = useState(0)
-  const [now, setNow] = useState(Date.now())
+  const [localNow, setLocalNow] = useState(Date.now())
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
   useEffect(() => {
     if (!visible) return
-    const timer = window.setInterval(() => setNow(Date.now() + workspace.offset.current), 1000)
+    const timer = window.setInterval(() => setLocalNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [visible, workspace.offset])
   async function tutor(text = continuePrompt, photo?: StudyPhoto) {
@@ -33,9 +35,12 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   async function act(command: Command, withTutor = false) {
     try { await change(command); if (withTutor) await tutor() } catch { /* The request or tutor notice retains the failed action and its data. */ }
   }
+  const now = Math.max(localNow + workspace.offset.current, data?.serverNow ?? 0)
   const study = data?.study
   const disabled = busy || sending
   const active = study?.active
+  const task = study?.task?.sessionId === active?.id ? study?.task : undefined
+  const remaining = Math.max(0, (study?.remainingMs ?? 0) - (active && data ? Math.max(0, Math.min(now, active.deadline) - data.serverNow) : 0))
   const available = !!active && now < active.deadline && study?.phase === 'studying'
   return <main className="student-desk" aria-label={t('title')}>
     <nav aria-label={t('title')}>{(['today', 'mistakes', 'growth', 'parent'] as const).map(name => <button key={name} type="button" aria-pressed={tab === name} onClick={() => setTab(name)}>{t(name)}</button>)}</nav>
@@ -45,15 +50,17 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     {!data ? !workspace.error && <progress aria-label={t('busy')} /> : !study && tab !== 'parent' ? <section><p>{t('setupFirst')}</p><button onClick={() => setTab('parent')}>{t('parent')}</button></section> : <>
       {tab === 'parent' && <ParentSettings key={epoch} data={data} change={change} t={t} />}
       {study && tab === 'today' && <>
-        <section><h3>{t('goal')}</h3><p>{study.profile.nickname} · {t('stars')}: {study.stars}</p>
+        <section><h3>{t('goal')}</h3><p>{study.profile.nickname} · {t('todayStars')}: {study.todayStars}</p>
+          <p className="student-timer">{t('dailyRemaining')}: {time(remaining)} · {t('due')}: {study.dueCount}</p>
           {active ? <><p>{t(active.subject)} · {t(active.mode)}</p><p className="student-timer">{t('time')}: {time(active.deadline - now)}</p>
             {!available && <p role="status">{t('expired')}</p>}
           </> : study.phase === 'break' && study.breakRemainingMs - (now - data.serverNow) > 0 ? <p>{t('rest')} · {time(study.breakRemainingMs - (now - data.serverNow))}</p>
-            : study.phase === 'daily-complete' ? <p>{t('done')}</p> : <StartForm study={study} disabled={disabled || running} t={t} start={(subject, mode) => act({ action: 'start', id: crypto.randomUUID(), subject, mode }, true)} />}
+            : study.phase === 'daily-complete' ? <p>{t('done')}</p> : <StartForm study={study} activity={activity} choose={setActivity} disabled={disabled || running} t={t} start={(subject, mode) => act({ action: 'start', id: crypto.randomUUID(), subject, mode }, true)} />}
         </section>
         {active && <>
-          <section>{study.task?.sessionId === active.id ? <Task key={study.task.id} study={study} available={available} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
-            {available && <button disabled={disabled || running} onClick={() => { void tutor().catch(() => {}) }}>{t('continue')}</button>}
+          <section><p>{t('chatHelp')}</p>{task ? <Task key={task.id} study={study} available={available} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
+            {available && (running || sending ? <p role="status">{t('tutorWorking')}</p>
+              : (!task || study.feedback || task.response !== undefined || task.hintRequested) && <button disabled={disabled} onClick={() => { void tutor().catch(() => {}) }}>{t(!task ? 'prepareTask' : study.feedback ? 'nextTask' : task.response !== undefined ? 'retryFeedback' : 'retryHint')}</button>)}
           </section>
           <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void act({ action: 'stop', sessionId: active.id, reflection: String(form.get('reflection') ?? '') }) }}>
             <label>{t('reflection')}<textarea aria-label={t('reflection')} name="reflection" maxLength={2000} /></label><button disabled={disabled} type="submit">{t('stop')}</button>
@@ -64,7 +71,8 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
         <PhotoIntake ask={tutor} disabled={disabled || running} t={t} />
         <section><h3>{t('due')} · {study.dueCount}</h3>{study.dueMistakes.length === 0 && <p>{t('empty')}</p>}
           {study.dueMistakes.map(item => <p key={item.id}>{t(item.subject)} · {item.topic}</p>)}
-          {study.dueMistakes.length > 0 && <button onClick={() => setTab('today')}>{t('review')}</button>}
+          {study.dueSubjects.map(subject => <button key={subject} disabled={disabled || running || study.phase !== 'ready'} onClick={() => { setActivity({ subject, mode: 'review' }); setTab('today') }}>{t('review')} · {t(subject)}</button>)}
+          {study.dueSubjects.length > 0 && study.phase !== 'ready' && <p>{t('reviewBlocked')}</p>}
         </section>
         <section><h3>{t('pending')} · {study.pendingCount}</h3>{study.pendingMistakes.length === 0 && <p>{t('empty')}</p>}
           {study.pendingMistakes.map(item => <MistakeConfirmation key={`${epoch}-${item.id}`} mistake={item} revision={data.revision} change={change} t={t} />)}
@@ -81,14 +89,14 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   </main>
 }
 
-function StartForm({ study, disabled, start, t }: { study: Study; disabled: boolean; start: (subject: 'chinese' | 'math' | 'english', mode: 'foundation' | 'school' | 'review' | 'explore') => Promise<void>; t: Translate }) {
-  const [subject, setSubject] = useState<'chinese' | 'math' | 'english'>('math')
-  const [mode, setMode] = useState<'foundation' | 'school' | 'review' | 'explore'>('foundation')
+function StartForm({ study, activity, choose, disabled, start, t }: { study: Study; activity: Activity; choose: (activity: Activity) => void; disabled: boolean; start: (subject: Activity['subject'], mode: Activity['mode']) => Promise<void>; t: Translate }) {
+  const { subject, mode } = activity
   const confirmed = study.courses.some(item => item.subject === subject)
   const due = study.dueSubjects.includes(subject)
   return <form onSubmit={event => { event.preventDefault(); void start(subject, mode) }}><fieldset disabled={disabled}>
-    <label>{t('subject')}<select aria-label={t('subject')} value={subject} onChange={event => { setSubject(subjects.find(item => item === event.target.value) ?? 'math'); setMode('foundation') }}>{subjects.map(item => <option key={item} value={item}>{t(item)}</option>)}</select></label>
-    <label>{t('mode')}<select aria-label={t('mode')} value={mode} onChange={event => { const value = event.target.value; setMode(value === 'school' || value === 'review' || value === 'explore' ? value : 'foundation') }}>{(['foundation', 'school', 'review', 'explore'] as const).map(item => <option key={item} value={item} disabled={(item === 'school' && !confirmed) || (item === 'review' && !due)}>{t(item)}</option>)}</select></label>
+    <label>{t('subject')}<select aria-label={t('subject')} value={subject} onChange={event => { choose({ subject: subjects.find(item => item === event.target.value) ?? 'math', mode: 'foundation' }) }}>{subjects.map(item => <option key={item} value={item}>{t(item)}</option>)}</select></label>
+    <label>{t('mode')}<select aria-label={t('mode')} value={mode} onChange={event => { const value = event.target.value; choose({ subject, mode: value === 'school' || value === 'review' || value === 'explore' ? value : 'foundation' }) }}>{(['foundation', 'school', 'review', 'explore'] as const).map(item => <option key={item} value={item} disabled={(item === 'school' && !confirmed) || (item === 'review' && !due)}>{t(item)}</option>)}</select></label>
+    <p>{t(mode === 'foundation' ? 'foundationHelp' : mode === 'school' ? 'schoolHelp' : mode === 'review' ? 'reviewHelp' : 'exploreHelp')}</p>
     {!confirmed && <p>{t('unconfirmed')}</p>}
     <button type="submit" disabled={(mode === 'school' && !confirmed) || (mode === 'review' && !due)}>{t('start')}</button>
   </fieldset></form>
@@ -98,7 +106,8 @@ function Task({ study, available, disabled, t, act }: { study: Study; available:
   const task = study.task
   if (!task) return null
   return <><h3>{task.topic}</h3><p className="student-question">{task.prompt}</p>
-    {study.feedback ? <><p>{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <><p>{task.response}</p><p role="status">{t('submitted')}</p></> : <form onSubmit={event => { event.preventDefault(); void act({ action: 'answer', taskId: task.id, response: String(new FormData(event.currentTarget).get('answer') ?? '') }, true) }}>
+    {task.response !== undefined && <p>{t('answer')}: {task.response}</p>}
+    {study.feedback ? <><p>{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : <form onSubmit={event => { event.preventDefault(); void act({ action: 'answer', taskId: task.id, response: String(new FormData(event.currentTarget).get('answer') ?? '') }, true) }}>
       <fieldset disabled={!available || disabled}><Field name="answer" label={t('answer')} /><button type="submit">{t('submit')}</button>
         <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true) }}>{t('hint')}</button>
       </fieldset>

@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-06。
+最后更新：2026-10-10。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -141,7 +141,7 @@ dsh-creative/
 | short-drama | `preset-short-drama` | `@deepseek-ai/dsh-agent-preset` | 短剧创作模式，作用域内挂载 `/agent` 技能和工具 |
 | novel-to-game | `preset-novel-to-game` | `@deepseek-ai/dsh-agent-preset` | 游戏创作模式，作用域内挂载 `/agent` 技能和工具 |
 | video-recap | `preset-video-recap` | `@deepseek-ai/dsh-agent-preset` | 视频解说模式，作用域内挂载 `/agent` 技能和工具 |
-| student | `preset-student` | `@deepseek-ai/dsh-agent-preset` | 学习模式，作用域内挂载 `/agent` 技能和工具 |
+| student | `preset-student` | `@deepseek-ai/dsh-agent-preset` | 智能学习模式，作用域内挂载 `/agent` 技能和工具 |
 | student | `student` | `@winterhuan/dsh-student` | 学习工作区 API |
 | story | `ui-settings-story` | `@winterhuan/dsh-client-ui-settings-story` | 小说设置页，编辑 `story` 命名空间里的朱雀密钥引用 |
 | short-drama / video-recap | `ui-settings-creative-produce` | `@winterhuan/dsh-client-ui-settings-creative-produce` | 短剧与视频生产设置页的 Node 入口，负责登记浏览器 bundle |
@@ -168,7 +168,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 ### 学生学习
 
-`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台提供今日学习、错题巩固、成长记录和家长设置；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题与奖励。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。使用方法及计时、教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
+`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台提供今日学习、错题巩固、成长记录和家长设置；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题与奖励。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。未提供教材的二年级上册使用随包课页，用户教材优先。使用方法及计时、教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
 
 ### 模型设置增强
 
@@ -301,6 +301,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 - 必须先从 web 模板创建 profile。profile 不存在时，第一次 `dsh plugin add` 会建一个只有 `@deepseek-ai/dsh-base` 的 profile，没有 web 应用。
 - `dsh plugin add <路径>` 用 `link:` 安装。改代码后 `pnpm run build`，再重启 dsh 即可生效。
 - 想不碰 `~/.dsh` 做隔离测试，就给每条命令加上 `DSH_HOME=/tmp/<目录>`。
+- 隔离 `DSH_HOME` 不会改变首次默认工作区的 Documents 路径。在首次打开浏览器前，为临时 profile 的 `workspace-controller.config.documentsDirectory` 指定临时目录；已有工作区仍使用原路径，新一轮验证应使用没有工作区记录的临时 home。
 - 确认浏览器 bundle 已加载：页面 HTML 的 `plugins/??...` 列表里应有 四个领域包的 `client.js`、`@winterhuan/dsh-client-ui-skill-viewer/client.js`、`@winterhuan/dsh-client-ui-settings-creative-produce/client.js` 和 `@winterhuan/dsh-client-ui-settings-story/client.js`。
 - 用 curl 检查本地服务时：本机设置了 SOCKS 形式的 `all_proxy`，curl 访问 127.0.0.1 也会走代理，需要加 `--noproxy '*'`。token 地址会先 303 跳转到 `./`，还需要 `-L` 和 cookie（`-c`/`-b`）。
 - 移除：
@@ -582,3 +583,12 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 - `dsh-student` 的本地链接已存在；本轮构建新增客户端与工作区接口，用户正在运行的 `web` 服务未重启，重启后加载新版。
 - 隔离 profile 在 Chrome 验证家长设置、教材与进度原子保存、开始学习、提示、回答、刷新后恢复反馈、到时停止作答、结束休息、奖励、转录确认及原生图片附件提交。无效图片保留预览并显示错误，有效 PNG 提交成功。深浅色与窄窗口检查通过，无页面脚本错误。
 - 5 个文件共 39 项测试、类型检查和构建通过；题目与评分使用测试数据，未测量真实模型的教学或识图质量，也未下载教材。浏览器证据位于 `/tmp/dsh-student-qa.RjTRvl/panel-results.json`。
+
+2026-10-10 学习插件收尾：
+
+- 当前实现包含智能学习模式、学年必选与课程备注选填、按科目选择到期复习、回答与反馈同屏及状态对应的辅导入口。二年级上册默认教材提供语文 126 页、数学 118 页；默认资料不建立校内关联，边界见[默认教材决策](.agents/notes/implemented/feature/2026-10-10-student-default-textbooks.zh.md)。原学习决策保留课程确认、证据、计时和奖励规则。
+- `pnpm run typecheck`、`pnpm run build` 通过；全量 87 个文件、772 项测试通过，其中学习包 6 个文件、46 项。文档 16 项、规范 3 项检查通过。
+- 隔离 DSH `0.2.1-alpha.1` 的 Chrome 检查覆盖中英文家长设置、按科目选择复习但不自动开始、实际接口开始学习、保留回答与反馈、下一题入口、休息期间禁用复习，以及 720px 深浅色显示；英文检查另验证刷新后恢复回答与反馈，页面脚本错误为零。题目与评分使用测试数据。
+- 教材准备脚本逐字节复现全部 492 个文件，错误源文件在输出前被拒绝。仓库外解压的安装包通过原生 `read_image` 读取两本科目的课页，并拒绝纯文本模型。独立压缩包 profile 已安装、启动并在浏览器加载模式、工作台和工作区接口；pnpm 的 profile peer 检查报告未声明宿主依赖，实际 DSH 宿主加载通过。
+- 日志、压缩包、截图及浏览器结果保留在 `/tmp/dsh-student-finish.aG9PwT/`。首次默认工作区落入 Documents 时生成的测试档案已清理，后续验证使用显式临时 Documents 路径；隔离服务和浏览器均已关闭，未修改用户 profile 或重启用户服务。
+- 未调用真实模型或付费服务，识图准确率、教材教学质量和真实模型 token 用量仍未测量。

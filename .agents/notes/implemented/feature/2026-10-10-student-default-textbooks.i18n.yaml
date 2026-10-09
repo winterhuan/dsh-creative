@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-10-student-default-textbooks.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-10-student-default-textbooks.md
+/agent-note-default-textbooks-without-assumed-school-alignment:
+  en: 2fbcd89aff59ee87
+  zh: 10be55efb686310a
+/agent-note-default-textbooks-without-assumed-school-alignment/problem:
+  en: 08bac5d4664f0749
+  zh: 5c58d163d95e2750
+/agent-note-default-textbooks-without-assumed-school-alignment/decision:
+  en: 0efc42b714711b21
+  zh: 5412bf34a41dd6cf
+/agent-note-default-textbooks-without-assumed-school-alignment/alternatives-considered:
+  en: bb42a2a70823b2ee
+  zh: 9eee4032373ffdd5
+/agent-note-default-textbooks-without-assumed-school-alignment/verification:
+  en: 407b39a02c160254
+  zh: 978291fcafcf935c
+/agent-note-default-textbooks-without-assumed-school-alignment/consequences:
+  en: 0fcc0bf5585705f9
+  zh: e2ed6868b364064c

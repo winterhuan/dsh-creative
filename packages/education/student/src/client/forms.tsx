@@ -8,8 +8,8 @@ export const subjects = ['chinese', 'math', 'english'] as const
 const read = (form: FormData, name: string) => String(form.get(name) ?? '').trim()
 
 /** Labelled native field with browser validation, preserving unsaved text across polling. */
-export function Field({ name, label, value = '', type = 'text', min, max }: { name: string; label: string; value?: string | number; type?: string; min?: number; max?: number }) {
-  return <label>{label}<input name={name} defaultValue={value} type={type} min={min} max={max} required maxLength={2000} /></label>
+export function Field({ name, label, value = '', type = 'text', min, max, required = true }: { name: string; label: string; value?: string | number; type?: string; min?: number; max?: number; required?: boolean }) {
+  return <label>{label}<input name={name} defaultValue={value} type={type} min={min} max={max} required={required} maxLength={2000} /></label>
 }
 
 function SaveForm({ revision, submit, children, t, disabled = false, button = 'save' }: {
@@ -38,9 +38,13 @@ function SaveForm({ revision, submit, children, t, disabled = false, button = 's
 export function ParentSettings({ data, change, t }: { data: Dashboard; change: ChangeStudy; t: Translate }) {
   const study = data.study
   const profile = study?.profile
+  const today = new Date(data.serverNow + 8 * 60 * 60 * 1000)
+  const currentYear = today.getUTCFullYear() - (today.getUTCMonth() < 8 ? 1 : 0)
+  const years = Array.from({ length: 7 }, (_, index) => `${currentYear + 1 - index}–${currentYear + 2 - index}`)
   const limits = profile?.limits ?? { blockMinutes: 10, breakMinutes: 5, dailyMinutes: 20 }
   return <section>
     <p>{t('parentHelp')}</p>
+    {!!study?.active && <p role="status">{t('settingsWhileActive')}</p>}
     <SaveForm key={profile ? 'limits' : 'setup'} revision={data.revision} t={t} disabled={!!study?.active} submit={(form, revision) => {
       const limits = { blockMinutes: Number(form.get('blockMinutes')), breakMinutes: Number(form.get('breakMinutes')), dailyMinutes: Number(form.get('dailyMinutes')) }
       const parentConfirmation = read(form, 'parentConfirmation')
@@ -52,8 +56,13 @@ export function ParentSettings({ data, change, t }: { data: Dashboard; change: C
         <Field name="region" label={t('region')} value="上海市" />
         <Field name="grade" label={t('grade')} value={2} type="number" min={1} max={6} />
         <label>{t('term')}<select name="term" aria-label={t('term')}><option value="first">{t('first')}</option><option value="second">{t('second')}</option></select></label>
-        <Field name="schoolYear" label={t('schoolYear')} />
-        <Field name="schoolAlias" label={t('schoolAlias')} />
+        <label>{t('schoolYear')}<select name="schoolYear" aria-label={t('schoolYear')} defaultValue="" required>
+          <option value="" disabled>{t('chooseSchoolYear')}</option>
+          {years.map(year => <option key={year} value={year}>{year}</option>)}
+        </select></label>
+        <p>{t('schoolYearHelp')}</p>
+        <Field name="schoolAlias" label={t('schoolAlias')} required={false} />
+        <p>{t('schoolAliasHelp')}</p>
         <label>{t('schoolSystem')}<select name="schoolSystem" aria-label={t('schoolSystem')}><option value="five-four">{t('five-four')}</option><option value="six-three">{t('six-three')}</option></select></label>
       </>}
       {(['blockMinutes', 'breakMinutes', 'dailyMinutes'] as const).map(name => <Field key={name} name={name} label={t(name)} value={limits[name]} type="number" min={name === 'dailyMinutes' ? 10 : 5} max={name === 'dailyMinutes' ? 30 : 15} />)}

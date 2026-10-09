@@ -46,7 +46,7 @@ describe('independently loaded student plugin', () => {
     const skill = (await provider.get(candidate, {}))!
     expect(renderSkillContent(skill)).toContain('Base directory for this skill:')
     if (skill.resourceBase?.kind !== 'directory') throw new Error('Expected a resource directory')
-    for (const file of ['materials.md', 'teaching.md']) expect((await readFile(join(skill.resourceBase.path, 'references', file), 'utf8')).length).toBeGreaterThan(100)
+    for (const file of ['materials.md', 'teaching.md', 'default-textbooks.md']) expect((await readFile(join(skill.resourceBase.path, 'references', file), 'utf8')).length).toBeGreaterThan(100)
     expect(await provider.get({ ...candidate, path: '/etc/passwd' }, {})).toBeUndefined()
     expect(ctx.tools.get('study_status')).toBeDefined()
     await plugin.dispose()

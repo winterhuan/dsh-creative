@@ -6,7 +6,7 @@ const time = z.number().int().nonnegative()
 const subject = z.enum(['chinese', 'math', 'english'])
 const scope = z.object({ region: text, grade: z.number().int().min(1).max(6), term: z.enum(['first', 'second']), schoolYear: text, schoolSystem: z.enum(['five-four', 'six-three']) }).strict()
 const limits = z.object({ blockMinutes: z.number().int().min(5).max(15), breakMinutes: z.number().int().min(5).max(15), dailyMinutes: z.number().int().min(10).max(30) }).strict()
-const profile = scope.extend({ nickname: text, schoolAlias: text, limits, parentConfirmation: text }).strict()
+const profile = scope.extend({ nickname: text, schoolAlias: z.string().trim().max(2000), limits, parentConfirmation: text }).strict()
 const material = z.object({
   id, subject, scope, title: text, publisher: text, edition: text,
   editionStatus: z.enum(['unconfirmed', 'identified']),

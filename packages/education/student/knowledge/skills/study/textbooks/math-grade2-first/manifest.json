@@ -1,0 +1,723 @@
+{
+  "id": "math-grade2-first",
+  "subject": "math",
+  "title": "义务教育教科书·数学二年级上册（北师大版）",
+  "publisher": "北京师范大学出版社",
+  "edition": "2025年7月第1版，2026年7月第2次印刷；ISBN 978-7-303-30747-0",
+  "source": "（根据2022年版课程标准修订）义务教育教科书•数学二年级上册.pdf",
+  "sha256": "c77f21654602a41f4fb1fd42ad855ec4712bf360a0c507ac8a5e650ce094e0c0",
+  "pageCount": 118,
+  "grade": 2,
+  "term": "first",
+  "renderer": "PyMuPDF 1.28.2, 144 dpi, JPEG quality 88",
+  "pages": [
+    {
+      "pdfPage": 1,
+      "printedPage": null,
+      "image": "pages/pdf-001.jpg",
+      "text": "pages/pdf-001.txt"
+    },
+    {
+      "pdfPage": 2,
+      "printedPage": null,
+      "image": "pages/pdf-002.jpg",
+      "text": "pages/pdf-002.txt"
+    },
+    {
+      "pdfPage": 3,
+      "printedPage": null,
+      "image": "pages/pdf-003.jpg",
+      "text": "pages/pdf-003.txt"
+    },
+    {
+      "pdfPage": 4,
+      "printedPage": null,
+      "image": "pages/pdf-004.jpg",
+      "text": "pages/pdf-004.txt"
+    },
+    {
+      "pdfPage": 5,
+      "printedPage": null,
+      "image": "pages/pdf-005.jpg",
+      "text": "pages/pdf-005.txt"
+    },
+    {
+      "pdfPage": 6,
+      "printedPage": null,
+      "image": "pages/pdf-006.jpg",
+      "text": "pages/pdf-006.txt"
+    },
+    {
+      "pdfPage": 7,
+      "printedPage": 2,
+      "image": "pages/pdf-007.jpg",
+      "text": "pages/pdf-007.txt"
+    },
+    {
+      "pdfPage": 8,
+      "printedPage": 3,
+      "image": "pages/pdf-008.jpg",
+      "text": "pages/pdf-008.txt"
+    },
+    {
+      "pdfPage": 9,
+      "printedPage": 4,
+      "image": "pages/pdf-009.jpg",
+      "text": "pages/pdf-009.txt"
+    },
+    {
+      "pdfPage": 10,
+      "printedPage": 5,
+      "image": "pages/pdf-010.jpg",
+      "text": "pages/pdf-010.txt"
+    },
+    {
+      "pdfPage": 11,
+      "printedPage": 6,
+      "image": "pages/pdf-011.jpg",
+      "text": "pages/pdf-011.txt"
+    },
+    {
+      "pdfPage": 12,
+      "printedPage": 7,
+      "image": "pages/pdf-012.jpg",
+      "text": "pages/pdf-012.txt"
+    },
+    {
+      "pdfPage": 13,
+      "printedPage": 8,
+      "image": "pages/pdf-013.jpg",
+      "text": "pages/pdf-013.txt"
+    },
+    {
+      "pdfPage": 14,
+      "printedPage": 9,
+      "image": "pages/pdf-014.jpg",
+      "text": "pages/pdf-014.txt"
+    },
+    {
+      "pdfPage": 15,
+      "printedPage": 10,
+      "image": "pages/pdf-015.jpg",
+      "text": "pages/pdf-015.txt"
+    },
+    {
+      "pdfPage": 16,
+      "printedPage": 11,
+      "image": "pages/pdf-016.jpg",
+      "text": "pages/pdf-016.txt"
+    },
+    {
+      "pdfPage": 17,
+      "printedPage": 12,
+      "image": "pages/pdf-017.jpg",
+      "text": "pages/pdf-017.txt"
+    },
+    {
+      "pdfPage": 18,
+      "printedPage": 13,
+      "image": "pages/pdf-018.jpg",
+      "text": "pages/pdf-018.txt"
+    },
+    {
+      "pdfPage": 19,
+      "printedPage": 14,
+      "image": "pages/pdf-019.jpg",
+      "text": "pages/pdf-019.txt"
+    },
+    {
+      "pdfPage": 20,
+      "printedPage": 15,
+      "image": "pages/pdf-020.jpg",
+      "text": "pages/pdf-020.txt"
+    },
+    {
+      "pdfPage": 21,
+      "printedPage": 16,
+      "image": "pages/pdf-021.jpg",
+      "text": "pages/pdf-021.txt"
+    },
+    {
+      "pdfPage": 22,
+      "printedPage": 17,
+      "image": "pages/pdf-022.jpg",
+      "text": "pages/pdf-022.txt"
+    },
+    {
+      "pdfPage": 23,
+      "printedPage": 18,
+      "image": "pages/pdf-023.jpg",
+      "text": "pages/pdf-023.txt"
+    },
+    {
+      "pdfPage": 24,
+      "printedPage": 19,
+      "image": "pages/pdf-024.jpg",
+      "text": "pages/pdf-024.txt"
+    },
+    {
+      "pdfPage": 25,
+      "printedPage": 20,
+      "image": "pages/pdf-025.jpg",
+      "text": "pages/pdf-025.txt"
+    },
+    {
+      "pdfPage": 26,
+      "printedPage": 21,
+      "image": "pages/pdf-026.jpg",
+      "text": "pages/pdf-026.txt"
+    },
+    {
+      "pdfPage": 27,
+      "printedPage": 22,
+      "image": "pages/pdf-027.jpg",
+      "text": "pages/pdf-027.txt"
+    },
+    {
+      "pdfPage": 28,
+      "printedPage": 23,
+      "image": "pages/pdf-028.jpg",
+      "text": "pages/pdf-028.txt"
+    },
+    {
+      "pdfPage": 29,
+      "printedPage": 24,
+      "image": "pages/pdf-029.jpg",
+      "text": "pages/pdf-029.txt"
+    },
+    {
+      "pdfPage": 30,
+      "printedPage": 25,
+      "image": "pages/pdf-030.jpg",
+      "text": "pages/pdf-030.txt"
+    },
+    {
+      "pdfPage": 31,
+      "printedPage": 26,
+      "image": "pages/pdf-031.jpg",
+      "text": "pages/pdf-031.txt"
+    },
+    {
+      "pdfPage": 32,
+      "printedPage": 27,
+      "image": "pages/pdf-032.jpg",
+      "text": "pages/pdf-032.txt"
+    },
+    {
+      "pdfPage": 33,
+      "printedPage": 28,
+      "image": "pages/pdf-033.jpg",
+      "text": "pages/pdf-033.txt"
+    },
+    {
+      "pdfPage": 34,
+      "printedPage": 29,
+      "image": "pages/pdf-034.jpg",
+      "text": "pages/pdf-034.txt"
+    },
+    {
+      "pdfPage": 35,
+      "printedPage": 30,
+      "image": "pages/pdf-035.jpg",
+      "text": "pages/pdf-035.txt"
+    },
+    {
+      "pdfPage": 36,
+      "printedPage": 31,
+      "image": "pages/pdf-036.jpg",
+      "text": "pages/pdf-036.txt"
+    },
+    {
+      "pdfPage": 37,
+      "printedPage": 32,
+      "image": "pages/pdf-037.jpg",
+      "text": "pages/pdf-037.txt"
+    },
+    {
+      "pdfPage": 38,
+      "printedPage": 33,
+      "image": "pages/pdf-038.jpg",
+      "text": "pages/pdf-038.txt"
+    },
+    {
+      "pdfPage": 39,
+      "printedPage": 34,
+      "image": "pages/pdf-039.jpg",
+      "text": "pages/pdf-039.txt"
+    },
+    {
+      "pdfPage": 40,
+      "printedPage": 35,
+      "image": "pages/pdf-040.jpg",
+      "text": "pages/pdf-040.txt"
+    },
+    {
+      "pdfPage": 41,
+      "printedPage": 36,
+      "image": "pages/pdf-041.jpg",
+      "text": "pages/pdf-041.txt"
+    },
+    {
+      "pdfPage": 42,
+      "printedPage": 37,
+      "image": "pages/pdf-042.jpg",
+      "text": "pages/pdf-042.txt"
+    },
+    {
+      "pdfPage": 43,
+      "printedPage": 38,
+      "image": "pages/pdf-043.jpg",
+      "text": "pages/pdf-043.txt"
+    },
+    {
+      "pdfPage": 44,
+      "printedPage": 39,
+      "image": "pages/pdf-044.jpg",
+      "text": "pages/pdf-044.txt"
+    },
+    {
+      "pdfPage": 45,
+      "printedPage": 40,
+      "image": "pages/pdf-045.jpg",
+      "text": "pages/pdf-045.txt"
+    },
+    {
+      "pdfPage": 46,
+      "printedPage": 41,
+      "image": "pages/pdf-046.jpg",
+      "text": "pages/pdf-046.txt"
+    },
+    {
+      "pdfPage": 47,
+      "printedPage": 42,
+      "image": "pages/pdf-047.jpg",
+      "text": "pages/pdf-047.txt"
+    },
+    {
+      "pdfPage": 48,
+      "printedPage": 43,
+      "image": "pages/pdf-048.jpg",
+      "text": "pages/pdf-048.txt"
+    },
+    {
+      "pdfPage": 49,
+      "printedPage": 44,
+      "image": "pages/pdf-049.jpg",
+      "text": "pages/pdf-049.txt"
+    },
+    {
+      "pdfPage": 50,
+      "printedPage": 45,
+      "image": "pages/pdf-050.jpg",
+      "text": "pages/pdf-050.txt"
+    },
+    {
+      "pdfPage": 51,
+      "printedPage": 46,
+      "image": "pages/pdf-051.jpg",
+      "text": "pages/pdf-051.txt"
+    },
+    {
+      "pdfPage": 52,
+      "printedPage": 47,
+      "image": "pages/pdf-052.jpg",
+      "text": "pages/pdf-052.txt"
+    },
+    {
+      "pdfPage": 53,
+      "printedPage": 48,
+      "image": "pages/pdf-053.jpg",
+      "text": "pages/pdf-053.txt"
+    },
+    {
+      "pdfPage": 54,
+      "printedPage": 49,
+      "image": "pages/pdf-054.jpg",
+      "text": "pages/pdf-054.txt"
+    },
+    {
+      "pdfPage": 55,
+      "printedPage": 50,
+      "image": "pages/pdf-055.jpg",
+      "text": "pages/pdf-055.txt"
+    },
+    {
+      "pdfPage": 56,
+      "printedPage": 51,
+      "image": "pages/pdf-056.jpg",
+      "text": "pages/pdf-056.txt"
+    },
+    {
+      "pdfPage": 57,
+      "printedPage": 52,
+      "image": "pages/pdf-057.jpg",
+      "text": "pages/pdf-057.txt"
+    },
+    {
+      "pdfPage": 58,
+      "printedPage": 53,
+      "image": "pages/pdf-058.jpg",
+      "text": "pages/pdf-058.txt"
+    },
+    {
+      "pdfPage": 59,
+      "printedPage": 54,
+      "image": "pages/pdf-059.jpg",
+      "text": "pages/pdf-059.txt"
+    },
+    {
+      "pdfPage": 60,
+      "printedPage": 55,
+      "image": "pages/pdf-060.jpg",
+      "text": "pages/pdf-060.txt"
+    },
+    {
+      "pdfPage": 61,
+      "printedPage": 56,
+      "image": "pages/pdf-061.jpg",
+      "text": "pages/pdf-061.txt"
+    },
+    {
+      "pdfPage": 62,
+      "printedPage": 57,
+      "image": "pages/pdf-062.jpg",
+      "text": "pages/pdf-062.txt"
+    },
+    {
+      "pdfPage": 63,
+      "printedPage": 58,
+      "image": "pages/pdf-063.jpg",
+      "text": "pages/pdf-063.txt"
+    },
+    {
+      "pdfPage": 64,
+      "printedPage": 59,
+      "image": "pages/pdf-064.jpg",
+      "text": "pages/pdf-064.txt"
+    },
+    {
+      "pdfPage": 65,
+      "printedPage": 60,
+      "image": "pages/pdf-065.jpg",
+      "text": "pages/pdf-065.txt"
+    },
+    {
+      "pdfPage": 66,
+      "printedPage": 61,
+      "image": "pages/pdf-066.jpg",
+      "text": "pages/pdf-066.txt"
+    },
+    {
+      "pdfPage": 67,
+      "printedPage": 62,
+      "image": "pages/pdf-067.jpg",
+      "text": "pages/pdf-067.txt"
+    },
+    {
+      "pdfPage": 68,
+      "printedPage": 63,
+      "image": "pages/pdf-068.jpg",
+      "text": "pages/pdf-068.txt"
+    },
+    {
+      "pdfPage": 69,
+      "printedPage": 64,
+      "image": "pages/pdf-069.jpg",
+      "text": "pages/pdf-069.txt"
+    },
+    {
+      "pdfPage": 70,
+      "printedPage": 65,
+      "image": "pages/pdf-070.jpg",
+      "text": "pages/pdf-070.txt"
+    },
+    {
+      "pdfPage": 71,
+      "printedPage": 66,
+      "image": "pages/pdf-071.jpg",
+      "text": "pages/pdf-071.txt"
+    },
+    {
+      "pdfPage": 72,
+      "printedPage": 67,
+      "image": "pages/pdf-072.jpg",
+      "text": "pages/pdf-072.txt"
+    },
+    {
+      "pdfPage": 73,
+      "printedPage": 68,
+      "image": "pages/pdf-073.jpg",
+      "text": "pages/pdf-073.txt"
+    },
+    {
+      "pdfPage": 74,
+      "printedPage": 69,
+      "image": "pages/pdf-074.jpg",
+      "text": "pages/pdf-074.txt"
+    },
+    {
+      "pdfPage": 75,
+      "printedPage": 70,
+      "image": "pages/pdf-075.jpg",
+      "text": "pages/pdf-075.txt"
+    },
+    {
+      "pdfPage": 76,
+      "printedPage": 71,
+      "image": "pages/pdf-076.jpg",
+      "text": "pages/pdf-076.txt"
+    },
+    {
+      "pdfPage": 77,
+      "printedPage": 72,
+      "image": "pages/pdf-077.jpg",
+      "text": "pages/pdf-077.txt"
+    },
+    {
+      "pdfPage": 78,
+      "printedPage": 73,
+      "image": "pages/pdf-078.jpg",
+      "text": "pages/pdf-078.txt"
+    },
+    {
+      "pdfPage": 79,
+      "printedPage": 74,
+      "image": "pages/pdf-079.jpg",
+      "text": "pages/pdf-079.txt"
+    },
+    {
+      "pdfPage": 80,
+      "printedPage": 75,
+      "image": "pages/pdf-080.jpg",
+      "text": "pages/pdf-080.txt"
+    },
+    {
+      "pdfPage": 81,
+      "printedPage": 76,
+      "image": "pages/pdf-081.jpg",
+      "text": "pages/pdf-081.txt"
+    },
+    {
+      "pdfPage": 82,
+      "printedPage": 77,
+      "image": "pages/pdf-082.jpg",
+      "text": "pages/pdf-082.txt"
+    },
+    {
+      "pdfPage": 83,
+      "printedPage": 78,
+      "image": "pages/pdf-083.jpg",
+      "text": "pages/pdf-083.txt"
+    },
+    {
+      "pdfPage": 84,
+      "printedPage": 79,
+      "image": "pages/pdf-084.jpg",
+      "text": "pages/pdf-084.txt"
+    },
+    {
+      "pdfPage": 85,
+      "printedPage": 80,
+      "image": "pages/pdf-085.jpg",
+      "text": "pages/pdf-085.txt"
+    },
+    {
+      "pdfPage": 86,
+      "printedPage": 81,
+      "image": "pages/pdf-086.jpg",
+      "text": "pages/pdf-086.txt"
+    },
+    {
+      "pdfPage": 87,
+      "printedPage": 82,
+      "image": "pages/pdf-087.jpg",
+      "text": "pages/pdf-087.txt"
+    },
+    {
+      "pdfPage": 88,
+      "printedPage": 83,
+      "image": "pages/pdf-088.jpg",
+      "text": "pages/pdf-088.txt"
+    },
+    {
+      "pdfPage": 89,
+      "printedPage": 84,
+      "image": "pages/pdf-089.jpg",
+      "text": "pages/pdf-089.txt"
+    },
+    {
+      "pdfPage": 90,
+      "printedPage": 85,
+      "image": "pages/pdf-090.jpg",
+      "text": "pages/pdf-090.txt"
+    },
+    {
+      "pdfPage": 91,
+      "printedPage": 86,
+      "image": "pages/pdf-091.jpg",
+      "text": "pages/pdf-091.txt"
+    },
+    {
+      "pdfPage": 92,
+      "printedPage": 87,
+      "image": "pages/pdf-092.jpg",
+      "text": "pages/pdf-092.txt"
+    },
+    {
+      "pdfPage": 93,
+      "printedPage": 88,
+      "image": "pages/pdf-093.jpg",
+      "text": "pages/pdf-093.txt"
+    },
+    {
+      "pdfPage": 94,
+      "printedPage": 89,
+      "image": "pages/pdf-094.jpg",
+      "text": "pages/pdf-094.txt"
+    },
+    {
+      "pdfPage": 95,
+      "printedPage": 90,
+      "image": "pages/pdf-095.jpg",
+      "text": "pages/pdf-095.txt"
+    },
+    {
+      "pdfPage": 96,
+      "printedPage": 91,
+      "image": "pages/pdf-096.jpg",
+      "text": "pages/pdf-096.txt"
+    },
+    {
+      "pdfPage": 97,
+      "printedPage": 92,
+      "image": "pages/pdf-097.jpg",
+      "text": "pages/pdf-097.txt"
+    },
+    {
+      "pdfPage": 98,
+      "printedPage": 93,
+      "image": "pages/pdf-098.jpg",
+      "text": "pages/pdf-098.txt"
+    },
+    {
+      "pdfPage": 99,
+      "printedPage": 94,
+      "image": "pages/pdf-099.jpg",
+      "text": "pages/pdf-099.txt"
+    },
+    {
+      "pdfPage": 100,
+      "printedPage": 95,
+      "image": "pages/pdf-100.jpg",
+      "text": "pages/pdf-100.txt"
+    },
+    {
+      "pdfPage": 101,
+      "printedPage": 96,
+      "image": "pages/pdf-101.jpg",
+      "text": "pages/pdf-101.txt"
+    },
+    {
+      "pdfPage": 102,
+      "printedPage": 97,
+      "image": "pages/pdf-102.jpg",
+      "text": "pages/pdf-102.txt"
+    },
+    {
+      "pdfPage": 103,
+      "printedPage": 98,
+      "image": "pages/pdf-103.jpg",
+      "text": "pages/pdf-103.txt"
+    },
+    {
+      "pdfPage": 104,
+      "printedPage": 99,
+      "image": "pages/pdf-104.jpg",
+      "text": "pages/pdf-104.txt"
+    },
+    {
+      "pdfPage": 105,
+      "printedPage": 100,
+      "image": "pages/pdf-105.jpg",
+      "text": "pages/pdf-105.txt"
+    },
+    {
+      "pdfPage": 106,
+      "printedPage": 101,
+      "image": "pages/pdf-106.jpg",
+      "text": "pages/pdf-106.txt"
+    },
+    {
+      "pdfPage": 107,
+      "printedPage": 102,
+      "image": "pages/pdf-107.jpg",
+      "text": "pages/pdf-107.txt"
+    },
+    {
+      "pdfPage": 108,
+      "printedPage": 103,
+      "image": "pages/pdf-108.jpg",
+      "text": "pages/pdf-108.txt"
+    },
+    {
+      "pdfPage": 109,
+      "printedPage": null,
+      "image": "pages/pdf-109.jpg",
+      "text": "pages/pdf-109.txt"
+    },
+    {
+      "pdfPage": 110,
+      "printedPage": 105,
+      "image": "pages/pdf-110.jpg",
+      "text": "pages/pdf-110.txt"
+    },
+    {
+      "pdfPage": 111,
+      "printedPage": null,
+      "image": "pages/pdf-111.jpg",
+      "text": "pages/pdf-111.txt"
+    },
+    {
+      "pdfPage": 112,
+      "printedPage": 107,
+      "image": "pages/pdf-112.jpg",
+      "text": "pages/pdf-112.txt"
+    },
+    {
+      "pdfPage": 113,
+      "printedPage": null,
+      "image": "pages/pdf-113.jpg",
+      "text": "pages/pdf-113.txt"
+    },
+    {
+      "pdfPage": 114,
+      "printedPage": 109,
+      "image": "pages/pdf-114.jpg",
+      "text": "pages/pdf-114.txt"
+    },
+    {
+      "pdfPage": 115,
+      "printedPage": null,
+      "image": "pages/pdf-115.jpg",
+      "text": "pages/pdf-115.txt"
+    },
+    {
+      "pdfPage": 116,
+      "printedPage": 111,
+      "image": "pages/pdf-116.jpg",
+      "text": "pages/pdf-116.txt"
+    },
+    {
+      "pdfPage": 117,
+      "printedPage": null,
+      "image": "pages/pdf-117.jpg",
+      "text": "pages/pdf-117.txt"
+    },
+    {
+      "pdfPage": 118,
+      "printedPage": null,
+      "image": "pages/pdf-118.jpg",
+      "text": "pages/pdf-118.txt"
+    }
+  ]
+}

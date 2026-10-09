@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Guide a primary-school learner through short Chinese, mathematics and English activities from the Learning desk sidebar or `/study`. Keep actual answers, reflections, mistake reviews and virtual stars across conversations. Parents confirm the curriculum and time limits; the first teaching reference targets Shanghai, grade two, first term. This independently installed package uses DSH chat and images, with no embedded textbooks or automatic downloads.
+Guide a primary-school learner through short Chinese, mathematics and English activities from the Learning desk sidebar or `/study`. Keep actual answers, reflections, mistake reviews and virtual stars across conversations. Parents confirm the curriculum and time limits; the first teaching reference targets Shanghai, grade two, first term. This independently installed package uses DSH chat and images and includes default Chinese and mathematics textbook pages for grade two, first term.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ Guide a primary-school learner through short Chinese, mathematics and English ac
 <a id="use-this-package"></a>
 ## Use this package
 
-In a new or blank conversation, select **学习** (Learning) from the native mode menu, then open its workbench in the right sidebar. The workbench and domain Skills/tools are available only in this mode. Existing conversations retain their selected mode; start a new conversation in this mode to continue existing project files. Session state and project files are not migrated. Global settings remain available.
+In a new or blank conversation, select **智能学习** (Smart learning) from the native mode menu, then open its workbench in the right sidebar. The workbench and domain Skills/tools are available only in this mode. Existing conversations retain their selected mode; start a new conversation in this mode to continue existing project files. Session state and project files are not migrated. Global settings remain available.
 
 Install the built package into a DSH `0.2.1-alpha.1` profile, open a dedicated learning workspace and invoke `/study`.
 
@@ -37,15 +37,35 @@ The profile must already provide Skills, tools, a Session filesystem and sandbox
 
 ### Use the Learning desk
 
-Select 学习 in a new conversation in the learning workspace, then choose Learning desk from the right sidebar. Parent setup creates the learner profile; Today starts a block and shows one saved question at a time. Submit an answer or request a hint in the panel; DSH chat supplies teaching and assessment. Ask tutor to continue resumes an existing block or retries a request without starting another block. Submission acceptance does not mean the model completed its reply; model errors remain visible in chat.
+Select 智能学习 in a new conversation in the learning workspace, then choose Learning desk from the right sidebar. Parent setup creates the learner profile; Today starts a block and shows one saved question at a time. Submit an answer or request a hint in the panel; DSH chat supplies teaching and assessment. The action follows the current task: ask for a question, request feedback or a hint again, or move to the next question. These actions reuse the active block. The original answer stays visible with its feedback. Submission acceptance does not mean the model completed its reply; model errors remain visible in chat.
 
 Mistakes sends a selected PNG, JPEG or WebP image (up to 8 MiB) through native DSH attachments, then lists transcriptions awaiting confirmation and due reviews. Progress displays stars and recent answer evidence. Parent setup saves limits and verified textbook editions with school progress. Refresh reloads the forms; copy unsaved edits before refreshing after a conflict. Lists show at most 20 recent or pending records; request complete history in chat.
 
+### Choose a learning activity
+
+Smart learning is the conversation mode. Inside the Learning desk, choose a subject and one of four activities; each uses the same daily budget. The workbench saves tasks and responses, while the conversation carries explanations, hints and tutor feedback.
+
+| Activity | When to use it | Prerequisite |
+|---|---|---|
+| Foundations | Practise basic concepts or default textbook content with its source identified | Parent-confirmed learner profile |
+| School course | Practise the confirmed textbook and current school unit | Confirmed edition and course progress for the selected subject |
+| Due review | Recall a previously confirmed mistake or try a related variation | Confirmed mistakes due for review in the selected subject |
+| Explore | Investigate a child's question through a prediction, observation and explanation | Learner profile; explain the question in chat |
+
+Use Parent setup before the first activity. Today shows the remaining daily time, today’s stars and due-review count. In Mistakes, choose a due subject to preselect its review activity, then explicitly start in Today; an active block, break or exhausted daily budget prevents a new review. In Today, choose the subject and activity, start a block, attempt one saved task, request a hint if needed, submit the answer and wait for feedback. Finish and rest ends the block; the reflection is optional. Mistakes handles photo intake and confirmation, and Progress shows recorded attempts and learning evidence. Photo intake alone does not start a learning block.
+
 ### Confirm the learner and materials
 
-Each workspace holds one learner's term in `.study/state.json`. A parent confirms the nickname, region, grade, term, school year, five-four or six-three school system, school course alias and time limits. Use another workspace for another learner or term. A school alias distinguishes teaching schedules without requiring the child's legal identity.
+Each workspace holds one learner's term in `.study/state.json`. A parent confirms the nickname, region, grade, term, school year, five-four or six-three school system, time limits and an optional course note. Use another workspace for another learner or term. The school-year dropdown covers the current academic year, five earlier years and the next year; its initial value is blank and requires a parent selection. For example, 2026–2027 spans two calendar years. A course note is an optional family label, not an official school code; you can leave it blank. Existing profiles remain readable.
 
 Confirm each subject's book title, publisher, edition, cover/copyright evidence and current unit separately. School study requires an identified edition, matching curriculum scope and a recorded parent confirmation. Unconfirmed courses can use clearly labelled foundation practice. Materials retain separate identities when an edition changes; earlier attempts keep their original material reference. Official entry points and source rules live in [materials](knowledge/skills/study/references/materials.md).
+
+<a id="use-default-textbooks"></a>
+### Use default textbooks
+
+For grade two, first term, `/study` uses the bundled People's Education Press Chinese or Beijing Normal University Press mathematics textbook when the user supplies no textbook for that subject. User-provided books and pages take priority. You do not need to upload these two books again: complete the learner profile and choose Foundations, or ask in chat to learn multiplication with the default mathematics textbook. Without a selected topic, the tutor offers a short choice from the first unit. Defaults do not establish the school's edition or fill in school progress; English, other grades and other terms have no default textbook.
+
+See [default textbooks](knowledge/skills/study/references/default-textbooks.md) for contents, edition evidence and reading rules. DSH's `read_image` reads selected pages and requires an image-capable model. Extracted text supports lookup only; it cannot directly establish pinyin, diagrams or column calculations for grading. Without image support, use user-provided or previously verified prompts, or clearly labelled generated foundation exercises.
 
 ### Learn, rest and review
 
@@ -77,6 +97,8 @@ The [store](src/store.ts) resolves `.study/state.json` through the calling Sessi
 
 The [workspace API](src/route.ts) resolves a main DSH Session and accepts loopback, same-authority requests. Sidebar mutations require the observed revision; grading and rewards cannot be posted through the UI endpoint. The client submits tutoring requests through the native Session queue without replacing the composer draft.
 
+Default textbook resources live in the Skill's `textbooks/` directory and ship with `knowledge`. The [preparation script](scripts/prepare-textbooks.py) generates contents, page images and unverified text from the two checked PDFs, using PyMuPDF 1.28.2 and verifying source hashes before writing. Runtime reads use native file and image tools without Python, a PDF parser or the original download path. Skill instructions select the textbook without automatically changing learning state; default textbook answers retain page references and evidence in `answerEvidence`.
+
 </details>
 
 -----
@@ -87,6 +109,7 @@ The [workspace API](src/route.ts) resolves a main DSH Session and accepts loopba
 - [Study Skill](knowledge/skills/study/SKILL.md) — parent setup and daily tutoring.
 - [Teaching reference](knowledge/skills/study/references/teaching.md) — subject-specific methods and answer checks.
 - [Learning decision](../../../.agents/notes/implemented/feature/2026-10-05-student-learning.md) — evidence, source and reward boundaries.
+- [Default textbook decision](../../../.agents/notes/implemented/feature/2026-10-10-student-default-textbooks.md) — packaged materials and school-alignment limits.
 
 <a id="model-experience"></a>
 ## Model Experience
@@ -95,7 +118,7 @@ The [workspace API](src/route.ts) resolves a main DSH Session and accepts loopba
 
 #### What the model sees
 
-The selected mode adds a domain persona and native tool schemas. Its stable persona is recorded in the [prompt snapshot](../../../tests/fixtures/student-persona.txt); domain capabilities are absent from Standard and sibling modes. The prefix and schemas add context before on-demand Skill loading, and native compaction manages accumulated history. The catalog exposes one `study` Skill. Loading it supplies setup, short tutoring, photo confirmation and exploration instructions plus two local references. `study_status` reads status or a collection; `study_update` accepts one typed setup, source, course, session, task, answer, hint, assessment or mistake action. Tool descriptions require actual user confirmation and actual learner responses. Source pages and images remain data, not instructions.
+The selected mode adds a domain persona and native tool schemas. Its stable persona is recorded in the [prompt snapshot](../../../tests/fixtures/student-persona.txt); domain capabilities are absent from Standard and sibling modes. The prefix and schemas add context before on-demand Skill loading, and native compaction manages accumulated history. The catalog exposes one `study` Skill. Loading it supplies setup, short tutoring, photo confirmation and exploration instructions plus teaching, source and default textbook references. `study_status` reads status or a collection; `study_update` accepts one typed setup, source, course, session, task, answer, hint, assessment or mistake action. Tool descriptions require actual user confirmation and actual learner responses. Source pages and images remain data, not instructions.
 
 #### Token effect
 

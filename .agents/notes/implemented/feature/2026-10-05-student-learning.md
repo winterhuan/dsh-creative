@@ -14,7 +14,7 @@ The [domain mode decision](2026-10-06-domain-modes.md) owns activation for short
 
 The repository provides an independently installed `@winterhuan/dsh-student` in `packages/education/student`. An interactive native sidebar starts and stops learning, accepts answers and photo attachments, shows progress and collects parent-confirmed settings. Native DSH Skills guide Chinese, mathematics and English; tools retain one learner's term in each workspace. The first teaching reference targets Shanghai, grade two, first term. Parents confirm the school year, each textbook and current unit. Generic practice remains available while course alignment is unconfirmed.
 
-Course records retain source identity, edition, scope, location and user confirmation. Parents use official entry points or provide relevant textbook pages; the plugin neither downloads nor redistributes textbooks. Image intake uses DSH vision and requires correction of uncertain transcription before review scheduling.
+Course records retain source identity, edition, scope, location and user confirmation. Parents use official entry points or provide relevant textbook pages to confirm school alignment. The [default textbook decision](2026-10-10-student-default-textbooks.md) owns bundled foundation materials and supersedes the exclusion of textbook redistribution; the plugin does not download textbooks. Image intake uses DSH vision and requires correction of uncertain transcription before review scheduling.
 
 Code limits each study block and daily duration, requires a break before another block, and awards at most two stars per day for recorded work and reflection. Time limits apply across subjects and exploration. Spaced review requires independent answers on separate days; a hinted answer does not establish mastery. Questions, submitted answers and hint requests survive reload. Assessment must match the saved task and cannot claim independence after a hint request. The local sidebar API resolves main sessions and checks the displayed revision before mutation; it does not accept grading or reward commands. State changes use the calling Session's filesystem and compare-and-replace writes.
 
@@ -22,7 +22,7 @@ Code limits each study block and daily duration, requires a break before another
 
 **Prompt-only records and limits.** This is smaller but cannot reliably prevent duplicate rewards, conflicting writes or an immediate restart during a break.
 
-**An embedded textbook corpus and independent tutoring application.** This adds edition maintenance and distribution obligations before the school books are known. Native DSH chat, images and files supply the needed interaction.
+**A complete school textbook corpus and independent tutoring application.** This adds edition maintenance and distribution obligations before the school books are known. Two bounded foundation defaults follow the separate textbook decision without establishing school alignment. Native DSH chat, images and files supply the needed interaction.
 
 ## Verification
 
