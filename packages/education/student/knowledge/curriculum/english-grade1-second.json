@@ -1,0 +1,43 @@
+{
+  "id": "english-grade1-second",
+  "subject": "english",
+  "grade": 1,
+  "term": "second",
+  "title": "英语一年级下册知识地图",
+  "basis": "上海市小学英语从一年级起开设，一、二年级以听、说、认读为主，为《义务教育英语课程标准（2022年版）》一级学习做准备。本图按一年级起点的通行话题组织（感官、玩具、食物、天气、衣服），是学习框架，不代替学校课本和教师进度；单词与句型以学校实际教材为准。",
+  "units": [
+    { "id": "e1b-u1", "name": "感官与玩具", "summary": "五感动词、常见玩具" },
+    { "id": "e1b-u2", "name": "食物与饮料", "summary": "食物、饮料、颜色、喜好" },
+    { "id": "e1b-u3", "name": "天气与季节", "summary": "四季与天气表达" },
+    { "id": "e1b-u4", "name": "衣服与活动", "summary": "衣服、活动、新年祝福" }
+  ],
+  "concepts": [
+    { "id": "e1b-senses", "name": "感官动词", "unit": "e1b-u1", "definition": "用 see、hear、smell、taste 说自己看到、听到、闻到、尝到什么。", "example": "I see a bird. I hear a dog.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」" },
+    { "id": "e1b-toys", "name": "玩具", "unit": "e1b-u1", "definition": "认识 ball、doll、kite、bicycle、robot 等玩具名称。", "example": "It's my ball. I like the kite.", "source": "英语课标（2022年版）一级准备内容；通行话题「玩具」" },
+    { "id": "e1b-food", "name": "食物", "unit": "e1b-u2", "definition": "认识 cake、bread、hamburger、pizza、noodles、rice 等食物名称。", "example": "—What do you like? —I like noodles.", "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」" },
+    { "id": "e1b-drinks", "name": "饮料", "unit": "e1b-u2", "definition": "认识 water、milk、juice、cola，会说要喝什么。", "example": "—What do you like? —Milk, please.", "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」" },
+    { "id": "e1b-colours", "name": "颜色", "unit": "e1b-u2", "definition": "认识 red、yellow、blue、green、black、white，会描述物品颜色。", "example": "It's a red apple. My bag is blue.", "source": "英语课标（2022年版）一级准备内容；通行话题「颜色」" },
+    { "id": "e1b-seasons", "name": "四季", "unit": "e1b-u3", "definition": "认识 spring、summer、autumn、winter，会说自己喜欢哪个季节。", "example": "Spring is warm. I like summer.", "source": "英语课标（2022年版）一级准备内容；通行话题「自然」" },
+    { "id": "e1b-weather", "name": "天气", "unit": "e1b-u3", "definition": "认识 sunny、rainy、cloudy、windy、hot、cold，会描述今天的天气。", "example": "It's sunny today. It's cold.", "source": "英语课标（2022年版）一级准备内容；通行话题「天气」" },
+    { "id": "e1b-clothes", "name": "衣服", "unit": "e1b-u4", "definition": "认识 T-shirt、dress、shorts、blouse、hat 等衣物名称。", "example": "This is my T-shirt. Look at my hat.", "source": "英语课标（2022年版）一级准备内容；通行话题「衣物」" },
+    { "id": "e1b-activities", "name": "活动", "unit": "e1b-u4", "definition": "认识 sing、dance、draw、read、write、play，会说自己在做什么。", "example": "Let's sing a song. I can draw a cat.", "source": "英语课标（2022年版）一级准备内容；通行话题「活动」" },
+    { "id": "e1b-newyear", "name": "新年与祝福", "unit": "e1b-u4", "definition": "新年时互相说 Happy New Year! 并回应。", "example": "—Happy New Year! —Happy New Year!", "source": "英语课标（2022年版）一级准备内容；通行话题「节日」" },
+    { "id": "e1b-likes", "name": "表达喜好：I like…", "unit": "e1b-u2", "definition": "用 I like… 说自己喜欢的东西。", "example": "I like cakes. I like kites.", "source": "英语课标（2022年版）一级准备内容；通行话题「喜好」" }
+  ],
+  "objectives": [
+    { "id": "e1b-o-senses", "title": "用感官动词说出看到听到的东西", "goal": "会说 I see… / I hear…，并能听指令做动作。", "conceptIds": ["e1b-senses", "e1b-toys"], "method": "speak" },
+    { "id": "e1b-o-colours", "title": "用颜色词描述物品", "goal": "看到物品能说出颜色和名称，如 a red apple。", "conceptIds": ["e1b-colours"], "method": "speak" },
+    { "id": "e1b-o-likes", "title": "用 I like… 说出喜欢的食物、饮料和玩具", "goal": "能回答 What do you like? 并说出自己的喜好。", "conceptIds": ["e1b-likes", "e1b-food", "e1b-drinks"], "method": "speak" },
+    { "id": "e1b-o-weather", "title": "用天气词说今天的天气", "goal": "会说 It's sunny/rainy…，会说自己喜欢哪个季节。", "conceptIds": ["e1b-weather", "e1b-seasons"], "method": "speak" },
+    { "id": "e1b-o-clothes", "title": "说出衣服名称并指认", "goal": "看到衣物能说出名称，会用 This is my…。", "conceptIds": ["e1b-clothes"], "method": "speak" },
+    { "id": "e1b-o-newyear", "title": "用祝福语互致新年问候", "goal": "会说 Happy New Year! 并回应别人的祝福。", "conceptIds": ["e1b-newyear", "e1b-activities"], "method": "speak" }
+  ],
+  "relations": [
+    { "id": "e1b-r-colours-clothes", "fromId": "e1b-colours", "toId": "e1b-clothes", "kind": "prerequisite", "explanation": "会颜色词，才能描述衣服的样子。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e1b-r-likes-food", "fromId": "e1b-food", "toId": "e1b-likes", "kind": "prerequisite", "explanation": "先认识食物名称，再表达喜欢什么。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e1b-r-food-drinks", "fromId": "e1b-food", "toId": "e1b-drinks", "kind": "contrast", "explanation": "食物和饮料对照认读，点餐时都会用到。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e1b-r-weather-seasons", "fromId": "e1b-weather", "toId": "e1b-seasons", "kind": "prerequisite", "explanation": "先会说天气，再结合四季说季节特点。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e1b-r-activities-newyear", "fromId": "e1b-activities", "toId": "e1b-newyear", "kind": "prerequisite", "explanation": "会说自己会做什么，新年活动里就能用上。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e1b-r-senses-toys", "fromId": "e1b-senses", "toId": "e1b-toys", "kind": "prerequisite", "explanation": "用感官动词说自己看到、玩到的玩具。", "source": "英语课标（2022年版）一级准备内容顺序" }
+  ]
+}

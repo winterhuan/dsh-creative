@@ -1,0 +1,156 @@
+import { readFileSync } from 'node:fs'
+import { z } from 'zod'
+
+const recordId = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u)
+const text = z.string().trim().min(1).max(2000)
+const subjectSchema = z.enum(['chinese', 'math', 'english'])
+const termSchema = z.enum(['first', 'second'])
+const methodSchema = z.enum(['recognize', 'read-evidence', 'express', 'represent', 'reason', 'verify', 'context', 'listen', 'speak'])
+const relationKindSchema = z.enum(['prerequisite', 'part-of', 'contrast', 'explains', 'cause-effect'])
+
+/** The learner fields that select a shipped knowledge map. */
+export interface CurriculumScope { grade: number; term: 'first' | 'second' }
+/** One of the three supported subjects. */
+export type CurriculumSubject = z.infer<typeof subjectSchema>
+/** A learning method a shipped objective may use; each value is also a workbench locale key. */
+export type CurriculumMethod = z.infer<typeof methodSchema>
+/** A shipped concept-relation kind; each value is also a workbench locale key. */
+export type CurriculumRelationKind = z.infer<typeof relationKindSchema>
+/** Subject methods a shipped learning objective may use; mirrors the state schema. */
+export const curriculumMethods: Record<CurriculumSubject, readonly string[]> = {
+  chinese: ['recognize', 'read-evidence', 'express'],
+  math: ['represent', 'reason', 'verify'],
+  english: ['context', 'listen', 'speak'],
+}
+
+/** One shipped knowledge map: units, knowledge points, objectives and relations for one subject, grade and term. */
+export const curriculumSchema = z.object({
+  id: recordId, subject: subjectSchema, grade: z.number().int().min(1).max(2), term: termSchema,
+  title: text, basis: text,
+  units: z.array(z.object({ id: recordId, name: text, summary: text }).strict()).min(1).max(20),
+  concepts: z.array(z.object({ id: recordId, name: text, unit: recordId, definition: text, example: text, source: text }).strict()).min(1).max(80),
+  objectives: z.array(z.object({ id: recordId, title: text, goal: text, conceptIds: z.array(recordId).min(1).max(5), method: methodSchema }).strict()).min(1).max(60),
+  relations: z.array(z.object({ id: recordId, fromId: recordId, toId: recordId, kind: relationKindSchema, explanation: text, source: text }).strict()).max(120),
+}).strict().superRefine((file, context) => {
+  const fail = (path: (string | number)[], message: string) => context.addIssue({ code: 'custom', path, message })
+  for (const [label, items] of [['units', file.units], ['concepts', file.concepts], ['objectives', file.objectives], ['relations', file.relations]] as const) {
+    const seen = new Set<string>()
+    for (const [index, item] of items.entries()) {
+      if (seen.has(item.id)) fail([label, index, 'id'], `重复的 ID：${item.id}`)
+      seen.add(item.id)
+    }
+  }
+  const units = new Set(file.units.map(unit => unit.id))
+  const concepts = new Set(file.concepts.map(concept => concept.id))
+  for (const [index, concept] of file.concepts.entries()) {
+    if (!units.has(concept.unit)) fail(['concepts', index, 'unit'], `知识点的单元不存在：${concept.unit}`)
+  }
+  for (const [index, unit] of file.units.entries()) {
+    if (!file.concepts.some(concept => concept.unit === unit.id)) fail(['units', index], `单元没有知识点：${unit.id}`)
+  }
+  for (const [index, objective] of file.objectives.entries()) {
+    if (!curriculumMethods[file.subject].includes(objective.method)) fail(['objectives', index, 'method'], `学习方法与科目不符：${objective.method}`)
+    for (const [position, conceptId] of objective.conceptIds.entries()) {
+      if (!concepts.has(conceptId)) fail(['objectives', index, 'conceptIds', position], `学习目标引用的知识点不存在：${conceptId}`)
+    }
+  }
+  for (const [index, relation] of file.relations.entries()) {
+    if (!concepts.has(relation.fromId) || !concepts.has(relation.toId)) fail(['relations', index], `概念关系引用的知识点不存在：${relation.fromId} → ${relation.toId}`)
+    if (relation.fromId === relation.toId) fail(['relations', index], '概念关系不能连接自身')
+  }
+  if (file.id !== `${file.subject}-grade${file.grade}-${file.term}`) fail(['id'], `文件 ID 与科目、年级、学期不符：${file.id}`)
+})
+
+/** A validated shipped knowledge map. */
+export type Curriculum = z.infer<typeof curriculumSchema>
+/** One shipped learning objective resolved with its subject and unit. */
+export interface BuiltinObjective {
+  id: string
+  subject: CurriculumSubject
+  title: string
+  goal: string
+  conceptIds: string[]
+  method: CurriculumMethod
+  unit: string
+  unitName: string
+}
+/** One shipped knowledge point resolved with its subject. */
+export interface BuiltinConcept {
+  id: string
+  subject: CurriculumSubject
+  name: string
+  unit: string
+  definition: string
+  example: string
+  source: string
+}
+
+const SUBJECTS = ['chinese', 'math', 'english'] as const
+const cache = new Map<string, Curriculum>()
+/** Read through a variable so bundler asset rewriting of `new URL(…, import.meta.url)` does not apply to data files. */
+const moduleUrl = import.meta.url
+
+function load(subject: CurriculumSubject, grade: number, term: 'first' | 'second'): Curriculum | undefined {
+  if (grade < 1 || grade > 2) return undefined
+  const key = `${subject}-grade${grade}-${term}`
+  const cached = cache.get(key)
+  if (cached !== undefined) return cached
+  const url = new URL(`../knowledge/curriculum/${key}.json`, moduleUrl)
+  const file = curriculumSchema.parse(JSON.parse(readFileSync(url, 'utf8')))
+  cache.set(key, file)
+  return file
+}
+
+/**
+ * One subject's shipped knowledge map for the profile's grade and term.
+ * @param scope - learner grade and term.
+ * @param subject - requested subject.
+ * @returns the validated map, or undefined outside grades one and two.
+ */
+export function curriculumFor(scope: CurriculumScope, subject: CurriculumSubject): Curriculum | undefined {
+  return load(subject, scope.grade, scope.term)
+}
+
+/**
+ * Every shipped knowledge map for the profile's grade and term, in subject order.
+ * @param scope - learner grade and term.
+ * @returns validated maps; empty outside grades one and two.
+ */
+export function curriculumFiles(scope: CurriculumScope): Curriculum[] {
+  return SUBJECTS.map(subject => load(subject, scope.grade, scope.term)).filter(file => file !== undefined)
+}
+
+/**
+ * All shipped learning objectives for the profile, in subject and map order.
+ * @param scope - learner grade and term.
+ * @returns resolved objectives; empty outside grades one and two.
+ */
+export function builtinObjectives(scope: CurriculumScope): BuiltinObjective[] {
+  return curriculumFiles(scope).flatMap(file => file.objectives.map(objective => ({
+    ...objective,
+    subject: file.subject,
+    unitName: file.units.find(unit => unit.id === file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit)?.name ?? '',
+    unit: file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit ?? '',
+  })))
+}
+
+/**
+ * Resolve one shipped objective by ID within the profile's grade and term.
+ * @param scope - learner grade and term.
+ * @param objectiveId - objective to resolve.
+ * @returns the resolved objective, or undefined when it is not shipped for this scope.
+ */
+export function builtinObjective(scope: CurriculumScope, objectiveId: string): BuiltinObjective | undefined {
+  return builtinObjectives(scope).find(objective => objective.id === objectiveId)
+}
+
+/**
+ * All shipped knowledge points for one subject within the profile's grade and term.
+ * @param scope - learner grade and term.
+ * @param subject - requested subject.
+ * @returns resolved knowledge points; empty outside grades one and two.
+ */
+export function builtinConcepts(scope: CurriculumScope, subject: CurriculumSubject): BuiltinConcept[] {
+  const file = load(subject, scope.grade, scope.term)
+  return file ? file.concepts.map(concept => ({ ...concept, subject: file.subject })) : []
+}

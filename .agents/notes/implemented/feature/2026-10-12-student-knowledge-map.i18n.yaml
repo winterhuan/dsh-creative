@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-12-student-knowledge-map.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-12-student-knowledge-map.md
+/agent-note-shipped-knowledge-map-and-weak-points:
+  en: 4e42c1ac59e88e78
+  zh: 22f8df779753b458
+/agent-note-shipped-knowledge-map-and-weak-points/problem:
+  en: 9cdaedf31b1dae2e
+  zh: 8b307f203a9a5f04
+/agent-note-shipped-knowledge-map-and-weak-points/decision:
+  en: b2d52bf1228825cf
+  zh: 9084332a04a96dc2
+/agent-note-shipped-knowledge-map-and-weak-points/alternatives-considered:
+  en: 7720beb3cc4d0689
+  zh: 153e1490167b1d07
+/agent-note-shipped-knowledge-map-and-weak-points/verification:
+  en: c7a2092b663e48e6
+  zh: f26f1c980c0d5297
+/agent-note-shipped-knowledge-map-and-weak-points/consequences:
+  en: 20555cf391805f6f
+  zh: a789f12ec39b650a

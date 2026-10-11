@@ -26,7 +26,7 @@ const attempt = z.object({
   feedback: text, answerEvidence: text, mistakeId: id.optional(), objectiveId: id.optional(),
 }).strict()
 
-const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, mistakeId: id.optional(), objectiveId: id.optional() }).strict()
+const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), mistakeId: id.optional(), objectiveId: id.optional() }).strict()
 const concept = z.object({ id, subject, name: text, definition: text, example: text, source: text }).strict()
 const objective = z.object({ id, subject, title: text, goal: text, conceptIds: z.array(id).min(1).max(5), method: z.enum(['recognize', 'read-evidence', 'express', 'represent', 'reason', 'verify', 'context', 'listen', 'speak']) }).strict()
 const relation = z.object({ id, fromId: id, toId: id, kind: z.enum(['prerequisite', 'part-of', 'contrast', 'explains', 'cause-effect']), explanation: text, source: text }).strict()
@@ -39,7 +39,7 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('limits'), limits, parentConfirmation: text }).strict(),
   z.object({ action: z.literal('material'), material }).strict(),
   z.object({ action: z.literal('course'), course }).strict(),
-  z.object({ action: z.literal('start'), id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore']) }).strict(),
+  z.object({ action: z.literal('start'), id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']) }).strict(),
   z.object({ action: z.literal('task'), task }).strict(),
   z.object({ action: z.literal('answer'), taskId: id, response: text }).strict(),
   z.object({ action: z.literal('hint'), taskId: id }).strict(),
@@ -63,7 +63,7 @@ export const stateSchema = z.object({
   materials: z.array(material).max(500),
   courses: z.array(course).max(3),
   sessions: z.array(z.object({
-    id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore']),
+    id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']),
     startedAt: time, deadline: time, endedAt: time.optional(), spentMs: time.optional(),
     materialId: id.optional(), unit: text.optional(), reflection: z.string().max(2000).optional(),
   }).strict()).max(5000),

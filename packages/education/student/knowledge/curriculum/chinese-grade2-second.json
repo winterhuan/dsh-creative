@@ -1,0 +1,51 @@
+{
+  "id": "chinese-grade2-second",
+  "subject": "chinese",
+  "grade": 2,
+  "term": "second",
+  "title": "语文二年级下册知识地图",
+  "basis": "依据《义务教育语文课程标准（2022年版）》第一学段要求整理，按统编版语文二年级下册的通行编排组织；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "c2b-u1", "name": "识字与词语", "summary": "形近形声字辨析、查字典综合运用" },
+    { "id": "c2b-u2", "name": "阅读与理解", "summary": "寓言、默读、复述、提问与预测" },
+    { "id": "c2b-u3", "name": "词句运用", "summary": "近反义词、关联词、感叹句与问句" },
+    { "id": "c2b-u4", "name": "表达与积累", "summary": "写人写物、续编故事、说话语气、传统文化" }
+  ],
+  "concepts": [
+    { "id": "c2b-bianxi", "name": "形近形声字辨析", "unit": "c2b-u1", "definition": "读音相同或相近、字形相近的字，要看偏旁想意思来区分。", "example": "峰（山）、蜂（虫）、锋（金属）。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c2b-chazi", "name": "查字典综合运用", "unit": "c2b-u1", "definition": "知道读音用音序查字法，不知道读音用部首查字法，两种方法配合使用。", "example": "查“篱”不知道读音，用部首查字法找竹字头。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c2b-yuyan", "name": "寓言故事与道理", "unit": "c2b-u2", "definition": "寓言用短故事讲道理，读后要想一想故事告诉了我们什么。", "example": "《亡羊补牢》告诉我们出了问题及时补救还不晚。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2b-modu", "name": "默读", "unit": "c2b-u2", "definition": "默读不出声、不指读，边读边想意思。", "example": "默读《雷雨》，想想雷雨前、雷雨中、雷雨后各是什么样子。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2b-fushu", "name": "按顺序复述", "unit": "c2b-u2", "definition": "借助表格或关键词，按故事发展的顺序把内容讲出来。", "example": "《小马过河》按“为什么过河—遇到谁—怎么试—结果”复述。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c2b-tiwen", "name": "提问与预测", "unit": "c2b-u2", "definition": "读之前猜猜会发生什么，读的时候提出问题，再读下去找答案。", "example": "读《要是你在野外迷了路》先猜：大自然有哪些指南针？", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2b-jinyi", "name": "近义词与反义词", "unit": "c2b-u3", "definition": "意思相近的词是近义词，意思相反的词是反义词。", "example": "慌张—镇定；寒冷—温暖。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c2b-guanlian", "name": "关联词", "unit": "c2b-u3", "definition": "用关联词把两句话连起来，说清前后关系。", "example": "因为今天下雨，所以运动会推迟了；他一边唱歌，一边走路。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c2b-yuqi", "name": "感叹句与问句", "unit": "c2b-u3", "definition": "问句表示疑问，感叹句表示赞叹、惊喜等强烈语气。", "example": "这朵花真美啊！你见过这样的花吗？", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2b-xierenwu", "name": "写话：介绍一个人或一种美食", "unit": "c2b-u4", "definition": "抓住特点按顺序写：先写是谁（是什么），再写样子或味道，最后写感受。", "example": "写好朋友：他叫什么、长什么样、喜欢做什么、为什么喜欢和他玩。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c2b-xubian", "name": "续编故事", "unit": "c2b-u4", "definition": "顺着故事的开头，想一个合理的结尾写下来。", "example": "《蜘蛛开店》后来会怎样？接着写一段。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c2b-shuohua", "name": "口语交际：说话的语气", "unit": "c2b-u4", "definition": "请别人帮忙、和别人商量时，用商量的语气，把理由说清楚。", "example": "“妈妈，我想先看完这一页再写作业，可以吗？”", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c2b-chuantong", "name": "传统文化常识", "unit": "c2b-u4", "definition": "认识主要传统节日的时间和习俗，了解中国美食和汉字里的文化。", "example": "春节贴春联、端午节吃粽子；饺子的“饺”是食字旁。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c2b-gushi", "name": "古诗积累", "unit": "c2b-u4", "definition": "诵读描写春天和夏天的古诗，想象画面。", "example": "《村居》《咏柳》《晓出净慈寺送林子方》《绝句》。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" }
+  ],
+  "objectives": [
+    { "id": "c2b-o-bianxi", "title": "辨析形近字并组词", "goal": "能看偏旁想意思，给形近字各组一个词。", "conceptIds": ["c2b-bianxi"], "method": "recognize" },
+    { "id": "c2b-o-chazi", "title": "根据需要选用音序或部首查字法", "goal": "知道读音用音序查，不知道读音用部首查，都能查到。", "conceptIds": ["c2b-chazi"], "method": "recognize" },
+    { "id": "c2b-o-yuyan", "title": "读寓言，说出故事讲的道理和依据", "goal": "能说出故事的道理，并指出是哪一段情节说明的。", "conceptIds": ["c2b-yuyan"], "method": "read-evidence" },
+    { "id": "c2b-o-modu", "title": "默读短文并说出主要内容", "goal": "能不出声地读，读后说出讲了什么。", "conceptIds": ["c2b-modu", "c2b-tiwen"], "method": "read-evidence" },
+    { "id": "c2b-o-fushu", "title": "借助提示按顺序复述故事", "goal": "能用关键词或表格提示，按顺序把故事讲完整。", "conceptIds": ["c2b-fushu"], "method": "express" },
+    { "id": "c2b-o-ciju", "title": "用近反义词和关联词把句子说清楚", "goal": "能换用近义词，能用“因为……所以……”等关联词连句子。", "conceptIds": ["c2b-jinyi", "c2b-guanlian", "c2b-yuqi"], "method": "express" },
+    { "id": "c2b-o-xiehua", "title": "抓住特点介绍一个人或一种美食", "goal": "能按“是谁—什么样—怎么样”的顺序写几句话。", "conceptIds": ["c2b-xierenwu", "c2b-xubian"], "method": "express" },
+    { "id": "c2b-o-shuohua", "title": "用商量的语气与人交流", "goal": "能在具体情境里用商量的语气提出请求，说明理由。", "conceptIds": ["c2b-shuohua"], "method": "express" },
+    { "id": "c2b-o-chuantong", "title": "说出主要传统节日的时间和习俗", "goal": "能说出两三个传统节日在什么时候、有什么习俗。", "conceptIds": ["c2b-chuantong", "c2b-gushi"], "method": "recognize" }
+  ],
+  "relations": [
+    { "id": "c2b-r-chazi-bianxi", "fromId": "c2b-chazi", "toId": "c2b-bianxi", "kind": "prerequisite", "explanation": "会查字典，才能查证形近字的读音和意思。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-yuyan-modu", "fromId": "c2b-modu", "toId": "c2b-yuyan", "kind": "prerequisite", "explanation": "能默读读懂故事，才能体会寓言讲的道理。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-yuyan-fushu", "fromId": "c2b-yuyan", "toId": "c2b-fushu", "kind": "prerequisite", "explanation": "读懂故事的道理和情节，复述才完整。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-tiwen-fushu", "fromId": "c2b-tiwen", "toId": "c2b-fushu", "kind": "prerequisite", "explanation": "带着问题读，复述时才能抓住关键情节。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-jinyi-guanlian", "fromId": "c2b-jinyi", "toId": "c2b-guanlian", "kind": "prerequisite", "explanation": "先积累近反义词，再用关联词把句子连起来。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-guanlian-xiehua", "fromId": "c2b-guanlian", "toId": "c2b-xierenwu", "kind": "prerequisite", "explanation": "会用关联词，写话才连贯。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-fushu-xubian", "fromId": "c2b-fushu", "toId": "c2b-xubian", "kind": "prerequisite", "explanation": "会按顺序复述，续编故事才接得上。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2b-r-gushi-chuantong", "fromId": "c2b-gushi", "toId": "c2b-chuantong", "kind": "part-of", "explanation": "古诗积累属于传统文化积累的一部分。", "source": "语文课标（2022年版）第一学段内容顺序" }
+  ]
+}

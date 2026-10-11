@@ -1,7 +1,7 @@
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import { stateSchema, type StudyState } from './schema.ts'
-import { studyStatus, updateStudy } from './learning.ts'
+import { curriculumView, insightSummary, studyInsight, studyStatus, updateStudy } from './learning.ts'
 
 const MAX_BYTES = 8_388_608
 
@@ -40,21 +40,48 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
   return next
 }
 
-/** Bounded history and status queries. Offset pagination applies to every collection. */
-export function queryStudy(state: StudyState | undefined, kind: string, offset: number, id?: string, subject?: 'chinese' | 'math' | 'english') {
+/**
+ * Bounded history and status queries. Offset pagination applies to every collection.
+ * @param state - current durable learning state, or undefined before setup.
+ * @param kind - record collection or projection to read.
+ * @param offset - zero-based collection offset.
+ * @param options - optional exact record ID, subject filter, and grade/term for browsing another knowledge map.
+ * @returns the projection or one page of records.
+ */
+export function queryStudy(state: StudyState | undefined, kind: string, offset: number, options: { id?: string; subject?: 'chinese' | 'math' | 'english'; grade?: number; term?: 'first' | 'second' } = {}) {
   if (!state) return { phase: 'setup-required', path: '.study/state.json' }
+  const { id, subject } = options
+  const now = Date.now()
   if (kind === 'status') {
-    const summary = studyStatus(state, Date.now())
-    return { ...summary,
+    const summary = studyStatus(state, now)
+    return { ...summary, ...insightSummary(studyInsight(state, now)),
       progress: summary.progress.slice(0, 20), progressCount: summary.progress.length,
       dueMistakes: summary.dueMistakes.slice(0, 20), dueMistakeCount: summary.dueMistakes.length,
       pendingMistakes: summary.pendingMistakes.slice(0, 20), pendingMistakeCount: summary.pendingMistakes.length,
-      more: 'Use study_status kind=progress, due or pending with offset for more records.',
+      more: 'Use study_status kind=progress, due, weak or curriculum with offset for more records.',
     }
   }
-  const records = kind === 'due' ? state.mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= Date.now())
+  if (kind === 'curriculum') {
+    if (!subject) throw new Error('知识地图查询需要指定科目（subject）。')
+    const scope = options.grade !== undefined || options.term !== undefined ? { grade: options.grade ?? state.profile.grade, term: options.term ?? state.profile.term } : undefined
+    return { revision: state.revision, curriculum: curriculumView(state, subject, studyInsight(state, now), scope) }
+  }
+  if (kind === 'diagnose') {
+    const insight = studyInsight(state, now)
+    return { revision: state.revision, diagnostics: subject ? insight.diagnostics.filter(plan => plan.subject === subject) : insight.diagnostics,
+      more: 'Start a diagnose block for the subject, ask one short task per sampled objective with objectiveId, record each answer, then study_status kind=weak shows what to strengthen.' }
+  }
+  if (kind === 'weak') {
+    const insight = studyInsight(state, now)
+    return { revision: state.revision, ...insightSummary(insight),
+      weakPoints: insight.weakPoints.map(item => ({ id: item.id, subject: item.subject, title: item.title, goal: item.goal, level: item.level, priority: item.priority, reasons: item.reasons })),
+      practised: insight.objectives.filter(item => item.attempts > 0 || item.activeMistakes > 0).map(item => ({ id: item.id, subject: item.subject, title: item.title, level: item.level, independentDays: item.independentDays, attempts: item.attempts, helpedOrWrong: item.helpedOrWrong, activeMistakes: item.activeMistakes, dueMistakes: item.dueMistakes })),
+      more: 'Use study_status kind=curriculum with a subject for units, knowledge points, objectives and relations.',
+    }
+  }
+  const records = kind === 'due' ? state.mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= now)
     : kind === 'pending' ? state.mistakes.filter(item => item.confirmedAt === undefined)
-    : kind === 'progress' ? studyStatus(state, Date.now()).progress
+    : kind === 'progress' ? studyStatus(state, now).progress
     : kind === 'concepts' ? state.concepts : kind === 'objectives' ? state.objectives
       : kind === 'relations' ? state.relations : kind === 'worksheets' ? state.worksheets
         : kind === 'paper-results' ? state.paperResults

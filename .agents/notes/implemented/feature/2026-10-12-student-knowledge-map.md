@@ -1,0 +1,41 @@
+# Agent Note: Shipped knowledge map and weak points
+
+Status: implemented
+
+English | [中文](2026-10-12-student-knowledge-map.zh.md)
+
+## Problem
+
+Learning objectives previously existed only after the model proposed a concept and a parent confirmed each one, so a term's knowledge points accumulated slowly through chat and the workbench could not show where the learner stood in a whole book. Mistakes, answers and objectives were never aggregated, so neither parents nor the model could see which knowledge points kept failing or were due for review, and the main workbench tab showed only the timer and the current question.
+
+## Decision
+
+The package ships twelve knowledge maps (`knowledge/curriculum/*.json`) for Chinese, mathematics and English across both terms of grades one and two. Each map holds units, knowledge points (definition, example, source), learning objectives and same-subject relations; the Host validates unique IDs, unit membership, objective references and subject-method pairs when loading. The maps follow the first-stage requirements of the 2022 curriculum standards with the common Shanghai teaching order, and the `basis` field states that they are a learning framework rather than the school textbook. Shipped objectives are treated as verified, like the bundled default textbooks: `task`, `record`, `mistake`, `link-mistake` and `worksheet` may reference their objectiveId directly without parent `confirm-concept`; concepts outside the map still use the existing confirmation flow. State files keep references only, so an updated map applies to old profiles.
+
+Mastery is derived from evidence: `record` outcomes, paper results and the review stage of confirmed mistakes are aggregated per objective into six levels (due, weak, stalled, mastered, practising, untouched). Weak points rank by due mistakes, recent errors, open mistakes and days without practice; the daily recommendation is review due mistakes, then strengthen the first weak point, then learn the next untouched objective in map order. `study_status` includes the top three weak points and the recommendation by default, `kind=curriculum` returns one subject's map with mastery, and `kind=weak` returns weak points with practised objectives.
+
+The main workbench tab, Today, shows the recommendation (which can start the matching block directly), weak points, the selected subject's knowledge-map summary and the mistake-book summary. A new Knowledge map tab shows units, knowledge points, relations and mastery and lets the learner pick an objective before practising. The mistake book filters by due, reviewing and consolidated; mistakes at the 30-day interval show as consolidated. The workspace API renames the subject parameter to `subject` and adds `mistakeStatus`, plus `mapGrade` and `mapTerm` for browsing another grade and term; a map outside the current term carries no mastery and its goals cannot be used in tasks.
+
+A task may carry two to four choices (`task.choices`); the panel answers by tapping and the answer must be one of them. Worksheet projections carry the goal title, each question's source mistake and its paper result, and mistake details show the review stage and related worksheets. A new `diagnose` activity is the recurring check-in: per subject it samples untouched goals across units, then stalled goals and goals mastered more than 30 days ago, at most six per round, due 14 days after the last check-in; tasks and answers in a check-in must carry a goal, results feed mastery directly, and a goal never answered independently becomes weak after one wrong answer. The daily recommendation runs due mistakes, weak points, due check-in, then a new goal.
+
+## Alternatives considered
+
+**Copy the shipped map into every workspace state file.** Each term profile would gain hundreds of duplicated records, map revisions would never reach old profiles, and state files and tool output would grow.
+
+**List knowledge points only in the Skill documentation without structured data.** The model could read them, but the workbench could not display mastery, objective IDs could not be validated and mistakes still could not be classified reliably.
+
+**Align the map to school textbook pages.** There is no evidence for each school's actual book and progress, so this would disguise a framework as school alignment; school alignment still comes from the parent-confirmed textbook and unit.
+
+**Let the model judge weak points freely.** Such judgements cannot be re-checked or displayed consistently; instead, outcomes, assistance levels and mistake stages feed fixed rules.
+
+**Make the check-in a one-off whole-term assessment.** A block lasts ten minutes and a young learner cannot cover a term in one sitting; recurring small samples let coverage accumulate over time.
+
+**Grade choice questions locally in the panel.** Panel grading would bypass the boundary that assessment is recorded by the tutor with evidence; the panel stores only the chosen option and assessment still goes through `record`.
+
+## Verification
+
+Data tests load all twelve maps and check cross-file ID uniqueness, field lengths and objective-to-unit reachability. State tests cover shipped objectives in tasks, answers, mistake classification and worksheets, rejection of cross-subject and cross-grade references, and derivation of mastered, weak and stalled from three independent days, two helped or wrong answers and long inactivity; a grade-three profile degrades to custom objectives. Route tests cover the subject and mistake filter parameters and the map projection; tool tests cover `kind=curriculum` and `kind=weak`. Client tests cover the main tab's map and mistake-book summaries, starting the recommended review directly, choosing a weak point as the practice goal, filtering the mistake book by status, tapping a choice as the answer, browsing another grade and term, worksheet-to-mistake links, and starting a check-in from its card. State tests also cover choice validation, browse scope, check-in sampling across units, a wrong probe turning into targeted practice, the 14-day due rule and the 30-day spot check. The interface was not verified in a real DSH browser and no real model was called.
+
+## Consequences
+
+Map content is maintained in this repository; unit names, words and sentence patterns may differ from a given school's book, and the basis stops at the curriculum standards and common teaching order without page-level checks of Shanghai textbook editions. Mastery reflects only records that carry an objectiveId, so older answers without an objective stay outside the statistics. A check-in probes at most six goals per round, so coverage accumulates through repetition; the model writes the probe questions, so their quality depends on the model. The knowledge-map projection returns with every workbench poll; one subject's data stays within tens of kilobytes. Grades one and two have no curriculum-standard level for English, so the map follows the common Shanghai topics for English from grade one.

@@ -1,0 +1,44 @@
+{
+  "id": "english-grade2-second",
+  "subject": "english",
+  "grade": 2,
+  "term": "second",
+  "title": "英语二年级下册知识地图",
+  "basis": "上海市小学英语从一年级起开设，一、二年级以听、说、认读为主，为《义务教育英语课程标准（2022年版）》一级学习做准备。本图按一年级起点的通行话题组织（五感、喜好、四季与规则、衣服与节日），是学习框架，不代替学校课本和教师进度；单词与句型以学校实际教材为准。",
+  "units": [
+    { "id": "e2b-u1", "name": "五感与触摸", "summary": "看听说问句、触摸感觉" },
+    { "id": "e2b-u2", "name": "喜好与动物", "summary": "喜欢的活动、食物、动物" },
+    { "id": "e2b-u3", "name": "四季与规则", "summary": "四季活动、简单规则" },
+    { "id": "e2b-u4", "name": "衣服与节日", "summary": "穿衣、母亲节、故事阅读、字母读音" }
+  ],
+  "concepts": [
+    { "id": "e2b-what-see", "name": "五感问句：What can you see/hear?", "unit": "e2b-u1", "definition": "用 What can you see? / What can you hear? 问看到、听到什么，用 I can see/hear… 回答。", "example": "—What can you see? —I can see a bird.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」" },
+    { "id": "e2b-touch", "name": "触摸感觉", "unit": "e2b-u1", "definition": "用 soft、hard、rough、smooth 说摸上去的感觉。", "example": "The toy is soft. The desk is hard.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」" },
+    { "id": "e2b-like-doing", "name": "喜欢的活动：I like doing…", "unit": "e2b-u2", "definition": "用 I like swimming/singing… 说自己喜欢做什么。", "example": "I like swimming. I like reading.", "source": "英语课标（2022年版）一级准备内容；通行话题「喜好」" },
+    { "id": "e2b-fav-food", "name": "最喜欢的食物", "unit": "e2b-u2", "definition": "用 My favourite food is… 说出最喜欢的食物。", "example": "My favourite food is noodles.", "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」" },
+    { "id": "e2b-like-animals", "name": "喜欢的动物", "unit": "e2b-u2", "definition": "用 Do you like…? 问别人喜不喜欢，用 Yes, I do. / No, I don't. 回答。", "example": "—Do you like monkeys? —Yes, I do.", "source": "英语课标（2022年版）一级准备内容；通行话题「动物」" },
+    { "id": "e2b-seasons", "name": "四季与活动", "unit": "e2b-u3", "definition": "说四季的天气和在每个季节做的事。", "example": "In spring, it is warm. We fly kites in spring.", "source": "英语课标（2022年版）一级准备内容；通行话题「自然」" },
+    { "id": "e2b-rules", "name": "简单规则", "unit": "e2b-u3", "definition": "听懂并会说 Don't… 和 Keep quiet. 等规则。", "example": "Don't run in the classroom. Wait for the green light.", "source": "英语课标（2022年版）一级准备内容；通行话题「规则」" },
+    { "id": "e2b-clothes", "name": "衣服与穿着", "unit": "e2b-u4", "definition": "用 put on、wear 说穿衣动作，认识更多衣物。", "example": "I put on my coat. She wears a red dress.", "source": "英语课标（2022年版）一级准备内容；通行话题「衣物」" },
+    { "id": "e2b-mothers-day", "name": "母亲节", "unit": "e2b-u4", "definition": "母亲节说 Happy Mother's Day!，会表达感谢。", "example": "—Happy Mother's Day! —Thank you.", "source": "英语课标（2022年版）一级准备内容；通行话题「节日」" },
+    { "id": "e2b-story", "name": "故事阅读", "unit": "e2b-u4", "definition": "读短故事，说出主要人物和发生了什么。", "example": "读小故事后说：The story is about a duck. The duck is happy.", "source": "英语课标（2022年版）一级准备内容；通行话题「故事」" },
+    { "id": "e2b-sounds", "name": "字母的常见读音", "unit": "e2b-u4", "definition": "认识常见辅音字母在单词里的读音，帮助认读新词。", "example": "b—/b/—bag；d—/d/—dog。", "source": "英语课标（2022年版）一级准备内容；自然拼读准备" }
+  ],
+  "objectives": [
+    { "id": "e2b-o-see", "title": "用 What can you see/hear? 问答", "goal": "会问看到、听到什么，并用 I can see/hear… 回答。", "conceptIds": ["e2b-what-see"], "method": "speak" },
+    { "id": "e2b-o-touch", "title": "用 soft/hard 等词说触摸感觉", "goal": "摸到东西能说出 soft、hard、rough、smooth。", "conceptIds": ["e2b-touch"], "method": "speak" },
+    { "id": "e2b-o-likes", "title": "用 I like doing… 和 My favourite… 表达喜好", "goal": "能说出喜欢的活动、最喜欢的食物和动物，会一问一答。", "conceptIds": ["e2b-like-doing", "e2b-fav-food", "e2b-like-animals"], "method": "speak" },
+    { "id": "e2b-o-seasons", "title": "说四季天气和活动", "goal": "能说出四季的天气和每个季节做的事。", "conceptIds": ["e2b-seasons"], "method": "speak" },
+    { "id": "e2b-o-rules", "title": "听懂并说出简单规则", "goal": "听到 Don't… 等规则能做出正确反应。", "conceptIds": ["e2b-rules"], "method": "listen" },
+    { "id": "e2b-o-clothes", "title": "说穿衣动作和衣服", "goal": "会用 put on、wear 说穿衣。", "conceptIds": ["e2b-clothes", "e2b-mothers-day"], "method": "speak" },
+    { "id": "e2b-o-story", "title": "读短故事，说出人物和发生了什么", "goal": "能借助图片读懂短故事，说出主要人物和情节。", "conceptIds": ["e2b-story", "e2b-sounds"], "method": "listen" }
+  ],
+  "relations": [
+    { "id": "e2b-r-see-touch", "fromId": "e2b-what-see", "toId": "e2b-touch", "kind": "contrast", "explanation": "看和听用眼睛耳朵，触摸用手，两组感官表达对照学习。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2b-r-doing-fav", "fromId": "e2b-like-doing", "toId": "e2b-fav-food", "kind": "prerequisite", "explanation": "先会表达喜欢做什么，再表达最喜欢什么。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2b-r-fav-animals", "fromId": "e2b-fav-food", "toId": "e2b-like-animals", "kind": "prerequisite", "explanation": "从说自己的喜好，到问别人的喜好。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2b-r-seasons-clothes", "fromId": "e2b-seasons", "toId": "e2b-clothes", "kind": "prerequisite", "explanation": "知道季节和天气，才知道该穿什么衣服。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2b-r-sounds-story", "fromId": "e2b-sounds", "toId": "e2b-story", "kind": "prerequisite", "explanation": "会字母的常见读音，读新故事时能自己拼出单词。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2b-r-clothes-mothers", "fromId": "e2b-clothes", "toId": "e2b-mothers-day", "kind": "prerequisite", "explanation": "会表达穿着和感谢，母亲节话题里就能用上。", "source": "英语课标（2022年版）一级准备内容顺序" }
+  ]
+}

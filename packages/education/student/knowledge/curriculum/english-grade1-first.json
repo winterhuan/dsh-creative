@@ -1,0 +1,273 @@
+{
+  "id": "english-grade1-first",
+  "subject": "english",
+  "grade": 1,
+  "term": "first",
+  "title": "英语一年级上册知识地图",
+  "basis": "上海市小学英语从一年级起开设，一、二年级以听、说、认读为主，为《义务教育英语课程标准（2022年版）》一级学习做准备。本图按一年级起点的通行话题组织（问候、自己与家人、教室、动物），是学习框架，不代替学校课本和教师进度；单词与句型以学校实际教材为准。",
+  "units": [
+    {
+      "id": "e1a-u1",
+      "name": "字母与问候",
+      "summary": "字母认读、打招呼、介绍自己"
+    },
+    {
+      "id": "e1a-u2",
+      "name": "我和家人朋友",
+      "summary": "五官、家庭成员、能力"
+    },
+    {
+      "id": "e1a-u3",
+      "name": "教室与身边事物",
+      "summary": "课堂指令、文具、数字、水果"
+    },
+    {
+      "id": "e1a-u4",
+      "name": "自然与动物",
+      "summary": "农场动物、动物园、公园"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "e1a-letters",
+      "name": "字母 Aa～Zz",
+      "unit": "e1a-u1",
+      "definition": "认识 26 个字母的大小写，看到能读，听到能指。",
+      "example": "A—apple；B—bag。",
+      "source": "上海市小学英语（一年级起点）通行内容"
+    },
+    {
+      "id": "e1a-greet",
+      "name": "问候与告别",
+      "unit": "e1a-u1",
+      "definition": "见面打招呼、分别说再见，早上用 Good morning。",
+      "example": "—Hello! —Hi! —Goodbye!",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「问候」"
+    },
+    {
+      "id": "e1a-intro",
+      "name": "介绍自己",
+      "unit": "e1a-u1",
+      "definition": "用 I'm… 或 My name is… 说出自己的名字。",
+      "example": "I'm Danny. My name is Alice.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「个人情况」"
+    },
+    {
+      "id": "e1a-askname",
+      "name": "询问名字",
+      "unit": "e1a-u1",
+      "definition": "用 What's your name? 问别人的名字，并回答。",
+      "example": "—What's your name? —I'm Alice.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「个人情况」"
+    },
+    {
+      "id": "e1a-instructions",
+      "name": "课堂指令",
+      "unit": "e1a-u3",
+      "definition": "听懂并做出课堂常用指令的动作。",
+      "example": "Stand up. Sit down. Open your book.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「学校生活」"
+    },
+    {
+      "id": "e1a-face",
+      "name": "五官",
+      "unit": "e1a-u2",
+      "definition": "认识 eye、ear、nose、mouth、face，会说会指。",
+      "example": "Touch your nose. This is my face.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「身体」"
+    },
+    {
+      "id": "e1a-family",
+      "name": "家庭成员",
+      "unit": "e1a-u2",
+      "definition": "认识 father、mother、brother、sister 等称呼。",
+      "example": "This is my father.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「家庭」"
+    },
+    {
+      "id": "e1a-can",
+      "name": "能力：I can…",
+      "unit": "e1a-u2",
+      "definition": "用 I can… 说自己会做什么。",
+      "example": "I can sing. I can dance. I can draw.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「个人能力」"
+    },
+    {
+      "id": "e1a-schoolthings",
+      "name": "文具与教室物品",
+      "unit": "e1a-u3",
+      "definition": "认识 book、pen、pencil、bag、desk、chair，用 It's a… 指认。",
+      "example": "It's a pencil. This is my desk.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「学校生活」"
+    },
+    {
+      "id": "e1a-numbers",
+      "name": "数字 1～10",
+      "unit": "e1a-u3",
+      "definition": "one 到 ten，会数数、会说数量。",
+      "example": "I have three books.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「数字」"
+    },
+    {
+      "id": "e1a-fruits",
+      "name": "水果",
+      "unit": "e1a-u3",
+      "definition": "认识 apple、orange、banana、pear，会用 May I have…? 要东西。",
+      "example": "—May I have an apple? —Here you are.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」"
+    },
+    {
+      "id": "e1a-farmanimals",
+      "name": "农场动物",
+      "unit": "e1a-u4",
+      "definition": "认识 duck、chick、hen、cow、pig、sheep，会问答 What's this?。",
+      "example": "—What's this? —It's a duck.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「动物」"
+    },
+    {
+      "id": "e1a-zooanimals",
+      "name": "动物园动物",
+      "unit": "e1a-u4",
+      "definition": "认识 panda、monkey、tiger、elephant、bear，会说我看到了什么。",
+      "example": "I see a panda. Look at the monkey.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「动物」"
+    },
+    {
+      "id": "e1a-park",
+      "name": "公园与自然",
+      "unit": "e1a-u4",
+      "definition": "认识 tree、flower、kite、boat 等常见事物。",
+      "example": "Look at the kite. It's a red flower.",
+      "source": "英语课标（2022年版）一级准备内容；通行话题「自然」"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "e1a-o-letters",
+      "title": "认读字母大小写 Aa～Zz",
+      "goal": "看到字母能读出来，听到字母能指出大小写。",
+      "conceptIds": [
+        "e1a-letters"
+      ],
+      "method": "listen"
+    },
+    {
+      "id": "e1a-o-greet",
+      "title": "用问候语和告别语打招呼",
+      "goal": "见面、分别、早上都能用合适的问候语。",
+      "conceptIds": [
+        "e1a-greet"
+      ],
+      "method": "speak"
+    },
+    {
+      "id": "e1a-o-intro",
+      "title": "介绍自己并询问名字",
+      "goal": "会用 I'm… 介绍自己，会问 What's your name? 并回答。",
+      "conceptIds": [
+        "e1a-intro",
+        "e1a-askname"
+      ],
+      "method": "speak"
+    },
+    {
+      "id": "e1a-o-instructions",
+      "title": "听懂课堂指令并做动作",
+      "goal": "听到 Stand up、Sit down 等指令能马上做对。",
+      "conceptIds": [
+        "e1a-instructions"
+      ],
+      "method": "listen"
+    },
+    {
+      "id": "e1a-o-name",
+      "title": "指认五官、家人、文具和水果",
+      "goal": "看到实物或图片能说出单词，会 It's a… / This is my…",
+      "conceptIds": [
+        "e1a-face",
+        "e1a-family",
+        "e1a-schoolthings",
+        "e1a-fruits"
+      ],
+      "method": "speak"
+    },
+    {
+      "id": "e1a-o-numbers",
+      "title": "用数字 1～10 说数量",
+      "goal": "能数出物品个数并说出来。",
+      "conceptIds": [
+        "e1a-numbers"
+      ],
+      "method": "speak"
+    },
+    {
+      "id": "e1a-o-animals",
+      "title": "说出常见动物并问答 What's this?",
+      "goal": "认识农场和动物园的常见动物，会一问一答。",
+      "conceptIds": [
+        "e1a-farmanimals",
+        "e1a-zooanimals",
+        "e1a-park"
+      ],
+      "method": "speak"
+    }
+  ],
+  "relations": [
+    {
+      "id": "e1a-r-letters-schoolthings",
+      "fromId": "e1a-letters",
+      "toId": "e1a-schoolthings",
+      "kind": "prerequisite",
+      "explanation": "认识字母，才能认读单词。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    },
+    {
+      "id": "e1a-r-greet-intro",
+      "fromId": "e1a-greet",
+      "toId": "e1a-intro",
+      "kind": "prerequisite",
+      "explanation": "先会打招呼，再学着介绍自己。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    },
+    {
+      "id": "e1a-r-intro-askname",
+      "fromId": "e1a-intro",
+      "toId": "e1a-askname",
+      "kind": "contrast",
+      "explanation": "“介绍自己”和“询问别人”是一组对照的问答表达。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    },
+    {
+      "id": "e1a-r-instructions-schoolthings",
+      "fromId": "e1a-instructions",
+      "toId": "e1a-schoolthings",
+      "kind": "prerequisite",
+      "explanation": "课堂指令里常出现文具名称，先听懂指令再指认文具。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    },
+    {
+      "id": "e1a-r-intro-family",
+      "fromId": "e1a-intro",
+      "toId": "e1a-family",
+      "kind": "prerequisite",
+      "explanation": "会介绍自己，再学着介绍家人。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    },
+    {
+      "id": "e1a-r-numbers-fruits",
+      "fromId": "e1a-numbers",
+      "toId": "e1a-fruits",
+      "kind": "prerequisite",
+      "explanation": "会数数，才能说要几个水果。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    },
+    {
+      "id": "e1a-r-farm-zoo",
+      "fromId": "e1a-farmanimals",
+      "toId": "e1a-zooanimals",
+      "kind": "contrast",
+      "explanation": "农场动物和动物园动物对照认读，扩大词汇。",
+      "source": "英语课标（2022年版）一级准备内容顺序"
+    }
+  ]
+}

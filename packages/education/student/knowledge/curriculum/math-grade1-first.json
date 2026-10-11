@@ -1,0 +1,51 @@
+{
+  "id": "math-grade1-first",
+  "subject": "math",
+  "grade": 1,
+  "term": "first",
+  "title": "数学一年级上册知识地图",
+  "basis": "依据《义务教育数学课程标准（2022年版）》第一学段内容要求整理，学习顺序参考上海市小学数学通行教学安排；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "m1a-u1", "name": "10以内数的认识", "summary": "数数、比多少、序数、0" },
+    { "id": "m1a-u2", "name": "10以内数的加减法", "summary": "分与合、加减含义、口算、连加连减" },
+    { "id": "m1a-u3", "name": "20以内数的认识", "summary": "11～20各数与数位" },
+    { "id": "m1a-u4", "name": "图形与位置", "summary": "立体图形的辨认" },
+    { "id": "m1a-u5", "name": "用数学", "summary": "看图列式，用加减解决简单问题" }
+  ],
+  "concepts": [
+    { "id": "m1a-count", "name": "数数与基数", "unit": "m1a-u1", "definition": "手口一致地一个一个点数，数到最后一个数，就表示这一堆物体的总数。", "example": "数出 5 个圆片，就用 5 表示。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-compare", "name": "比多少与比大小", "unit": "m1a-u1", "definition": "用一一对应的方法比较两组物体，谁多谁少；数也可以比大小，用 >、<、= 表示。", "example": "4 比 3 多，写成 4 > 3。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-ordinal", "name": "几个与第几个", "unit": "m1a-u1", "definition": "“几个”表示总数，“第几个”表示按顺序数的位置，从不同的方向数，第几个可能不同。", "example": "一排 5 人，从前数小明是第 3 个。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-zero", "name": "0的认识", "unit": "m1a-u1", "definition": "0 表示一个物体也没有，也可以表示起点或分界。", "example": "盘子里没有苹果，用 0 表示；直尺上的刻度从 0 开始。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-compose", "name": "分与合", "unit": "m1a-u2", "definition": "一个数可以分成两部分，两部分合起来又是这个数。", "example": "5 可以分成 2 和 3；2 和 3 合成 5。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-add-meaning", "name": "加法的含义", "unit": "m1a-u2", "definition": "把两部分合起来或者添上一些，用加法计算，用 + 表示。", "example": "3 个红球和 2 个黄球合起来是 5 个，3 + 2 = 5。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-sub-meaning", "name": "减法的含义", "unit": "m1a-u2", "definition": "从总数里去掉一部分求剩下多少，用减法计算，用 − 表示。", "example": "5 个气球飞走 2 个，还剩 3 个，5 − 2 = 3。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-addsub10", "name": "10以内加减法口算", "unit": "m1a-u2", "definition": "用数的分与合直接算出 10 以内的加减法结果。", "example": "8 − 5：想 5 和 3 合成 8，所以 8 − 5 = 3。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-continuous", "name": "连加连减", "unit": "m1a-u2", "definition": "三个数连续相加或相减，按从左到右的顺序一步一步算。", "example": "2 + 3 + 4：先算 2 + 3 = 5，再算 5 + 4 = 9。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-teen", "name": "11～20各数", "unit": "m1a-u3", "definition": "十几由 1 个十和几个一组成，读作“十几”。", "example": "15 是 1 个十和 5 个一，15 = 10 + 5。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-place", "name": "个位与十位", "unit": "m1a-u3", "definition": "从右边起，第一位是个位，第二位是十位；同一个数字在不同数位上表示的意思不同。", "example": "12 里的 1 在十位上，表示 1 个十。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1a-solids", "name": "立体图形的辨认", "unit": "m1a-u4", "definition": "正方体、长方体、圆柱和球各有特点：球能向各个方向滚动，圆柱放倒能滚动，正方体和长方体不易滚动。", "example": "皮球是球，魔方是正方体。", "source": "数学课标（2022年版）第一学段「图形的认识与测量」" },
+    { "id": "m1a-picture", "name": "看图列式", "unit": "m1a-u5", "definition": "从图中找到数量和变化，想清楚是合起来还是去掉，再列式计算。", "example": "图上 6 只鸟飞走 2 只，列式 6 − 2 = 4。", "source": "数学课标（2022年版）第一学段「数量关系」" }
+  ],
+  "objectives": [
+    { "id": "m1a-o-count", "title": "数出10以内物体个数并比较大小", "goal": "能手口一致点数，说出总数，并用 >、<、= 比较两组数量。", "conceptIds": ["m1a-count", "m1a-compare", "m1a-ordinal", "m1a-zero"], "method": "represent" },
+    { "id": "m1a-o-compose", "title": "说出10以内数的分与合", "goal": "能说出一个数可以分成哪两部分，并反过来合成这个数。", "conceptIds": ["m1a-compose"], "method": "reason" },
+    { "id": "m1a-o-meaning", "title": "看图说出加减法的含义并列式", "goal": "能判断图中是合起来还是去掉，说出理由并列式计算。", "conceptIds": ["m1a-add-meaning", "m1a-sub-meaning", "m1a-picture"], "method": "represent" },
+    { "id": "m1a-o-fluency", "title": "口算10以内加减法并用分与合复核", "goal": "能又快又对地口算，并用数的分与合说明自己是怎么算的。", "conceptIds": ["m1a-addsub10", "m1a-continuous"], "method": "verify" },
+    { "id": "m1a-o-teen", "title": "用十和几说出11～20各数", "goal": "能说出一个数是 1 个十和几个一，并认识个位、十位。", "conceptIds": ["m1a-teen", "m1a-place"], "method": "represent" },
+    { "id": "m1a-o-solids", "title": "辨认并描述四种立体图形", "goal": "能叫出正方体、长方体、圆柱和球的名称，并说出它们能不能滚动。", "conceptIds": ["m1a-solids"], "method": "represent" }
+  ],
+  "relations": [
+    { "id": "m1a-r-count-compare", "fromId": "m1a-count", "toId": "m1a-compare", "kind": "prerequisite", "explanation": "先会正确地数出数量，才能比较两组物体的多少。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-count-ordinal", "fromId": "m1a-count", "toId": "m1a-ordinal", "kind": "contrast", "explanation": "“几个”数的是总数，“第几个”数的是位置，两者对照理解。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-zero-count", "fromId": "m1a-zero", "toId": "m1a-count", "kind": "part-of", "explanation": "0 的认识属于 10 以内数的认识。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-count-compose", "fromId": "m1a-count", "toId": "m1a-compose", "kind": "prerequisite", "explanation": "先认识数，再研究一个数可以分成哪两部分。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-compose-add", "fromId": "m1a-compose", "toId": "m1a-add-meaning", "kind": "prerequisite", "explanation": "分与合是理解加减法含义和口算的基础。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-addsub-contrast", "fromId": "m1a-add-meaning", "toId": "m1a-sub-meaning", "kind": "contrast", "explanation": "加法是把两部分合起来，减法是从总数里去掉，对照理解两种运算。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-compose-fluency", "fromId": "m1a-compose", "toId": "m1a-addsub10", "kind": "explains", "explanation": "数的分与合解释了 10 以内加减法为什么可以这样口算。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-add-fluency", "fromId": "m1a-add-meaning", "toId": "m1a-addsub10", "kind": "prerequisite", "explanation": "理解加法的含义之后，再练口算。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-fluency-continuous", "fromId": "m1a-addsub10", "toId": "m1a-continuous", "kind": "prerequisite", "explanation": "会算两个数的加减，再学三个数连续加减。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-picture-meaning", "fromId": "m1a-add-meaning", "toId": "m1a-picture", "kind": "prerequisite", "explanation": "先理解加减法的含义，才能看图说清数量关系并列式。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1a-r-place-teen", "fromId": "m1a-place", "toId": "m1a-teen", "kind": "explains", "explanation": "数位解释了十几为什么是 1 个十和几个一。", "source": "数学课标（2022年版）第一学段内容顺序" }
+  ]
+}

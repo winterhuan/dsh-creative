@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Dashboard } from '../dashboard.ts'
+import type { Dashboard, MistakeStatus } from '../dashboard.ts'
 import type { Command } from '../schema.ts'
 
+/** Query identity for one visible workbench: notebook page, subject, notebook filter and an optional knowledge-map scope. */
+export interface StudyQuery { offset: number; subject: 'chinese' | 'math' | 'english'; status: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second' }
+
 /** Poll visible workbenches; preserve data on failure and discard obsolete responses. */
-export function useStudy(sessionId: string, visible: boolean, networkError: string, mistakeOffset: number, mistakeSubject: 'chinese' | 'math' | 'english') {
+export function useStudy(sessionId: string, visible: boolean, networkError: string, query: StudyQuery) {
   const [data, setData] = useState<Dashboard>()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -17,7 +20,8 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
     const controller = new AbortController()
     controllers.current.add(controller)
     try {
-      const response = await fetch(`/student/workspace?sessionId=${encodeURIComponent(sessionId)}&mistakeOffset=${mistakeOffset}&mistakeSubject=${mistakeSubject}`, {
+      const scope = `${query.mapGrade !== undefined ? `&mapGrade=${query.mapGrade}` : ''}${query.mapTerm !== undefined ? `&mapTerm=${query.mapTerm}` : ''}`
+      const response = await fetch(`/student/workspace?sessionId=${encodeURIComponent(sessionId)}&mistakeOffset=${query.offset}&subject=${query.subject}&mistakeStatus=${query.status}${scope}`, {
         signal: controller.signal, ...(change ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ revision, change }) } : {}),
       })
       const value = await response.json() as Dashboard & { error?: string }
@@ -32,7 +36,7 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
       if (alive.current && !controller.signal.aborted && sequence === latest.current) setError(reason instanceof Error ? reason.message : networkError)
       throw reason
     } finally { controllers.current.delete(controller) }
-  }, [sessionId, networkError, mistakeOffset, mistakeSubject])
+  }, [sessionId, networkError, query.offset, query.subject, query.status, query.mapGrade, query.mapTerm])
   const reload = useCallback(async () => { if (!writing.current) await request().catch(() => {}) }, [request])
   useEffect(() => {
     alive.current = true

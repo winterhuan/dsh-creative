@@ -1,0 +1,53 @@
+{
+  "id": "chinese-grade1-first",
+  "subject": "chinese",
+  "grade": 1,
+  "term": "first",
+  "title": "语文一年级上册知识地图",
+  "basis": "依据《义务教育语文课程标准（2022年版）》第一学段要求整理，按统编版语文一年级上册的通行编排组织（识字、汉语拼音、课文、语文园地）；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "c1a-u1", "name": "汉语拼音", "summary": "声母、韵母、声调与拼读" },
+    { "id": "c1a-u2", "name": "识字与写字", "summary": "笔画、笔顺、偏旁与象形识字" },
+    { "id": "c1a-u3", "name": "阅读", "summary": "朗读、背诵、标点与找信息" },
+    { "id": "c1a-u4", "name": "口语与写话", "summary": "看图说话与口语交际" }
+  ],
+  "concepts": [
+    { "id": "c1a-shengmu", "name": "声母", "unit": "c1a-u1", "definition": "音节开头的辅音，一共 23 个：b p m f d t n l g k h j q x zh ch sh r z c s y w。", "example": "b—à→bà（爸）。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
+    { "id": "c1a-yunmu", "name": "韵母", "unit": "c1a-u1", "definition": "音节里声母后面的部分，包括单韵母 a o e i u ü、复韵母和鼻韵母。", "example": "m—ā→mā（妈）；ang 是鼻韵母。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
+    { "id": "c1a-shengdiao", "name": "声调", "unit": "c1a-u1", "definition": "普通话有四个声调，还有轻声；一声平、二声扬、三声拐弯、四声降。", "example": "mā（妈）má（麻）mǎ（马）mà（骂）。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
+    { "id": "c1a-pinyin", "name": "拼读音节", "unit": "c1a-u1", "definition": "声母和韵母拼成音节；两拼音节、三拼音节直接拼读，整体认读音节（如 zhi、chi、shi、yi、wu、yu）不用拼，直接读出来。", "example": "j—i—ā→jiā（家）；zhī 是整体认读音节。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
+    { "id": "c1a-bihua", "name": "基本笔画", "unit": "c1a-u2", "definition": "汉字由横、竖、撇、捺、点、提等基本笔画组成，写在田字格里。", "example": "“十”由横和竖组成。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c1a-bishun", "name": "笔顺规则", "unit": "c1a-u2", "definition": "写字有先后顺序：从上到下、先横后竖、先撇后捺、从外到内。", "example": "“木”的笔顺：横、竖、撇、捺。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c1a-pianpang", "name": "偏旁部首", "unit": "c1a-u2", "definition": "合体字里常见的组成部分叫偏旁，很多偏旁提示字的意思。", "example": "三点水（氵）的字多与水有关：江、河、海。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c1a-xiangxing", "name": "象形识字", "unit": "c1a-u2", "definition": "有些字的样子像它表示的东西，看图想物可以帮助识字。", "example": "“日”像太阳，“月”像月牙，“山”像山峰。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c1a-liangci", "name": "量词与词语搭配", "unit": "c1a-u2", "definition": "数东西时要用合适的量词，词语搭配要符合习惯。", "example": "一（片）叶子、一（只）小鸟、一（把）伞。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c1a-langdu", "name": "朗读", "unit": "c1a-u3", "definition": "朗读时读准字音、不加字、不漏字，按标点停顿。", "example": "朗读《小小的船》，读好“弯弯的月儿小小的船”。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1a-beisong", "name": "背诵积累", "unit": "c1a-u3", "definition": "把儿歌、古诗读熟背下来，积累语言。", "example": "背诵《咏鹅》《江南》《画》。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1a-biaodian", "name": "句子与标点", "unit": "c1a-u3", "definition": "一句话说完整；句号表示陈述，问号表示疑问，感叹号表示感叹或强烈语气。", "example": "你去哪里？这里的风景真美！", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1a-zhaoxinxi", "name": "阅读找信息", "unit": "c1a-u3", "definition": "读短文时找出“谁、在哪里、做什么”这些基本信息。", "example": "读《小蜗牛》，找一找小蜗牛什么时候去树林里。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1a-kantu", "name": "看图说话", "unit": "c1a-u4", "definition": "看图时按顺序观察，说清“谁在什么地方做什么”。", "example": "看图说：小朋友在公园里放风筝。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c1a-kouyu", "name": "口语交际：大声说、认真听", "unit": "c1a-u4", "definition": "说话时声音响亮、态度大方；听别人说话要认真，听清再回应。", "example": "玩“我说你做”，听清指令再做动作。", "source": "语文课标（2022年版）第一学段「表达与交流」" }
+  ],
+  "objectives": [
+    { "id": "c1a-o-pinyin", "title": "认读声母、韵母和四声", "goal": "能看着字母读出声母和韵母，读准四个声调。", "conceptIds": ["c1a-shengmu", "c1a-yunmu", "c1a-shengdiao"], "method": "recognize" },
+    { "id": "c1a-o-pindu", "title": "拼读两拼、三拼和整体认读音节", "goal": "能把声母和韵母拼成音节，整体认读音节直接读出来。", "conceptIds": ["c1a-pinyin"], "method": "recognize" },
+    { "id": "c1a-o-bishun", "title": "按笔顺书写基本笔画和独体字", "goal": "能说出一个字的笔顺，在田字格里写端正。", "conceptIds": ["c1a-bihua", "c1a-bishun"], "method": "recognize" },
+    { "id": "c1a-o-zici", "title": "借助象形、偏旁和量词认识常用字词", "goal": "能用字形联想和偏旁提示记字，用对常见量词。", "conceptIds": ["c1a-xiangxing", "c1a-pianpang", "c1a-liangci"], "method": "recognize" },
+    { "id": "c1a-o-langdu", "title": "朗读儿歌短文，不加字不漏字", "goal": "能读准字音，按标点停顿，背下要求背诵的儿歌古诗。", "conceptIds": ["c1a-langdu", "c1a-beisong"], "method": "read-evidence" },
+    { "id": "c1a-o-biaodian", "title": "认识句号、问号、感叹号并读出语气", "goal": "能说出句子用什么标点，并读出相应的语气。", "conceptIds": ["c1a-biaodian"], "method": "read-evidence" },
+    { "id": "c1a-o-zhaoxinxi", "title": "从短文里找出人物、地点和事情", "goal": "能指着文中的句子说出谁在哪里做什么。", "conceptIds": ["c1a-zhaoxinxi"], "method": "read-evidence" },
+    { "id": "c1a-o-kantu", "title": "看图按顺序说两三句话", "goal": "能按顺序观察图片，说清谁在哪里做什么，声音响亮。", "conceptIds": ["c1a-kantu", "c1a-kouyu"], "method": "express" }
+  ],
+  "relations": [
+    { "id": "c1a-r-shengmu-pinyin", "fromId": "c1a-shengmu", "toId": "c1a-pinyin", "kind": "prerequisite", "explanation": "先认声母，才能和韵母拼成音节。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-yunmu-pinyin", "fromId": "c1a-yunmu", "toId": "c1a-pinyin", "kind": "prerequisite", "explanation": "先认韵母，才能拼读带声调的音节。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-shengdiao-pinyin", "fromId": "c1a-shengdiao", "toId": "c1a-pinyin", "kind": "prerequisite", "explanation": "拼读时要带上声调，读准声调才算读对音节。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-bihua-bishun", "fromId": "c1a-bihua", "toId": "c1a-bishun", "kind": "prerequisite", "explanation": "先认识基本笔画，再按笔顺规则写字。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-pinyin-langdu", "fromId": "c1a-pinyin", "toId": "c1a-langdu", "kind": "prerequisite", "explanation": "借助拼音读准字音，才能正确地朗读。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-biaodian-langdu", "fromId": "c1a-biaodian", "toId": "c1a-langdu", "kind": "explains", "explanation": "标点解释了朗读时在哪里停顿、用什么语气。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-langdu-beisong", "fromId": "c1a-langdu", "toId": "c1a-beisong", "kind": "prerequisite", "explanation": "读熟了才能背下来。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-xiangxing-pianpang", "fromId": "c1a-xiangxing", "toId": "c1a-pianpang", "kind": "contrast", "explanation": "象形字看字形想实物，偏旁提示字义，两种识字方法对照使用。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-kouyu-kantu", "fromId": "c1a-kouyu", "toId": "c1a-kantu", "kind": "prerequisite", "explanation": "先做到大声说、认真听，再看图有条理地说话。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1a-r-zhaoxinxi-kantu", "fromId": "c1a-zhaoxinxi", "toId": "c1a-kantu", "kind": "prerequisite", "explanation": "会从文字里找“谁在哪里做什么”，看图说话也有同样的条理。", "source": "语文课标（2022年版）第一学段内容顺序" }
+  ]
+}

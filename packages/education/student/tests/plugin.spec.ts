@@ -86,6 +86,18 @@ describe('independently loaded student plugin', () => {
     expect(await readFile(join(cwd, '.study/state.json'), 'utf8')).toBe(bytes)
   })
 
+  it('reads the shipped knowledge map and weak points through the status tool', async () => {
+    const { ctx, execution, call } = await fixture()
+    await call(setup)
+    const status = ctx.tools.get('study_status')!
+    expect(await status.execute({ kind: 'curriculum', subject: 'math' }, execution('study_status'))).toMatchObject({ curriculum: { id: 'math-grade2-first', units: expect.any(Array) } })
+    await expect(status.execute({ kind: 'curriculum' }, execution('study_status'))).rejects.toThrow('科目')
+    expect(await status.execute({ kind: 'weak' }, execution('study_status'))).toMatchObject({ recommendation: { kind: 'diagnose' }, weakPoints: [], practised: [] })
+    expect(await status.execute({}, execution('study_status'))).toMatchObject({ phase: 'ready', recommendation: { kind: 'diagnose', subject: 'chinese' }, diagnostics: [{ subject: 'chinese', due: true }, { subject: 'math', due: true }, { subject: 'english', due: true }] })
+    expect(await status.execute({ kind: 'diagnose', subject: 'math' }, execution('study_status'))).toMatchObject({ diagnostics: [{ subject: 'math', due: true }] })
+    expect(await status.execute({ kind: 'curriculum', subject: 'math', grade: 1, term: 'first' }, execution('study_status'))).toMatchObject({ curriculum: { id: 'math-grade1-first', scope: { current: false } } })
+  })
+
   it('rejects unsupported fields and invalid numeric bounds without writing', async () => {
     const { cwd, call } = await fixture()
     await expect(call({ ...setup, profile: { ...setup.profile, schoolYear: '' } })).rejects.toThrow()

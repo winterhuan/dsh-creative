@@ -1,0 +1,48 @@
+{
+  "id": "math-grade2-second",
+  "subject": "math",
+  "grade": 2,
+  "term": "second",
+  "title": "数学二年级下册知识地图",
+  "basis": "依据《义务教育数学课程标准（2022年版）》第一学段内容要求整理，学习顺序参考上海市小学数学通行教学安排；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "m2b-u1", "name": "千以内数的认识", "summary": "数到一千、数的组成与比较" },
+    { "id": "m2b-u2", "name": "三位数的加减法", "summary": "竖式计算与估算" },
+    { "id": "m2b-u3", "name": "时间的初步认识（二）", "summary": "几时几分与经过时间" },
+    { "id": "m2b-u4", "name": "质量：克与千克", "summary": "克、千克与单位选择" },
+    { "id": "m2b-u5", "name": "三角形与四边形", "summary": "图形特征与辨认" }
+  ],
+  "concepts": [
+    { "id": "m2b-count1000", "name": "千以内数的认识与表达", "unit": "m2b-u1", "definition": "10 个一百是一千；千以内的数可以一个一个数、十个十个数、一百一百地数。", "example": "10 个一百是 1000；999 再添 1 是 1000。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2b-place1000", "name": "百位与数的组成", "unit": "m2b-u1", "definition": "三位数由几个百、几个十和几个一组成；从右边起第三位是百位。", "example": "345 是 3 个百、4 个十和 5 个一。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2b-compare1000", "name": "千以内数的大小比较", "unit": "m2b-u1", "definition": "先比百位，百位相同比十位，十位相同再比个位。", "example": "356 > 298，因为 3 个百比 2 个百多。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2b-add3d", "name": "三位数加法（竖式）", "unit": "m2b-u2", "definition": "竖式计算时相同数位对齐，从个位加起，哪一位满十向前一位进一。", "example": "356 + 278 = 634：个位 6 + 8 = 14，写 4 进 1。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2b-sub3d", "name": "三位数减法（竖式）", "unit": "m2b-u2", "definition": "相同数位对齐，从个位减起，哪一位不够减就从前一位退一当十。", "example": "502 − 178 = 324：个位 2 不够减 8，从十位退一。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2b-estimate", "name": "估算", "unit": "m2b-u2", "definition": "把数看成接近的整十、整百数再算，估计结果大约是多少。", "example": "198 + 304 约等于 200 + 300 = 500。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2b-time2", "name": "认识几时几分", "unit": "m2b-u3", "definition": "分针走一小格是 1 分，走一大格是 5 分；时针走过几就是几时多。", "example": "时针在 8 和 9 之间、分针指 5，是 8 时 25 分。", "source": "数学课标（2022年版）第一学段「常见的量」" },
+    { "id": "m2b-duration", "name": "经过时间", "unit": "m2b-u3", "definition": "从开始时刻到结束时刻经过了多久，可以数一数或算一算。", "example": "9 时 10 分到 9 时 40 分，经过 30 分。", "source": "数学课标（2022年版）第一学段「常见的量」" },
+    { "id": "m2b-gram", "name": "克的认识", "unit": "m2b-u4", "definition": "计量比较轻的物品用克作单位，用天平或秤称一称。", "example": "一粒花生米大约重 1 克。", "source": "数学课标（2022年版）第一学段「常见的量」" },
+    { "id": "m2b-kilogram", "name": "千克的认识", "unit": "m2b-u4", "definition": "计量比较重的物品用千克作单位；1 千克 = 1000 克。", "example": "两袋食盐大约重 1 千克。", "source": "数学课标（2022年版）第一学段「常见的量」" },
+    { "id": "m2b-triangle", "name": "三角形", "unit": "m2b-u5", "definition": "三角形有三条边、三个角。", "example": "红领巾是三角形。", "source": "数学课标（2022年版）第一学段「图形的认识与测量」" },
+    { "id": "m2b-quad", "name": "四边形、长方形与正方形", "unit": "m2b-u5", "definition": "四边形有四条边、四个角；长方形对边相等，正方形四条边都相等、四个角都是直角。", "example": "数学书封面是长方形，魔方的一个面是正方形。", "source": "数学课标（2022年版）第一学段「图形的认识与测量」" }
+  ],
+  "objectives": [
+    { "id": "m2b-o-read1000", "title": "读写千以内的数并说出组成", "goal": "能说出一个数是几个百、几个十和几个一，会读写。", "conceptIds": ["m2b-count1000", "m2b-place1000"], "method": "represent" },
+    { "id": "m2b-o-compare1000", "title": "比较千以内数的大小并说明理由", "goal": "能按百位、十位、个位的顺序比较，并说出为什么。", "conceptIds": ["m2b-compare1000"], "method": "reason" },
+    { "id": "m2b-o-vertical", "title": "用竖式计算三位数加减并验算", "goal": "能对齐数位、正确处理进位和退位，并用估算或逆运算检查。", "conceptIds": ["m2b-add3d", "m2b-sub3d"], "method": "verify" },
+    { "id": "m2b-o-estimate", "title": "先估算再计算，判断结果是否合理", "goal": "能说出把数看成多少来估，并判断精确结果是否合理。", "conceptIds": ["m2b-estimate"], "method": "verify" },
+    { "id": "m2b-o-time2", "title": "认读几时几分并计算经过时间", "goal": "能读出钟面上的几时几分，说出两时刻之间经过多久。", "conceptIds": ["m2b-time2", "m2b-duration"], "method": "represent" },
+    { "id": "m2b-o-mass", "title": "选择合适的质量单位并说明理由", "goal": "能判断用克还是千克，并说出理由。", "conceptIds": ["m2b-gram", "m2b-kilogram"], "method": "reason" },
+    { "id": "m2b-o-shapes2", "title": "辨认三角形和四边形并描述特征", "goal": "能说出三角形和四边形各有几条边、几个角，说出长方形和正方形的特点。", "conceptIds": ["m2b-triangle", "m2b-quad"], "method": "represent" }
+  ],
+  "relations": [
+    { "id": "m2b-r-count-place", "fromId": "m2b-count1000", "toId": "m2b-place1000", "kind": "prerequisite", "explanation": "先会一百一百地数到一千，再说出三位数的组成。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-place-compare", "fromId": "m2b-place1000", "toId": "m2b-compare1000", "kind": "prerequisite", "explanation": "知道几个百、几个十，才能说清比较大小的顺序。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-place-add", "fromId": "m2b-place1000", "toId": "m2b-add3d", "kind": "prerequisite", "explanation": "理解数位才能理解竖式为什么要相同数位对齐。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-add-sub", "fromId": "m2b-add3d", "toId": "m2b-sub3d", "kind": "contrast", "explanation": "加法满十进一，减法不够减退一当十，互为逆运算，对照学习。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-add-estimate", "fromId": "m2b-add3d", "toId": "m2b-estimate", "kind": "prerequisite", "explanation": "会精确计算之后，再学习先估一估、检查结果是否合理。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-time-duration", "fromId": "m2b-time2", "toId": "m2b-duration", "kind": "prerequisite", "explanation": "先会认读几时几分，再算经过时间。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-gram-kilo", "fromId": "m2b-gram", "toId": "m2b-kilogram", "kind": "prerequisite", "explanation": "先认识克，再认识千克和 1 千克 = 1000 克。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2b-r-tri-quad", "fromId": "m2b-triangle", "toId": "m2b-quad", "kind": "contrast", "explanation": "三角形三条边三个角，四边形四条边四个角，对照辨认。", "source": "数学课标（2022年版）第一学段内容顺序" }
+  ]
+}

@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-10。
+最后更新：2026-10-12。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -29,6 +29,8 @@
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
 - 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
+
+2026-10-12 学生知识地图与薄弱点：`packages/education/student` 内置一、二年级上下册语文、数学、英语十二份知识地图（`knowledge/curriculum/*.json`，154 个知识点、87 个学习目标、96 条关系），`src/curriculum.ts` 按需加载并用 schema 校验 ID 唯一、单元归属、目标引用和科目方法；内置目标 ID 可直接用于 `task`、`record`、`mistake`、`link-mistake`、`worksheet`，不经家长确认，状态文件只存引用。`learning.ts` 新增 `studyInsight` 与 `curriculumView`：按目标汇总作答、纸上结果与错题阶段，推导到期、需要加强、久未练习、已掌握、练习中、待学习六种状态，排序薄弱点并给出每日建议（先复习到期错题，再补薄弱点，再学新目标）；`study_status` 默认附带前三个薄弱点与建议，新增 `kind=curriculum`、`kind=weak`。工作区接口参数 `mistakeSubject` 改名 `subject`，新增 `mistakeStatus`（all、due、reviewing、mastered），`dashboard` 改为 options 对象并返回 `curriculum`、`weakPoints`、`recommendation`、`mistakeBook`。工作台标签改为今日学习、知识地图、错题本、成长记录、家长设置：主标签含今日建议（可直接开始复习或目标练习）、薄弱点、当前科目知识地图摘要与错题本摘要；知识地图标签展示单元、知识点、关系与掌握状态并可选目标；错题本按状态筛选，30 天间隔的错题显示已巩固；学科方法提示保留在开始表单下。知识地图内容依据 2022 年版课程标准与上海通行教学顺序编写，本机 Web 检索不可用，未逐页核对沪教版教材，`basis` 字段写明限制。加载器通过变量读取 `import.meta.url`，避免 jsdom 测试里 Vite 对 `new URL(…, import.meta.url)` 的资源路径改写（问题见[排障速查](#11-排障速查)）。同日第二轮：`task` 增加 `choices`（2 到 4 个选项，答案必须是选项之一，面板点选作答，评估仍走 `record`）；知识地图可按年级学期浏览（接口 `mapGrade`、`mapTerm`，`study_status kind=curriculum` 带 grade、term；非当前学期无掌握状态且目标不能用于 task）；练习单投影带学习目标标题、来源错题与纸上批改结果，错题详情显示复习阶段与相关练习单，错题本标签显示到期角标；新增 `diagnose` 学习方式作为重复摸底：每科未探查目标按单元轮流取样，再补久未练习和已掌握超 30 天的抽查，每次最多六个，14 天到期，摸底作答必须带 objectiveId，从未独立答对的目标答错一次即标需要加强，建议顺序改为到期错题、薄弱点、到期摸底、新目标，`study_status kind=diagnose` 与工作台「学习摸底」卡片随之提供；今日页在学习段进行中只显示题目与结束表单，科目选择记在 localStorage。清理后 `typecheck`、`build`、全量 99 个文件 882 项测试（含学生包 7 个文件 77 项）、文档 16 项与 hygiene 3 项检查通过；未在真实 DSH 浏览器验证本次界面，未调用真实模型。决策见[知识地图决策](.agents/notes/implemented/feature/2026-10-12-student-knowledge-map.zh.md)。
 
 2026-10-11 DSH 升级到 `0.2.1-alpha.2`：12 个包的 375 处 DSH 依赖声明统一改为 `0.2.1-alpha.2`，插件自身版本不变；配套 Cordis 范围仍为 `~4.0.5-alpha.1`、schemastery 仍为 `~3.18.5-alpha.1`（按发布包的 peer 声明核对）。子模块移到 `dsh-v0.2.1-alpha.2`。删除对上游已移除的 `dsh-subagent-in-process-driver` 的依赖，`STRUCTURED_OUTPUT_TOOL` 改从 `dsh-subagent` 导入；story 新增 `dsh-working-directory` 测试依赖——alpha.2 的 `dsh-subagent` 服务注入 `workingDirectory`，手工组合子代理的两个测试必须提供它，宿主侧由上游 `bundle/base` 提供，bundle 补丁不用加行。按工作目录与子代理 activation 升级指南：五个 preset 删掉 persona `suffix` 里的 `{{cwd}}` 语句，八行 `tool-subagent` 删掉 `backgroundMode`，测试夹具删掉 `enableRunInBackground`，三个领域包的 skill-provider 改为按 activation 与结算通知描述委派，角色委派测试改为等子级 activation 完成后在父级请求中核对结算通知。[第 8 节](#8-从上游复制的文件及本地改动)重新同步 `tsdown.client.ts`、`bundle-input-isolation.ts` 并新增 `experimental-package-policy.ts`。typert 生成器的 `isTypeMetaSymbol()` 未变，补丁按 alpha.2 重做（问题 5）；`api-remotes` 仍只把 Remote 包列为 devDependencies（问题 6）；`dsh-client-test-runtime` 仍导入 3 个未发布的 `src` 文件（问题 10）。清理构建后 `pnpm install`、`typecheck`（零错误）、`build`、全量 97 文件 862 项测试、文档 16 项与规范 3 项检查通过。未在真实 DSH 中安装验证；上游同期的 Web 插件设置页重组与实验目录页、新会话总是新建 Agent、`dsh plugin` 要求 `--profile` 位于 pnpm 参数之前，需在下次真实验证时核对。
 
@@ -556,6 +558,7 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 | 类型检查报找不到 `@winterhuan/dsh-skill-viewer/remote` | 先跑 `pnpm run build:host`；`typecheck` 已经包含这一步 |
 | typert 报 `has no Remote methods` | 确认补丁已应用（`pnpm install` 会重新打补丁），以及补丁版本与安装的生成器版本一致（[问题 5](#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)） |
 | 改了依赖或 tsconfig 后 tsc 行为异常 | `pnpm run clean`，清掉 `lib/` 里的 `*.tsbuildinfo` |
+| 客户端（jsdom）测试里 Host 模块读取包内数据文件报 ENOENT，路径缺少仓库前缀 | Vite 的 web 转换会把 `new URL('…', import.meta.url)` 改写成站点相对资源路径；先把 `import.meta.url` 读进变量再拼 URL（见 `packages/education/student/src/curriculum.ts`） |
 | 客户端测试报 `window is not defined` | 有 `@deepseek-ai/<包>/client` 导入没有被 `vitest-upstream-client.ts` 映射，检查子模块是否已检出、包名是否存在于 `upstream/packages/*/*` |
 | 客户端测试报 `Cannot find package 'X' imported from upstream/...` | 把 X 加进根 devDependencies，版本用 `git -C upstream grep -h '"X"' HEAD -- '*package.json'` 查 |
 | 测试报 `Unknown file extension ".css"` | 该包没有被 `server.deps.inline` 覆盖，把它加入内联规则 |

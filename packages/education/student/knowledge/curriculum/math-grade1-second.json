@@ -1,0 +1,51 @@
+{
+  "id": "math-grade1-second",
+  "subject": "math",
+  "grade": 1,
+  "term": "second",
+  "title": "数学一年级下册知识地图",
+  "basis": "依据《义务教育数学课程标准（2022年版）》第一学段内容要求整理，学习顺序参考上海市小学数学通行教学安排；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "m1b-u1", "name": "20以内数的加减法", "summary": "进位加法、退位减法" },
+    { "id": "m1b-u2", "name": "100以内数的认识", "summary": "数到100、数的组成、大小比较" },
+    { "id": "m1b-u3", "name": "时间的初步认识", "summary": "整时、半时、大约几时" },
+    { "id": "m1b-u4", "name": "100以内数的加减法", "summary": "整十数、两位数加减口算" },
+    { "id": "m1b-u5", "name": "几何小实践", "summary": "位置与方向、长度比较与测量" }
+  ],
+  "concepts": [
+    { "id": "m1b-carry", "name": "20以内进位加法", "unit": "m1b-u1", "definition": "个位相加满十，向十位进一；常用凑十法：把一个加数拆开，先凑成十。", "example": "9 + 5：9 + 1 = 10，10 + 4 = 14。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-borrow", "name": "20以内退位减法", "unit": "m1b-u1", "definition": "个位不够减，从十位退一当十；可用破十法或想加算减。", "example": "13 − 8：10 − 8 = 2，2 + 3 = 5。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-count100", "name": "数到100", "unit": "m1b-u2", "definition": "可以一个一个数，也可以十个十个数；10 个十是一百。", "example": "10、20、30……100；10 个十是 100。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-tensones", "name": "100以内数的组成", "unit": "m1b-u2", "definition": "一个两位数由几个十和几个一组成。", "example": "34 是 3 个十和 4 个一，34 = 30 + 4。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-compare100", "name": "100以内数的大小比较", "unit": "m1b-u2", "definition": "先比十位，十位大的数就大；十位相同再比个位。", "example": "42 > 38，因为 4 个十比 3 个十多。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-clock", "name": "钟面与整时半时", "unit": "m1b-u3", "definition": "钟面上短针是时针、长针是分针；分针指着 12 是整时，指着 6 是半时。", "example": "分针指 12、时针指 8，是 8 时；分针指 6、时针在 8 和 9 中间，是 8 时半。", "source": "数学课标（2022年版）第一学段「常见的量」" },
+    { "id": "m1b-abouttime", "name": "大约几时", "unit": "m1b-u3", "definition": "时针接近某个数，可以说“大约几时”；快到几时、刚过几时都是大约几时。", "example": "时针快要指到 9，可以说大约 9 时。", "source": "数学课标（2022年版）第一学段「常见的量」" },
+    { "id": "m1b-tensaddsub", "name": "整十数加减法", "unit": "m1b-u4", "definition": "几个十加几个十，还是几个十。", "example": "30 + 20：3 个十加 2 个十是 5 个十，30 + 20 = 50。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-twodigit", "name": "两位数加减一位数或整十数", "unit": "m1b-u4", "definition": "不进位、不退位时，个位和个位算、十位和十位算。", "example": "34 + 20 = 54；34 + 2 = 36。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m1b-leftright", "name": "左与右", "unit": "m1b-u5", "definition": "以自己或图中人物为参照，判断左边和右边；参照不同，左右可能不同。", "example": "举右手，摸左耳。", "source": "数学课标（2022年版）第一学段「图形的位置与运动」" },
+    { "id": "m1b-position", "name": "上中下、左中右", "unit": "m1b-u5", "definition": "用方位词说清物体在什么位置，或按描述找到物体。", "example": "书架上层中间放着一本字典。", "source": "数学课标（2022年版）第一学段「图形的位置与运动」" },
+    { "id": "m1b-lengthcompare", "name": "长度比较", "unit": "m1b-u5", "definition": "可以直接比长短、高矮，也可以借助同一标准（如方格、小棒）间接比较。", "example": "两根绳子拉直后一端对齐，比另一端谁长。", "source": "数学课标（2022年版）第一学段「图形的认识与测量」" },
+    { "id": "m1b-measure", "name": "认识厘米，用尺量", "unit": "m1b-u5", "definition": "厘米是长度单位；量长度时把物体一端对准尺的 0 刻度。", "example": "铅笔一端对准 0，另一端对着 12，铅笔长 12 厘米。", "source": "数学课标（2022年版）第一学段「图形的认识与测量」" }
+  ],
+  "objectives": [
+    { "id": "m1b-o-carry", "title": "用凑十法计算20以内进位加法", "goal": "能说出把哪个数拆成几和几，先凑十再相加。", "conceptIds": ["m1b-carry"], "method": "reason" },
+    { "id": "m1b-o-borrow", "title": "用破十法或想加算减计算退位减法", "goal": "能说明从十位退一的过程，或用加法验算减法。", "conceptIds": ["m1b-borrow"], "method": "reason" },
+    { "id": "m1b-o-count100", "title": "数、读、写100以内的数并说出组成", "goal": "能一个一个数、十个十个数，说出一个数是几个十和几个一。", "conceptIds": ["m1b-count100", "m1b-tensones"], "method": "represent" },
+    { "id": "m1b-o-compare100", "title": "比较100以内数的大小并说明理由", "goal": "能先比十位再比个位，说出谁大谁小和为什么。", "conceptIds": ["m1b-compare100"], "method": "reason" },
+    { "id": "m1b-o-clock", "title": "认读整时和半时，说出大约几时", "goal": "能看着钟面说出几时、几时半，并说出大约几时。", "conceptIds": ["m1b-clock", "m1b-abouttime"], "method": "represent" },
+    { "id": "m1b-o-tens", "title": "口算整十数与两位数加减并复核", "goal": "能又对又快地口算，并换一种方法检查。", "conceptIds": ["m1b-tensaddsub", "m1b-twodigit"], "method": "verify" },
+    { "id": "m1b-o-position", "title": "用方位词说清物体位置", "goal": "能用上中下、左中右说清或按要求摆放物体。", "conceptIds": ["m1b-leftright", "m1b-position"], "method": "represent" },
+    { "id": "m1b-o-measure", "title": "用尺量出物体的长度", "goal": "能把一端对准 0 刻度，读出整厘米数。", "conceptIds": ["m1b-lengthcompare", "m1b-measure"], "method": "represent" }
+  ],
+  "relations": [
+    { "id": "m1b-r-carry-borrow", "fromId": "m1b-carry", "toId": "m1b-borrow", "kind": "contrast", "explanation": "进位加法满十进一，退位减法不够减退一当十，互为逆运算，对照学习。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-count-tensones", "fromId": "m1b-count100", "toId": "m1b-tensones", "kind": "prerequisite", "explanation": "先会十个十个数到一百，再说出两位数的组成。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-tensones-compare", "fromId": "m1b-tensones", "toId": "m1b-compare100", "kind": "prerequisite", "explanation": "知道几个十和几个一，才能说清为什么先比十位。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-tensones-addsub", "fromId": "m1b-tensones", "toId": "m1b-tensaddsub", "kind": "explains", "explanation": "数的组成解释了整十数加减为什么可以按“几个十”来算。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-tens-twodigit", "fromId": "m1b-tensaddsub", "toId": "m1b-twodigit", "kind": "prerequisite", "explanation": "会算整十数加减，再算两位数加减一位数或整十数。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-carry-twodigit", "fromId": "m1b-carry", "toId": "m1b-twodigit", "kind": "prerequisite", "explanation": "20 以内加减法是 100 以内加减口算的基础。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-clock-about", "fromId": "m1b-clock", "toId": "m1b-abouttime", "kind": "prerequisite", "explanation": "先会认整时和半时，再学着说大约几时。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-leftright-position", "fromId": "m1b-leftright", "toId": "m1b-position", "kind": "prerequisite", "explanation": "先分清左右，再用上中下、左中右说清位置。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m1b-r-length-measure", "fromId": "m1b-lengthcompare", "toId": "m1b-measure", "kind": "prerequisite", "explanation": "先会直接比较长短，再用尺量出长度。", "source": "数学课标（2022年版）第一学段内容顺序" }
+  ]
+}

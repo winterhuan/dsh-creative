@@ -1,0 +1,47 @@
+{
+  "id": "math-grade2-first",
+  "subject": "math",
+  "grade": 2,
+  "term": "first",
+  "title": "数学二年级上册知识地图",
+  "basis": "依据《义务教育数学课程标准（2022年版）》第一学段内容要求整理，学习顺序参考上海市小学数学通行教学安排；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "m2a-u1", "name": "乘法初步", "summary": "同数连加与乘法算式" },
+    { "id": "m2a-u2", "name": "乘法口诀", "summary": "2～9的乘法口诀与用口诀计算" },
+    { "id": "m2a-u3", "name": "用口诀求商", "summary": "平均分、除法与求商" },
+    { "id": "m2a-u4", "name": "图形与统计", "summary": "角与直角、条形统计图初步" }
+  ],
+  "concepts": [
+    { "id": "m2a-mulmeaning", "name": "乘法的意义", "unit": "m2a-u1", "definition": "求几个相同加数的和，可以用乘法，比连加更简便。", "example": "3 + 3 + 3 + 3 是 4 个 3，写成 3 × 4。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-mulparts", "name": "乘法算式的各部分", "unit": "m2a-u1", "definition": "相乘的两个数叫因数，乘得的结果叫积；算式读作几乘几等于几。", "example": "3 × 4 = 12 读作 3 乘 4 等于 12，3 和 4 是因数，12 是积。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-table248", "name": "2、4、8的乘法口诀", "unit": "m2a-u2", "definition": "先学 2、4、8 的口诀，积有加倍的规律，帮助记忆。", "example": "二四得八：2 × 4 = 8，4 × 2 = 8。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-table510", "name": "5、10的乘法口诀", "unit": "m2a-u2", "definition": "5 的口诀积的末位是 0 或 5，10 的口诀积是几就是几十。", "example": "五八四十；10 × 6 = 60。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-table369", "name": "3、6、9的乘法口诀", "unit": "m2a-u2", "definition": "3、6、9 的口诀一组一组记，6 和 9 的口诀与 3 有联系。", "example": "三六十八：3 × 6 = 18，6 × 3 = 18。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-table7", "name": "7的乘法口诀", "unit": "m2a-u2", "definition": "7 的口诀有七句，最难记，可以用相邻口诀推算。", "example": "七七四十九；忘了 7 × 8，想 7 × 7 = 49 再加 7 是 56。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-tableuse", "name": "用口诀算乘法", "unit": "m2a-u2", "definition": "一句口诀能算两道乘法；交换两个因数，积不变。", "example": "算 8 × 7，想七八五十六，所以 8 × 7 = 56。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-divmeaning", "name": "平均分与除法", "unit": "m2a-u3", "definition": "把一些物体平均分，每份分得同样多，可以用除法表示。", "example": "12 个苹果平均放进 4 个盘子，每盘 3 个：12 ÷ 4 = 3。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-divquotient", "name": "用乘法口诀求商", "unit": "m2a-u3", "definition": "算除法时想乘法：几乘除数等于被除数，商就是几。", "example": "12 ÷ 4：想 4 × 3 = 12，商是 3。", "source": "数学课标（2022年版）第一学段「数与运算」" },
+    { "id": "m2a-times", "name": "倍的认识", "unit": "m2a-u3", "definition": "一个数里面有几个另一个数，就说这个数是另一个数的几倍。", "example": "6 里面有 3 个 2，6 是 2 的 3 倍。", "source": "数学课标（2022年版）第一学段「数量关系」" },
+    { "id": "m2a-angle", "name": "角与直角", "unit": "m2a-u4", "definition": "角有一个顶点和两条边；直角是一种特殊的角，可以用三角尺上的直角去比。", "example": "数学书的四个角都是直角。", "source": "数学课标（2022年版）第一学段「图形的认识与测量」" },
+    { "id": "m2a-chart", "name": "条形统计图初步", "unit": "m2a-u4", "definition": "用直条的长短表示数量的多少，一眼看出谁多谁少。", "example": "用格子数表示各组人数，苹果组 5 格、香蕉组 3 格。", "source": "数学课标（2022年版）第一学段「数据的收集、整理与表达」" }
+  ],
+  "objectives": [
+    { "id": "m2a-o-meaning", "title": "把同数连加改写成乘法算式并说明意义", "goal": "能说出是几个几，写成乘法算式，并说出因数与积。", "conceptIds": ["m2a-mulmeaning", "m2a-mulparts"], "method": "represent" },
+    { "id": "m2a-o-tables", "title": "熟记并运用2～9的乘法口诀", "goal": "能一句口诀算两道乘法，忘记时能用相邻口诀推算。", "conceptIds": ["m2a-table248", "m2a-table510", "m2a-table369", "m2a-table7", "m2a-tableuse"], "method": "verify" },
+    { "id": "m2a-o-div", "title": "用乘法口诀求商并说明想法", "goal": "能把平均分说成除法算式，并想乘法算除法。", "conceptIds": ["m2a-divmeaning", "m2a-divquotient"], "method": "reason" },
+    { "id": "m2a-o-times", "title": "用“倍”说清两个数量的关系", "goal": "能说出一个数是另一个数的几倍，并说明理由。", "conceptIds": ["m2a-times"], "method": "represent" },
+    { "id": "m2a-o-angle", "title": "辨认直角并用三角尺判断", "goal": "能指出角的顶点和边，用三角尺上的直角比一比。", "conceptIds": ["m2a-angle"], "method": "represent" },
+    { "id": "m2a-o-chart", "title": "读条形统计图回答多少与相差", "goal": "能说出哪种最多、哪种最少，以及相差多少。", "conceptIds": ["m2a-chart"], "method": "reason" }
+  ],
+  "relations": [
+    { "id": "m2a-r-meaning-parts", "fromId": "m2a-mulmeaning", "toId": "m2a-mulparts", "kind": "prerequisite", "explanation": "先理解乘法的意义，再认识算式中各部分的名称。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-meaning-248", "fromId": "m2a-mulmeaning", "toId": "m2a-table248", "kind": "prerequisite", "explanation": "理解乘法是求几个相同加数的和，才能理解口诀的含义。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-meaning-510", "fromId": "m2a-mulmeaning", "toId": "m2a-table510", "kind": "prerequisite", "explanation": "口诀是乘法意义的简记，先懂意义再背口诀。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-248-369", "fromId": "m2a-table248", "toId": "m2a-table369", "kind": "contrast", "explanation": "2、4、8 一组和 3、6、9 一组对照记忆，积各有规律。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-tables-use", "fromId": "m2a-table369", "toId": "m2a-tableuse", "kind": "prerequisite", "explanation": "先分组建口诀，再练习用口诀算乘法。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-use-div", "fromId": "m2a-tableuse", "toId": "m2a-divquotient", "kind": "prerequisite", "explanation": "乘法口诀熟练了，才能想乘法算除法。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-divmeaning-quotient", "fromId": "m2a-divmeaning", "toId": "m2a-divquotient", "kind": "prerequisite", "explanation": "先理解平均分和除法算式，再学习求商。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-meaning-times", "fromId": "m2a-mulmeaning", "toId": "m2a-times", "kind": "prerequisite", "explanation": "“倍”用乘法表示几个几，先理解乘法再看倍数关系。", "source": "数学课标（2022年版）第一学段内容顺序" },
+    { "id": "m2a-r-div-times", "fromId": "m2a-divmeaning", "toId": "m2a-times", "kind": "explains", "explanation": "用除法数出一个数里有几个另一个数，解释了“几倍”的判断方法。", "source": "数学课标（2022年版）第一学段内容顺序" }
+  ]
+}

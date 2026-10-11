@@ -1,0 +1,49 @@
+{
+  "id": "chinese-grade1-second",
+  "subject": "chinese",
+  "grade": 1,
+  "term": "second",
+  "title": "语文一年级下册知识地图",
+  "basis": "依据《义务教育语文课程标准（2022年版）》第一学段要求整理，按统编版语文一年级下册的通行编排组织（识字、课文、语文园地）；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "units": [
+    { "id": "c1b-u1", "name": "识字方法", "summary": "形声字、字谜、查字典" },
+    { "id": "c1b-u2", "name": "阅读", "summary": "分角色朗读、古诗诵读、童话阅读" },
+    { "id": "c1b-u3", "name": "词句积累", "summary": "词语积累、长句停顿、完整句" },
+    { "id": "c1b-u4", "name": "表达与交际", "summary": "通知、多幅图写话、礼貌用语" }
+  ],
+  "concepts": [
+    { "id": "c1b-xingsheng", "name": "形声字", "unit": "c1b-u1", "definition": "一部分表示意思（形旁），一部分表示读音（声旁）。", "example": "“青”加不同偏旁：清（水清）、晴（晴天）、睛（眼睛）。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c1b-zimi", "name": "字谜与识字游戏", "unit": "c1b-u1", "definition": "用加一加、减一减、换一换的方法记字，也可以编字谜。", "example": "“日”加一笔变成“目”“白”“田”。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c1b-chazi", "name": "音序查字法", "unit": "c1b-u1", "definition": "知道字的读音但不会写时，按拼音的第一个大写字母在字典里找。", "example": "查“桥”，先找大写字母 Q，再找音节 qiao。", "source": "语文课标（2022年版）第一学段「识字与写字」；统编版一下语文园地" },
+    { "id": "c1b-zici", "name": "词语积累", "unit": "c1b-u3", "definition": "积累近义词、反义词和不同形式的词语，丰富表达。", "example": "高兴—快乐；干净—肮脏；高高兴兴。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c1b-duihua", "name": "分角色朗读", "unit": "c1b-u2", "definition": "读对话时想象角色心情，用不同的语气读出人物的样子。", "example": "读《小公鸡和小鸭子》，小公鸡着急、小鸭子温和。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1b-gushi", "name": "古诗诵读", "unit": "c1b-u2", "definition": "读古诗要读出节奏，想象画面，熟读成诵。", "example": "背诵《静夜思》《池上》《小池》。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1b-tonghua", "name": "童话阅读", "unit": "c1b-u2", "definition": "读童话时关注角色做了什么、结果怎样，想一想为什么。", "example": "《小猴子下山》里小猴子掰了玉米又扔了，最后空着手回家。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1b-tingdun", "name": "长句停顿", "unit": "c1b-u3", "definition": "长句子按标点和意思换气停顿，读起来才通顺。", "example": "“小水珠说：荷叶是我的摇篮。”在冒号和句号处停顿。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1b-juzi", "name": "用句子表达", "unit": "c1b-u3", "definition": "把“谁在哪里做什么”说完整、写完整。", "example": "我在教室里读书。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c1b-tongzhi", "name": "通知与留言", "unit": "c1b-u4", "definition": "通知要说清时间、地点、人物和事情，读通知要把这几点找出来。", "example": "《动物王国开大会》：明天上午八点，在森林广场开大会。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c1b-duofu", "name": "多幅图写话", "unit": "c1b-u4", "definition": "几幅图按顺序看，前后连起来说，再写成几句连贯的话。", "example": "先看第一幅图发生什么，再看后面图里结果怎样。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c1b-leiji", "name": "日积月累", "unit": "c1b-u3", "definition": "语文园地里的谚语、成语和短句，读一读、记一记。", "example": "“朝霞不出门，晚霞行千里。”", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c1b-limao", "name": "口语交际：礼貌用语", "unit": "c1b-u4", "definition": "请人帮忙、借东西、道歉时用礼貌用语，把话说清楚。", "example": "“请你把尺子借给我用一下，好吗？”", "source": "语文课标（2022年版）第一学段「表达与交流」" }
+  ],
+  "objectives": [
+    { "id": "c1b-o-xingsheng", "title": "用形旁声旁猜读形声字并查证", "goal": "能看着偏旁猜意思、看着声旁猜读音，再查一查对不对。", "conceptIds": ["c1b-xingsheng", "c1b-zimi"], "method": "recognize" },
+    { "id": "c1b-o-chazi", "title": "用音序查字法在字典里找到生字", "goal": "能按大写字母和音节顺序查到字，读出它的意思。", "conceptIds": ["c1b-chazi"], "method": "recognize" },
+    { "id": "c1b-o-langdu", "title": "分角色朗读，读出对话语气", "goal": "能根据人物心情用不同语气朗读，长句会停顿。", "conceptIds": ["c1b-duihua", "c1b-tingdun"], "method": "read-evidence" },
+    { "id": "c1b-o-tonghua", "title": "读童话说出角色做了什么、结果怎样", "goal": "能按顺序说出故事里角色做的事和最后的结果。", "conceptIds": ["c1b-tonghua"], "method": "read-evidence" },
+    { "id": "c1b-o-tongzhi", "title": "从通知里找出时间、地点、人物、事情", "goal": "读通知或短文，能找出关键的四要素。", "conceptIds": ["c1b-tongzhi"], "method": "read-evidence" },
+    { "id": "c1b-o-juzi", "title": "用“谁在哪里做什么”写一句完整的话", "goal": "能口头说完整，再写下来，句末加上合适的标点。", "conceptIds": ["c1b-juzi", "c1b-zici"], "method": "express" },
+    { "id": "c1b-o-duofu", "title": "按顺序看图写几句连贯的话", "goal": "能按图的先后顺序写几句话，前后连得上。", "conceptIds": ["c1b-duofu"], "method": "express" },
+    { "id": "c1b-o-limao", "title": "用礼貌用语完成借还、请教等交际", "goal": "能在具体情境里用上“请、谢谢、对不起”，把意思说清楚。", "conceptIds": ["c1b-limao"], "method": "express" }
+  ],
+  "relations": [
+    { "id": "c1b-r-xingsheng-zimi", "fromId": "c1b-xingsheng", "toId": "c1b-zimi", "kind": "contrast", "explanation": "形声字靠形旁声旁猜，字谜靠加减笔画想，两种识字方法对照使用。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-xingsheng-chazi", "fromId": "c1b-xingsheng", "toId": "c1b-chazi", "kind": "prerequisite", "explanation": "猜出来的读音要用字典查证，先学会猜再学查。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-tingdun-langdu", "fromId": "c1b-tingdun", "toId": "c1b-duihua", "kind": "explains", "explanation": "停顿规则解释了分角色朗读时在哪里换气、怎么读通顺。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-tonghua-tongzhi", "fromId": "c1b-tonghua", "toId": "c1b-tongzhi", "kind": "prerequisite", "explanation": "会读故事里“谁做了什么”，才能从通知里找出四要素。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-zici-juzi", "fromId": "c1b-zici", "toId": "c1b-juzi", "kind": "prerequisite", "explanation": "词语积累得多，句子才写得清楚。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-juzi-duofu", "fromId": "c1b-juzi", "toId": "c1b-duofu", "kind": "prerequisite", "explanation": "先会写一句完整的话，再连成几句连贯的话。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-leiji-zici", "fromId": "c1b-leiji", "toId": "c1b-zici", "kind": "part-of", "explanation": "日积月累的谚语短句属于词语和语言的积累。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c1b-r-limao-juzi", "fromId": "c1b-limao", "toId": "c1b-juzi", "kind": "prerequisite", "explanation": "把话说完整、说清楚，是礼貌交际的基础。", "source": "语文课标（2022年版）第一学段内容顺序" }
+  ]
+}

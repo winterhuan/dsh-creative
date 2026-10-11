@@ -1,24 +1,45 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import type { Dashboard } from '../dashboard.ts'
+import type { Dashboard, MistakeStatus } from '../dashboard.ts'
 import type { Command } from '../schema.ts'
+import type { InsightReason } from '../learning.ts'
 import type { AskTutor, StudyPhoto } from './bridge.ts'
 import { Field, MistakeConfirmation, ParentSettings, subjects, type ChangeStudy } from './forms.tsx'
 import type { Translate } from './locales.ts'
 import { useStudy } from './workspace.ts'
 
-type Activity = { subject: 'chinese' | 'math' | 'english'; mode: 'foundation' | 'school' | 'review' | 'explore' }
+type Activity = { subject: 'chinese' | 'math' | 'english'; mode: 'foundation' | 'school' | 'review' | 'explore' | 'diagnose' }
 type Study = NonNullable<Dashboard['study']>
+type Tab = 'today' | 'map' | 'mistakes' | 'growth' | 'parent'
+type Goal = { id: string; title: string }
 function time(ms: number) { const seconds = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` }
-const continuePrompt = '请加载 study 技能，查询当前工作区 study_status。继续已开始的学习段，不重复 start；先核对当前题目：未反馈的已保存答案先评估并 record；无答案且已请求提示时先在对话中给提示；已有反馈或尚未出题时才准备下一题。每道新题先用 task 保存，一次一题。到时先停止并建议休息。'
+const levelKeys = { due: 'levelDue', weak: 'levelWeak', stalled: 'levelStalled', mastered: 'levelMastered', practising: 'levelPractising', untouched: 'levelUntouched' } as const
+const reasonKeys = { 'due-mistakes': 'reasonDue', 'open-mistakes': 'reasonOpen', 'recent-help-or-error': 'reasonRecent', 'not-practised-recently': 'reasonStalled', 'not-started': 'reasonNew', 'diagnosis-due': 'reasonDiagnose' } as const
+const subjectPreference = 'student-desk:subject'
+function storedSubject(): Activity['subject'] {
+  try { const value = window.localStorage.getItem(subjectPreference); return value === 'chinese' || value === 'english' ? value : 'math' } catch { return 'math' }
+}
+function storeSubject(value: Activity['subject']) {
+  try { window.localStorage.setItem(subjectPreference, value) } catch { /* The preference is a convenience; blocked storage falls back to the default subject. */ }
+}
+const continuePrompt = '请加载 study 技能，查询当前工作区 study_status。继续已开始的学习段，不重复 start；先核对当前题目：未反馈的已保存答案先评估并 record；无答案且已请求提示时先在对话中给提示；已有反馈或尚未出题时才准备下一题。每道新题先用 task 保存，一次一题；低年级优先给 2 到 4 个选项（choices）。到时先停止并建议休息。'
+const reviewPrompt = '请加载 study 技能，查询当前工作区 study_status 和到期错题详情。本段优先复习到期错题：先让学生回忆或做同知识点的变式，不先展示已保存答案；一次一题，用 task 保存并写上 mistakeId 与错题关联的 objectiveId，低年级优先给 2 到 4 个选项（choices）。到时先停止并建议休息。'
+const goalPrompt = (objectiveId: string) => `请加载 study 技能，查询当前工作区 study_status，并用 study_status kind=curriculum 读取学习目标 ${objectiveId} 对应的知识点定义与例子。本段优先围绕该目标出题：一次一题，用 task 保存并在 task 中写 objectiveId，低年级优先给 2 到 4 个选项（choices）；先让学生尝试，再按需提示。到时先停止并建议休息。`
+const diagnosePrompt = '请加载 study 技能，查询 study_status 和 study_status kind=diagnose，按当前科目 sample 里的学习目标做一次摸底：每个目标出一道短题（低年级优先 2 到 4 个选项），一题一记录，task、answer、record 都带 objectiveId；每题只给简短反馈，不展开教学，不主动提示。全部做完或到时就停止，并用孩子能懂的话说说哪些已经会了、哪些要再练。'
+function reasonText(reasons: InsightReason[], t: Translate) {
+  return reasons.map(reason => reason.code === 'not-started' ? t('reasonNew') : `${t(reasonKeys[reason.code])} ${reason.count}`).join(' · ')
+}
 
 /** Workbench actions share the same persisted state as the native tutoring tools. */
 export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: string; visible: boolean; ask: AskTutor; running: boolean; t: Translate }) {
-  const [subject, setSubject] = useState<Activity['subject']>('math')
+  const [subject, setSubject] = useState<Activity['subject']>(storedSubject)
   const [mistakeOffset, setMistakeOffset] = useState(0)
-  const workspace = useStudy(sessionId, visible, t('networkError'), mistakeOffset, subject)
+  const [mistakeStatus, setMistakeStatus] = useState<MistakeStatus>('all')
+  const [mapGrade, setMapGrade] = useState<number>()
+  const [mapTerm, setMapTerm] = useState<'first' | 'second'>()
+  const workspace = useStudy(sessionId, visible, t('networkError'), { offset: mistakeOffset, subject, status: mistakeStatus, ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}) })
   const { data, busy, change } = workspace
-  const [tab, setTab] = useState<'today' | 'mistakes' | 'growth' | 'parent'>('today')
-  const [activity, setActivity] = useState<Activity>({ subject: 'math', mode: 'foundation' })
+  const [tab, setTab] = useState<Tab>('today')
+  const [activity, setActivity] = useState<Activity>({ subject: storedSubject(), mode: 'foundation' })
   const [selectedObjectiveId, setSelectedObjectiveId] = useState('')
   const [paperSheetId, setPaperSheetId] = useState('')
   const [epoch, setEpoch] = useState(0)
@@ -39,6 +60,7 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   async function act(command: Command, withTutor = false, prompt = continuePrompt) {
     try { await change(command); if (withTutor) await tutor(prompt) } catch { /* The request or tutor notice retains the failed action and its data. */ }
   }
+  function selectSubject(item: Activity['subject']) { setSubject(item); storeSubject(item) }
   const now = Math.max(localNow + workspace.offset.current, data?.serverNow ?? 0)
   const study = data?.study
   const subjectLoading = !!study && study.confirmedSubject !== subject
@@ -46,14 +68,35 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   const active = study?.active
   const paperSheet = study?.worksheets.find(item => item.id === paperSheetId) ?? study?.worksheets[0]
   useEffect(() => {
-    if (active && subject !== active.subject) { setSubject(active.subject); setActivity({ subject: active.subject, mode: active.mode }); setSelectedObjectiveId(''); setMistakeOffset(0) }
+    if (active && subject !== active.subject) { selectSubject(active.subject); setActivity({ subject: active.subject, mode: active.mode }); setSelectedObjectiveId(''); setMistakeOffset(0) }
   }, [active?.id, active?.subject, active?.mode])
   const task = study?.task?.sessionId === active?.id ? study?.task : undefined
   const remaining = Math.max(0, (study?.remainingMs ?? 0) - (active && data ? Math.max(0, Math.min(now, active.deadline) - data.serverNow) : 0))
   const available = !!active && now < active.deadline && study?.phase === 'studying'
+  const curriculum = study?.curriculum ?? null
+  const scopeGrade = curriculum?.scope.grade ?? mapGrade ?? study?.profile.grade ?? 1
+  const scopeTerm = curriculum?.scope.term ?? mapTerm ?? study?.profile.term ?? 'first'
+  const goals: Goal[] = [...(curriculum && curriculum.scope.current ? curriculum.objectives : []).map(item => ({ id: item.id, title: item.title })), ...(study?.objectives ?? []).map(item => ({ id: item.id, title: item.title }))]
+  const conceptName = (id: string) => curriculum?.concepts.find(item => item.id === id)?.name ?? id
+  const recommendation = study?.recommendation ?? null
+  function chooseGoal(goal: { id: string; subject: Activity['subject'] }) {
+    selectSubject(goal.subject); setActivity({ subject: goal.subject, mode: 'foundation' }); setSelectedObjectiveId(goal.id); setMistakeOffset(0)
+  }
+  function startRecommended() {
+    if (!recommendation || active) return
+    const mode: Activity['mode'] = recommendation.kind === 'review' ? 'review' : recommendation.kind === 'diagnose' ? 'diagnose' : 'foundation'
+    selectSubject(recommendation.subject); setActivity({ subject: recommendation.subject, mode }); setSelectedObjectiveId(mode === 'foundation' ? recommendation.objectiveId ?? '' : ''); setMistakeOffset(0)
+    const prompt = recommendation.kind === 'review' ? reviewPrompt : recommendation.kind === 'diagnose' ? diagnosePrompt : recommendation.objectiveId ? goalPrompt(recommendation.objectiveId) : continuePrompt
+    void act({ action: 'start', id: crypto.randomUUID(), subject: recommendation.subject, mode }, true, prompt)
+  }
+  function startDiagnosis() {
+    if (active) return
+    setActivity({ subject, mode: 'diagnose' }); setSelectedObjectiveId('')
+    void act({ action: 'start', id: crypto.randomUUID(), subject, mode: 'diagnose' }, true, diagnosePrompt)
+  }
   return <main className="student-desk" aria-label={t('title')}>
-    <nav aria-label={t('title')}>{(['today', 'mistakes', 'growth', 'parent'] as const).map(name => <button key={name} type="button" aria-pressed={tab === name} onClick={() => setTab(name)}>{t(name)}</button>)}</nav>
-    {study && tab !== 'parent' && <nav aria-label={t('subject')}>{subjects.map(item => <button key={item} type="button" disabled={!!active} aria-pressed={subject === item} onClick={() => { setSubject(item); setActivity({ subject: item, mode: 'foundation' }); setSelectedObjectiveId(''); setMistakeOffset(0) }}>{t(item)}</button>)}</nav>}
+    <nav aria-label={t('title')}>{(['today', 'map', 'mistakes', 'growth', 'parent'] as const).map(name => <button key={name} type="button" aria-label={t(name)} aria-pressed={tab === name} onClick={() => setTab(name)}>{t(name)}{name === 'mistakes' && study && study.dueTotal > 0 ? ` · ${study.dueTotal}` : ''}</button>)}</nav>
+    {study && tab !== 'parent' && <nav aria-label={t('subject')}>{subjects.map(item => <button key={item} type="button" disabled={!!active} aria-pressed={subject === item} onClick={() => { selectSubject(item); setActivity({ subject: item, mode: 'foundation' }); setSelectedObjectiveId(''); setMistakeOffset(0); setMistakeStatus('all') }}>{t(item)}</button>)}</nav>}
     <button type="button" disabled={disabled} onClick={() => { void workspace.reload().then(() => setEpoch(value => value + 1)) }}>{t('reload')}</button>
     {workspace.error && <p role="alert">{workspace.error}</p>}
     {sendError && <p role="alert">{sendError}</p>}
@@ -61,14 +104,83 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
       {tab === 'parent' && <ParentSettings key={epoch} data={data} change={change} t={t} />}
       {study && tab === 'today' && <>
         <section><h3>{t('goal')}</h3><p>{study.profile.nickname} · {t('todayStars')}: {study.todayStars}</p>
-          <p className="student-timer">{t('dailyRemaining')}: {time(remaining)} · {t('due')}: {study.dueCount}</p>
+          <p className="student-timer">{t('dailyRemaining')}: {time(remaining)} · {t('due')}: {study.dueCount} · {t('weakPoints')}: {study.weakPoints.length}</p>
           {active ? <><p>{t(active.subject)} · {t(active.mode)}</p><p className="student-timer">{t('time')}: {time(active.deadline - now)}</p>
             {!available && <p role="status">{t('expired')}</p>}
           </> : study.phase === 'break' && study.breakRemainingMs - (now - data.serverNow) > 0 ? <p>{t('rest')} · {time(study.breakRemainingMs - (now - data.serverNow))}</p>
-            : study.phase === 'daily-complete' ? <p>{t('done')}</p> : <StartForm study={study} activity={activity} choose={setActivity} disabled={disabled || running} t={t} start={(subject, mode) => act({ action: 'start', id: crypto.randomUUID(), subject, mode }, true, mode === 'foundation' && selectedObjectiveId ? `${continuePrompt} 本段优先围绕已确认学习目标 ${selectedObjectiveId} 出题，并在 task 中写 objectiveId。` : continuePrompt)} />}
+            : study.phase === 'daily-complete' ? <p>{t('done')}</p> : <StartForm study={study} activity={activity} choose={setActivity} disabled={disabled || running} t={t} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} start={(subject, mode) => act({ action: 'start', id: crypto.randomUUID(), subject, mode }, true, mode === 'foundation' && selectedObjectiveId ? goalPrompt(selectedObjectiveId) : mode === 'review' ? reviewPrompt : mode === 'diagnose' ? diagnosePrompt : continuePrompt)} />}
         </section>
-        <section><h3>{t(subject)} · {t('learningMethod')}</h3><p>{t(subject === 'chinese' ? 'chineseMethod' : subject === 'math' ? 'mathMethod' : 'englishMethod')}</p>
-          <button type="button" disabled={disabled || running} onClick={() => { void tutor(`请加载 study 技能，查询当前工作区 ${subject} 科目的概念、学习目标和错题。根据已确认教材或标注的通用资料，提出一个概念定义、例子及依据，先仅保存待确认概念；经家长核对后再创建学习目标或概念关系，不替家长确认。`).catch(() => {}) }}>{t('organizeConcepts')}</button>
+        {active && <>
+          <section><p>{t('chatHelp')}</p>{task ? <Task key={task.id} study={study} goals={goals} available={available} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
+            {available && (running || sending ? <p role="status">{t('tutorWorking')}</p>
+              : (!task || study.feedback || task.response !== undefined || task.hintRequested) && <button disabled={disabled} onClick={() => { void tutor().catch(() => {}) }}>{t(!task ? 'prepareTask' : study.feedback ? 'nextTask' : task.response !== undefined ? 'retryFeedback' : 'retryHint')}</button>)}
+          </section>
+          <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void act({ action: 'stop', sessionId: active.id, reflection: String(form.get('reflection') ?? '') }) }}>
+            <label>{t('reflection')}<textarea aria-label={t('reflection')} name="reflection" maxLength={2000} /></label><button disabled={disabled} type="submit">{t('stop')}</button>
+          </form>
+        </>}
+        {!active && <section className="student-plan"><h3>{t('todayPlan')}</h3>
+          {recommendation ? <><p>{t(recommendation.kind === 'review' ? 'recommendReview' : recommendation.kind === 'practice' ? 'recommendPractice' : recommendation.kind === 'diagnose' ? 'recommendDiagnose' : 'recommendLearn')} · {t(recommendation.subject)}{recommendation.title ? ` · ${recommendation.title}` : ''}</p>
+            <p className="student-muted">{reasonText([recommendation.reason], t)}</p>
+            {study.phase === 'ready' ? <button type="button" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button> : <p>{t('planBlocked')}</p>}
+          </> : <p>{t('allDone')}</p>}
+          {study.weakPoints.length > 0 && <details><summary>{t('weakPoints')} · {study.weakPoints.length}</summary><p className="student-muted">{t('weakHint')}</p>
+            {study.weakPoints.map(item => <div key={item.id}><p>{t(item.subject)} · {item.title} · {t(levelKeys[item.level])}</p><p className="student-muted">{reasonText(item.reasons, t)}</p>
+              <button type="button" disabled={disabled || running} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>
+            </div>)}
+          </details>}
+        </section>}
+        {!active && study.diagnostic && <section><h3>{t('diagnosisTitle')} · {t(subject)}</h3>
+          <p>{study.diagnostic.lastAt !== undefined ? `${t('diagnosisLast')}: ${new Date(study.diagnostic.lastAt).toLocaleDateString()}${study.diagnostic.nextAt !== undefined ? ` · ${t('nextCheck')}: ${new Date(study.diagnostic.nextAt).toLocaleDateString()}` : ''}` : t('diagnosisNever')}</p>
+          <p className="student-muted">{t(study.diagnostic.due ? 'diagnosisDue' : 'diagnosisNotDue')}{study.diagnostic.sample.length > 0 ? ` · ${t('diagnosisSample')}: ${study.diagnostic.sample.map(item => item.title).join(' · ')}` : ''}</p>
+          {study.diagnostic.sample.length > 0 && <button type="button" disabled={disabled || running || study.phase !== 'ready'} onClick={startDiagnosis}>{t(study.diagnostic.due ? 'startDiagnosis' : 'repeatDiagnosis')}</button>}
+          {study.lastDiagnosis && study.lastDiagnosis.results.length > 0 && <details open={!study.diagnostic.due}><summary>{t('diagnosisResults')} · {new Date(study.lastDiagnosis.startedAt).toLocaleDateString()}</summary>
+            {study.lastDiagnosis.results.map(item => <div key={item.id}><p>{item.title} · {t(item.result)} · {t(item.assistance === 'independent' ? 'assistIndependent' : item.assistance === 'hint' ? 'assistHint' : 'assistWorked')}</p>
+              {item.objectiveId !== null && (item.result !== 'correct' || item.assistance !== 'independent') && <button type="button" disabled={disabled || running} aria-pressed={selectedObjectiveId === item.objectiveId} onClick={() => chooseGoal({ id: item.objectiveId ?? '', subject })}>{t('chooseGoal')} · {item.title}</button>}
+            </div>)}
+          </details>}
+        </section>}
+        {!active && curriculum && curriculum.scope.current && <section><h3>{t('map')} · {t(subject)}</h3>
+          <p>{t('levelMastered')}: {curriculum.summary.mastered} / {curriculum.summary.concepts} · {t('levelPractising')}: {curriculum.summary.practising + curriculum.summary.stalled} · {t('levelWeak')}: {curriculum.summary.weak + curriculum.summary.due} · {t('levelUntouched')}: {curriculum.summary.untouched}</p>
+          {curriculum.units.map(unit => <p key={unit.id}>{unit.name} · {t('levelMastered')} {unit.mastered}/{unit.concepts}{unit.weak > 0 ? ` · ${t('levelWeak')} ${unit.weak}` : ''}{unit.due > 0 ? ` · ${t('levelDue')} ${unit.due}` : ''}</p>)}
+          <button type="button" onClick={() => setTab('map')}>{t('openMap')}</button>
+        </section>}
+        {!active && <section><h3>{t('notebook')} · {t(subject)}</h3>
+          <p>{t('bookDue')}: {study.mistakeBook.due} · {t('bookReviewing')}: {study.mistakeBook.reviewing} · {t('bookMastered')}: {study.mistakeBook.mastered} · {t('pending')}: {study.mistakeBook.pending}</p>
+          {study.dueMistakes.slice(0, 5).map(item => <p key={item.id}>{t('dueNow')} · {item.topic}</p>)}
+          {study.confirmedMistakes.filter(item => item.dueAt === undefined || item.dueAt > now).slice(0, 5).map(item => <p key={item.id}>{item.topic}{item.stage >= 4 ? ` · ${t('bookMastered')}` : item.dueAt !== undefined ? ` · ${t('nextReview')}: ${new Date(item.dueAt).toLocaleString()}` : ''}</p>)}
+          {study.confirmedCount === 0 && study.pendingCount === 0 && <p>{t('empty')}</p>}
+          <button type="button" onClick={() => setTab('mistakes')}>{t('openMistakes')}</button>
+        </section>}
+      </>}
+      {study && tab === 'map' && <>
+        <section><h3>{curriculum ? curriculum.title : t('map')}</h3>
+          <div className="student-scope">
+            <label>{t('mapScope')}<select aria-label={t('grade')} value={scopeGrade} onChange={event => setMapGrade(Number(event.target.value))}><option value={1}>{t('gradeOne')}</option><option value={2}>{t('gradeTwo')}</option></select></label>
+            <label>{t('term')}<select aria-label={t('term')} value={scopeTerm} onChange={event => setMapTerm(event.target.value === 'second' ? 'second' : 'first')}><option value="first">{t('first')}</option><option value="second">{t('second')}</option></select></label>
+            {(mapGrade !== undefined || mapTerm !== undefined) && <button type="button" onClick={() => { setMapGrade(undefined); setMapTerm(undefined) }}>{t('backToCurrent')}</button>}
+          </div>
+          {curriculum && !curriculum.scope.current && <p role="status">{t('mapBrowsing')}</p>}
+          {curriculum ? <>
+            <p>{t('levelMastered')}: {curriculum.summary.mastered} · {t('levelPractising')}: {curriculum.summary.practising} · {t('levelStalled')}: {curriculum.summary.stalled} · {t('levelWeak')}: {curriculum.summary.weak} · {t('levelDue')}: {curriculum.summary.due} · {t('levelUntouched')}: {curriculum.summary.untouched}</p>
+            <details><summary>{t('mapBasis')}</summary><p>{curriculum.basis}</p></details>
+            {selectedObjectiveId && !active && <button type="button" onClick={() => setSelectedObjectiveId('')}>{t('clearGoal')}</button>}
+          </> : <p>{t('mapUnavailable')}</p>}
+        </section>
+        {curriculum && <section><h3>{t('knowledgePoints')}</h3>
+          {curriculum.units.map(unit => <details key={unit.id}><summary>{unit.name} · {t('levelMastered')} {unit.mastered}/{unit.concepts}{unit.weak + unit.due > 0 ? ` · ${t('levelWeak')} ${unit.weak + unit.due}` : ''}</summary>
+            <p className="student-muted">{unit.summary}</p>
+            {curriculum.objectives.filter(item => item.unit === unit.id).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><p className="student-muted">{item.goal}</p>
+              {item.reasons.length > 0 && item.level !== 'untouched' && <p className="student-muted">{reasonText(item.reasons, t)}</p>}
+              {curriculum.scope.current && <button type="button" disabled={!!active} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
+            </div>)}
+            {curriculum.concepts.filter(item => item.unit === unit.id).map(item => <details key={item.id}><summary>{item.name} · {t(levelKeys[item.level])}</summary>
+              <p>{t('definition')}: {item.definition}</p><p>{t('example')}: {item.example}</p><p>{t('source')}: {item.source}</p>
+              {curriculum.relations.filter(relation => relation.fromId === item.id || relation.toId === item.id).map(relation => <p key={relation.id} className="student-muted">{conceptName(relation.fromId)} · {t(relation.kind)} · {conceptName(relation.toId)}: {relation.explanation}</p>)}
+            </details>)}
+          </details>)}
+        </section>}
+        {(study.objectives.length > 0 || study.concepts.length > 0) && <section><h3>{t('learningGoal')} · {t('pendingConcept')}</h3>
           {study.concepts.map(item => <details key={item.id}><summary>{item.name}{item.confirmedAt === undefined ? ` · ${t('pendingConcept')}` : ''}</summary>
             <p>{t('definition')}: {item.definition}</p><p>{t('example')}: {item.example}</p><p>{t('source')}: {item.source}</p>
             {item.confirmedAt === undefined && <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void act({ action: 'confirm-concept', id: item.id, definition: String(form.get('definition') ?? ''), example: String(form.get('example') ?? ''), source: String(form.get('source') ?? ''), userConfirmation: String(form.get('confirmation') ?? '') }) }}>
@@ -80,28 +192,24 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
           {study.objectives.map(item => <div key={item.id}><p>{item.title} · {t(item.method)}: {item.goal}</p>
             <button type="button" disabled={!!active} aria-pressed={selectedObjectiveId === item.id} onClick={() => setSelectedObjectiveId(item.id)}>{t('chooseGoal')} · {item.title}</button>
           </div>)}
-          {selectedObjectiveId && !active && <button type="button" onClick={() => setSelectedObjectiveId('')}>{t('clearGoal')}</button>}
+        </section>}
+        <section>{curriculum && <><h3>{t('relationsLabel')} · {curriculum.relations.length}</h3>
+          {curriculum.relations.map(relation => <p key={relation.id}>{conceptName(relation.fromId)} · {t(relation.kind)} · {conceptName(relation.toId)}: {relation.explanation}</p>)}</>}
+          <button type="button" disabled={disabled || running} onClick={() => { void tutor(`请加载 study 技能，查询当前工作区 ${subject} 科目的知识地图（study_status kind=curriculum）、学习目标和错题。如果学校课本或孩子的问题涉及地图之外的概念，提出一个概念定义、例子及依据，先仅保存待确认概念；经家长核对后再创建学习目标或概念关系，不替家长确认。`).catch(() => {}) }}>{t('organizeConcepts')}</button>
         </section>
-        {active && <>
-          <section><p>{t('chatHelp')}</p>{task ? <Task key={task.id} study={study} available={available} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
-            {available && (running || sending ? <p role="status">{t('tutorWorking')}</p>
-              : (!task || study.feedback || task.response !== undefined || task.hintRequested) && <button disabled={disabled} onClick={() => { void tutor().catch(() => {}) }}>{t(!task ? 'prepareTask' : study.feedback ? 'nextTask' : task.response !== undefined ? 'retryFeedback' : 'retryHint')}</button>)}
-          </section>
-          <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void act({ action: 'stop', sessionId: active.id, reflection: String(form.get('reflection') ?? '') }) }}>
-            <label>{t('reflection')}<textarea aria-label={t('reflection')} name="reflection" maxLength={2000} /></label><button disabled={disabled} type="submit">{t('stop')}</button>
-          </form>
-        </>}
       </>}
       {study && tab === 'mistakes' && <>
         <PhotoIntake ask={tutor} disabled={disabled || running} t={t} />
-        <section><h3>{t('notebook')} · {t(subject)} · {study.confirmedCounts[subject]}</h3>
+        <section><h3>{t('notebook')} · {t(subject)} · {study.confirmedCount}</h3>
+          <nav aria-label={t('mistakeStatus')}>{(['all', 'due', 'reviewing', 'mastered'] as const).map(name => <button key={name} type="button" aria-pressed={mistakeStatus === name} onClick={() => { setMistakeStatus(name); setMistakeOffset(0) }}>{t(name === 'all' ? 'all' : name === 'due' ? 'bookDue' : name === 'reviewing' ? 'bookReviewing' : 'bookMastered')}{name === 'all' ? '' : ` · ${study.mistakeBook[name]}`}</button>)}</nav>
           {study.confirmedMistakes.length === 0 && <p>{t('empty')}</p>}
-          {study.confirmedMistakes.map(item => <details key={item.id}><summary>{item.topic}</summary>
+          {study.confirmedMistakes.map(item => <details key={item.id}><summary>{item.topic}{item.stage >= 4 ? ` · ${t('bookMastered')}` : item.dueAt !== undefined && item.dueAt <= now ? ` · ${t('dueNow')}` : ''}</summary>
             <p>{t('prompt')}: {item.prompt}</p><p>{t('learnerAnswer')}: {item.learnerAnswer}</p>
             <p>{t('correction')}: {item.correction}</p><p>{t('explanation')}: {item.explanation}</p>
             <p>{t('answerEvidence')}: {item.answerEvidence}</p>
-            <MistakeObjective mistake={item} objectives={study.objectives} change={change} t={t} />
-            {item.dueAt !== undefined && <p>{t('nextReview')}: {item.dueAt <= now ? t('dueNow') : new Date(item.dueAt).toLocaleString()}</p>}
+            <p>{t('reviewStage')}: {item.stage + 1} / 5{item.dueAt !== undefined ? ` · ${t('nextReview')}: ${item.dueAt <= now ? t('dueNow') : new Date(item.dueAt).toLocaleString()}` : ''}</p>
+            {study.worksheets.filter(sheet => sheet.sources.some(source => source.mistakeId === item.id)).map(sheet => <p key={sheet.id} className="student-muted">{t('relatedWorksheets')}: {sheet.objectiveTitle} · {t('graded')} {sheet.results.length}/{sheet.items.length}</p>)}
+            <MistakeObjective mistake={item} objectives={goals} change={change} t={t} />
           </details>)}
           {study.confirmedCount > 20 && <div className="student-pages">
             <button type="button" disabled={study.confirmedOffset === 0} onClick={() => setMistakeOffset(study.confirmedOffset - 20)}>{t('previousPage')}</button>
@@ -110,14 +218,13 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
           </div>}
         </section>
         <section><h3>{t('worksheets')}</h3>
-          <button type="button" disabled={disabled || running || study.objectives.length === 0 || study.confirmedCount === 0} onClick={() => { void tutor(`请加载 study 技能，查询 ${subject} 科已确认且关联学习目标的错题。针对一个学习目标生成不超过五道自编变式题，逐题实际求解并写答案依据，用 worksheet 保存练习单；不要复制已保存的原题，也不要把答案写入题干。`).catch(() => {}) }}>{t('createWorksheet')}</button>
+          <button type="button" disabled={disabled || running || goals.length === 0 || study.confirmedCount === 0} onClick={() => { void tutor(`请加载 study 技能，查询 ${subject} 科已确认且关联学习目标的错题（含知识地图目标）。针对一个学习目标生成不超过五道自编变式题，逐题实际求解并写答案依据，用 worksheet 保存练习单；不要复制已保存的原题，也不要把答案写入题干。`).catch(() => {}) }}>{t('createWorksheet')}</button>
           {study.worksheets.length === 0 && <p>{t('empty')}</p>}
           {study.worksheets.map(sheet => <WorksheetActions key={sheet.id} worksheet={sheet} sessionId={sessionId} revision={data.revision} canPrint={study.printAvailable} t={t} />)}
           {paperSheet && <>
-            <label>{t('worksheet')}<select aria-label={t('worksheet')} value={paperSheet.id} onChange={event => setPaperSheetId(event.target.value)}>{study.worksheets.map(sheet => <option key={sheet.id} value={sheet.id}>{sheet.id}</option>)}</select></label>
+            <label>{t('worksheet')}<select aria-label={t('worksheet')} value={paperSheet.id} onChange={event => setPaperSheetId(event.target.value)}>{study.worksheets.map(sheet => <option key={sheet.id} value={sheet.id}>{sheet.objectiveTitle} · {new Date(sheet.createdAt).toLocaleDateString()}</option>)}</select></label>
             <PhotoIntake ask={tutor} disabled={disabled || running} t={t} variant="paper" prompt={`请加载 study 技能，查询练习单 ${paperSheet.id}。实际读取这张纸上作答照片，按练习单题号逐项转录学生原答案。先向我展示转录和不确定之处，等待确认；核对答案依据后才用 paper-result 逐题保存。纸上结果不需要开始计时学习段，不按上传次数发星。`} />
           </>}
-          {study.paperResults.map(result => <p key={`${result.worksheetId}-${result.itemId}`}>{result.worksheetId} · {result.itemId} · {t(result.result)}: {result.response}</p>)}
         </section>
         <section><h3>{t('due')} · {study.dueCount}</h3>{study.dueMistakes.length === 0 && <p>{t('empty')}</p>}
           {study.dueMistakes.map(item => <p key={item.id}>{t(item.subject)} · {item.topic}</p>)}
@@ -130,8 +237,12 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
       </>}
       {study && tab === 'growth' && <>
         <section><h3>{t('stars')}: {study.stars}</h3><p>{t('starsHelp')}</p></section>
+        {curriculum && curriculum.scope.current && <section><h3>{t('masteryOverview')} · {t(subject)}</h3>
+          <p>{t('levelMastered')}: {curriculum.summary.mastered} · {t('levelPractising')}: {curriculum.summary.practising + curriculum.summary.stalled} · {t('levelWeak')}: {curriculum.summary.weak + curriculum.summary.due} · {t('levelUntouched')}: {curriculum.summary.untouched}</p>
+          {curriculum.objectives.filter(item => item.attempts > 0 || item.activeMistakes > 0).map(item => <p key={item.id}>{item.title} · {t(levelKeys[item.level])} · {t('independent')}: {item.independentDays}</p>)}
+        </section>}
         <section><h3>{t('evidence')}</h3>{study.progress.length === 0 && <p>{t('empty')}</p>}
-          {study.progress.map(item => <p key={JSON.stringify([item.subject, item.topic, item.materialId])}>{item.topic} · {t(item.level === 'independent-on-three-days' ? 'independent' : 'practising')}</p>)}
+          {study.progress.map(item => <p key={JSON.stringify([item.subject, item.topic, item.materialId, item.objectiveId])}>{goals.find(goal => goal.id === item.objectiveId)?.title ?? item.topic} · {t(item.level === 'independent-on-three-days' ? 'independent' : 'practising')}</p>)}
           {study.recentAttempts.map(item => <details key={item.id}><summary>{item.topic} · {t(item.result)}</summary><p>{item.prompt}</p><p>{item.response}</p><p>{item.feedback}</p><p>{item.answerEvidence}</p></details>)}
         </section><p>{t('bounded')}</p>
       </>}
@@ -139,24 +250,31 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   </main>
 }
 
-function StartForm({ study, activity, choose, disabled, start, t }: { study: Study; activity: Activity; choose: (activity: Activity) => void; disabled: boolean; start: (subject: Activity['subject'], mode: Activity['mode']) => Promise<void>; t: Translate }) {
+function StartForm({ study, activity, choose, disabled, start, goal, clearGoal, t }: { study: Study; activity: Activity; choose: (activity: Activity) => void; disabled: boolean; start: (subject: Activity['subject'], mode: Activity['mode']) => Promise<void>; goal: Goal | undefined; clearGoal: () => void; t: Translate }) {
   const { subject, mode } = activity
   const confirmed = study.courses.some(item => item.subject === subject)
   const due = study.dueSubjects.includes(subject)
   return <form onSubmit={event => { event.preventDefault(); void start(subject, mode) }}><fieldset disabled={disabled}>
-    <label>{t('mode')}<select aria-label={t('mode')} value={mode} onChange={event => { const value = event.target.value; choose({ subject, mode: value === 'school' || value === 'review' || value === 'explore' ? value : 'foundation' }) }}>{(['foundation', 'school', 'review', 'explore'] as const).map(item => <option key={item} value={item} disabled={(item === 'school' && !confirmed) || (item === 'review' && !due)}>{t(item)}</option>)}</select></label>
-    <p>{t(mode === 'foundation' ? 'foundationHelp' : mode === 'school' ? 'schoolHelp' : mode === 'review' ? 'reviewHelp' : 'exploreHelp')}</p>
+    <label>{t('mode')}<select aria-label={t('mode')} value={mode} onChange={event => { const value = event.target.value; choose({ subject, mode: value === 'school' || value === 'review' || value === 'explore' || value === 'diagnose' ? value : 'foundation' }) }}>{(['foundation', 'school', 'review', 'explore', 'diagnose'] as const).map(item => <option key={item} value={item} disabled={(item === 'school' && !confirmed) || (item === 'review' && !due)}>{t(item)}</option>)}</select></label>
+    <p>{t(mode === 'foundation' ? 'foundationHelp' : mode === 'school' ? 'schoolHelp' : mode === 'review' ? 'reviewHelp' : mode === 'diagnose' ? 'diagnoseHelp' : 'exploreHelp')}</p>
+    {goal && mode === 'foundation' && <p>{t('learningGoal')}: {goal.title} <button type="button" onClick={clearGoal}>{t('clearGoal')}</button></p>}
+    <p className="student-muted">{t(subject === 'chinese' ? 'chineseMethod' : subject === 'math' ? 'mathMethod' : 'englishMethod')}</p>
     {!confirmed && <p>{t('unconfirmed')}</p>}
     <button type="submit" disabled={(mode === 'school' && !confirmed) || (mode === 'review' && !due)}>{t('start')}</button>
   </fieldset></form>
 }
 
-function Task({ study, available, disabled, t, act }: { study: Study; available: boolean; disabled: boolean; t: Translate; act: (command: Command, withTutor?: boolean) => Promise<void> }) {
+function Task({ study, goals, available, disabled, t, act }: { study: Study; goals: Goal[]; available: boolean; disabled: boolean; t: Translate; act: (command: Command, withTutor?: boolean) => Promise<void> }) {
   const task = study.task
   if (!task) return null
-  return <><h3>{task.topic}</h3><p className="student-question">{task.prompt}</p>
+  const goal = task.objectiveId ? goals.find(item => item.id === task.objectiveId)?.title : undefined
+  return <><h3>{task.topic}</h3>{goal && <p className="student-muted">{t('learningGoal')}: {goal}</p>}<p className="student-question">{task.prompt}</p>
     {task.response !== undefined && <p>{t('answer')}: {task.response}</p>}
-    {study.feedback ? <><p>{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : <form onSubmit={event => { event.preventDefault(); void act({ action: 'answer', taskId: task.id, response: String(new FormData(event.currentTarget).get('answer') ?? '') }, true) }}>
+    {study.feedback ? <><p className="student-result">{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : task.choices ? <fieldset disabled={!available || disabled}>
+      <p>{t('chooseAnswer')}</p>
+      <div className="student-choices">{task.choices.map(choice => <button key={choice} type="button" onClick={() => { void act({ action: 'answer', taskId: task.id, response: choice }, true) }}>{choice}</button>)}</div>
+      <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true) }}>{t('hint')}</button>
+    </fieldset> : <form onSubmit={event => { event.preventDefault(); void act({ action: 'answer', taskId: task.id, response: String(new FormData(event.currentTarget).get('answer') ?? '') }, true) }}>
       <fieldset disabled={!available || disabled}><Field name="answer" label={t('answer')} /><button type="submit">{t('submit')}</button>
         <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true) }}>{t('hint')}</button>
       </fieldset>
@@ -165,7 +283,7 @@ function Task({ study, available, disabled, t, act }: { study: Study; available:
   </>
 }
 
-function MistakeObjective({ mistake, objectives, change, t }: { mistake: Study['confirmedMistakes'][number]; objectives: Study['objectives']; change: ChangeStudy; t: Translate }) {
+function MistakeObjective({ mistake, objectives, change, t }: { mistake: Study['confirmedMistakes'][number]; objectives: Goal[]; change: ChangeStudy; t: Translate }) {
   const [error, setError] = useState('')
   return <form onSubmit={event => {
     event.preventDefault(); setError('')
@@ -198,7 +316,13 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, t }: { wor
     } catch (reason) { setError(reason instanceof Error ? reason.message : t('printError')) }
     finally { setPrinting(false) }
   }
-  return <details><summary>{worksheet.id} · {worksheet.items.length} {t('questions')}</summary>
+  return <details><summary>{worksheet.objectiveTitle} · {worksheet.items.length} {t('questions')} · {t('graded')} {worksheet.results.length}/{worksheet.items.length}</summary>
+    <p className="student-muted">{t('createdAt')}: {new Date(worksheet.createdAt).toLocaleDateString()}</p>
+    {worksheet.items.map((item, index) => {
+      const source = worksheet.sources.find(candidate => candidate.itemId === item.id)
+      const result = worksheet.results.find(candidate => candidate.itemId === item.id)
+      return <p key={item.id}>{index + 1}. {item.prompt} · {t('sourceMistake')}: {source?.topic ?? item.mistakeId} · {result ? `${t(result.result)}: ${result.response}` : t('notGraded')}</p>
+    })}
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => setPreviewed(true)}>{t('previewPdf')}</a>
     <button type="button" disabled={!canPrint || !previewed || printing || !!message} onClick={() => { void print() }}>{t('printWorksheet')}</button>
     {!canPrint && <p>{t('printUnavailable')}</p>}
@@ -206,7 +330,7 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, t }: { wor
   </details>
 }
 
-const mistakePhotoPrompt = '请加载 study 技能，实际读取这张题目照片，逐项转录原题和学生回答，核对推导与答案依据，以 mistake 保存为待确认错题。不要猜测不清楚的文字，不要替用户确认；请我到学习工作台核对。此步只录入资料，不开始教学。'
+const mistakePhotoPrompt = '请加载 study 技能，实际读取这张题目照片，逐项转录原题和学生回答，核对推导与答案依据，以 mistake 保存为待确认错题，并尽量在 mistake 中写上知识地图里对应的 objectiveId。不要猜测不清楚的文字，不要替用户确认；请我到学习工作台核对。此步只录入资料，不开始教学。'
 function PhotoIntake({ ask, disabled, t, variant = 'mistake', prompt = mistakePhotoPrompt }: { ask: AskTutor; disabled: boolean; t: Translate; variant?: 'mistake' | 'paper'; prompt?: string }) {
   const [photo, setPhoto] = useState<StudyPhoto>()
   const [error, setError] = useState('')

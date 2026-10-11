@@ -1,0 +1,51 @@
+{
+  "id": "chinese-grade2-first",
+  "subject": "chinese",
+  "grade": 2,
+  "term": "first",
+  "title": "语文二年级上册知识地图",
+  "basis": "依据《义务教育语文课程标准（2022年版）》第一学段要求整理，按统编版语文二年级上册编排组织；随包默认教材即此版本（人民教育出版社），课页可按需读取。是学习框架，不代替学校进度和校内评价。",
+  "units": [
+    { "id": "c2a-u1", "name": "识字与查字典", "summary": "部首查字法、形声字、形近字与多音字" },
+    { "id": "c2a-u2", "name": "阅读方法", "summary": "借助图画、联系上下文、提取信息" },
+    { "id": "c2a-u3", "name": "词句运用", "summary": "比喻、拟人、词语搭配" },
+    { "id": "c2a-u4", "name": "表达与积累", "summary": "看图写话、讲故事、留言条、古诗名言" }
+  ],
+  "concepts": [
+    { "id": "c2a-bushou", "name": "部首查字法", "unit": "c2a-u1", "definition": "遇到不认识的字，先找部首，再数除去部首有几画，在字典里找到它。", "example": "查“狐”，先找反犬旁，再数右边有几画。", "source": "语文课标（2022年版）第一学段「识字与写字」；统编版二上语文园地" },
+    { "id": "c2a-xingsheng", "name": "形声字归类", "unit": "c2a-u1", "definition": "同偏旁的字往往意思相近，成组记忆又快又牢。", "example": "木字旁：树、桥、桃、枝，都和树木有关。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c2a-duoyin", "name": "多音字", "unit": "c2a-u1", "definition": "一个字有多种读音，读音不同，意思往往也不同。", "example": "长：cháng（长短）、zhǎng（长大）。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c2a-xingjin", "name": "形近字辨析", "unit": "c2a-u1", "definition": "样子相近的字要看清笔画差别，组词区分。", "example": "己、已、巳；人—入。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
+    { "id": "c2a-yuedutu", "name": "借助图画阅读", "unit": "c2a-u2", "definition": "图文对照读，图画帮助理解不懂的词句。", "example": "读《黄山奇石》，看图想象“猴子观海”的样子。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2a-caiyi", "name": "联系上下文猜词义", "unit": "c2a-u2", "definition": "不认识的词，联系前后句子猜一猜，再验证。", "example": "联系句子猜“五光十色”说的是颜色多而美。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2a-xinxi", "name": "提取关键信息", "unit": "c2a-u2", "definition": "读短文时找出时间、地点、人物和事件。", "example": "读《难忘的泼水节》，找出时间、地点和人物。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
+    { "id": "c2a-biyu", "name": "比喻句", "unit": "c2a-u3", "definition": "用“像、好像”把一样东西比作另一样，让句子更生动。", "example": "天上的云朵像棉花糖。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c2a-niren", "name": "拟人句", "unit": "c2a-u3", "definition": "把物当作人来写，让它会说话、会做事。", "example": "小鸟在枝头唱歌。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c2a-dapei", "name": "词语搭配与归类", "unit": "c2a-u3", "definition": "词语搭配要合适，也可以按意思给词语归类。", "example": "明亮的（眼睛）；描写春天的词语：温暖、嫩绿、花开。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
+    { "id": "c2a-xiehua", "name": "看图写话（有细节）", "unit": "c2a-u4", "definition": "按顺序观察，加上看到的细节和想到的话，写几句连贯的话。", "example": "看图写：什么时间、谁、在哪里、做什么、心情怎样。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c2a-jiang", "name": "借助提示讲故事", "unit": "c2a-u4", "definition": "用关键词或图片提示，把故事按顺序讲完整。", "example": "借助“乌鸦—瓶子—石子—喝水”把故事讲下来。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
+    { "id": "c2a-liuyan", "name": "学写留言条", "unit": "c2a-u4", "definition": "留言条要写清称呼、事情、署名和日期。", "example": "“妈妈：我去楼下和朵朵玩，六点回家。小禾 10月5日”", "source": "语文课标（2022年版）第一学段「表达与交流」；统编版二上语文园地" },
+    { "id": "c2a-jilei", "name": "古诗与名言", "unit": "c2a-u4", "definition": "背诵古诗和名言警句，积累语言。", "example": "《登鹳雀楼》《望庐山瀑布》《江雪》《敕勒歌》；“欲穷千里目，更上一层楼。”", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" }
+  ],
+  "objectives": [
+    { "id": "c2a-o-chazi", "title": "用部首查字法查不认识的字", "goal": "能找出部首、数清笔画，在字典里查到字和意思。", "conceptIds": ["c2a-bushou"], "method": "recognize" },
+    { "id": "c2a-o-zixing", "title": "分辨形近字和多音字，按偏旁归类识字", "goal": "能看清字形差别组词，能根据意思选对多音字的读音。", "conceptIds": ["c2a-xingsheng", "c2a-duoyin", "c2a-xingjin"], "method": "recognize" },
+    { "id": "c2a-o-caiyi", "title": "联系上下文和图画猜词义并说出依据", "goal": "能猜出生词的意思，并指出是哪句话、哪幅图帮助了自己。", "conceptIds": ["c2a-yuedutu", "c2a-caiyi"], "method": "read-evidence" },
+    { "id": "c2a-o-xinxi", "title": "读短文找出时间、地点、人物、事件", "goal": "能按四要素说出短文的主要内容，并指出依据的句子。", "conceptIds": ["c2a-xinxi"], "method": "read-evidence" },
+    { "id": "c2a-o-xiuci", "title": "找出并仿写比喻句、拟人句", "goal": "能认出比喻和拟人，并各仿写一句。", "conceptIds": ["c2a-biyu", "c2a-niren", "c2a-dapei"], "method": "express" },
+    { "id": "c2a-o-xiehua", "title": "看图写话，按顺序写清细节", "goal": "能按顺序写几句连贯的话，包含时间、地点、人物和事情。", "conceptIds": ["c2a-xiehua"], "method": "express" },
+    { "id": "c2a-o-jiang", "title": "借助提示把故事讲完整", "goal": "能用提示词按顺序把故事讲下来，声音响亮。", "conceptIds": ["c2a-jiang"], "method": "express" },
+    { "id": "c2a-o-liuyan", "title": "按格式写一张留言条", "goal": "能写清称呼、事情、署名和日期，格式正确。", "conceptIds": ["c2a-liuyan"], "method": "express" },
+    { "id": "c2a-o-jilei", "title": "背诵古诗和名言", "goal": "能背诵本册要求的古诗和名言，说出大意。", "conceptIds": ["c2a-jilei"], "method": "read-evidence" }
+  ],
+  "relations": [
+    { "id": "c2a-r-xingsheng-bushou", "fromId": "c2a-xingsheng", "toId": "c2a-bushou", "kind": "prerequisite", "explanation": "知道常见偏旁的意思，找部首、查字典才快。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-xingjin-duoyin", "fromId": "c2a-xingjin", "toId": "c2a-duoyin", "kind": "contrast", "explanation": "形近字是字形相近，多音字是一字多音，两类易错点对照辨析。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-yuedutu-caiyi", "fromId": "c2a-yuedutu", "toId": "c2a-caiyi", "kind": "prerequisite", "explanation": "先会借助图画理解，再练习联系上下文猜词义。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-caiyi-xinxi", "fromId": "c2a-caiyi", "toId": "c2a-xinxi", "kind": "prerequisite", "explanation": "读懂词句，才能提取时间、地点、人物、事件。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-biyu-niren", "fromId": "c2a-biyu", "toId": "c2a-niren", "kind": "contrast", "explanation": "比喻是“像什么”，拟人是“当作人”，两种写法对照学习。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-dapei-biyu", "fromId": "c2a-dapei", "toId": "c2a-biyu", "kind": "prerequisite", "explanation": "词语搭配得当，比喻句才写得准确。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-xinxi-jiang", "fromId": "c2a-xinxi", "toId": "c2a-jiang", "kind": "prerequisite", "explanation": "先能提取信息，才能借助提示把故事讲完整。", "source": "语文课标（2022年版）第一学段内容顺序" },
+    { "id": "c2a-r-dapei-xiehua", "fromId": "c2a-dapei", "toId": "c2a-xiehua", "kind": "prerequisite", "explanation": "积累词语搭配，看图写话才有细节可写。", "source": "语文课标（2022年版）第一学段内容顺序" }
+  ]
+}

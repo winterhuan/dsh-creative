@@ -1,0 +1,44 @@
+{
+  "id": "english-grade2-first",
+  "subject": "english",
+  "grade": 2,
+  "term": "first",
+  "title": "英语二年级上册知识地图",
+  "basis": "上海市小学英语从一年级起开设，一、二年级以听、说、认读为主，为《义务教育英语课程标准（2022年版）》一级学习做准备。本图按一年级起点的通行话题组织（问候、家人与外貌、房间、自然与街道），是学习框架，不代替学校课本和教师进度；单词与句型以学校实际教材为准。",
+  "units": [
+    { "id": "e2a-u1", "name": "问候与介绍", "summary": "再次见面、确认身份、介绍他人" },
+    { "id": "e2a-u2", "name": "家人与外貌", "summary": "家庭成员扩展、头发长短" },
+    { "id": "e2a-u3", "name": "房间与厨房", "summary": "家具、厨房用具、方位" },
+    { "id": "e2a-u4", "name": "天空、森林与街道", "summary": "自然景物、动物、交通工具、数量" }
+  ],
+  "concepts": [
+    { "id": "e2a-hello-again", "name": "再次见面问候", "unit": "e2a-u1", "definition": "用 Hello again! 和 How are you? 问候，用 I'm fine. Thank you. 回应。", "example": "—How are you? —I'm fine. Thank you.", "source": "英语课标（2022年版）一级准备内容；通行话题「问候」" },
+    { "id": "e2a-are-you", "name": "确认身份：Are you…?", "unit": "e2a-u1", "definition": "用 Are you…? 猜对方是谁，用 Yes, I am. / No, I'm not. 回答。", "example": "—Are you Alice? —No, I'm Kitty.", "source": "英语课标（2022年版）一级准备内容；通行话题「个人情况」" },
+    { "id": "e2a-family-ext", "name": "家庭成员扩展", "unit": "e2a-u2", "definition": "认识 grandfather、grandmother、uncle、aunt、cousin。", "example": "This is my grandmother. That's my cousin.", "source": "英语课标（2022年版）一级准备内容；通行话题「家庭」" },
+    { "id": "e2a-hair", "name": "外貌：头发", "unit": "e2a-u2", "definition": "用 long、short 描述头发，会说 My hair is long.。", "example": "My hair is long. Her hair is short.", "source": "英语课标（2022年版）一级准备内容；通行话题「外貌」" },
+    { "id": "e2a-this-that", "name": "介绍他人：This is… / That's…", "unit": "e2a-u1", "definition": "介绍近处的人用 This is…，介绍远处的人用 That's…。", "example": "This is my friend. That's my teacher.", "source": "英语课标（2022年版）一级准备内容；通行话题「介绍」" },
+    { "id": "e2a-room", "name": "房间与家具", "unit": "e2a-u3", "definition": "认识 bed、table、sofa、chair、room，会介绍自己的房间。", "example": "This is my room. My bed is big.", "source": "英语课标（2022年版）一级准备内容；通行话题「家居」" },
+    { "id": "e2a-kitchen", "name": "厨房用具", "unit": "e2a-u3", "definition": "认识 bowl、plate、spoon、chopsticks、cup。", "example": "This is a spoon. These are chopsticks.", "source": "英语课标（2022年版）一级准备内容；通行话题「家居」" },
+    { "id": "e2a-where", "name": "方位问句：Where is…?", "unit": "e2a-u3", "definition": "用 in、on、under 回答东西在哪里。", "example": "—Where is the cat? —It's under the table.", "source": "英语课标（2022年版）一级准备内容；通行话题「位置」" },
+    { "id": "e2a-sky", "name": "天空", "unit": "e2a-u4", "definition": "认识 sun、moon、star、cloud，会描述看到什么。", "example": "I can see the moon. Look at the stars.", "source": "英语课标（2022年版）一级准备内容；通行话题「自然」" },
+    { "id": "e2a-forest", "name": "森林", "unit": "e2a-u4", "definition": "认识 fox、hippo、grass、tree 等森林里的事物。", "example": "Look at the fox. The hippo is big.", "source": "英语课标（2022年版）一级准备内容；通行话题「动物」" },
+    { "id": "e2a-street", "name": "街道与交通", "unit": "e2a-u4", "definition": "认识 car、bus、van、bicycle、road。", "example": "I see a bus on the road.", "source": "英语课标（2022年版）一级准备内容；通行话题「交通」" },
+    { "id": "e2a-howmany", "name": "数量问句：How many…?", "unit": "e2a-u4", "definition": "用 How many…? 问数量并回答。", "example": "—How many books? —Three books.", "source": "英语课标（2022年版）一级准备内容；通行话题「数字」" }
+  ],
+  "objectives": [
+    { "id": "e2a-o-greet", "title": "用 How are you? 和 Are you…? 交流", "goal": "会问候近况，会猜身份并回答 Yes/No。", "conceptIds": ["e2a-hello-again", "e2a-are-you"], "method": "speak" },
+    { "id": "e2a-o-family", "title": "介绍家人并描述头发长短", "goal": "会用 This is… / That's… 介绍家人，会描述外貌。", "conceptIds": ["e2a-family-ext", "e2a-hair", "e2a-this-that"], "method": "speak" },
+    { "id": "e2a-o-home", "title": "说出房间家具和厨房用具", "goal": "看到图片或实物能说出名称，会介绍自己的房间。", "conceptIds": ["e2a-room", "e2a-kitchen"], "method": "speak" },
+    { "id": "e2a-o-nature", "title": "说出天空、森林和街道里的事物", "goal": "能说出自然景物、动物和交通工具的名称。", "conceptIds": ["e2a-sky", "e2a-forest", "e2a-street"], "method": "speak" },
+    { "id": "e2a-o-where", "title": "用 in/on/under 回答物品在哪里", "goal": "听到 Where is…? 能用方位词回答。", "conceptIds": ["e2a-where"], "method": "listen" },
+    { "id": "e2a-o-howmany", "title": "用 How many 问答数量", "goal": "会问数量并数出答案。", "conceptIds": ["e2a-howmany"], "method": "speak" }
+  ],
+  "relations": [
+    { "id": "e2a-r-hello-areyou", "fromId": "e2a-hello-again", "toId": "e2a-are-you", "kind": "prerequisite", "explanation": "先会问候，再学着猜对方身份。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2a-r-family-thisthat", "fromId": "e2a-family-ext", "toId": "e2a-this-that", "kind": "prerequisite", "explanation": "先认识家人称呼，再用 This is… 介绍。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2a-r-family-hair", "fromId": "e2a-family-ext", "toId": "e2a-hair", "kind": "prerequisite", "explanation": "认识家人之后，学着描述他们的外貌。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2a-r-room-kitchen", "fromId": "e2a-room", "toId": "e2a-kitchen", "kind": "contrast", "explanation": "房间和厨房的家居词汇对照认读。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2a-r-room-where", "fromId": "e2a-room", "toId": "e2a-where", "kind": "prerequisite", "explanation": "先认识家具名称，才能说清东西在哪里。", "source": "英语课标（2022年版）一级准备内容顺序" },
+    { "id": "e2a-r-street-howmany", "fromId": "e2a-street", "toId": "e2a-howmany", "kind": "prerequisite", "explanation": "认识交通工具，再问一问路上有几辆车。", "source": "英语课标（2022年版）一级准备内容顺序" }
+  ]
+}

@@ -9,7 +9,7 @@ import { en } from '../src/client/locales.ts'
 import { NOW, DAY, setup, start, attempt, mistake, confirm } from './fixtures.ts'
 
 const t = (key: keyof typeof en) => en[key]
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks() })
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); window.localStorage.clear() })
 const answerTask = { id: attempt.id, sessionId: attempt.sessionId, subject: attempt.subject, topic: attempt.topic, prompt: attempt.prompt }
 const initial = () => updateStudy(updateStudy(updateStudy(undefined, setup, Date.now()), start, Date.now()), { action: 'task', task: answerTask }, Date.now())
 
@@ -24,8 +24,11 @@ function installFetch(state = initial()) {
     }
     const query = new URL(url, 'http://localhost').searchParams
     const offset = Number(query.get('mistakeOffset') ?? 0)
-    const subject = query.get('mistakeSubject') as 'chinese' | 'math' | 'english' | null
-    return new Response(JSON.stringify(dashboard(state, Date.now(), offset, subject ?? 'math')))
+    const subject = query.get('subject') as 'chinese' | 'math' | 'english' | null
+    const status = query.get('mistakeStatus') as 'all' | 'due' | 'reviewing' | 'mastered' | null
+    const mapGrade = query.get('mapGrade')
+    const mapTerm = query.get('mapTerm') as 'first' | 'second' | null
+    return new Response(JSON.stringify(dashboard(state, Date.now(), { subject: subject ?? 'math', mistakeOffset: offset, mistakeStatus: status ?? 'all', ...(mapGrade ? { mapGrade: Number(mapGrade) } : {}), ...(mapTerm ? { mapTerm } : {}) })))
   })
   vi.stubGlobal('fetch', fetch)
   return { requests, fetch, read: () => state }
@@ -156,7 +159,7 @@ it('keeps separate subject notebooks with their own counts and pages', async () 
   fireEvent.click(screen.getByRole('button', { name: 'English' }))
   await screen.findByText('English topic')
   expect(screen.queryByText('Chinese topic 1')).toBeNull()
-  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('mistakeOffset=0&mistakeSubject=english'), expect.anything())
+  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('mistakeOffset=0&subject=english'), expect.anything())
 })
 
 it('confirms a concept before showing it as a learning goal source', async () => {
@@ -164,6 +167,7 @@ it('confirms a concept before showing it as a learning goal source', async () =>
   state = updateStudy(state, { action: 'concept', concept: { id: 'ten', subject: 'math', name: '凑十', definition: '先组成十', example: '8+2=10', source: '课本' } }, NOW)
   const backend = installFetch(state)
   render(<StudyDesk sessionId="concept" visible running={false} ask={vi.fn()} t={t} />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Knowledge map' }))
   fireEvent.click(await screen.findByText('凑十 · Awaiting parent review'))
   fireEvent.change(screen.getByLabelText('Parent confirmation'), { target: { value: '家长核对概念定义' } })
   fireEvent.click(screen.getByRole('button', { name: 'Confirm concept' }))
@@ -185,7 +189,10 @@ it('starts foundation practice with the learner-selected knowledge goal', async 
   const backend = installFetch(worksheetState())
   const ask = vi.fn().mockResolvedValue(undefined)
   render(<StudyDesk sessionId="goal" visible running={false} ask={ask} t={t} />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Knowledge map' }))
   fireEvent.click(await screen.findByRole('button', { name: 'Practise this goal · 凑十加法' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Today' }))
+  await screen.findByText('Learning goal: 凑十加法')
   fireEvent.click(screen.getByRole('button', { name: 'Start learning' }))
   await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('add'), undefined))
   expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'foundation' })
@@ -198,7 +205,7 @@ it.skipIf(process.platform === 'win32')('requires PDF preview and confirmation b
   render(<StudyDesk sessionId="paper" visible running={false} ask={vi.fn()} t={t} />)
   await screen.findByRole('button', { name: 'Start learning' })
   fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
-  fireEvent.click(screen.getByText('sheet · 1 questions'))
+  fireEvent.click(screen.getByText('凑十加法 · 1 questions · Checked 0/1'))
   const print = screen.getByRole('button', { name: 'Send to printer' }) as HTMLButtonElement
   expect(print.disabled).toBe(true)
   fireEvent.click(screen.getByRole('link', { name: 'Preview PDF' }))
@@ -280,7 +287,7 @@ it('shows the saved answer with feedback and offers the next question', async ()
   await screen.findByText(`My answer: ${attempt.response}`)
   expect(screen.getByText(attempt.feedback)).toBeTruthy()
   expect(screen.getByRole('button', { name: 'Next question' })).toBeTruthy()
-  expect(screen.getByText('Time left today: 20:00 · Due for review: 0')).toBeTruthy()
+  expect(screen.getByText('Time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
 })
 
 it('uses the server clock immediately without showing more than the block limit', async () => {
@@ -290,5 +297,130 @@ it('uses the server clock immediately without showing more than the block limit'
   vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(dashboard(state, serverNow)))))
   render(<StudyDesk sessionId="clock" visible running={false} ask={vi.fn()} t={t} />)
   await screen.findByText('Time left: 10:00')
-  expect(screen.getByText('Time left today: 20:00 · Due for review: 0')).toBeTruthy()
+  expect(screen.getByText('Time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
+})
+
+it('shows the knowledge map and mistake book on the main tab and starts the recommended review', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  let state = updateStudy(undefined, setup, NOW - DAY)
+  state = updateStudy(state, { action: 'mistake', mistake }, NOW - DAY)
+  state = updateStudy(state, confirm, NOW - DAY)
+  const backend = installFetch(state)
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="main" visible running={false} ask={ask} t={t} />)
+  await screen.findByRole('heading', { name: 'Knowledge map · Math' })
+  expect(screen.getByText('乘法初步 · Mastered 0/2')).toBeTruthy()
+  expect(screen.getByRole('heading', { name: 'Confirmed mistakes · Math' })).toBeTruthy()
+  expect(screen.getByText('Due: 1 · Reviewing: 0 · Consolidated: 0 · Awaiting confirmation: 0')).toBeTruthy()
+  expect(screen.getByText('Review due mistakes first · Math')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Open knowledge map' }))
+  await screen.findByRole('heading', { name: '数学二年级上册知识地图' })
+  expect(screen.getByRole('heading', { name: 'Concept relations · 9' })).toBeTruthy()
+  fireEvent.click(screen.getByText('乘法初步 · Mastered 0/2'))
+  fireEvent.click(screen.getByText('乘法的意义 · Not started'))
+  expect(screen.getByText('Definition: 求几个相同加数的和，可以用乘法，比连加更简便。')).toBeTruthy()
+  expect(screen.getAllByText(/乘法的意义 · Prerequisite for · 2、4、8的乘法口诀/).length).toBeGreaterThan(0)
+  fireEvent.click(screen.getByRole('button', { name: 'Today' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Start now' }))
+  await waitFor(() => expect(ask).toHaveBeenCalledOnce())
+  expect(ask.mock.calls[0]?.[0]).toContain('到期错题')
+  expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'review' })
+})
+
+it('surfaces a weak knowledge point and starts practice around it', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  let state = updateStudy(undefined, setup, NOW - 2 * DAY)
+  state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, objectiveId: 'm2a-o-tables' } }, NOW - 2 * DAY)
+  state = updateStudy(state, confirm, NOW - 2 * DAY)
+  const backend = installFetch(state)
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="weak" visible running={false} ask={ask} t={t} />)
+  await screen.findByText('Time left today: 20:00 · Due for review: 1 · Weak points: 1')
+  fireEvent.click(screen.getByText('Weak points · 1'))
+  expect(screen.getByText('Math · 熟记并运用2～9的乘法口诀 · Review due')).toBeTruthy()
+  expect(screen.getByText('Mistakes due for review 1 · Open mistakes not yet reviewed 1')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Practise this goal · 熟记并运用2～9的乘法口诀' }))
+  await screen.findByText('Learning goal: 熟记并运用2～9的乘法口诀')
+  fireEvent.click(screen.getByRole('button', { name: 'Start learning' }))
+  await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('m2a-o-tables'), undefined))
+  expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'foundation' })
+})
+
+it('filters the mistake book by review status', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  const state = updateStudy(undefined, setup, NOW)
+  state.mistakes = [
+    { ...mistake, id: 'due-1', topic: 'Due topic', confirmedAt: NOW - DAY, dueAt: NOW - 1, userConfirmation: 'Parent checked', uncertainties: '', stage: 0, independentDays: [] },
+    { ...mistake, id: 'done-1', topic: 'Consolidated topic', confirmedAt: NOW - DAY, dueAt: NOW + 30 * DAY, userConfirmation: 'Parent checked', uncertainties: '', stage: 4, independentDays: ['2026-10-01'] },
+  ]
+  const backend = installFetch(state)
+  render(<StudyDesk sessionId="filter" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByRole('button', { name: 'Start learning' })
+  fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
+  expect(screen.getByRole('heading', { name: 'Confirmed mistakes · Math · 2' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Consolidated · 1' }))
+  await screen.findByRole('heading', { name: 'Confirmed mistakes · Math · 1' })
+  expect(screen.getByText('Consolidated topic · Consolidated')).toBeTruthy()
+  expect(screen.queryByText('Due topic · Due now')).toBeNull()
+  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('mistakeStatus=mastered'), expect.anything())
+  fireEvent.click(screen.getByRole('button', { name: 'Due · 1' }))
+  await screen.findByText('Due topic · Due now')
+  expect(screen.queryByText('Consolidated topic · Consolidated')).toBeNull()
+})
+
+it('lets the learner tap a choice as the answer', async () => {
+  const choiceTask = { ...answerTask, choices: ['15', '14', '16'] }
+  const backend = installFetch(updateStudy(updateStudy(updateStudy(undefined, setup, Date.now()), start, Date.now()), { action: 'task', task: choiceTask }, Date.now()))
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="choice" visible running={false} ask={ask} t={t} />)
+  await screen.findByText('Tap an answer')
+  expect(screen.queryByLabelText('My answer')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '15' }))
+  await waitFor(() => expect(backend.read().task?.response).toBe('15'))
+  expect(ask).toHaveBeenCalledOnce()
+  await screen.findByText('My answer: 15')
+})
+
+it('browses another grade and term on the knowledge map without goal buttons', async () => {
+  const backend = installFetch(updateStudy(undefined, setup, NOW))
+  render(<StudyDesk sessionId="browse" visible running={false} ask={vi.fn()} t={t} />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Knowledge map' }))
+  await screen.findByRole('heading', { name: '数学二年级上册知识地图' })
+  expect(screen.getAllByRole('button', { name: /Practise this goal/ }).length).toBeGreaterThan(0)
+  fireEvent.change(screen.getByRole('combobox', { name: 'Grade' }), { target: { value: '1' } })
+  await screen.findByRole('heading', { name: '数学一年级上册知识地图' })
+  expect(screen.getByText(/Browsing another grade or term/)).toBeTruthy()
+  expect(screen.queryByRole('button', { name: /Practise this goal/ })).toBeNull()
+  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('mapGrade=1'), expect.anything())
+  fireEvent.change(screen.getByRole('combobox', { name: 'Term' }), { target: { value: 'second' } })
+  await screen.findByRole('heading', { name: '数学一年级下册知识地图' })
+  fireEvent.click(screen.getByRole('button', { name: 'Back to current term' }))
+  await screen.findByRole('heading', { name: '数学二年级上册知识地图' })
+})
+
+it('links worksheets to their source mistakes and shows review stages', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  installFetch(worksheetState())
+  render(<StudyDesk sessionId="links" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByRole('button', { name: 'Start learning' })
+  fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
+  fireEvent.click(screen.getByText('凑十加法 · 1 questions · Checked 0/1'))
+  expect(screen.getByText('1. 请计算 9+6。 · Source mistake: 加法 · Not checked yet')).toBeTruthy()
+  fireEvent.click(screen.getByText('加法'))
+  expect(screen.getByText(/Review stage: 1 \/ 5/)).toBeTruthy()
+  expect(screen.getByText('Related worksheets: 凑十加法 · Checked 0/1')).toBeTruthy()
+})
+
+it('offers a recurring check-in and starts it as a diagnose block', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  const backend = installFetch(updateStudy(undefined, setup, NOW - DAY))
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="checkin" visible running={false} ask={ask} t={t} />)
+  await screen.findByRole('heading', { name: 'Learning check-in · Math' })
+  expect(screen.getByText('No check-in yet')).toBeTruthy()
+  expect(screen.getByText(/A check-in is suggested · This round probes: 把同数连加改写成乘法算式并说明意义/)).toBeTruthy()
+  expect(screen.getByText('Start with a check-in to find direction · Chinese')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Start check-in' }))
+  await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('kind=diagnose'), undefined))
+  expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'diagnose' })
 })
