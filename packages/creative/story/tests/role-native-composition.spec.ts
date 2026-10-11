@@ -14,6 +14,7 @@ import Persistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import SessionQuery from '@deepseek-ai/dsh-session-query'
 import Subagents from '@deepseek-ai/dsh-subagent'
 import * as Spawn from '@deepseek-ai/dsh-subagent-spawn-in-process'
+import WorkingDirectory from '@deepseek-ai/dsh-working-directory'
 import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -72,7 +73,7 @@ async function setup(test: TestContext, team: boolean) {
     } }],
     ['role-test-persistence', { async apply(ctx: Context) { await ctx.plugin(Persistence, { root: directory }) } }],
     ['role-test-query', ReadQuery], ['role-test-loop', AgentLoop],
-    ['role-test-subagents', Subagents], ['role-test-spawn', Spawn],
+    ['role-test-working-directory', WorkingDirectory], ['role-test-subagents', Subagents], ['role-test-spawn', Spawn],
     ['role-test-fs', LocalFileSystem], ['role-test-fs-tools', FsTools],
     ['role-test-delegate', Delegate], ['role-test-team', TeamService], ['role-test-team-tools', TeamTools],
   ])
@@ -114,11 +115,21 @@ describe('professional Agents using only native delegation', () => {
   it('creates a native subagent that reads the packaged Role and references', async test => {
     const { context, lead, exec, adapter } = await setup(test, false)
     const tool = context.tools.get('subagent', lead)!
-    const result = await tool.execute({ description: 'Review the outline', prompt: task }, exec) as { runId: string; output: object }
-    expect(JSON.stringify(result.output)).toContain('Outline reviewed.')
-    expect(context.agents.get(SessionId(result.runId))).toBeUndefined()
-    assertReadInstructions(adapter)
-    expect(adapter.requests[0]!.sessionId).not.toBe(lead.id)
+    // Delegation returns the activation at once; the child's answer reaches the lead as a settlement notice.
+    const result = await tool.execute({ description: 'Review the outline', prompt: task }, exec) as { kind: string; subagentId: string }
+    expect(result.kind).toBe('activation')
+    const childId = SessionId(result.subagentId)
+    expect(childId).not.toBe(lead.id)
+    const childRequests = () => adapter.requests.filter(request => request.sessionId === childId)
+    await vi.waitFor(() => {
+      expect(childRequests()).toHaveLength(3)
+      expect(context.agents.get(childId)).toBeUndefined()
+    }, { timeout: 5000 })
+    assertReadInstructions({ requests: childRequests() })
+    await vi.waitFor(() => {
+      const leadRequests = adapter.requests.filter(request => request.sessionId === lead.id)
+      expect(JSON.stringify(leadRequests.map(request => request.messages))).toContain('Outline reviewed.')
+    }, { timeout: 5000 })
   })
 
   it('uses native Team creation and messages to resume the same professional Agent', async test => {

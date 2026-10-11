@@ -25,10 +25,12 @@
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
-- 依赖 npm 上发布的 DSH `0.2.1-alpha.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
+- 依赖 npm 上发布的 DSH `0.2.1-alpha.2`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
 - 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
+
+2026-10-11 DSH 升级到 `0.2.1-alpha.2`：12 个包的 375 处 DSH 依赖声明统一改为 `0.2.1-alpha.2`，插件自身版本不变；配套 Cordis 范围仍为 `~4.0.5-alpha.1`、schemastery 仍为 `~3.18.5-alpha.1`（按发布包的 peer 声明核对）。子模块移到 `dsh-v0.2.1-alpha.2`。删除对上游已移除的 `dsh-subagent-in-process-driver` 的依赖，`STRUCTURED_OUTPUT_TOOL` 改从 `dsh-subagent` 导入；story 新增 `dsh-working-directory` 测试依赖——alpha.2 的 `dsh-subagent` 服务注入 `workingDirectory`，手工组合子代理的两个测试必须提供它，宿主侧由上游 `bundle/base` 提供，bundle 补丁不用加行。按工作目录与子代理 activation 升级指南：五个 preset 删掉 persona `suffix` 里的 `{{cwd}}` 语句，八行 `tool-subagent` 删掉 `backgroundMode`，测试夹具删掉 `enableRunInBackground`，三个领域包的 skill-provider 改为按 activation 与结算通知描述委派，角色委派测试改为等子级 activation 完成后在父级请求中核对结算通知。[第 8 节](#8-从上游复制的文件及本地改动)重新同步 `tsdown.client.ts`、`bundle-input-isolation.ts` 并新增 `experimental-package-policy.ts`。typert 生成器的 `isTypeMetaSymbol()` 未变，补丁按 alpha.2 重做（问题 5）；`api-remotes` 仍只把 Remote 包列为 devDependencies（问题 6）；`dsh-client-test-runtime` 仍导入 3 个未发布的 `src` 文件（问题 10）。清理构建后 `pnpm install`、`typecheck`（零错误）、`build`、全量 97 文件 862 项测试、文档 16 项与规范 3 项检查通过。未在真实 DSH 中安装验证；上游同期的 Web 插件设置页重组与实验目录页、新会话总是新建 Agent、`dsh plugin` 要求 `--profile` 位于 pnpm 参数之前，需在下次真实验证时核对。
 
 2026-10-11 项目默认模式插件：新增 `packages/preset/project-default-mode`（`@winterhuan/dsh-project-default-mode`，Host + Client 单包，独立 bundle）。Host 面维护 volatile `rules` 配置（`workspaceId` → `agentPreset`），在 `agent/created`（仅 `source === 'startup'` 且非 fork/subagent）中把会话 cwd 解析到 Workspace 并用 `agentPresets.select` 切换 preset，失败只记日志不否决创建；Client 面在会话「…」菜单（order 500）加「设为本项目默认模式」对话框，经 `configForms.set('rules', …)` 写入。不新增 Remote，未改上游拷贝文件。审查修正：对话框控制器等设置表单取得首个已接受区段后再暂存项目规则，表单非 `ready` 时拒绝保存（空镜像写回会丢掉其他项目的规则）；补 `@deepseek-ai/dsh-agent-preset-registry/remote` 类型导入。清理构建后 `typecheck`、`build`、包内 4 个文件 49 项测试、文档 16 项与规范 3 项检查全部通过；`pnpm pack` 确认 `lib/index.js`、`lib/client.js`、声明与双语 README 均在包内。隔离 `DSH_HOME` 的 web profile 链接安装后，合成配置含独立的 `project-default-mode` 行，`plugins/??…` 列表包含其 `client.js`，带 rev 取回 16 KB bundle 且只请求 baseline externals（`client-store`、`ui-primitives`、`react`），服务日志无页面脚本错误。未做真实浏览器交互、未调用模型。全量测试中 story 的 Python 脚本测试在本机 SOCKS `all_proxy` 下因 `UNDICI-EHPA` 警告写入子进程 stderr 而失败（[排障速查](#11-排障速查)所述环境问题）；清除代理环境变量后通过。
 
@@ -107,7 +109,7 @@ dsh-creative/
 │   └── vitest-upstream-client.ts      仅测试用：从 upstream/ 读取 DSH 客户端源码（本仓库自有）
 ├── types/client-build-environment/    客户端构建期 process.env 的环境声明（上游拷贝）
 ├── patches/                           typert 生成器补丁（pnpm patchedDependencies）
-├── upstream/                          子模块，固定在 dsh-v0.2.1-alpha.1；只读
+├── upstream/                          子模块，固定在 dsh-v0.2.1-alpha.2；只读
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
@@ -287,7 +289,7 @@ pnpm run clean                # 删除 packages/*/*/lib
 下面的安装与启动步骤已在 DSH `0.2.1-alpha.1` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
 
 ```sh
-# 使用已安装的 DSH 0.2.1-alpha.1
+# 使用已安装的 DSH 0.2.1-alpha.2
 cd ~/dsh-creative && pnpm run build
 
 # 从 web 模板创建 profile，--dump-config 使它只创建、不启动
@@ -321,13 +323,13 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 
 ## 6. 依赖策略
 
-- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.1-alpha.1`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
+- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.1-alpha.2`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
 - **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.5-alpha.1`，`cordis-plugin-loader` 写 `~1.0.6-alpha.1`，`cordis-plugin-include` 写 `~1.0.10-alpha.1`，`schemastery` 写 `~3.18.5-alpha.1`。根开发依赖显式提供 `cordis-plugin-group` 的 `~1.0.5-alpha.1`，满足 `dsh-app-boot` 的 peer 范围。
 - **分类**：沿用上游的分类，上游已用 `package-dependency-policy` 检查过。
   - 需要与宿主共享实例的 DSH 包同时放进 `peerDependencies` 和 `devDependencies`。运行时 peer 由正在运行的 dsh 安装提供，devDependencies 只给类型检查和测试用。
   - 无状态工具放 `dependencies`。这是 DSH 发布文档（`upstream/docs/user/develop/basic/publish.md`）的规则。
 - **仓库内部包**之间用 `workspace:*`。
-- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.1-alpha.1` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
+- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.1-alpha.2` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
 - **根 `package.json` 的 devDependencies** 分三类：
   1. 工具链：`typescript` ^6.0.3、`tsdown` ^0.22.2、`vitest` ^4.1.8、`jsdom` 29.1.1、`lightningcss`、`@types/node`、`@testing-library/dom`、`@testing-library/react`，以及 `@deepseek-ai/dsh-typert-generator`。
   2. DSH 平台模块在 Node 里要用、却没有声明的依赖（浏览器里由 web 前端打包提供）：
@@ -371,7 +373,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
   - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
 
   从 npm 安装时，协议包在 `node_modules` 里，两个条件都不满足，skill-viewer 的 `@Remote` 方法被忽略。这是生成器只考虑 monorepo 场景造成的缺口。
-- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.1-alpha.1.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
+- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.1-alpha.2.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
 
   ```diff
            if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
@@ -476,13 +478,14 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 
 ## 8. 从上游复制的文件及本地改动
 
-下面 7 个文件已核对至 `dsh-v0.2.1-alpha.1`。`scripts/tsdown.client.ts` 同步移除 invariant 构建说明并更新复制版本标注；其余 6 个文件的上游内容未变，保留原始 `dsh-v0.1.7-rc.2` 标注和现有本地改动。
+下面 8 个文件已核对至 `dsh-v0.2.1-alpha.2`。`scripts/tsdown.client.ts` 与 `scripts/bundle-input-isolation.ts` 随 alpha.2 改用 `scripts/experimental-package-policy.ts` 判断实验包，该文件作为第 8 份拷贝新增，三者更新复制版本标注；其余 5 个文件的上游内容未变，保留原始 `dsh-v0.1.7-rc.2` 标注和现有本地改动。
 
 | 本仓库文件 | 上游来源 | 本地改动 |
 |---|---|---|
-| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；与新版同步移除 invariant 参数说明 |
+| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)` |
 | `scripts/client-build-environment.ts` | `scripts/client-build-environment.ts` | `CLIENT_ARTIFACT_PATTERNS` 删掉 `apps/web/dist/**/*` |
 | `scripts/bundle-input-isolation.ts` | `scripts/bundle-input-isolation.ts` | 仅首行标注 |
+| `scripts/experimental-package-policy.ts` | `scripts/experimental-package-policy.ts` | 仅首行标注 |
 | `scripts/platform.ts` | `packages/client/web/src/platform.ts` | 仅首行标注 |
 | `scripts/vitest-shared.ts` | `vitest.shared.ts` | 仅首行标注 |
 | `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |

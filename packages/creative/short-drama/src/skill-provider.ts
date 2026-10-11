@@ -18,7 +18,7 @@ const DSH_DRAMA_BRIDGE = [
   'This Skill is a native contribution to the current DeepSeek Harness session.',
   'DSH owns the workspace, model, preset, permissions, Session Log, tools, approvals, cancellation, resume, and Agent UI.',
   ...DSH_SKILL_ROUTING,
-  'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
+  'Each subagent delegation returns an activation and delivers the final answer as a settlement notice. Wait for the notice of every prerequisite stage before starting dependent work, delegate only independent work concurrently, and verify required files before using a result.',
   'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'The 短剧 tab is the creator workspace. Never start another web server, creator UI, Agent runtime, session transport, or model configuration.',
   'Keep only requested creator documents under 剧集/<EP>/ and preserve their stable IDs. Do not backfill nominal stages or create a parallel lifecycle merely because maintenance resources remain bundled.',

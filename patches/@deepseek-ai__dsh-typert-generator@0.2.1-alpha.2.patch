@@ -1,7 +1,8 @@
 diff --git a/lib/types/analyzer.js b/lib/types/analyzer.js
+index 20bc6fb6b73bd73c9639fc96d904a7d19269e880..c4d1003189a13b1cdaf37eb66732b618089cdb0f 100644
 --- a/lib/types/analyzer.js
 +++ b/lib/types/analyzer.js
-@@ -1719,6 +1719,9 @@
+@@ -1722,6 +1722,9 @@ class FaceAnalyzer {
          const registration = this.registrationForFile(declaration.getSourceFile().fileName);
          if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
              return true;

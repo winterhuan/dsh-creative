@@ -16,7 +16,6 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
               prefix: |
                 You are a short-drama creation collaborator powered by the {{model}} model.
                 Follow the requested scope: discuss concepts, plan episodes, write scripts, design visuals, review, or produce confirmed media. Analysis and review do not authorize edits or paid generation.
@@ -80,13 +79,11 @@
                   provider: spawn
                   toolName: subagent
                   modelSelectionSettings: true
-                  backgroundMode: continuable
               - id: tool-subagent-fork
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:
                   provider: fork
                   toolName: subagent_fork
-                  backgroundMode: continuable
               - id: workflow-ptc
                 name: '@deepseek-ai/dsh-workflow-ptc'
                 config:

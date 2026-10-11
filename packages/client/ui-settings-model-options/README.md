@@ -27,7 +27,7 @@ Configure the thinking levels a custom model supports and the number of retries 
 
 ### Install
 
-Build this repository, then install the local bundle into an existing DSH web profile. Replace `model-options` with your profile name. DSH dependencies are pinned to `0.2.1-alpha.1`; the bundle is independently installable and is not included by Creative.
+Build this repository, then install the local bundle into an existing DSH web profile. Replace `model-options` with your profile name. DSH dependencies are pinned to `0.2.1-alpha.2`; the bundle is independently installable and is not included by Creative.
 
 ```sh
 dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/client/ui-settings-model-options

@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.2.1-alpha.1; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-alpha.2; re-sync when the DSH dependency version changes.
 /**
  * Shared tsdown preset for UI plugin client bundles. Emits a closure-factory
  * artifact: the bundle calls window.__ModuleLoader__.load({id, factory})
@@ -20,6 +20,7 @@ import { Rolldown, type TsdownPlugin, type UserConfig } from 'tsdown'
 import { transform } from 'lightningcss'
 import { PLATFORM_MODULES, PRELOADED_CLIENT_EXTERNALS } from './platform.ts'
 import { clientBuildEnvironmentDefines } from './client-build-environment.ts'
+import { isExperimentalPackageName } from './experimental-package-policy.ts'
 import { BundleInputIsolation, physicalBundleInput } from './bundle-input-isolation.ts'
 
 /**
@@ -629,7 +630,7 @@ function clientInputIsolation(id: string): {
   plugin: TsdownPlugin
   sourcePath: (source: string, mapPath: string) => string
 } {
-  const experimental = id.startsWith('@deepseek-ai/dsh-experimental-')
+  const experimental = isExperimentalPackageName(id)
   const inputs = new BundleInputIsolation(REPOSITORY_ROOT, `client bundle isolation (${id})`)
   return {
     plugin: {

@@ -14,7 +14,7 @@ const DSH_VIDEO_BRIDGE = [
   'This Skill is a native contribution to the current DeepSeek Harness session.',
   'DSH owns the workspace, model, preset, permissions, Session Log, tools, approvals, cancellation, resume, Todo, Chat, and the 视频 preview Studio.',
   'Load video-recap or video-script with the skill tool using its exact name. Media stages are references, not additional Skills. Resolve references/ and skills/ paths against the provided resource base and read only needed material with native read.',
-  'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
+  'Each subagent delegation returns an activation and delivers the final answer as a settlement notice. Wait for the notice of every prerequisite stage before starting dependent work, delegate only independent work concurrently, and verify required files before using a result.',
   'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'Never start a second Agent runtime, creator UI, session transport, web server, polling loop, or model configuration.',
   'Put each project under video-recaps/<project>/, source media under sources/, and use work/ as work_dir so the Studio can discover authoritative manifests and outputs.',

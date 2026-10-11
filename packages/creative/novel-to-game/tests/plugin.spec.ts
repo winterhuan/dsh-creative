@@ -66,10 +66,11 @@ describe('standalone game plugin', () => {
     expect(skill?.content).not.toContain('creative_produce_run')
   })
 
-  it('keeps packaged source-exchange helpers identical to their maintained originals', async () => {
+  it('keeps packaged source-exchange helpers identical to their originals', async () => {
+    // The story helpers are frozen reference copies: the story runtime itself is TypeScript now.
     const originals = {
-      'export_novel_txt.py': 'story/runtime/export_novel_txt.py',
-      'record_lineage.py': 'story/runtime/record_lineage.py',
+      'export_novel_txt.py': 'story/tests/reference/export_novel_txt.py',
+      'record_lineage.py': 'story/tests/reference/record_lineage.py',
       'novel_index.py': 'drama/skills/short-drama-novel-analyze/scripts/novel_index.py',
     }
     for (const [file, source] of Object.entries(originals)) {

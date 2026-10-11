@@ -13,9 +13,9 @@ import * as FsTools from '@deepseek-ai/dsh-tool-fs'
 import { LlmAdapter, ToolCallId, createUserMessage, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import Persistence from '@deepseek-ai/dsh-session-persistence-jsonl'
-import Subagents from '@deepseek-ai/dsh-subagent'
+import Subagents, { STRUCTURED_OUTPUT_TOOL } from '@deepseek-ai/dsh-subagent'
 import * as Spawn from '@deepseek-ai/dsh-subagent-spawn-in-process'
-import { STRUCTURED_OUTPUT_TOOL } from '@deepseek-ai/dsh-subagent-in-process-driver'
+import WorkingDirectory from '@deepseek-ai/dsh-working-directory'
 import SkillRegistry from '@deepseek-ai/dsh-skill'
 import * as ToolSkill from '@deepseek-ai/dsh-tool-skill'
 import Workflow from '@deepseek-ai/dsh-workflow-ptc'
@@ -244,6 +244,8 @@ async function setup(test: TestContext, mode: ChapterAdapter['mode']) {
   ctx.skills.registerProvider(() => createStorySkillProvider())
   await ctx.plugin(ToolSkill)
   await ctx.plugin(AgentLoop, { agents: [] })
+  // The subagent service injects workingDirectory.
+  await ctx.plugin(WorkingDirectory)
   await ctx.plugin(Subagents)
   await ctx.plugin(Spawn, { providerName: 'spawn' })
   await ctx.plugin(Workflow)

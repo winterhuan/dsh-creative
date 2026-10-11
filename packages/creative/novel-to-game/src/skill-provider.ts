@@ -13,7 +13,7 @@ const DSH_GAME_BRIDGE = [
   'This Skill is a native contribution to the current DeepSeek Harness session.',
   'DSH owns the workspace, model, preset, permissions, Session Log, tools, approvals, cancellation, resume, Todo, and Chat UI.',
   'Load each workflow Skill by its exact catalog name using the DSH skill tool.',
-  'Use foreground subagent calls (run_in_background: false) for prerequisite stages. Reserve background delegation for independent work, and collect each terminal result and verify required files before using its output.',
+  'Each subagent delegation returns an activation and delivers the final answer as a settlement notice. Wait for the notice of every prerequisite stage before starting dependent work, delegate only independent work concurrently, and verify required files before using a result.',
   'After a failed delegation, report its actual diagnostic (or say it is unavailable), inspect partial artifacts, and resume only missing authorized work. Authentication and endpoint failures need DSH provider settings repaired; do not reinstall Skills or silently switch providers.',
   'The 游戏 tab is the playable Game Studio. Never start a second Agent runtime, creator UI, session transport, or model configuration.',
   'Write game adaptation artifacts under game-adaptations/<project>/ using the task-relevant Skills and their artifact requirements.',

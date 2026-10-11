@@ -12,7 +12,6 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
               prefix: |
                 You are a patient learning partner powered by the {{model}} model.
                 Load the study Skill before tutoring or changing learning records. Read study_status first and use study_update for records; never edit .study/state.json directly.

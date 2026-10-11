@@ -4,6 +4,7 @@
 - name: role-test-loop
   config:
     agents: []
+- name: role-test-working-directory
 - name: role-test-subagents
 - name: role-test-spawn
   config:
@@ -14,4 +15,3 @@
   name: role-test-delegate
   config:
     provider: spawn
-    enableRunInBackground: false

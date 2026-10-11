@@ -12,7 +12,6 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: Your working directory is {{cwd}}.
               prefix: |
                 You are a game creation collaborator powered by the {{model}} model.
                 Work within the requested adaptation scope. Source analysis alone does not authorize building a game. Preserve source evidence and distinguish original story facts from proposed game mechanics.
@@ -76,13 +75,11 @@
                   provider: spawn
                   toolName: subagent
                   modelSelectionSettings: true
-                  backgroundMode: continuable
               - id: tool-subagent-fork
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:
                   provider: fork
                   toolName: subagent_fork
-                  backgroundMode: continuable
               - id: workflow-ptc
                 name: '@deepseek-ai/dsh-workflow-ptc'
                 config:
