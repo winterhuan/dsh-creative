@@ -78,7 +78,7 @@ export function deltaPath(tracking: string, chapter: number): string {
  */
 export function readJson(path: string): unknown {
   try {
-    return JSON.parse(readFileSync(path, 'utf8')) as unknown
+    return JSON.parse(readFileSync(path, 'utf8'))
   } catch (error) {
     throw new TrackingError(`unable to read JSON ${path}: ${error instanceof Error ? error.message : String(error)}`)
   }

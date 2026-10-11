@@ -23,7 +23,7 @@ interface Run { readonly exitCode: number; readonly stdout: string; readonly std
 
 async function cli(args: readonly string[], cwd: string): Promise<Run & { readonly value: unknown }> {
   const result = await execa(python, ['-B', join(runtime, 'cli.py'), ...args, '--json'], { cwd, env, extendEnv: false, reject: false })
-  return { exitCode: result.exitCode ?? -1, stdout: result.stdout, stderr: result.stderr, value: JSON.parse(result.stdout) as unknown }
+  return { exitCode: result.exitCode ?? -1, stdout: result.stdout, stderr: result.stderr, value: JSON.parse(result.stdout) }
 }
 
 async function workspace(context: TestContext): Promise<string> {

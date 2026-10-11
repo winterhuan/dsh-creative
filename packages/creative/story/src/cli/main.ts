@@ -12,7 +12,7 @@ import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
-import { scanAiPatterns, aiPatternsDocument } from '../core/checks/ai-patterns.ts'
+import { type AiPatternsDocument, scanAiPatterns, aiPatternsDocument } from '../core/checks/ai-patterns.ts'
 import { scanDegeneration } from '../core/checks/degeneration.ts'
 import { checkOutlineCopy } from '../core/checks/outline-copy.ts'
 import { normalizePunctuation, readProjectPunctuationPolicy, type PunctuationPolicy, type QuoteMode } from '../core/checks/punctuation.ts'
@@ -267,7 +267,7 @@ function integer(values: Record<string, unknown>, name: string): number | undefi
   return typeof value === 'number' ? value : undefined
 }
 
-async function textCommand(action: string, values: Record<string, unknown>, project: string | undefined): Promise<[Record<string, unknown>, number]> {
+async function textCommand(action: string, values: Record<string, unknown>, project: string | undefined): Promise<[unknown, number]> {
   if (action === 'count') {
     const body = readFileSync(filePath(text(values, 'file'), project), 'utf8')
     const target = values.target
@@ -275,7 +275,7 @@ async function textCommand(action: string, values: Record<string, unknown>, proj
     const identity = { chapter: integer(values, 'chapter') ?? null, caseId: typeof values['case-id'] === 'string' ? values['case-id'] : null }
     const result = target === undefined ? measureWordcount(body, identity)
       : values.checkpoint === true ? checkpointWordcount(body, target, identity) : evaluateWordcount(body, target, identity)
-    return [result as unknown as Record<string, unknown>, 'status' in result && result.status === 'invalid' ? 2 : 0]
+    return [result, 'status' in result && result.status === 'invalid' ? 2 : 0]
   }
   const files = (values.file as string[]).map(file => filePath(file, project))
   if (action === 'normalize') {
@@ -304,7 +304,7 @@ async function textCommand(action: string, values: Record<string, unknown>, proj
     return [{ schema: 'story-text-normalize/v1', applied: apply, changed_files: changed, diagnostics }, apply ? 0 : findings > 0 ? 1 : 0]
   }
   const patterns: Record<string, unknown>[] = []
-  const documents: Record<string, unknown>[] = []
+  const documents: AiPatternsDocument[] = []
   const degeneration: Record<string, unknown>[] = []
   const advisories: string[] = []
   const policy = project === undefined ? 'preserve' : readProjectPunctuationPolicy(project) ?? 'preserve'
@@ -312,7 +312,7 @@ async function textCommand(action: string, values: Record<string, unknown>, proj
     const input = readFileSync(file, 'utf8')
     const found = scanAiPatterns(input).map(finding => ({ file, ...finding }))
     patterns.push(...found)
-    documents.push(aiPatternsDocument(file, input, found.length) as unknown as Record<string, unknown>)
+    documents.push(aiPatternsDocument(file, input, found.length))
     degeneration.push(...scanDegeneration(input).map(finding => ({ file, ...finding })))
     advisories.push(...normalizePunctuation(input, { policy, quoteMode: 'keep' }).findings.map(finding => `${file}:${String(finding.line)}:${String(finding.column)}: ${finding.type}: ${finding.message}`))
   }

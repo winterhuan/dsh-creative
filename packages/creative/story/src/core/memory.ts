@@ -176,7 +176,7 @@ function cleanIdList(value: unknown, label: string, maximum = 32): string[] {
 function readJson(path: string): unknown {
   try {
     require(statSync(path).size <= STATE_MAX_BYTES, `${path} exceeds ${String(STATE_MAX_BYTES)} bytes`)
-    return JSON.parse(readFileSync(path, 'utf8')) as unknown
+    return JSON.parse(readFileSync(path, 'utf8'))
   } catch (error) {
     if (error instanceof AuthorMemoryError) throw error
     throw new AuthorMemoryError(`unable to read JSON ${path}: ${error instanceof Error ? error.message : String(error)}`)

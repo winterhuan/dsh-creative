@@ -54,6 +54,12 @@ export type ZhuqueFetch = (url: string, init: { readonly method: 'POST'; readonl
   text(): Promise<string>
 }>
 
+/** The global `fetch` narrowed to {@link ZhuqueFetch}: the request passes through, the response keeps only what the detector reads. */
+const globalFetch: ZhuqueFetch = async (url, init) => {
+  const response = await fetch(url, init)
+  return { ok: response.ok, status: response.status, headers: { get: name => response.headers.get(name) }, text: () => response.text() }
+}
+
 /** Options of {@link detectChapter}. */
 export interface DetectOptions {
   readonly file: string
@@ -323,7 +329,7 @@ export async function detectChapter(options: DetectOptions): Promise<DetectOutco
     if (length > maxChars) throw new DetectError('text_too_long', `${String(length)} characters exceeds --max-chars ${String(maxChars)}; check one chapter per call`, ZHUQUE_EXIT.input)
     const keys = (options.keyPool ?? [(options.env ?? process.env)[KEY_ENV]?.trim() ?? '']).filter(key => key !== '')
     if (keys.length === 0) throw new DetectError('missing_credential', `${KEY_ENV} is not configured; run through story_zhuque`, ZHUQUE_EXIT.credential)
-    const fetchImpl = options.fetch ?? (fetch as unknown as ZhuqueFetch)
+    const fetchImpl = options.fetch ?? globalFetch
     let classified: Awaited<ReturnType<typeof classify>> | undefined
     for (const key of keys) {
       attempts += 1

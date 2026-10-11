@@ -24,7 +24,7 @@ async function run(file: string, args: readonly string[], cwd: string): Promise<
 
 async function cli(args: readonly string[], cwd: string): Promise<{ readonly exitCode: number; readonly stderr: string; readonly value: unknown }> {
   const result = await run(python, ['-B', join(reference, 'cli.py'), ...args, '--json'], cwd)
-  return { exitCode: result.exitCode, stderr: result.stderr, value: JSON.parse(result.stdout) as unknown }
+  return { exitCode: result.exitCode, stderr: result.stderr, value: JSON.parse(result.stdout) }
 }
 
 async function workspace(context: TestContext): Promise<string> {

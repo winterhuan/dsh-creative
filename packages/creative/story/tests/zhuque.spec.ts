@@ -36,7 +36,7 @@ function transport(replies: readonly Reply[]): { readonly fetch: ZhuqueFetch; re
   const queue = [...replies]
   const requests: { key: string; body: unknown }[] = []
   const fetch: ZhuqueFetch = async (_url, init) => {
-    requests.push({ key: init.headers.Authorization ?? '', body: JSON.parse(init.body) as unknown })
+    requests.push({ key: init.headers.Authorization ?? '', body: JSON.parse(init.body) })
     const reply = queue.shift() ?? replies[replies.length - 1] ?? {}
     if (reply.throws !== undefined) throw reply.throws
     const status = reply.status ?? 200
