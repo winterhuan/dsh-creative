@@ -10,10 +10,12 @@
  * registry's `select`, which mounts the preset revision and appends an
  * `agent-preset/selected` Session event — so the composition a session actually
  * runs is recorded in its log, as the model-visible-implies-logged rule
- * requires. Only a freshly created ordinary session is retargeted; a resumed,
- * forked, or subagent child keeps the composition its lineage already carries,
- * and a creation request that names a preset other than the global default wins.
- * A request that names the global default explicitly is indistinguishable from
+ * requires. `select` recomposes a published Agent, so the switch runs once the
+ * serial `agent/created` dispatch has settled and before the first turn. Only a
+ * freshly created ordinary session is retargeted; a resumed, forked, or
+ * subagent child keeps the composition its lineage already carries, and a
+ * creation request that names a preset other than the global default wins. A
+ * request that names the global default explicitly is indistinguishable from
  * an omission and is retargeted like one.
  *
  * This module owns no Remote namespace: rules are ordinary volatile Config the
@@ -68,21 +70,24 @@ export const Config = z.object({
  * @param config - per-project default rules.
  */
 export function apply(context: Context, config: Config): void {
-  context.on('agent/created', async ({ agent, source }) => {
+  context.on('agent/created', ({ agent, source }) => {
     // A fresh ordinary creation is the only retarget: resume and compaction
     // reuse a composition the log already fixed, and a forked or subagent child
     // (both published with source 'startup') inherits its parent's preset.
     if (source !== 'startup') return
     const header = agent.session.header
     if (header.parentSession !== undefined || header.origin === 'subagent') return
-    // `agent/created` is a serial, awaited event whose rejection vetoes creation,
-    // so the switch is awaited (it must land before the session can start a turn)
-    // but every failure is contained and logged rather than rethrown.
-    try {
-      await retarget(context, config, agent)
-    } catch (error) {
-      context.logger.warn(`project-default-mode: session "${agent.id}" kept its default preset: ${String(error)}`)
-    }
+    // `select` rebinds the Agent's scope and emits `tools/change`, which
+    // preset-scoped plugins answer by installing and disposing Agent-scoped
+    // fibers. The serial `agent/created` dispatch is still running those
+    // plugins' listeners against the creation-time preset, so the switch waits
+    // for the dispatch to settle instead of recomposing the Agent mid-flight.
+    // Every failure is contained and logged; creation is never vetoed.
+    setImmediate(() => {
+      retarget(context, config, agent).catch((error: unknown) => {
+        context.logger.warn(`project-default-mode: session "${agent.id}" kept its default preset: ${String(error)}`)
+      })
+    })
   })
 }
 
@@ -98,6 +103,9 @@ async function retarget(context: Context, config: Config, agent: Agent): Promise
   const presets = context.get('agentPresets')
   const workspaces = context.get('workspaceRegistry')
   if (presets === undefined || workspaces === undefined) return
+  // Creation may have rolled back while the dispatch settled; an Agent the registry no longer holds is left alone.
+  const agents = context.get('agents')
+  if (agents !== undefined && agents.get(agent.id) !== agent) return
   const cwd = agent.session.header.cwd
   if (cwd === undefined) return
   // The header records the creation request's resolved preset. The web client

@@ -38,6 +38,9 @@ function stubAgent(options: {
   } as never
 }
 
+/** The switch runs once the serial dispatch has settled; tests observe it after the next macrotask. */
+const settled = (): Promise<void> => new Promise(resolve => { setImmediate(resolve) })
+
 /** One composed Host context with the optional services the override reads. */
 async function bench(options: {
   rules?: readonly ProjectDefaultRule[]
@@ -69,8 +72,8 @@ async function bench(options: {
   await ctx.plugin({
     apply(child: Context) {
       apply(child, { rules: volatileRules(options.rules ?? []) } as Config)
-      // The Host dispatches this event serially and awaits every listener.
-      fire = (agent, source) => child.serial('agent/created', { agent, source })
+      // The Host dispatches this event serially and awaits every listener; the switch follows the dispatch.
+      fire = async (agent, source) => { await child.serial('agent/created', { agent, source }); await settled() }
     },
   })
   return { select, warnings, fire }
@@ -196,7 +199,7 @@ describe('project default mode host', () => {
     await ctx.plugin({
       apply(child: Context) {
         apply(child, { rules } as Config)
-        fire = (agent, source) => child.serial('agent/created', { agent, source })
+        fire = async (agent, source) => { await child.serial('agent/created', { agent, source }); await settled() }
       },
     })
     await fire(stubAgent({ cwd: '/projects/novel' }), 'startup')
