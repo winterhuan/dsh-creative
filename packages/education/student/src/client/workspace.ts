@@ -3,7 +3,7 @@ import type { Dashboard } from '../dashboard.ts'
 import type { Command } from '../schema.ts'
 
 /** Poll visible workbenches; preserve data on failure and discard obsolete responses. */
-export function useStudy(sessionId: string, visible: boolean, networkError: string) {
+export function useStudy(sessionId: string, visible: boolean, networkError: string, mistakeOffset: number, mistakeSubject: 'chinese' | 'math' | 'english') {
   const [data, setData] = useState<Dashboard>()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -17,7 +17,7 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
     const controller = new AbortController()
     controllers.current.add(controller)
     try {
-      const response = await fetch(`/student/workspace?sessionId=${encodeURIComponent(sessionId)}`, {
+      const response = await fetch(`/student/workspace?sessionId=${encodeURIComponent(sessionId)}&mistakeOffset=${mistakeOffset}&mistakeSubject=${mistakeSubject}`, {
         signal: controller.signal, ...(change ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ revision, change }) } : {}),
       })
       const value = await response.json() as Dashboard & { error?: string }
@@ -32,7 +32,7 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
       if (alive.current && !controller.signal.aborted && sequence === latest.current) setError(reason instanceof Error ? reason.message : networkError)
       throw reason
     } finally { controllers.current.delete(controller) }
-  }, [sessionId, networkError])
+  }, [sessionId, networkError, mistakeOffset, mistakeSubject])
   const reload = useCallback(async () => { if (!writing.current) await request().catch(() => {}) }, [request])
   useEffect(() => {
     alive.current = true

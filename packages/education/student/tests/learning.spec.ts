@@ -182,3 +182,53 @@ describe('shared workbench tasks', () => {
     expect(state.materials).toEqual([])
   })
 })
+
+describe('subject knowledge and paper practice', () => {
+  const concept = { id: 'make-ten', subject: 'math' as const, name: '凑十', definition: '把加数拆开，先组成十。', example: '8 + 7 = 8 + 2 + 5。', source: '家长核对的数学教材。' }
+  const objective = { id: 'add-with-ten', subject: 'math' as const, title: '用凑十法解释加法', goal: '能说明 8 + 7 如何先凑十。', conceptIds: [concept.id], method: 'represent' as const }
+  const sheet = { id: 'sheet-1', subject: 'math' as const, objectiveId: objective.id, items: [{ id: 'q1', mistakeId: mistake.id, prompt: '9 + 6 = ? 请说明过程。', answer: '15', explanation: '把 6 分成 1 和 5。', answerEvidence: '9 + 1 + 5 = 15。' }] }
+  const paperResult = { worksheetId: sheet.id, itemId: 'q1', response: '15，先凑十。', result: 'correct' as const, assistance: 'independent' as const, feedback: '说明了凑十步骤。', answerEvidence: '9 + 1 + 5 = 15。', userConfirmation: '家长确认纸上原答案。' }
+
+  it('reads old records and leaves legacy mistakes unclassified', () => {
+    const state = updateStudy(undefined, setup, NOW)
+    const { concepts: _concepts, objectives: _objectives, relations: _relations, worksheets: _worksheets, paperResults: _results, ...old } = state
+    const restored = stateSchema.parse(old)
+    expect(restored).toMatchObject({ format: 1, concepts: [], objectives: [], relations: [], worksheets: [], paperResults: [] })
+    expect(restored.mistakes).toEqual([])
+  })
+
+  it('requires confirmed same-subject concepts and keeps paper results outside the timer', () => {
+    let state = updateStudy(undefined, setup, NOW)
+    state = updateStudy(state, { action: 'concept', concept }, NOW)
+    expect(() => updateStudy(state, { action: 'objective', objective }, NOW)).toThrow('已确认概念')
+    state = updateStudy(state, { action: 'confirm-concept', id: concept.id, userConfirmation: '家长核对了定义。' }, NOW)
+    expect(() => updateStudy(state, { action: 'objective', objective: { ...objective, subject: 'english' } }, NOW)).toThrow('学习方法与科目不符')
+    state = updateStudy(state, { action: 'objective', objective }, NOW)
+    state = updateStudy(state, { action: 'mistake', mistake }, NOW)
+    state = updateStudy(state, confirm, NOW)
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: sheet }, NOW)).toThrow('已归类')
+    state = updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: objective.id }, NOW)
+    state = updateStudy(state, { action: 'worksheet', worksheet: sheet }, NOW)
+    expect(state.worksheets[0]).toMatchObject({ id: sheet.id, createdAt: NOW })
+    expect(() => updateStudy(state, { action: 'paper-result', paperResult: { ...paperResult, itemId: 'missing' } }, NOW + 2 * DAY)).toThrow('题号')
+    state = updateStudy(state, { action: 'paper-result', paperResult }, NOW + 2 * DAY)
+    expect(state.paperResults[0]).toMatchObject({ response: paperResult.response, receivedAt: NOW + 2 * DAY })
+    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: NOW + 5 * DAY })
+    expect(state.sessions).toEqual([])
+    expect(state.rewards).toEqual([])
+    expect(updateStudy(state, { action: 'paper-result', paperResult }, NOW + 2 * DAY)).toBe(state)
+    expect(queryStudy(state, 'worksheets', 0, sheet.id)).toMatchObject({ total: 1, items: [expect.objectContaining({ id: sheet.id })] })
+  })
+
+  it('records evidence-backed concept relationships within one subject', () => {
+    let state = updateStudy(undefined, setup, NOW)
+    for (const item of [concept, { ...concept, id: 'addition', name: '加法' }]) {
+      state = updateStudy(state, { action: 'concept', concept: item }, NOW)
+      state = updateStudy(state, { action: 'confirm-concept', id: item.id, userConfirmation: '家长核对' }, NOW)
+    }
+    const relation = { id: 'ten-explains-add', fromId: 'make-ten', toId: 'addition', kind: 'explains', explanation: '凑十解释进位加法的一种计算方法。', source: '家长核对的课页。' }
+    state = updateStudy(state, { action: 'relation', relation }, NOW)
+    expect(queryStudy(state, 'relations', 0, relation.id)).toMatchObject({ total: 1, items: [expect.objectContaining({ fromId: concept.id, toId: 'addition' })] })
+    expect(() => updateStudy(state, { action: 'relation', relation: { ...relation, id: 'self', toId: concept.id } }, NOW)).toThrow('同科两个')
+  })
+})

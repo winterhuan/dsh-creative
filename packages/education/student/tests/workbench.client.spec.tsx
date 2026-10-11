@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ParentSettings } from '../src/client/forms.tsx'
 import { StudyDesk } from '../src/client/desk.tsx'
@@ -15,16 +15,31 @@ const initial = () => updateStudy(updateStudy(updateStudy(undefined, setup, Date
 
 function installFetch(state = initial()) {
   const requests: { revision: number; change: unknown }[] = []
-  const fetch = vi.fn(async (_url: string, options?: RequestInit) => {
+  const fetch = vi.fn(async (url: string, options?: RequestInit) => {
+    if (url.startsWith('/student/print?')) return new Response(JSON.stringify({ receipt: 'request id is HP_DeskJet_4900-123' }))
     if (options?.body) {
       const body = JSON.parse(String(options.body)); requests.push(body)
       if (body.revision !== state.revision) return new Response(JSON.stringify({ error: '学习档案已更新' }), { status: 409 })
       state = updateStudy(state, body.change, Date.now())
     }
-    return new Response(JSON.stringify(dashboard(state, Date.now())))
+    const query = new URL(url, 'http://localhost').searchParams
+    const offset = Number(query.get('mistakeOffset') ?? 0)
+    const subject = query.get('mistakeSubject') as 'chinese' | 'math' | 'english' | null
+    return new Response(JSON.stringify(dashboard(state, Date.now(), offset, subject ?? 'math')))
   })
   vi.stubGlobal('fetch', fetch)
   return { requests, fetch, read: () => state }
+}
+
+function worksheetState() {
+  let state = updateStudy(undefined, setup, NOW)
+  state = updateStudy(state, { action: 'concept', concept: { id: 'ten', subject: 'math', name: '凑十', definition: '先组成十', example: '8+2=10', source: '课本' } }, NOW)
+  state = updateStudy(state, { action: 'confirm-concept', id: 'ten', userConfirmation: '家长核对' }, NOW)
+  state = updateStudy(state, { action: 'objective', objective: { id: 'add', subject: 'math', title: '凑十加法', goal: '解释步骤', conceptIds: ['ten'], method: 'represent' } }, NOW)
+  state = updateStudy(state, { action: 'mistake', mistake }, NOW)
+  state = updateStudy(state, confirm, NOW)
+  state = updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: 'add' }, NOW)
+  return updateStudy(state, { action: 'worksheet', worksheet: { id: 'sheet', subject: 'math', objectiveId: 'add', items: [{ id: 'q1', mistakeId: mistake.id, prompt: '请计算 9+6。', answer: '15', explanation: '先凑十。', answerEvidence: '9+1+5=15' }] } }, NOW)
 }
 
 describe('learning workbench', () => {
@@ -101,7 +116,99 @@ it('allows editing and explicitly confirming an image transcription including th
   fireEvent.click(screen.getByLabelText('I checked the original question, correction and evidence and resolved all uncertainties'))
   fireEvent.click(screen.getByRole('button', { name: 'Confirm and schedule review' }))
   await screen.findByRole('heading', { name: 'Awaiting confirmation · 0' })
+  expect(screen.getByRole('heading', { name: 'Confirmed mistakes · Math · 1' })).toBeTruthy()
+  fireEvent.click(screen.getByText('Blurry addition'))
+  expect(screen.getByText('Question: 8 + 7?')).toBeTruthy()
+  expect(screen.getByText('Original answer: 13')).toBeTruthy()
   expect(backend.read().mistakes[0]).toMatchObject({ prompt: '8 + 7?', learnerAnswer: '13', uncertainties: '' })
+})
+
+it('keeps separate subject notebooks with their own counts and pages', async () => {
+  vi.spyOn(Date, 'now').mockReturnValue(NOW)
+  const state = updateStudy(undefined, setup, NOW)
+  state.mistakes = Array.from({ length: 21 }, (_, index) => ({ ...mistake, id: `error-${index}`, topic: `Topic ${index}`, confirmedAt: NOW, dueAt: NOW + DAY, userConfirmation: 'Parent checked', uncertainties: '', stage: 0, independentDays: [] }))
+  state.mistakes.push(...Array.from({ length: 2 }, (_, index) => ({ ...mistake, id: `chinese-${index}`, subject: 'chinese' as const, topic: `Chinese topic ${index}`, confirmedAt: NOW, dueAt: NOW + DAY, userConfirmation: 'Parent checked', uncertainties: '', stage: 0, independentDays: [] })))
+  state.mistakes.push({ ...mistake, id: 'english-0', subject: 'english', topic: 'English topic', confirmedAt: NOW, dueAt: NOW + DAY, userConfirmation: 'Parent checked', uncertainties: '', stage: 0, independentDays: [] })
+  state.mistakes.push({ ...mistake, id: 'pending', stage: 0, independentDays: [] })
+  const backend = installFetch(state)
+  render(<StudyDesk sessionId="notebook" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByRole('button', { name: 'Start learning' })
+  fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
+  expect(screen.getByRole('heading', { name: 'Confirmed mistakes · Math · 21' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Chinese' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'English' })).toBeTruthy()
+  expect(screen.getByRole('heading', { name: 'Due for review · 0' })).toBeTruthy()
+  const entry = screen.getByText('Topic 20').closest('details')!
+  fireEvent.click(within(entry).getByText('Topic 20'))
+  expect(within(entry).getByText(`Corrected answer: ${mistake.correction}`)).toBeTruthy()
+  expect(within(entry).getByText(`Answer evidence: ${mistake.answerEvidence}`)).toBeTruthy()
+  expect(within(entry).getByText(/Next review:/)).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+  await screen.findByText('Topic 0')
+  expect(screen.queryByText('Topic 20')).toBeNull()
+  expect(screen.getByText('Page 2 / 2')).toBeTruthy()
+  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('mistakeOffset=20'), expect.anything())
+  fireEvent.click(screen.getByRole('button', { name: 'Chinese' }))
+  await screen.findByText('Chinese topic 1')
+  expect(screen.getByRole('heading', { name: 'Confirmed mistakes · Chinese · 2' })).toBeTruthy()
+  expect(screen.queryByText('Topic 0')).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Next page' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'English' }))
+  await screen.findByText('English topic')
+  expect(screen.queryByText('Chinese topic 1')).toBeNull()
+  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('mistakeOffset=0&mistakeSubject=english'), expect.anything())
+})
+
+it('confirms a concept before showing it as a learning goal source', async () => {
+  let state = updateStudy(undefined, setup, NOW)
+  state = updateStudy(state, { action: 'concept', concept: { id: 'ten', subject: 'math', name: '凑十', definition: '先组成十', example: '8+2=10', source: '课本' } }, NOW)
+  const backend = installFetch(state)
+  render(<StudyDesk sessionId="concept" visible running={false} ask={vi.fn()} t={t} />)
+  fireEvent.click(await screen.findByText('凑十 · Awaiting parent review'))
+  fireEvent.change(screen.getByLabelText('Parent confirmation'), { target: { value: '家长核对概念定义' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm concept' }))
+  await waitFor(() => expect(backend.read().concepts[0]?.confirmedAt).toBeDefined())
+  expect(backend.read().concepts[0]?.userConfirmation).toBe('家长核对概念定义')
+})
+
+it('shows a different learning method for each selected subject', async () => {
+  installFetch(updateStudy(undefined, setup, NOW))
+  render(<StudyDesk sessionId="subjects" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByText(en.mathMethod)
+  fireEvent.click(screen.getByRole('button', { name: 'Chinese' }))
+  await screen.findByText(en.chineseMethod)
+  fireEvent.click(screen.getByRole('button', { name: 'English' }))
+  await screen.findByText(en.englishMethod)
+})
+
+it('starts foundation practice with the learner-selected knowledge goal', async () => {
+  const backend = installFetch(worksheetState())
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="goal" visible running={false} ask={ask} t={t} />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Practise this goal · 凑十加法' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Start learning' }))
+  await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('add'), undefined))
+  expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'foundation' })
+})
+
+it.skipIf(process.platform === 'win32')('requires PDF preview and confirmation before submitting a print job', async () => {
+  const confirmPrint = vi.fn().mockReturnValueOnce(false).mockReturnValue(true)
+  vi.stubGlobal('confirm', confirmPrint)
+  const backend = installFetch(worksheetState())
+  render(<StudyDesk sessionId="paper" visible running={false} ask={vi.fn()} t={t} />)
+  await screen.findByRole('button', { name: 'Start learning' })
+  fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
+  fireEvent.click(screen.getByText('sheet · 1 questions'))
+  const print = screen.getByRole('button', { name: 'Send to printer' }) as HTMLButtonElement
+  expect(print.disabled).toBe(true)
+  fireEvent.click(screen.getByRole('link', { name: 'Preview PDF' }))
+  expect(print.disabled).toBe(false)
+  fireEvent.click(print)
+  expect(backend.fetch.mock.calls.some(([url]) => String(url).startsWith('/student/print?'))).toBe(false)
+  fireEvent.click(print)
+  await screen.findByText('Queued: request id is HP_DeskJet_4900-123')
+  expect(confirmPrint).toHaveBeenCalledTimes(2)
+  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('/student/print?'), expect.objectContaining({ method: 'POST', body: expect.stringContaining('"confirmed":true') }))
 })
 
 it('requires an explicit school year and saves an empty optional course note', async () => {
@@ -138,8 +245,9 @@ it('carries the due subject into review without starting until the learner choos
   render(<StudyDesk sessionId="review" visible running={false} ask={ask} t={t} />)
   await screen.findByRole('button', { name: 'Start learning' })
   fireEvent.click(screen.getByRole('button', { name: 'Mistakes' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Due review · English' }))
-  expect((screen.getByRole('combobox', { name: 'Subject' }) as HTMLSelectElement).value).toBe('english')
+  fireEvent.click(screen.getByRole('button', { name: 'English' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Due review · English' }))
+  expect(screen.getByRole('button', { name: 'English' }).getAttribute('aria-pressed')).toBe('true')
   expect((screen.getByRole('combobox', { name: 'Learning mode' }) as HTMLSelectElement).value).toBe('review')
   expect(backend.requests).toHaveLength(0)
   fireEvent.click(screen.getByRole('button', { name: 'Start learning' }))

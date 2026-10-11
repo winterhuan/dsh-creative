@@ -10,11 +10,11 @@ Installing short-drama, game, video-recap or learning capabilities exposed their
 
 ## Decision
 
-Each existing bundle declares its own native preset: `short-drama`, `novel-to-game`, `video-recap` or `student`. Host entries own routes, settings and historical result rendering; scoped `/agent` entries own Skills and tools. Domain personas route tasks to on-demand Skills. The three creative modes include native production support and delegation; learning supplies tutoring, files, questions and web access without default shell or delegation tools.
+Each existing bundle declares its own native preset: `short-drama`, `novel-to-game`, `video-recap` or `student`. Host entries own routes, settings and historical result rendering; scoped `/agent` entries own Skills and tools. Domain personas route tasks to on-demand Skills. The three creative modes include native production support and delegation; learning supplies tutoring, files, questions, web access and a platform shell without delegation tools.
 
 The browser follows the selected Session's preset projection. Only the owning mode exposes its workbench guide and body; short-drama file redirects inspect the addressed Session. Unknown projections hide panels without clearing stores. Known mismatches close restored tabs. Existing state keys, project files and learning records remain unchanged; existing conversations retain their presets. Modes select capabilities, not filesystem permissions.
 
-The [novel mode decision](2026-10-06-story-mode.md) retains the shared activation rationale and novel-specific write hooks. The [independent-domain decision](../architecture/2026-09-30-creative-four-domain-plugins.md) retains distribution and checked resource-copy ownership. The [workbench decision](2026-09-03-creative-workbench.md) retains file and production safety, and the [learning decision](2026-10-05-student-learning.md) retains curriculum, evidence and time-limit contracts. These records remain active; only activation expands to the other domains.
+The [novel mode decision](2026-10-06-story-mode.md) retains the shared activation rationale and novel-specific write hooks. The [independent-domain decision](../architecture/2026-09-30-creative-four-domain-plugins.md) retains distribution and checked resource-copy ownership. The [workbench decision](2026-09-03-creative-workbench.md) retains file and production safety, the [learning decision](2026-10-05-student-learning.md) retains curriculum, evidence and time-limit contracts, and the [paper-practice decision](2026-10-11-student-knowledge-paper-practice.md) owns confirmed printing. These records remain active; only activation expands to the other domains.
 
 ## Alternatives considered
 
@@ -22,7 +22,7 @@ The [novel mode decision](2026-10-06-story-mode.md) retains the shared activatio
 
 **Move every registration into the preset.** Retained preset generations can duplicate Host routes or global settings.
 
-**A common creative preset for learning.** Shell, production and delegation add unrelated capabilities to short tutoring tasks. Explicit compositions keep the learning mode focused while preserving native files and images.
+**A common creative preset for learning.** Production and delegation add unrelated capabilities to short tutoring tasks. Explicit compositions keep the learning mode focused while preserving native files, images and local shell operations.
 
 ## Consequences
 

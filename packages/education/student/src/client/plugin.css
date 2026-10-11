@@ -38,3 +38,4 @@
 .student-desk .student-timer { font-variant-numeric: tabular-nums; font-weight: 500; }
 .student-desk .student-question { font-size: 16px; }
 .student-desk summary { cursor: pointer; overflow-wrap: anywhere; }
+.student-desk .student-pages { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }

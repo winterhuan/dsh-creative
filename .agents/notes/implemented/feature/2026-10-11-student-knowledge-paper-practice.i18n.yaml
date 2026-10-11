@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-11-student-knowledge-paper-practice.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-11-student-knowledge-paper-practice.md
+/agent-note-subject-knowledge-and-paper-practice:
+  en: 6a8786e8c8822675
+  zh: fcab82d62411b01b
+/agent-note-subject-knowledge-and-paper-practice/problem:
+  en: c80f16d49d888314
+  zh: 966044547a3d6342
+/agent-note-subject-knowledge-and-paper-practice/decision:
+  en: 5f97ad8643ccf9c8
+  zh: d055a18d4ee1bb48
+/agent-note-subject-knowledge-and-paper-practice/alternatives-considered:
+  en: 4513d037d4213a9f
+  zh: 35daf402d8b376a5
+/agent-note-subject-knowledge-and-paper-practice/verification:
+  en: 781d8945cf89f3dd
+  zh: 2aaa5c69dc668147
+/agent-note-subject-knowledge-and-paper-practice/consequences:
+  en: c4a349050d356f64
+  zh: 9f8af17aef781606

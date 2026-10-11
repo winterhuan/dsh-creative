@@ -19,6 +19,10 @@ function toolSchema(input: z.core.JSONSchema.BaseSchema | boolean): ValueSchemaS
     }
     return { type: 'object', additionalProperties: false, properties }
   }
+  if (input.type === 'array') {
+    if (!input.items || Array.isArray(input.items)) throw new Error('Study arrays require one item schema.')
+    return { type: 'array', items: toolSchema(input.items) }
+  }
   if (input.type === 'string') return { type: 'string', ...(typeof input.const === 'string' ? { const: input.const } : {}), ...(input.enum ? { enum: z.array(z.string()).parse(input.enum) } : {}) }
   if (input.type === 'integer') return { type: 'integer' }
   throw new Error(`Unsupported study input schema type: ${String(input.type)}`)
@@ -28,23 +32,24 @@ function toolSchema(input: z.core.JSONSchema.BaseSchema | boolean): ValueSchemaS
 export function registerStudyTools(context: Context): void {
   context.tools.register(defineTool({
     name: 'study_status',
-    description: 'Read the learner profile, shared time budget, course confirmation, stars and learning evidence in this Session workspace. Use before each new learning activity. Collections return 20 records per page; status does not start or stop a timer.',
+    description: 'Read the learner profile, shared time budget, course confirmation, subject concepts, objectives, mistakes, worksheets and learning evidence in this Session workspace. Use before each new learning activity. Collections return 20 records per page; status does not start or stop a timer.',
     parameters: {
-      kind: { type: 'string', enum: ['status', 'materials', 'mistakes', 'due', 'pending', 'attempts', 'sessions', 'progress'], description: 'Defaults to status. Due and pending filter mistakes. Query mistakes by id to read the confirmed prompt and answer evidence.' },
+      kind: { type: 'string', enum: ['status', 'materials', 'mistakes', 'due', 'pending', 'attempts', 'sessions', 'progress', 'concepts', 'objectives', 'relations', 'worksheets', 'paper-results'], description: 'Defaults to status. Due and pending filter mistakes. Query mistakes by id to read the confirmed prompt and answer evidence.' },
       offset: { type: 'integer', description: 'Zero-based collection offset; defaults to 0.' },
-      id: { type: 'string', description: 'Optional exact record ID for materials, mistakes, attempts or sessions.' },
+      id: { type: 'string', description: 'Optional exact record ID for materials, mistakes, attempts, sessions, concepts, objectives or worksheets.' },
+      subject: { type: 'string', enum: ['chinese', 'math', 'english'], description: 'Optional subject filter for subject-owned records.' },
     },
     output: { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     isConcurrencySafe: () => true,
     async execute(args, exec) {
       const offset = args.offset ?? 0
       if (offset < 0) throw new Error('offset 不能为负数。')
-      return z.json().parse(queryStudy(await studyStore(exec), args.kind ?? 'status', offset, args.id))
+      return z.json().parse(queryStudy(await studyStore(exec), args.kind ?? 'status', offset, args.id, args.subject))
     },
   }))
   context.tools.register(defineTool({
     name: 'study_update',
-    description: 'Save learner setup, material evidence, confirmed school progress, timed study, attempts or photo mistakes. Load /study first. Confirmation text must quote an actual user statement; do not invent it. Start before teaching; publish one task, save the actual answer and any hint request, then record assessment against that task; stop on fatigue or deadline. Session and record IDs are stable across retries. Image mistakes remain pending until confirm-mistake. Generated/reference materials cannot become school textbooks.',
+    description: 'Save learner setup, concepts and objectives, confirmed school progress, timed study, photo mistakes, frozen worksheets or verified paper results. Load /study first. Confirmation text must quote an actual user statement; do not invent it. Start before interactive teaching; publish one task, save the actual answer and any hint request, then record assessment against that task. Paper results use a saved worksheet and do not require an active timer. Session and record IDs are stable across retries. Image mistakes remain pending until confirm-mistake. Generated/reference materials cannot become school textbooks.',
     parameters: { change: { ...toolSchema(z.toJSONSchema(commandSchema)), required: true, description: 'Choose one action. Setup requires parent-confirmed limits (block 5–15, break 5–15, daily 10–30 minutes). Suggested grade-two defaults: 10/5/20, product settings, not medical guidance. Material scope must match profile for course confirmation. Dates and elapsed time come from the host.' } },
     output: { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     isConcurrencySafe: () => false,

@@ -25,6 +25,23 @@ function todaySpent(state: StudyState, now: number): number {
 
 function activeSession(state: StudyState) { return state.sessions.find(session => session.endedAt === undefined) }
 
+const subjectMethods = {
+  chinese: ['recognize', 'read-evidence', 'express'],
+  math: ['represent', 'reason', 'verify'],
+  english: ['context', 'listen', 'speak'],
+} as const
+
+function advanceMistake(mistake: StudyState['mistakes'][number], result: 'correct' | 'partial' | 'incorrect' | 'unassessed', assistance: 'independent' | 'hint' | 'worked-example', now: number) {
+  if (result === 'unassessed' || mistake.dueAt === undefined || mistake.dueAt > now) return
+  const independent = result === 'correct' && assistance === 'independent'
+  if (!independent) { mistake.stage = 0; mistake.independentDays = [] }
+  else if (!mistake.independentDays.includes(studyDay(now))) {
+    mistake.independentDays.push(studyDay(now))
+    mistake.stage = Math.min(4, mistake.stage + 1)
+  } else return
+  mistake.dueAt = now + ([1, 3, 7, 14, 30][mistake.stage] ?? 1) * DAY
+}
+
 /**
  * Summarize today's shared budget, course confirmation, rewards and evidence-derived progress.
  * Reading does not close expired sessions; stop records when the learner actually stopped.
@@ -34,14 +51,20 @@ export function studyStatus(state: StudyState, now: number) {
   const remainingMs = Math.max(0, state.profile.limits.dailyMinutes * MINUTE - todaySpent(state, now))
   const phase = active ? now >= active.deadline ? 'stop-required' : 'studying'
     : now < state.breakUntil ? 'break' : remainingMs === 0 ? 'daily-complete' : 'ready'
-  const progress = new Map<string, { subject: string; topic: string; materialId?: string; attempts: number; independentDays: string[] }>()
-  for (const attempt of state.attempts) {
-    const key = JSON.stringify([attempt.subject, attempt.topic, attempt.materialId])
-    const item = progress.get(key) ?? { subject: attempt.subject, topic: attempt.topic, ...(attempt.materialId ? { materialId: attempt.materialId } : {}), attempts: 0, independentDays: [] }
+  const progress = new Map<string, { subject: string; topic: string; materialId?: string; objectiveId?: string; attempts: number; independentDays: string[] }>()
+  function includeEvidence(subject: string, topic: string, at: number, result: string, assistance: string, materialId?: string, objectiveId?: string) {
+    const key = objectiveId ?? JSON.stringify([subject, topic, materialId])
+    const item = progress.get(key) ?? { subject, topic, ...(materialId ? { materialId } : {}), ...(objectiveId ? { objectiveId } : {}), attempts: 0, independentDays: [] }
     item.attempts += 1
-    if (attempt.result !== 'unassessed' && (attempt.result !== 'correct' || attempt.assistance !== 'independent')) item.independentDays = []
-    if (attempt.result === 'correct' && attempt.assistance === 'independent' && !item.independentDays.includes(studyDay(attempt.at))) item.independentDays.push(studyDay(attempt.at))
+    if (result !== 'unassessed' && (result !== 'correct' || assistance !== 'independent')) item.independentDays = []
+    if (result === 'correct' && assistance === 'independent' && !item.independentDays.includes(studyDay(at))) item.independentDays.push(studyDay(at))
     progress.set(key, item)
+  }
+  for (const attempt of state.attempts) includeEvidence(attempt.subject, attempt.topic, attempt.at, attempt.result, attempt.assistance, attempt.materialId, attempt.objectiveId)
+  for (const result of state.paperResults) {
+    const worksheet = state.worksheets.find(item => item.id === result.worksheetId)
+    const objective = state.objectives.find(item => item.id === worksheet?.objectiveId)
+    if (worksheet && objective) includeEvidence(worksheet.subject, objective.title, result.receivedAt, result.result, result.assistance, undefined, objective.id)
   }
   return {
     task: state.task ?? null, feedback: state.task ? state.attempts.find(item => item.id === state.task?.id) ?? null : null,
@@ -96,6 +119,8 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       const mistake = state.mistakes.find(item => item.id === command.task.mistakeId)
       requireValue(active.mode !== 'review' || mistake, '复习题需要关联到期错题。')
       if (command.task.mistakeId) requireValue(mistake && mistake.subject === active.subject && mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.dueAt !== undefined && mistake.dueAt <= now, '请先确认错题并等待复习日期。')
+      if (command.task.objectiveId) requireValue(state.objectives.some(item => item.id === command.task.objectiveId && item.subject === active.subject), '学习目标不存在或科目不符。')
+      if (mistake?.objectiveId) requireValue(command.task.objectiveId === mistake.objectiveId, '复习题必须对应错题的学习目标。')
       state.task = { ...command.task, hintRequested: false }
       break
     }
@@ -160,24 +185,18 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       requireValue(now <= active.deadline, '本段学习已到时，请停止并休息。超时答案可在对话中保留，下次学习再复核。')
       if (state.task?.sessionId === active.id) {
         const task = state.task
-        requireValue(task.id === attempt.id && task.topic === attempt.topic && task.prompt === attempt.prompt && task.mistakeId === attempt.mistakeId && task.response === attempt.response, '反馈必须对应当前题目和已保存的原始回答。')
+        requireValue(task.id === attempt.id && task.topic === attempt.topic && task.prompt === attempt.prompt && task.mistakeId === attempt.mistakeId && task.objectiveId === attempt.objectiveId && task.response === attempt.response, '反馈必须对应当前题目和已保存的原始回答。')
         requireValue(!task.hintRequested || attempt.assistance !== 'independent', '学生请求过提示，不能记录为独立作答。')
       }
       const mistake = attempt.mistakeId ? state.mistakes.find(item => item.id === attempt.mistakeId) : undefined
       requireValue(!attempt.mistakeId || mistake, '错题不存在，请先查询错题记录。')
+      if (attempt.objectiveId) requireValue(state.objectives.some(item => item.id === attempt.objectiveId && item.subject === attempt.subject), '学习目标不存在或科目不符。')
+      if (mistake?.objectiveId) requireValue(attempt.objectiveId === mistake.objectiveId, '作答必须对应错题的学习目标。')
       requireValue(active.mode !== 'review' || mistake, '复习模式的作答需要关联一条已确认且到期的错题。')
       if (mistake) {
         requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === attempt.subject, '先确认图片转录、答案依据与科目，再进行复习。')
         requireValue(mistake.dueAt !== undefined && mistake.dueAt <= now, '该错题尚未到复习时间。')
-        if (attempt.result !== 'unassessed') {
-          const independent = attempt.result === 'correct' && attempt.assistance === 'independent'
-          if (!independent) { mistake.stage = 0; mistake.independentDays = [] }
-          else if (!mistake.independentDays.includes(studyDay(now))) {
-            mistake.independentDays.push(studyDay(now))
-            mistake.stage = Math.min(4, mistake.stage + 1)
-          }
-          mistake.dueAt = now + ([1, 3, 7, 14, 30][mistake.stage] ?? 1) * DAY
-        }
+        advanceMistake(mistake, attempt.result, attempt.assistance, now)
       }
       const materialId = mistake?.materialId ?? active.materialId
       state.attempts.push({ ...attempt, at: now, ...(materialId ? { materialId } : {}) })
@@ -201,6 +220,7 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
     case 'mistake': {
       if (duplicate(state.mistakes, item => item.id === command.mistake.id, item => Object.entries(command.mistake).every(([key, value]) => Reflect.get(item, key) === value))) return previous
       if (command.mistake.materialId) requireValue(state.materials.some(item => item.id === command.mistake.materialId && item.subject === command.mistake.subject), '错题资料不存在或科目不符。')
+      if (command.mistake.objectiveId) requireValue(state.objectives.some(item => item.id === command.mistake.objectiveId && item.subject === command.mistake.subject), '错题学习目标不存在或科目不符。')
       state.mistakes.push({ ...command.mistake, stage: 0, independentDays: [] })
       break
     }
@@ -221,6 +241,75 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       mistake.dueAt = now + DAY
       mistake.stage = 0
       mistake.independentDays = []
+      break
+    }
+    case 'concept':
+      if (duplicate(state.concepts, item => item.id === command.concept.id, item => Object.entries(command.concept).every(([key, value]) => Reflect.get(item, key) === value))) return previous
+      state.concepts.push(command.concept)
+      break
+    case 'confirm-concept': {
+      const concept = state.concepts.find(item => item.id === command.id)
+      requireValue(concept, '概念不存在。')
+      if (concept.confirmedAt !== undefined) {
+        requireValue(concept.userConfirmation === command.userConfirmation && (command.definition === undefined || concept.definition === command.definition)
+          && (command.example === undefined || concept.example === command.example) && (command.source === undefined || concept.source === command.source), '概念已确认且确认内容不同。')
+        return previous
+      }
+      if (command.definition !== undefined) concept.definition = command.definition
+      if (command.example !== undefined) concept.example = command.example
+      if (command.source !== undefined) concept.source = command.source
+      concept.confirmedAt = now
+      concept.userConfirmation = command.userConfirmation
+      break
+    }
+    case 'objective':
+      if (duplicate(state.objectives, item => item.id === command.objective.id, item => JSON.stringify(item) === JSON.stringify(command.objective))) return previous
+      requireValue(subjectMethods[command.objective.subject].some(method => method === command.objective.method), '学习方法与科目不符。')
+      requireValue(command.objective.conceptIds.every(id => state.concepts.some(item => item.id === id && item.subject === command.objective.subject && item.confirmedAt !== undefined)), '学习目标必须关联同科已确认概念。')
+      requireValue(new Set(command.objective.conceptIds).size === command.objective.conceptIds.length, '学习目标不能重复关联概念。')
+      state.objectives.push(command.objective)
+      break
+    case 'relation': {
+      if (duplicate(state.relations, item => item.id === command.relation.id, item => JSON.stringify(item) === JSON.stringify(command.relation))) return previous
+      const from = state.concepts.find(item => item.id === command.relation.fromId)
+      const to = state.concepts.find(item => item.id === command.relation.toId)
+      requireValue(from && to && from.id !== to.id && from.subject === to.subject && from.confirmedAt !== undefined && to.confirmedAt !== undefined, '概念关系必须连接同科两个已确认概念。')
+      state.relations.push(command.relation)
+      break
+    }
+    case 'link-mistake': {
+      const mistake = state.mistakes.find(item => item.id === command.mistakeId)
+      const objective = state.objectives.find(item => item.id === command.objectiveId)
+      requireValue(mistake && objective && mistake.confirmedAt !== undefined && mistake.subject === objective.subject, '错题与学习目标必须已确认且属于同一科目。')
+      if (mistake.objectiveId === objective.id) return previous
+      mistake.objectiveId = objective.id
+      break
+    }
+    case 'worksheet': {
+      if (duplicate(state.worksheets, item => item.id === command.worksheet.id, item => {
+        const { createdAt: _createdAt, ...stored } = item
+        return JSON.stringify(stored) === JSON.stringify(command.worksheet)
+      })) return previous
+      const objective = state.objectives.find(item => item.id === command.worksheet.objectiveId)
+      requireValue(objective && objective.subject === command.worksheet.subject, '练习单学习目标不存在或科目不符。')
+      requireValue(new Set(command.worksheet.items.map(item => item.id)).size === command.worksheet.items.length, '练习单题号不能重复。')
+      requireValue(command.worksheet.items.every(item => state.mistakes.some(mistake => mistake.id === item.mistakeId && mistake.confirmedAt !== undefined && mistake.objectiveId === objective.id)), '练习单每题必须引用已确认、已归类的错题。')
+      state.worksheets.push({ ...command.worksheet, createdAt: now })
+      break
+    }
+    case 'paper-result': {
+      const result = command.paperResult
+      if (duplicate(state.paperResults, item => item.worksheetId === result.worksheetId && item.itemId === result.itemId, item => {
+        const { receivedAt: _receivedAt, ...stored } = item
+        return JSON.stringify(stored) === JSON.stringify(result)
+      })) return previous
+      const worksheet = state.worksheets.find(item => item.id === result.worksheetId)
+      const item = worksheet?.items.find(item => item.id === result.itemId)
+      requireValue(worksheet && item, '纸上作答必须对应已保存的练习单题号。')
+      const mistake = state.mistakes.find(mistake => mistake.id === item.mistakeId)
+      requireValue(mistake, '练习单对应的错题不存在。')
+      state.paperResults.push({ ...result, receivedAt: now })
+      if (mistake.objectiveId === worksheet.objectiveId) advanceMistake(mistake, result.result, result.assistance, now)
       break
     }
   }

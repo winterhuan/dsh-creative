@@ -41,7 +41,7 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
 }
 
 /** Bounded history and status queries. Offset pagination applies to every collection. */
-export function queryStudy(state: StudyState | undefined, kind: string, offset: number, id?: string) {
+export function queryStudy(state: StudyState | undefined, kind: string, offset: number, id?: string, subject?: 'chinese' | 'math' | 'english') {
   if (!state) return { phase: 'setup-required', path: '.study/state.json' }
   if (kind === 'status') {
     const summary = studyStatus(state, Date.now())
@@ -55,9 +55,19 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
   const records = kind === 'due' ? state.mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= Date.now())
     : kind === 'pending' ? state.mistakes.filter(item => item.confirmedAt === undefined)
     : kind === 'progress' ? studyStatus(state, Date.now()).progress
+    : kind === 'concepts' ? state.concepts : kind === 'objectives' ? state.objectives
+      : kind === 'relations' ? state.relations : kind === 'worksheets' ? state.worksheets
+        : kind === 'paper-results' ? state.paperResults
     : kind === 'materials' ? state.materials : kind === 'mistakes' ? state.mistakes
       : kind === 'sessions' ? state.sessions : state.attempts
-  const selected = id ? records.filter(item => 'id' in item && item.id === id) : records
+  const selected = records.filter(item => {
+    if (id && (!('id' in item) || item.id !== id)) return false
+    if (!subject) return true
+    if ('subject' in item) return item.subject === subject
+    if ('fromId' in item) return state.concepts.some(concept => concept.id === item.fromId && concept.subject === subject)
+    if ('worksheetId' in item) return state.worksheets.some(sheet => sheet.id === item.worksheetId && sheet.subject === subject)
+    return true
+  })
   return { revision: state.revision, total: selected.length, items: selected.slice(offset, offset + 20), nextOffset: offset + 20 < selected.length ? offset + 20 : null }
 }
 

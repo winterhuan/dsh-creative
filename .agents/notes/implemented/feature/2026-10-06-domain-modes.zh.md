@@ -10,11 +10,11 @@ Status: implemented
 
 ## 决策
 
-每个现有 bundle 声明自己的原生 preset：`short-drama`、`novel-to-game`、`video-recap` 或 `student`。Host 入口拥有路由、设置和历史结果展示；作用域内的 `/agent` 入口拥有技能与工具。领域 persona 将任务交给按需技能。三个创作模式包含原生生产支持和委派；学习模式提供辅导、文件、提问和网页访问，不默认加入 shell 或委派工具。
+每个现有 bundle 声明自己的原生 preset：`short-drama`、`novel-to-game`、`video-recap` 或 `student`。Host 入口拥有路由、设置和历史结果展示；作用域内的 `/agent` 入口拥有技能与工具。领域 persona 将任务交给按需技能。三个创作模式包含原生生产支持和委派；学习模式提供辅导、文件、提问、网页与系统 shell，不加入委派工具。
 
 浏览器跟随所选会话的 preset 投影。只有对应模式展示工作台入口和内容；短剧文件跳转检查文件地址所属会话。投影未知时隐藏面板，不清空存储；确认模式不符时关闭恢复的标签。现有状态键、项目文件和学习档案保持不变；已有对话保留原 preset。模式选择能力，不授予文件系统权限。
 
-[小说模式决策](2026-10-06-story-mode.zh.md)保留共同激活原则及小说写入钩子的依据。[独立领域决策](../architecture/2026-09-30-creative-four-domain-plugins.zh.md)保留分发和校验资源副本的归属。[工作台决策](2026-09-03-creative-workbench.zh.md)保留文件与生产安全，[学习决策](2026-10-05-student-learning.zh.md)保留课程、证据和时长限制契约。这些记录继续有效；这里只将激活边界扩展到其余领域。
+[小说模式决策](2026-10-06-story-mode.zh.md)保留共同激活原则及小说写入钩子的依据。[独立领域决策](../architecture/2026-09-30-creative-four-domain-plugins.zh.md)保留分发和校验资源副本的归属。[工作台决策](2026-09-03-creative-workbench.zh.md)保留文件与生产安全，[学习决策](2026-10-05-student-learning.zh.md)保留课程、证据和时长限制契约，[纸上练习决策](2026-10-11-student-knowledge-paper-practice.zh.md)负责打印前确认。这些记录继续有效；这里只将激活边界扩展到其余领域。
 
 ## 考虑过的替代方案
 
@@ -22,7 +22,7 @@ Status: implemented
 
 **将全部注册移入 preset。** 保留的 preset 代际可能重复注册 Host 路由或全局设置。
 
-**学习共用创作 preset。** shell、生产和委派会给短时辅导增加无关能力。显式组合让学习模式聚焦，同时保留原生文件与图片。
+**学习共用创作 preset。** 生产和委派会给短时辅导增加无关能力。显式组合让学习模式聚焦，同时保留原生文件、图片和本机 shell 操作。
 
 ## 影响
 

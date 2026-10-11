@@ -36,6 +36,12 @@ async function fixture() {
 }
 
 describe('independently loaded student plugin', () => {
+  it('provides a platform shell in the learning preset for actions such as printing', async () => {
+    const patch = await readFile(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
+    expect(patch).toContain("name: '@deepseek-ai/dsh-tool-bash'\n            disabled: !!js process.platform === 'win32'")
+    expect(patch).toContain("name: '@deepseek-ai/dsh-tool-pwsh'\n            disabled: !!js process.platform !== 'win32'")
+  })
+
   it('loads the Skill and references through the DSH provider and disposes all contributions', async () => {
     const { ctx, plugin } = await fixture()
     expect((await ctx.skills.list()).map(item => item.name)).toEqual(['study'])

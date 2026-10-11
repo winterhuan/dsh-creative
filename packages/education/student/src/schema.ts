@@ -17,16 +17,21 @@ const course = z.object({ subject, materialId: id, unit: text, parentConfirmatio
 const mistake = z.object({
   id, subject, topic: text, prompt: text, learnerAnswer: text, correction: text,
   explanation: text, answerEvidence: text, imagePath: text.optional(),
-  uncertainties: z.string().max(2000), materialId: id.optional(),
+  uncertainties: z.string().max(2000), materialId: id.optional(), objectiveId: id.optional(),
 }).strict()
 const attempt = z.object({
   id, sessionId: id, subject, topic: text, prompt: text, response: text,
   result: z.enum(['correct', 'partial', 'incorrect', 'unassessed']),
   assistance: z.enum(['independent', 'hint', 'worked-example']),
-  feedback: text, answerEvidence: text, mistakeId: id.optional(),
+  feedback: text, answerEvidence: text, mistakeId: id.optional(), objectiveId: id.optional(),
 }).strict()
 
-const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, mistakeId: id.optional() }).strict()
+const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, mistakeId: id.optional(), objectiveId: id.optional() }).strict()
+const concept = z.object({ id, subject, name: text, definition: text, example: text, source: text }).strict()
+const objective = z.object({ id, subject, title: text, goal: text, conceptIds: z.array(id).min(1).max(5), method: z.enum(['recognize', 'read-evidence', 'express', 'represent', 'reason', 'verify', 'context', 'listen', 'speak']) }).strict()
+const relation = z.object({ id, fromId: id, toId: id, kind: z.enum(['prerequisite', 'part-of', 'contrast', 'explains', 'cause-effect']), explanation: text, source: text }).strict()
+const worksheet = z.object({ id, subject, objectiveId: id, items: z.array(z.object({ id, mistakeId: id, prompt: text, answer: text, explanation: text, answerEvidence: text }).strict()).min(1).max(8) }).strict()
+const paperResult = z.object({ worksheetId: id, itemId: id, response: text, result: z.enum(['correct', 'partial', 'incorrect', 'unassessed']), assistance: z.enum(['independent', 'hint', 'worked-example']), feedback: text, answerEvidence: text, userConfirmation: text }).strict()
 
 /** Validated mutations; confirmation fields record user statements, not authenticated identities. */
 export const commandSchema = z.discriminatedUnion('action', [
@@ -43,6 +48,13 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('stop'), sessionId: id, reflection: z.string().max(2000) }).strict(),
   z.object({ action: z.literal('mistake'), mistake }).strict(),
   z.object({ action: z.literal('confirm-mistake'), id, prompt: text, learnerAnswer: text.optional(), correction: text, explanation: text, answerEvidence: text, userConfirmation: text }).strict(),
+  z.object({ action: z.literal('concept'), concept }).strict(),
+  z.object({ action: z.literal('confirm-concept'), id, definition: text.optional(), example: text.optional(), source: text.optional(), userConfirmation: text }).strict(),
+  z.object({ action: z.literal('objective'), objective }).strict(),
+  z.object({ action: z.literal('relation'), relation }).strict(),
+  z.object({ action: z.literal('link-mistake'), mistakeId: id, objectiveId: id }).strict(),
+  z.object({ action: z.literal('worksheet'), worksheet }).strict(),
+  z.object({ action: z.literal('paper-result'), paperResult }).strict(),
 ])
 
 /** One learner and term per workspace; previous materials and attempts are retained. */
@@ -60,6 +72,11 @@ export const stateSchema = z.object({
     confirmedAt: time.optional(), userConfirmation: text.optional(), dueAt: time.optional(),
     independentDays: z.array(z.string()), stage: z.number().int().min(0).max(4),
   }).strict()).max(5000),
+  concepts: z.array(concept.extend({ confirmedAt: time.optional(), userConfirmation: text.optional() }).strict()).max(1000).default([]),
+  objectives: z.array(objective).max(1000).default([]),
+  relations: z.array(relation).max(2000).default([]),
+  worksheets: z.array(worksheet.extend({ createdAt: time }).strict()).max(500).default([]),
+  paperResults: z.array(paperResult.extend({ receivedAt: time }).strict()).max(4000).default([]),
   rewards: z.array(z.object({ day: z.string(), reason: z.enum(['participation', 'reflection']) }).strict()).max(1000),
   breakUntil: time,
   task: task.extend({ response: text.optional(), answeredAt: time.optional(), hintRequested: z.boolean() }).strict().optional(),
