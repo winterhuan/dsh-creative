@@ -13,7 +13,25 @@ declare module '@deepseek-ai/dsh-jobs' {
   interface JobKindMap { 'produce': 'produce' }
 }
 
+/** Environment name `resolveProduceEnvs` projects every stored key under. */
+const MAKERS_ENV = 'MAKERS_API_KEY'
+/** Longest key pool one detection submits; `detect zhuque` tries the keys in order and refuses a longer pool. */
+const MAX_KEY_ATTEMPTS = 16
+
 function quote(value: string): string { return `'${value.replaceAll("'", "'\"'\"'")}'` }
+
+/**
+ * Flatten the resolved key environments into the ordered pool one detection may try.
+ * @param environments - one environment per stored key, as `resolveProduceEnvs` projects them.
+ * @returns distinct keys in rotation order, capped at the detector's attempt limit.
+ */
+function keyPool(environments: readonly Record<string, string>[]): string[] {
+  const keys = environments.flatMap((env) => {
+    const key = env[MAKERS_ENV]
+    return key === undefined ? [] : [key]
+  })
+  return [...new Set(keys)].slice(0, MAX_KEY_ATTEMPTS)
+}
 
 /**
  * Build the domain production tool.
@@ -60,11 +78,13 @@ export function createCreativeProduceRunTool(options: { readonly entry?: Produce
       if (args.max_chars !== undefined) argv.push('--max-chars', String(args.max_chars))
       if (argv.some(value => value.includes('\0'))) throw new Error('Detection paths must not contain null characters.')
       const section = currentProduceConfig(agent.ctx, options.entry ?? {})
-      const resolvedEnv = (await resolveProduceEnvs(agent.ctx, section))[0] ?? {}
+      const keys = keyPool(await resolveProduceEnvs(agent.ctx, section))
+      // The pool travels on stdin, never in arguments or the environment; with no stored key the CLI reports missing_credential.
+      if (keys.length > 0) argv.push('--credential-pool-stdin')
       const request = {
         command: [process.execPath, resolve(dirname(fileURLToPath(import.meta.url)), '../lib/cli.js'), ...argv].map(quote).join(' '),
         workdir: workspace,
-        env: Object.fromEntries(Object.entries(resolvedEnv).filter(([key]) => key === 'MAKERS_API_KEY')),
+        ...(keys.length === 0 ? {} : { stdin: JSON.stringify(keys) }),
         ...(policy === undefined ? {} : { sandboxPolicy: policy }),
         ...(args.timeoutMs === undefined ? {} : { timeoutMs: args.timeoutMs }),
       }
@@ -119,7 +139,7 @@ export function registerCreativeProduceRunTool(context: Context, options: { read
     async execute(_args, exec) {
       if (exec.agent === undefined) throw new Error('A DSH Session is required.')
       const configured = await configuredProduceCredentials(exec.agent.ctx, currentProduceConfig(exec.agent.ctx, options.entry ?? {}))
-      return { configured: [...configured].filter(key => key === 'MAKERS_API_KEY') }
+      return { configured: [...configured].filter(key => key === MAKERS_ENV) }
     },
   }))
 }

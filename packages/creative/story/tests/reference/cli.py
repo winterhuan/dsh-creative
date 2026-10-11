@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
@@ -238,6 +239,8 @@ def build_parser() -> Parser:
                                  help="AI ratio threshold in (0, 1], default 0.5")
                 sub.add_argument("--max-chars", type=int, default=zhuque.DEFAULT_MAX_CHARS,
                                  help="refuse longer inputs without calling the service, default 20000")
+                sub.add_argument("--credential-pool-stdin", action="store_true",
+                                 help="read a JSON array of candidate keys from stdin; a key Zhuque rejects advances to the next")
     return parser
 
 
@@ -261,16 +264,22 @@ def text_command(args: argparse.Namespace, project: Path | None) -> tuple[dict[s
         changed = [str(path) for path in files if path.read_bytes() != before[str(path)]]
         return {"schema": "story-text-normalize/v1", "applied": args.apply, "changed_files": changed,
                 "diagnostics": checked.stdout.strip().splitlines()}, checked.returncode
-    reports = {}
-    for name, script in (("patterns", "check-ai-patterns.js"), ("degeneration", "check-degeneration.js")):
-        checked = node_command(script, ["--check", "--json", "--fail-on=blocking", *map(str, files)])
-        reports[name] = json.loads(checked.stdout)
-    punctuation = node_command("normalize-punctuation.js", ["--check", *scope, *map(str, files)])
-    advisories = punctuation.stdout.strip().splitlines()
+    paths = [str(path) for path in files]
+    commands = [("patterns", "check-ai-patterns.js", ["--check", "--json", "--fail-on=blocking", *paths]),
+                ("degeneration", "check-degeneration.js", ["--check", "--json", "--fail-on=blocking", *paths]),
+                ("punctuation", "normalize-punctuation.js", ["--check", *scope, *paths])]
     if args.outline is not None:
-        copied = node_command("check-outline-copy.js", ["--outline", str(file_path(args.outline, project)), *map(str, files)])
-        if copied.returncode:
-            advisories.extend(copied.stdout.strip().splitlines())
+        commands.append(("outline-copy", "check-outline-copy.js", ["--outline", str(file_path(args.outline, project)), *paths]))
+    # The checkers only read the files, so they run together; results are consumed in
+    # declaration order, which also decides which failure is reported.
+    with ThreadPoolExecutor(max_workers=len(commands)) as pool:
+        completed = dict(zip([name for name, _, _ in commands],
+                             pool.map(lambda command: node_command(command[1], command[2]), commands)))
+    reports = {name: json.loads(completed[name].stdout) for name in ("patterns", "degeneration")}
+    advisories = completed["punctuation"].stdout.strip().splitlines()
+    copied = completed.get("outline-copy")
+    if copied is not None and copied.returncode:
+        advisories.extend(copied.stdout.strip().splitlines())
     blocking = [finding for report in reports.values() for finding in report["findings"] if finding["severity"] == "blocking"]
     return {"schema": "story-text-check/v1", "ok": not blocking, "reports": reports, "advisories": advisories}, 1 if blocking else 0
 
@@ -364,7 +373,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     if args.command == "detect":
         source = file_path(args.file, project)
         output = file_path(args.out, project, output=True) if args.out is not None else None
-        report, code, _ = zhuque.run([str(source), "--json", "--target", str(args.target), "--max-chars", str(args.max_chars)])
+        report, code, _ = zhuque.run([str(source), "--json", "--target", str(args.target), "--max-chars", str(args.max_chars),
+                                      *(["--credential-pool-stdin"] if args.credential_pool_stdin else [])])
         if report["ok"] and output is not None:
             try:
                 zhuque.write_report(output, report)

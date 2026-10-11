@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
 import { expect, it } from 'vitest'
 
-const script = fileURLToPath(new URL('../runtime/storyctl.py', import.meta.url))
+const script = fileURLToPath(new URL('./reference/storyctl.py', import.meta.url))
 const python = process.platform === 'win32' ? 'python' : 'python3'
 
 it('queries 500-chapter continuity without writes, omissions or stale pages', async context => {
@@ -26,14 +26,15 @@ it('exposes structured status, filters and argument failures through the shipped
   const cwd = join(root, '书')
   await mkdir(join(cwd, '追踪'), { recursive: true })
   await writeFile(join(cwd, '追踪/_tracking-state.json'), await readFile(new URL('./fixtures/continuity-state.json', import.meta.url)))
-  const cli = fileURLToPath(new URL('../runtime/cli.py', import.meta.url))
+  const entry = fileURLToPath(new URL('../src/cli.ts', import.meta.url))
+  const loader = import.meta.resolve('tsx')
   for (const [args, code, expected] of [
     [['status'], 0, { initialized: true, through_chapter: 500 }],
     [['query', '--kind', 'foreshadow', '--filter', 'due'], 0, { total: 2 }],
     [['query', '--kind', 'foreshadow', '--revision', '6'], 2, { error_code: 'INVALID_INPUT' }],
     [['query', '--kind', 'invalid'], 2, { error_code: 'INVALID_ARGUMENT' }],
   ] as const) {
-    const child = execa(python, [cli, 'project', ...args, '--workspace', root, '--book', '书'], {
+    const child = execa(process.execPath, ['--import', loader, entry, 'project', ...args, '--workspace', root, '--book', '书'], {
       env: { PYTHONDONTWRITEBYTECODE: '1' }, reject: false, cancelSignal: context.signal,
     })
     context.onTestFinished(async () => { child.kill('SIGKILL'); await child })

@@ -60,7 +60,7 @@ function makeCheck(id, ok, file, evidence, expected, references, repair) {
 
 function verify(projectDir) {
   const project = path.resolve(projectDir)
-  const skillRoot = path.resolve(import.meta.dirname, '../knowledge/story/skills/story-write')
+  const skillRoot = path.resolve(import.meta.dirname, '../../knowledge/story/skills/story-write')
   const settingsFile = path.join(project, '设定.md')
   const outlineFile = path.join(project, '小节大纲.md')
   const settingsRead = readUtf8(settingsFile)

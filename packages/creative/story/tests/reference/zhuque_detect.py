@@ -5,8 +5,10 @@ The whole file is sent to Zhuque through Tencent Cloud EdgeOne Makers. Every
 returned segment is mapped back to file lines, and the verdict is computed the
 way the Zhuque web page computes it. The chapter file is never modified.
 
-The API key is read from MAKERS_API_KEY; inside DSH it is injected by
-story_zhuque and is never passed as an argument.
+The API key is read from MAKERS_API_KEY, or ``--credential-pool-stdin`` reads a
+JSON array of candidate keys from stdin: keys are tried in order and an
+authentication rejection advances to the next one. Inside DSH, story_zhuque
+supplies the pool on stdin; keys are never passed as arguments.
 """
 
 from __future__ import annotations
@@ -32,6 +34,9 @@ MIN_CHARS = 350
 # consume a large share of the monthly free quota.
 DEFAULT_MAX_CHARS = 20_000
 DEFAULT_TARGET = 0.5
+# Every rejected key costs one round trip; a longer stdin pool is a
+# configuration error, not rotation.
+MAX_KEY_ATTEMPTS = 16
 
 LABELS = {0: "human", 1: "ai", 2: "suspected"}
 VERDICT_TEXT = {
@@ -93,6 +98,24 @@ def read_chapter(path: Path) -> str:
     except (OSError, UnicodeError) as exc:
         raise DetectError("file_unreadable", f"{path}: {exc}", EXIT_INPUT) from exc
     return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def read_key_pool() -> list[str]:
+    """Read the ``--credential-pool-stdin`` JSON array as distinct non-empty keys in order."""
+    try:
+        value = json.loads(sys.stdin.read())
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise DetectError("invalid_arguments", f"credential pool on stdin is not JSON: {exc}", EXIT_INPUT) from exc
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise DetectError("invalid_arguments", "credential pool on stdin must be a JSON array of strings", EXIT_INPUT)
+    keys = list(dict.fromkeys(item.strip() for item in value if item.strip()))
+    if len(keys) > MAX_KEY_ATTEMPTS:
+        raise DetectError(
+            "invalid_arguments",
+            f"credential pool holds {len(keys)} keys; at most {MAX_KEY_ATTEMPTS} are tried",
+            EXIT_INPUT,
+        )
+    return keys
 
 
 def line_of(text: str, offset: int) -> int:
@@ -273,6 +296,9 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
                         help="pass when the AI ratio is below this value (default 0.5, the web page's green verdict)")
     parser.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS,
                         help="refuse longer files instead of spending quota (default 20000)")
+    parser.add_argument("--credential-pool-stdin", action="store_true",
+                        help="read a JSON array of candidate keys from stdin instead of MAKERS_API_KEY; "
+                             "a key Zhuque rejects advances to the next")
     args = parser.parse_args(argv)
     if not 0 < args.target <= 1:
         raise DetectError("invalid_arguments", "--target must be greater than 0 and at most 1", EXIT_INPUT)
@@ -284,6 +310,7 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 def run(argv: Sequence[str] | None) -> tuple[dict[str, Any], int, argparse.Namespace | None]:
     args: argparse.Namespace | None = None
     file = ""
+    attempts = 0
     try:
         args = parse_args(argv)
         file = args.file
@@ -297,18 +324,28 @@ def run(argv: Sequence[str] | None) -> tuple[dict[str, Any], int, argparse.Names
                 f"{len(text)} characters exceeds --max-chars {args.max_chars}; check one chapter per call",
                 EXIT_INPUT,
             )
-        key = os.environ.get(KEY_ENV, "").strip()
-        if key == "":
+        keys = read_key_pool() if args.credential_pool_stdin else [os.environ.get(KEY_ENV, "").strip()]
+        keys = [key for key in keys if key]
+        if not keys:
             raise DetectError(
                 "missing_credential",
                 f"{KEY_ENV} is not configured; run through story_zhuque",
                 EXIT_CREDENTIAL,
             )
-        data, request_id = classify(text, key)
+        for attempts, key in enumerate(keys, 1):
+            try:
+                data, request_id = classify(text, key)
+                break
+            except DetectError as exc:
+                # Only a rejected key advances the pool; quota, network and input failures end detection.
+                if exc.code != "auth_failed" or attempts == len(keys):
+                    raise
         report = build_report(file, text, args.target, data, request_id)
+        report["key_attempts"] = attempts
         return report, EXIT_PASS if report["pass"] else EXIT_BELOW_TARGET, args
     except DetectError as exc:
-        error = {"schema": SCHEMA, "ok": False, "file": file, "error": {"code": exc.code, "message": str(exc)}}
+        error = {"schema": SCHEMA, "ok": False, "file": file, "key_attempts": attempts,
+                 "error": {"code": exc.code, "message": str(exc)}}
         return error, exc.exit_code, args
 
 

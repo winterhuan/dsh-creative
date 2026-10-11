@@ -2,13 +2,13 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-client-ui-chat/client'
+import type { ChatSnapshot } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { defineStore } from '@deepseek-ai/dsh-client-store'
 import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { IconEditOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { registerStoryTab } from './story-mode.ts'
@@ -75,7 +75,9 @@ function StoryEditorContent({ sessionId, t, useStore, actions, useChat, useTabIn
   const inFlight = useRef(false)
   const latestBuffers = useRef(buffers)
   latestBuffers.current = buffers
-  const mutation = useChat(latestSettledMutation)
+  const cwd = workspace?.cwd
+  const selectMutation = useCallback((chat: ChatSnapshot) => latestSettledMutation(chat, cwd), [cwd])
+  const mutation = useChat(selectMutation)
   const previousMutation = useRef(mutation)
   useEffect(() => {
     if (previousMutation.current === mutation) return

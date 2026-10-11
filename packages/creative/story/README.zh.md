@@ -44,7 +44,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
   --workspace /Users/winter/workspace/shenji --book 神机诸天录 --json
 ```
 
-安装环境将 `dsh-story` 放入 PATH 时，两种调用等价。`--help` 列出工程、细纲、章节、短篇、文本、记忆、拆文、导出、谱系和检测操作。作品操作须明确工作区和直属作品名称。JSON 结果提供检查发现与错误；标点归一仅在 `--apply` 时写入。启动入口转发输入、输出和取消，不调用模型；缺少 Python 时返回结构化错误。
+安装环境将 `dsh-story` 放入 PATH 时，两种调用等价。`--help` 列出工程、细纲、章节、短篇、文本、记忆、拆文、导出、谱系和检测操作。作品操作须明确工作区和直属作品名称。JSON 结果提供检查发现与错误；标点归一仅在 `--apply` 时写入。启动入口转发输入、输出和取消，不调用模型；CLI 为纯 TypeScript 实现，不依赖 Python。
 
 ### 连续性概览与查询
 
@@ -52,7 +52,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 首次打开显示概览，已有编辑会话保留文件视图。没有作品时显示创建／打开工作区的提示，不用工作区名代替作品。多本书通过小说选择框切换；刷新、窗口重新获得焦点和可识别的章节提交会重读状态。读取失败保留同一本书的上次内容并提示陈旧，状态缺失显示接入提示，格式损坏显示错误。进度来自已提交追踪，不把未提交稿、文件检查或旧审稿记录当成当前文学质量批准。
 
-在对话中通过 `story` 查询状态、角色、伏笔或历史记录；CLI 入口是 `dsh-story project status` 与 `project query`。查询带来源与修订号，每次最多 50 条且不超过 16 KiB，分页可用 `--revision` 拒绝混合版本。写前准备单独查询全部到期伏笔，覆盖续写状态卡最多 8 条之外的项；日期提醒由作者和写作流程结合卷纲处理，不自动延期或回收。具体命令见[连续性查询](knowledge/story/skills/story/references/project/continuity-query.md)。
+在对话中通过 `story` 查询状态、角色、伏笔或历史记录；CLI 入口是 `dsh-story project status`、`project query` 与一次取齐写前上下文的 `project context`。查询带来源与修订号，每次最多 50 条且不超过 16 KiB，分页可用 `--revision` 拒绝混合版本。写前准备用 `project context` 一次取得状态卡、到期伏笔与草稿提及的角色，需要时再单独查询全部到期伏笔，覆盖续写状态卡最多 8 条之外的项；日期提醒由作者和写作流程结合卷纲处理，不自动延期或回收。具体命令见[连续性查询](knowledge/story/skills/story/references/project/continuity-query.md)。
 
 “记住本书的写法”使用既有 book 范围作者记忆与确认回执；角色、伏笔和事件经章节事务保存。记忆的候选确认、替换、撤回与优先级见[作者记忆](knowledge/story/skills/story/references/project/author-memory.md)。
 
@@ -81,13 +81,13 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 <details>
 <summary>实现细节 — 点击展开</summary>
 
-[补丁](cordis.patch.yml)注册 `story` 预设，不改变默认模式。其 `/agent` 入口负责作用域内的技能、工具和写作钩子。Host 入口负责文件 API 与凭据配置，客户端依据所选会话的预设投影显示。预设提供文件系统、Shell、搜索、作业、技能、原生委派和工作流工具，并隔离压缩与工作流服务。朱雀密钥写在 `story` 设置命名空间，默认凭据引用是 `MAKERS_API_KEY`。`editorMaxBytes` 默认为 2097152；`trustedHosts` 扩展默认回环地址列表。`/story` API 将文档访问限定在本领域项目路径中。
+[补丁](cordis.patch.yml)注册 `story` 预设，不改变默认模式。其 `/agent` 入口负责作用域内的技能、工具和写作钩子。Host 入口负责文件 API 与凭据配置，客户端依据所选会话的预设投影显示。预设提供文件系统、Shell、搜索、作业、技能、原生委派和工作流工具，并隔离压缩与工作流服务。朱雀密钥写在 `story` 设置命名空间，默认凭据引用是 `MAKERS_API_KEY`。已存密钥组成密钥池，经标准输入交给检测进程：朱雀拒绝某把密钥时换下一把，其他失败直接结束检测，最多尝试 16 把。`editorMaxBytes` 默认为 2097152；`trustedHosts` 扩展默认回环地址列表。`/story` API 将文档访问限定在本领域项目路径中。
 
-写作守卫与专家 Role 属于此包。用户明确要求的朱雀检测会将选定章节发送到腾讯 EdgeOne Makers，只接收配置的 MAKERS_API_KEY。
+写作守卫与专家 Role 属于此包。用户明确要求的朱雀检测会将选定章节发送到腾讯 EdgeOne Makers，只接收配置的 MAKERS_API_KEY 密钥池。
 
 此包独立开发、构建和安装，不依赖其他领域插件；必需辅助脚本作为包资源分发。
 
-每个 Skill 拥有自己的 `references/`，专业 Role 放在所属 Skill 的 `references/roles/`。`story-write` 与 `story-analyze` 各自拥有 workflow 模板，Skill Viewer 直接发现并预览本地参考。包内 `lib/cli.js` 启动 `runtime/` 中的 Python 调度器，并向进程组转发取消信号。内部 Python 与 JavaScript 模块保留既有追踪事务、共用章文件路径和目标字数解析。小说工作区响应包含独立作品列表、上限为 1,000 项的文件列表及文件截断状态。作品发现检查直属子目录中的标准目录或独立文档，达到文件上限后仍继续；概览直接读取所选作品的追踪。运行中的 Host 未提供作品列表时，客户端从文件列表识别作品，直到 Host 重启。事务写入使用进程退出时释放的操作系统文件锁；锁文件常驻磁盘，不应删除。写入中断后，先重试原事务，再检查派生视图。
+每个 Skill 拥有自己的 `references/`，专业 Role 放在所属 Skill 的 `references/roles/`。`story-write` 与 `story-analyze` 各自拥有 workflow 模板，Skill Viewer 直接发现并预览本地参考。包内 `lib/cli.js` 即 TypeScript CLI 本身（由 `src/cli/` 打包），`src/core/` 内部模块保留既有追踪事务、共用章文件路径和目标字数解析。小说工作区响应包含独立作品列表、上限为 1,000 项的文件列表及文件截断状态。作品发现检查直属子目录中的标准目录或独立文档，达到文件上限后仍继续；概览直接读取所选作品的追踪。运行中的 Host 未提供作品列表时，客户端从文件列表识别作品，直到 Host 重启。事务写入使用 `追踪/.tracking-commit.lock/` 目录锁：持有者写入 PID，提交完成后删除目录；死进程或超过一分钟的陈旧锁会被接管，等待十秒后报错。写入中断后，先重试原事务，再检查派生视图。
 
 </details>
 
@@ -114,9 +114,10 @@ Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工�
 
 - 已有对话保留原预设；可在新小说会话接续同一本书。已有非小说会话的草稿仍保留存储，但没有小说工作台入口。预设显式列出工具，升级 DSH 时须核对。
 - 原生 Team 工具需要显式启用团队组合和持久 Session。专业指令进入任务上下文，不由插件覆盖系统 persona。审稿输出普通意见；章节脚本校验机械条件，不认证文学质量或评审模型元数据。
-- CLI 需要 Node 和 Python 3.9+。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
+- CLI 只需要 Node。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
 - 小说预设为原生单章模板提供 `workflow` 和子 Agent 结构化输出。它处理长篇新章及其未提交稿；已提交章修改沿用现有修订路径。模板复用与审稿只读依靠指令，不是 Host 强制机制或单独审稿权限策略。取消保留产物，恢复核对真实文件和追踪，不恢复旧脚本栈。文件校验不隔离任意外部写入者。
 - 概览通过现有文件 API 读取状态，受 `editorMaxBytes` 限制；大列表在界面分页，不新增数据库或服务器。它校验展示字段，完整追踪体检仍使用 `dsh-story project check`。历史查询提供已有逐章记录，不重建任意章的完整世界状态；原文和缺失记录需定点核查。
+- 运行时已完成从 Python/JavaScript 到 TypeScript 的迁移：CLI 与全部确定性操作都是 TypeScript，包内不再分发 `runtime/`；原实现保留在 `tests/reference/` 仅作差分测试基准，`tests/ts-port-parity*.spec.ts` 在相同输入上比对两者输出，parity 仍是兼容性依据。
 
 <a id="dev-note"></a>
 ### 开发笔记

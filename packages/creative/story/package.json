@@ -48,7 +48,6 @@
   },
   "files": [
     "lib",
-    "runtime",
     "knowledge",
     "cordis.patch.yml"
   ],

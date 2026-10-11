@@ -94,24 +94,27 @@ class Detector(unittest.TestCase):
     def tearDown(self):
         self.directory.cleanup()
 
-    def invoke(self, args, response=None, key="dummy-makers-key"):
+    def invoke(self, args, response=None, key="dummy-makers-key", pool=None, responses=None):
+        """Run main(); `responses` answers successive requests in order, `pool` feeds --credential-pool-stdin."""
         def urlopen(request, timeout):
             self.requests.append(request)
-            if isinstance(response, BaseException):
-                raise response
-            return FakeResponse(response if response is not None else success())
+            current = responses.pop(0) if responses is not None else response
+            if isinstance(current, BaseException):
+                raise current
+            return FakeResponse(current if current is not None else success())
 
         stdout = Stdout()
+        stdin = io.StringIO(pool if isinstance(pool, str) else json.dumps(pool))
         environ = {name: value for name, value in os.environ.items() if name != zhuque.KEY_ENV}
         if key is not None:
             environ[zhuque.KEY_ENV] = key
         with patch.object(zhuque.urllib.request, "urlopen", urlopen), patch.object(sys, "stdout", stdout), \
-                patch.dict(os.environ, environ, clear=True):
-            status = zhuque.main(args)
+                patch.object(sys, "stdin", stdin), patch.dict(os.environ, environ, clear=True):
+            status = zhuque.main(["--credential-pool-stdin", *args] if pool is not None else args)
         return status, stdout.text()
 
-    def report(self, args, response=None, key="dummy-makers-key"):
-        status, output = self.invoke(["--json", *args], response, key)
+    def report(self, args, response=None, key="dummy-makers-key", pool=None, responses=None):
+        status, output = self.invoke(["--json", *args], response, key, pool, responses)
         return status, json.loads(output)
 
     def test_maps_segments_to_lines_and_mirrors_the_web_verdict(self):
@@ -172,6 +175,43 @@ class Detector(unittest.TestCase):
                 self.assertEqual((status, report["ok"], report["error"]["code"]), (exit_code, False, code))
         _, report = self.report([str(self.chapter)], cases[0][0]())
         self.assertEqual(report["error"]["message"], "HTTP 401: API key not found.")
+
+    def test_rotates_a_rejected_key_from_the_stdin_pool(self):
+        rejected = http_error(401, {"error": {"message": "API key not found.", "code": "auth_failed"}})
+        status, report = self.report([str(self.chapter)], key=None, pool=["dead-key", " live-key ", "live-key"],
+                                     responses=[rejected, success()])
+        self.assertEqual(status, zhuque.EXIT_BELOW_TARGET)
+        self.assertEqual(report["key_attempts"], 2)
+        self.assertEqual([request.get_header("Authorization") for request in self.requests],
+                         ["Bearer dead-key", "Bearer live-key"])
+
+    def test_reports_a_pool_whose_every_key_is_rejected(self):
+        responses = [http_error(403, {"error": {"message": "forbidden"}}) for _ in range(2)]
+        status, report = self.report([str(self.chapter)], key=None, pool=["a", "b"], responses=responses)
+        self.assertEqual((status, report["error"]["code"], report["key_attempts"]),
+                         (zhuque.EXIT_CREDENTIAL, "auth_failed", 2))
+        self.assertEqual(len(self.requests), 2)
+
+    def test_only_a_rejected_key_advances_the_pool(self):
+        status, report = self.report([str(self.chapter)], key=None, pool=["a", "b"],
+                                     responses=[http_error(429, {"error": {"message": "slow down"}})])
+        self.assertEqual((status, report["error"]["code"], report["key_attempts"]),
+                         (zhuque.EXIT_SERVICE, "rate_limited", 1))
+        self.assertEqual(len(self.requests), 1)
+
+    def test_refuses_an_unusable_stdin_pool_before_any_request(self):
+        cases = [
+            ("not json", "invalid_arguments", zhuque.EXIT_INPUT),
+            ({"key": "a"}, "invalid_arguments", zhuque.EXIT_INPUT),
+            (["a", 1], "invalid_arguments", zhuque.EXIT_INPUT),
+            ([f"k{index}" for index in range(zhuque.MAX_KEY_ATTEMPTS + 1)], "invalid_arguments", zhuque.EXIT_INPUT),
+            (["", "  "], "missing_credential", zhuque.EXIT_CREDENTIAL),
+        ]
+        for pool, code, exit_code in cases:
+            with self.subTest(pool=pool):
+                status, report = self.report([str(self.chapter)], key="ignored-environment-key", pool=pool)
+                self.assertEqual((status, report["error"]["code"]), (exit_code, code))
+        self.assertEqual(self.requests, [])
 
     def test_rejects_malformed_or_unsuccessful_responses(self):
         cases = [

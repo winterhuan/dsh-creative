@@ -36,29 +36,42 @@ describe('story file refresh signals', () => {
     expect(latestSettledMutation(snapshot(settled('failed', 'bash', { command: 'python tracking_commit.py commit' }, true)))).toBeUndefined()
   })
   it.each([
-    ['write', { file_path: '正文/新章.md', content: '完成' }],
-    ['edit', { file_path: '正文/新章.md', old_string: '旧', new_string: '新' }],
-    ['str_replace_editor', { command: 'create', path: '正文/新章.md', file_text: '完成' }],
-    ['str_replace_editor', { command: 'str_replace', path: '正文/新章.md', old_str: '旧', new_str: '' }],
-    ['str_replace_editor', { command: 'insert', path: '正文/新章.md', new_str: '新' }],
+    ['write', { file_path: '书/正文/新章.md', content: '完成' }],
+    ['edit', { file_path: '书/正文/新章.md', old_string: '旧', new_string: '新' }],
+    ['str_replace_editor', { command: 'create', path: '书/正文/新章.md', file_text: '完成' }],
+    ['str_replace_editor', { command: 'str_replace', path: '书/正文/新章.md', old_str: '旧', new_str: '' }],
+    ['str_replace_editor', { command: 'insert', path: '书/正文/新章.md', new_str: '新' }],
   ])('refreshes a settled %s mutation that skipped the live render window', (name, args) => {
-    expect(latestSettledMutation(snapshot(settled('changed', name, args)))).toBe('changed\0正文/新章.md')
+    expect(latestSettledMutation(snapshot(settled('changed', name, args)))).toBe('changed\0书/正文/新章.md')
   })
 
   it('keeps the latest successful write when newer calls only read or fail', () => {
     expect(latestSettledMutation(snapshot(
-      settled('older', 'write', { file_path: '正文/旧章.md' }),
-      settled('changed', 'write', { file_path: '正文/新章.md' }),
-      settled('read', 'str_replace_editor', { command: 'view', path: '正文/预览.md' }),
-      settled('failed', 'write', { file_path: '正文/失败.md' }, true),
-    ))).toBe('changed\0正文/新章.md')
+      settled('older', 'write', { file_path: '书/正文/旧章.md' }),
+      settled('changed', 'write', { file_path: '书/正文/新章.md' }),
+      settled('read', 'str_replace_editor', { command: 'view', path: '书/正文/预览.md' }),
+      settled('failed', 'write', { file_path: '书/正文/失败.md' }, true),
+    ))).toBe('changed\0书/正文/新章.md')
+  })
+
+  it('skips writes the listing never shows and scopes absolute paths by the Session directory', () => {
+    expect(latestSettledMutation(snapshot(settled('notes', 'write', { file_path: '笔记.md' })))).toBeUndefined()
+    expect(latestSettledMutation(snapshot(settled('root-prose', 'write', { file_path: '正文/新章.md' })))).toBeUndefined()
+    expect(latestSettledMutation(snapshot(
+      settled('story', 'write', { file_path: '书/正文/新章.md' }),
+      settled('notes', 'write', { file_path: '研究/笔记.md' }),
+    ))).toBe('story\0书/正文/新章.md')
+    expect(latestSettledMutation(snapshot(settled('library', 'write', { file_path: '拆文库/来源/章节/第001章_摘要.md' })))).toBe('library\0拆文库/来源/章节/第001章_摘要.md')
+    expect(latestSettledMutation(snapshot(settled('outline', 'write', { file_path: '/workspace/书/大纲/细纲_第001章.md' })), '/workspace')).toBe('outline\0/workspace/书/大纲/细纲_第001章.md')
+    expect(latestSettledMutation(snapshot(settled('other', 'write', { file_path: '/workspace/研究/笔记.md' })), '/workspace')).toBeUndefined()
+    expect(latestSettledMutation(snapshot(settled('unscoped', 'write', { file_path: '/elsewhere/书/正文/第1章.md' })))).toBe('unscoped\0/elsewhere/书/正文/第1章.md')
   })
 
   it('finds settled mutations inside a running Code Mode call', () => {
     const root: ToolCallBlock = { callId: 'code', phase: 'start', name: 'run_code', turn: 1, step: 1, time: 1, argsRaw: '{}', args: PartialArguments.EMPTY, subCalls: [
-      settled('first', 'write', { file_path: '正文/第一章.md' }),
-      settled('second', 'edit', { file_path: '正文/第二章.md' }),
+      settled('first', 'write', { file_path: '书/正文/第一章.md' }),
+      settled('second', 'edit', { file_path: '书/正文/第二章.md' }),
     ] }
-    expect(latestSettledMutation(snapshot(root))).toBe('second\0正文/第二章.md')
+    expect(latestSettledMutation(snapshot(root))).toBe('second\0书/正文/第二章.md')
   })
 })

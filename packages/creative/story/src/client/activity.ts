@@ -1,5 +1,6 @@
 import type { ChatSnapshot } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { parseCreativePath, workspaceRelativePath } from '../project-path.ts'
 
 function mutationPath(name: string, raw: string): string | undefined {
   if (name !== 'write' && name !== 'edit' && name !== 'str_replace_editor' && name !== 'bash') return undefined
@@ -27,25 +28,41 @@ function mutationPath(name: string, raw: string): string | undefined {
   } catch { return undefined }
 }
 
-function settledMutationSignals(block: ToolCallBlock): string[] {
-  const nested = block.subCalls.flatMap(settledMutationSignals)
+/**
+ * Decide whether one settled mutation can change the workbench listing. Files the listing never
+ * shows are skipped; paths it cannot classify (unscoped absolute paths, dot segments) keep the refresh.
+ * @param name - the settled tool; recognized CLI commands already name the tracking file.
+ * @param path - the mutated path as the tool received it.
+ * @param cwd - the Session working directory that scopes absolute paths.
+ * @returns whether the mutation is a listing refresh signal.
+ */
+function changesListing(name: string, path: string, cwd: string | undefined): boolean {
+  if (name === 'bash') return true
+  const relative = workspaceRelativePath(path, cwd)
+  return relative === undefined || parseCreativePath(relative) !== undefined
+}
+
+function settledMutationSignals(block: ToolCallBlock, cwd: string | undefined): string[] {
+  const nested = block.subCalls.flatMap(child => settledMutationSignals(child, cwd))
   if (!('kind' in block) || block.isError) return nested
   if (block.call === null) return nested
   const path = mutationPath(block.call.name, block.call.argsRaw)
-  return path === undefined ? nested : [`${block.callId}\0${path}`, ...nested]
+  if (path === undefined || !changesListing(block.call.name, path, cwd)) return nested
+  return [`${block.callId}\0${path}`, ...nested]
 }
 
 /**
- * Latest successful file mutation in the durable Chat tree, including nested calls.
+ * Latest successful mutation in the durable Chat tree that can change the workbench listing, including nested calls.
  * @param chat - the full chat snapshot in dispatch order.
+ * @param cwd - the Session working directory that scopes absolute paths; unscoped absolute paths keep the refresh.
  * @returns the `callId\0path` signal of the newest settled mutation, or `undefined`.
  */
-export function latestSettledMutation(chat: ChatSnapshot): string | undefined {
+export function latestSettledMutation(chat: ChatSnapshot, cwd?: string): string | undefined {
   for (const key of chat.order.toReversed()) {
     const node = chat.nodes.get(key)
     if (node?.kind !== 'tool-call') continue
     const root = (node.data as { readonly root?: ToolCallBlock }).root
-    const signal = root === undefined ? undefined : settledMutationSignals(root).at(-1)
+    const signal = root === undefined ? undefined : settledMutationSignals(root, cwd).at(-1)
     if (signal !== undefined) return signal
   }
   return undefined

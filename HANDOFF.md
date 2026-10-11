@@ -182,7 +182,9 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 小说包提供 `story`、`story-write`、`story-analyze`、`story-review`、`story-polish`、`story-cover` 六个入口。长短篇流程按需读取；已有工程直接继续，原始文本接入不要求先拆全书。普通润色不调用朱雀，检测需要用户明确请求。
 
-六个技能的 `resourceBase` 均指向自身目录，各自维护 `references/`；专业 Role 位于所属技能的 `references/roles/`，由子 Agent 原生读取。`story-write` 和 `story-analyze` 各自维护原生 workflow 模板。确定性操作统一调用包内 `lib/cli.js`，也可在 PATH 可用时执行 `dsh-story`；Node 入口转发信号，Python/JavaScript 内部模块放在 `runtime/` 并保留相互导入。章节提交保留哈希与修订检查，普通审稿不要求评审 JSON。朱雀 Host 适配器只向 CLI 子进程提供所需凭据；`sync-video-runtime.py` 从 `runtime/` 同步其他领域所需的脚本副本。
+六个技能的 `resourceBase` 均指向自身目录，各自维护 `references/`；专业 Role 位于所属技能的 `references/roles/`，由子 Agent 原生读取。`story-write` 和 `story-analyze` 各自维护原生 workflow 模板。确定性操作统一调用包内 `lib/cli.js`，也可在 PATH 可用时执行 `dsh-story`；`lib/cli.js` 是 TypeScript CLI 的构建产物（`src/cli/` 打包、内部模块在 `src/core/`），包内不再有 `runtime/`。章节提交保留哈希与修订检查，普通审稿不要求评审 JSON。朱雀 Host 适配器只向 CLI 子进程提供所需凭据（含经 stdin 的密钥池）；story 的 Python 运行时已退役，原先从它同步到其他领域的脚本副本就地冻结，`sync-video-runtime.py` 只在 video-recap 与 short-drama 之间同步。
+
+2026-10-11 小说运行时迁移到 TypeScript：`runtime/` 整体迁到 `tests/reference/`，只作差分测试基准，`package.json` 的 `files` 不再包含它；`lib/cli.js` 由 `src/cli/` 打包，字数口径、细纲契约、四个文本检查器、追踪事务与查询、章节提交、作者记忆、拆文、导出、谱系、朱雀检测都在 `src/core/` 用 TypeScript 重写，兼容性由 16 项 `tests/ts-port-parity*.spec.ts` 差分测试对齐（同一输入比对 `tests/reference/` 的 Python/JavaScript 实现，追踪目录逐字节一致）。新增 `project context`：一次返回续写状态卡、到期伏笔与 `--text` 提及角色的快照，作为写前快路径，知识层 `continuity-query.md` 与 `continuity-context.md` 已记录。事务锁从常驻锁文件改为 `追踪/.tracking-commit.lock/` 目录锁（PID 文件、死进程或超过一分钟接管、等待十秒超时）；朱雀密钥池经 `--credential-pool-stdin` 在单进程内轮换，保持后台任务 `observed` 偏移一致；客户端工作台刷新信号按会话 cwd 作用域识别提交命令（兼容 `lib/cli.js` 与旧脚本形态）。`scripts/sync-video-runtime.py` 不再从 story 复制脚本。`typecheck`、`build`、story 包 29 文件 224 项测试通过；未做真实 DSH 浏览器交互与付费调用，parity 是兼容性依据。
 
 2026-10-04 小说资源与 CLI 验证：六个 Skill 各自拥有参考，共 162 份（含 7 个 Role），两个 workflow 归属写作与拆文技能；15 个私有脚本移入 `runtime/`。`typecheck`、`build`、全量 75 文件 757 项测试、修改的运行相关测试的严格 TypeScript 检查、文档 16 项与规范 3 项检查通过。真实 DSH 确认六个参考列表与预览可用，`shenji` 只列出“神机诸天录”，没有小说写请求且追踪哈希不变。最终压缩包包含 CLI、runtime、本地参考与模板，隔离安装后的 bin 成功读取真实作品；本地 `web` profile 经 Creative 解析到当前仓库 CLI。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-story-cli-qa-oxowfbe_/`。用户服务未重启，重新启动 DSH 并加载 Skill 后使用新指令；未调用付费服务。
 
@@ -226,7 +228,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 - Node `^22.19.0 || >=24`（本机是 nvm 管理的 v22.22.2）。
 - pnpm 11.7.0（`package.json` 的 `packageManager` 字段，通过 corepack）。
-- `python3`：`packages/creative/*/tests/knowledge-*.spec.ts` 会执行 `knowledge/` 下的 Python 脚本。
+- `python3`：`packages/creative/*/tests/knowledge-*.spec.ts` 会执行 `knowledge/` 下的 Python 脚本；story 的差分测试会执行 `tests/reference/` 中的 Python 参考实现。
 - 子模块已检出：只有客户端单元测试需要，构建和类型检查不需要。
 
 ### 命令

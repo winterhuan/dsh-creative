@@ -35,7 +35,7 @@ The `/story` API resolves the calling Session and checks trusted hosts, allowed 
 <a id="detection"></a>
 ## Settings and detection
 
-The `story` namespace holds the Zhuque credential reference. The settings client writes secrets through DSH credentials; blank drafts keep the stored key. A startup-environment key takes precedence and makes that reference read-only in the UI. `story_zhuque` passes only the required `MAKERS_API_KEY` to its CLI subprocess. Skills require an explicit detection request; ordinary polishing does not send chapter text to Zhuque.
+The `story` namespace holds the Zhuque credential reference. The settings client writes secrets through DSH credentials; blank drafts keep the stored key. A startup-environment key takes precedence and makes that reference read-only in the UI. `story_zhuque` passes only the configured `MAKERS_API_KEY` pool to its CLI subprocess, on stdin. Skills require an explicit detection request; ordinary polishing does not send chapter text to Zhuque.
 
 <a id="related"></a>
 ## Related contracts

@@ -8,7 +8,7 @@ import { describe, expect, it, type TestContext } from 'vitest'
 const entry = resolve(import.meta.dirname, '../src/cli.ts')
 const loader = import.meta.resolve('tsx')
 const fixtures = resolve(import.meta.dirname, 'fixtures')
-const runtime = resolve(import.meta.dirname, '../runtime')
+const runtime = resolve(import.meta.dirname, 'reference')
 
 async function workspace(context: TestContext): Promise<string> {
   const path = await mkdtemp(join(tmpdir(), 'dsh-story-cli-'))

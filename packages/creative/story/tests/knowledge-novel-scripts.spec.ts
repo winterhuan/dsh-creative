@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { execa } from 'execa'
 import { describe, expect, it, type TestContext } from 'vitest'
 
-const runtime = resolve(import.meta.dirname, '../runtime')
+const runtime = resolve(import.meta.dirname, 'reference')
 const python = process.platform === 'win32' ? 'python' : 'python3'
 const cleanProse = '她推开木门，把篮子放在桌边。\n'
 const validLongOutline = `- 核心事件：主角必须亲自取回账册
@@ -577,6 +577,6 @@ describe('bundled novel executable scripts', () => {
       script('zhuque_detect.py'),
     ])
     expect(result.exitCode, `${result.stdout}\n${result.stderr}`).toBe(0)
-    expect(result.stderr).toContain('Ran 12 tests')
+    expect(result.stderr).toContain('Ran 16 tests')
   })
 })

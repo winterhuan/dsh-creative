@@ -1,0 +1,513 @@
+/**
+ * The `dsh-story` command face: argument parsing, workspace and book guards,
+ * dispatch into the core modules, JSON results and exit codes.
+ *
+ * Port of `tests/reference/cli.py`. Results are one JSON document on stdout; failures
+ * are `story-cli-error/v1` documents. Exit codes: 0 success, 1 check findings,
+ * 2 invalid input, 3 execution failure; `detect zhuque` also uses 4 for service
+ * errors.
+ */
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
+import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
+import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
+import { scanAiPatterns, aiPatternsDocument } from '../core/checks/ai-patterns.ts'
+import { scanDegeneration } from '../core/checks/degeneration.ts'
+import { checkOutlineCopy } from '../core/checks/outline-copy.ts'
+import { normalizePunctuation, readProjectPunctuationPolicy, type PunctuationPolicy, type QuoteMode } from '../core/checks/punctuation.ts'
+import { verifyDelivery, verifyPhase2 } from '../core/checks/short-contracts.ts'
+import { buildContext } from '../core/context.ts'
+import { exportNovel } from '../core/export.ts'
+import { LEDGER_NAME, recordEdge } from '../core/lineage.ts'
+import { MEMORY_KINDS, memoryCheck, memoryCommit, memoryInit, memoryQuery, memoryRecord, memoryRoot } from '../core/memory.ts'
+import { verifyOutline } from '../core/outline-contract.ts'
+import { QUERY_FILTERS, QUERY_KINDS, projectQuery, type QueryFilter, type QueryKind } from '../core/tracking/query.ts'
+import { normalizeInitialDocument, type TrackingState } from '../core/tracking/schema.ts'
+import { checkProject, initialize, statePath } from '../core/tracking/store.ts'
+import { checkpointWordcount, evaluateWordcount, findChapterFile, measureWordcount } from '../core/wordcount.ts'
+import { DEFAULT_MAX_CHARS, DEFAULT_TARGET, detectChapter, readKeyPool, writeReport } from '../core/zhuque.ts'
+
+const RESERVED_BOOKS = new Set(['长篇', '短篇', '拆文库', '正文', '大纲', '设定', '追踪', '对标', '参考资料'])
+const EXIT_HELP = 'Exit codes: 0 success, 1 check findings, 2 invalid input, 3 execution failure. Zhuque also uses 4 for service errors. Results are JSON.'
+
+/** An argument or guard failure reported as a `story-cli-error/v1` document. */
+export class CliError extends Error {
+  constructor(message: string, readonly code = 'INVALID_ARGUMENT', readonly exitCode = 2) {
+    super(message)
+    this.name = 'CliError'
+  }
+}
+
+interface OptionSpec {
+  readonly kind: 'flag' | 'value' | 'append'
+  readonly required?: boolean
+  readonly choices?: readonly string[]
+  readonly type?: 'int' | 'float'
+  readonly default?: unknown
+}
+
+type Options = Record<string, OptionSpec>
+
+const WORKSPACE: Options = { workspace: { kind: 'value', required: true } }
+const BOOK: Options = { book: { kind: 'value', required: true } }
+const CHAPTER: Options = { chapter: { kind: 'value', type: 'int', required: true } }
+
+function specFor(family: string, action: string): Options | undefined {
+  const families: Record<string, Record<string, Options>> = {
+    project: {
+      init: { ...WORKSPACE, ...BOOK, kind: { kind: 'value', choices: ['long', 'short'], required: true }, input: { kind: 'value' } },
+      status: { ...WORKSPACE, ...BOOK, revision: { kind: 'value', type: 'int' } },
+      query: {
+        ...WORKSPACE, ...BOOK, revision: { kind: 'value', type: 'int' }, kind: { kind: 'value', choices: QUERY_KINDS, required: true },
+        search: { kind: 'value', default: '' }, filter: { kind: 'value', choices: QUERY_FILTERS, default: 'all' },
+        chapter: { kind: 'value', type: 'int' }, offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: 20 },
+      },
+      check: { ...WORKSPACE, ...BOOK },
+      context: { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' }, text: { kind: 'value' } },
+    },
+    outline: { check: { ...WORKSPACE, ...BOOK, ...CHAPTER } },
+    chapter: {
+      check: { ...WORKSPACE, ...BOOK, ...CHAPTER },
+      snapshot: { ...WORKSPACE, ...BOOK, ...CHAPTER, 'outline-only': { kind: 'flag' } },
+      commit: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
+      'accept-current-length': { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
+    },
+    short: {
+      'plan-check': { ...WORKSPACE, ...BOOK },
+      'delivery-check': { ...WORKSPACE, ...BOOK, 'min-chars': { kind: 'value', type: 'int', required: true }, 'max-chars': { kind: 'value', type: 'int', required: true }, sections: { kind: 'value', type: 'int', required: true } },
+    },
+    text: {
+      count: { file: { kind: 'value', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, target: { kind: 'value' }, checkpoint: { kind: 'flag' }, chapter: { kind: 'value', type: 'int' }, 'case-id': { kind: 'value' } },
+      check: { file: { kind: 'append', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, outline: { kind: 'value' } },
+      normalize: { file: { kind: 'append', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, apply: { kind: 'flag' }, policy: { kind: 'value', choices: ['preserve', 'normalize-narration'] }, 'quote-mode': { kind: 'value', choices: ['keep', 'ascii', 'yan'], default: 'keep' } },
+    },
+    memory: {
+      init: { ...WORKSPACE },
+      query: { ...WORKSPACE, kind: { kind: 'append', choices: MEMORY_KINDS }, book: { kind: 'value' }, genre: { kind: 'value' }, workflow: { kind: 'value' } },
+      record: { ...WORKSPACE, input: { kind: 'value', required: true } },
+      commit: { ...WORKSPACE, input: { kind: 'value', required: true } },
+      check: { ...WORKSPACE },
+    },
+    analysis: {
+      inspect: { ...WORKSPACE, title: { kind: 'value', required: true }, source: { kind: 'value', required: true }, input: { kind: 'value', required: true } },
+      'write-cards': { ...WORKSPACE, title: { kind: 'value', required: true }, source: { kind: 'value', required: true }, input: { kind: 'value', required: true } },
+    },
+    export: { txt: { ...WORKSPACE, ...BOOK, 'out-dir': { kind: 'value', required: true } } },
+    lineage: { record: { ...WORKSPACE, 'from-domain': { kind: 'value', required: true }, 'from-path': { kind: 'value', required: true }, 'to-domain': { kind: 'value', required: true }, 'to-path': { kind: 'value', required: true }, decision: { kind: 'append' }, by: { kind: 'value', default: 'agent' } } },
+    detect: { zhuque: { ...WORKSPACE, ...BOOK, file: { kind: 'value', required: true }, out: { kind: 'value' }, target: { kind: 'value', type: 'float', default: DEFAULT_TARGET }, 'max-chars': { kind: 'value', type: 'int', default: DEFAULT_MAX_CHARS }, 'credential-pool-stdin': { kind: 'flag' } } },
+  }
+  return families[family]?.[action]
+}
+
+/** Parsed arguments keyed by option name (with dashes), plus the command pair. */
+interface Parsed {
+  readonly family: string
+  readonly action: string
+  readonly values: Record<string, unknown>
+}
+
+function usageError(message: string): CliError {
+  return new CliError(`${message}\n${EXIT_HELP}`)
+}
+
+function convert(name: string, raw: string, spec: OptionSpec): unknown {
+  if (spec.type === 'int') {
+    if (!/^-?\d+$/.test(raw)) throw usageError(`argument --${name}: invalid int value: '${raw}'`)
+    return Number(raw)
+  }
+  if (spec.type === 'float') {
+    const value = Number(raw)
+    if (raw.trim() === '' || Number.isNaN(value)) throw usageError(`argument --${name}: invalid float value: '${raw}'`)
+    return value
+  }
+  if (spec.choices !== undefined && !spec.choices.includes(raw)) {
+    throw usageError(`argument --${name}: invalid choice: '${raw}' (choose from ${spec.choices.map(choice => `'${choice}'`).join(', ')})`)
+  }
+  return raw
+}
+
+/**
+ * Parse the command line the way the Python dispatcher did.
+ * @param argv - arguments after the program name.
+ * @returns the command pair and option values.
+ * @throws CliError for an unknown command, option, value or a missing required option.
+ */
+export function parseArguments(argv: readonly string[]): Parsed {
+  const [family, action, ...rest] = argv
+  const spec = family === undefined || action === undefined ? undefined : specFor(family, action)
+  if (spec === undefined || family === undefined || action === undefined) {
+    const known = ['project', 'outline', 'chapter', 'short', 'text', 'memory', 'analysis', 'export', 'lineage', 'detect']
+    throw usageError(family === undefined || !known.includes(family)
+      ? `unknown command: ${family ?? '(none)'}; choose from ${known.join(', ')}`
+      : `unknown action for ${family}: ${action ?? '(none)'}`)
+  }
+  const values: Record<string, unknown> = {}
+  for (const [name, option] of Object.entries(spec)) {
+    if (option.kind === 'append') values[name] = []
+    else if (option.default !== undefined) values[name] = option.default
+  }
+  for (let index = 0; index < rest.length; index += 1) {
+    const token = rest[index] ?? ''
+    if (token === '--json') continue
+    if (!token.startsWith('--')) throw usageError(`unrecognized arguments: ${token}`)
+    const equals = token.indexOf('=')
+    const name = (equals === -1 ? token : token.slice(0, equals)).slice(2)
+    const option = spec[name]
+    if (option === undefined) throw usageError(`unrecognized arguments: ${token}`)
+    if (option.kind === 'flag') {
+      if (equals !== -1) throw usageError(`argument --${name}: ignored explicit argument '${token.slice(equals + 1)}'`)
+      values[name] = true
+      continue
+    }
+    let raw: string
+    if (equals !== -1) raw = token.slice(equals + 1)
+    else {
+      index += 1
+      const next = rest[index]
+      if (next === undefined) throw usageError(`argument --${name}: expected one argument`)
+      raw = next
+    }
+    const value = convert(name, raw, option)
+    if (option.kind === 'append') (values[name] as unknown[]).push(value)
+    else values[name] = value
+  }
+  const missing = Object.entries(spec).filter(([name, option]) => option.required === true && (option.kind === 'append' ? (values[name] as unknown[]).length === 0 : values[name] === undefined)).map(([name]) => `--${name}`)
+  if (missing.length > 0) throw usageError(`the following arguments are required: ${missing.join(', ')}`)
+  return { family, action, values }
+}
+
+/** Resolve symlinks as far as the path exists, like Python's non-strict `Path.resolve()`. */
+function looseRealpath(path: string): string {
+  try {
+    return realpathSync(path)
+  } catch {
+    const parent = dirname(path)
+    return parent === path ? path : join(looseRealpath(parent), basename(path))
+  }
+}
+
+function within(root: string, path: string): boolean {
+  return path === root || path.startsWith(root + sep)
+}
+
+function workspacePath(raw: string): string {
+  const path = looseRealpath(resolve(raw))
+  if (statSync(path, { throwIfNoEntry: false })?.isDirectory() !== true) throw new CliError(`workspace directory does not exist: ${raw}`)
+  return path
+}
+
+function filePath(raw: string, project: string | undefined, output = false): string {
+  const base = project === undefined ? undefined : looseRealpath(project)
+  const path = looseRealpath(base !== undefined && !isAbsolute(raw) ? join(base, raw) : resolve(raw))
+  if (base !== undefined && !within(base, path)) throw new CliError(`file leaves selected book: ${raw}`)
+  if (!output && statSync(path, { throwIfNoEntry: false })?.isFile() !== true) throw new CliError(`file does not exist: ${path}`)
+  return path
+}
+
+function bookPath(workspace: string, name: string, create = false): string {
+  if (name === '' || name !== name.trim() || name.startsWith('.') || RESERVED_BOOKS.has(name) || /[/\\:\0]/.test(name)) {
+    throw new CliError('--book must be one work name, not a path, category, or shared library')
+  }
+  const path = join(workspace, name)
+  const resolved = looseRealpath(path)
+  if (resolved !== path || dirname(resolved) !== workspace) throw new CliError('book must be a real direct child of the selected workspace')
+  const info = statSync(path, { throwIfNoEntry: false })
+  if (info !== undefined && !info.isDirectory()) throw new CliError(`book is not a directory: ${path}`)
+  if (info === undefined && !create) throw new CliError(`book directory does not exist: ${path}`)
+  // These are the roots used by the internal chapter and tracking operations.
+  for (const child of ['正文', '大纲', '设定', '追踪']) {
+    if (!within(path, looseRealpath(join(path, child)))) throw new CliError(`book resource leaves the selected work: ${child}`)
+  }
+  filePath(join(path, '设定/写作检查.json'), path, true)
+  return path
+}
+
+function readObject(path: string): Record<string, unknown> {
+  const value: unknown = JSON.parse(readFileSync(filePath(path, undefined), 'utf8'))
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new CliError('input JSON must be an object')
+  return value as Record<string, unknown>
+}
+
+/** Protect generated views and existing transaction files from symlink escapes. */
+function containedTree(root: string, directory: string): void {
+  const base = looseRealpath(root)
+  const check = (path: string): void => {
+    if (!within(base, looseRealpath(path))) throw new CliError(`resource leaves selected scope: ${path}`)
+  }
+  check(directory)
+  if (statSync(directory, { throwIfNoEntry: false })?.isDirectory() !== true) return
+  const walk = (current: string): void => {
+    for (const name of readdirSync(current)) {
+      const path = join(current, name)
+      check(path)
+      if (statSync(path, { throwIfNoEntry: false })?.isDirectory() === true) walk(path)
+    }
+  }
+  walk(directory)
+}
+
+/** Locate the package root (holding `knowledge/`) from either the source tree or the built `lib/`. */
+function packageRoot(): string {
+  let directory = dirname(fileURLToPath(import.meta.url))
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (existsSync(join(directory, 'package.json')) && existsSync(join(directory, 'knowledge'))) return directory
+    directory = dirname(directory)
+  }
+  throw new CliError('dsh-story package root is missing its knowledge directory', 'TOOL_UNAVAILABLE', 3)
+}
+
+function text(values: Record<string, unknown>, name: string): string {
+  const value = values[name]
+  return typeof value === 'string' ? value : ''
+}
+
+function integer(values: Record<string, unknown>, name: string): number | undefined {
+  const value = values[name]
+  return typeof value === 'number' ? value : undefined
+}
+
+async function textCommand(action: string, values: Record<string, unknown>, project: string | undefined): Promise<[Record<string, unknown>, number]> {
+  if (action === 'count') {
+    const body = readFileSync(filePath(text(values, 'file'), project), 'utf8')
+    const target = values.target
+    if (values.checkpoint === true && target === undefined) throw new CliError('--checkpoint requires --target')
+    const identity = { chapter: integer(values, 'chapter') ?? null, caseId: typeof values['case-id'] === 'string' ? values['case-id'] : null }
+    const result = target === undefined ? measureWordcount(body, identity)
+      : values.checkpoint === true ? checkpointWordcount(body, target, identity) : evaluateWordcount(body, target, identity)
+    return [result as unknown as Record<string, unknown>, 'status' in result && result.status === 'invalid' ? 2 : 0]
+  }
+  const files = (values.file as string[]).map(file => filePath(file, project))
+  if (action === 'normalize') {
+    const policy = (typeof values.policy === 'string' ? values.policy : undefined) as PunctuationPolicy | undefined
+    const resolvedPolicy: PunctuationPolicy = policy ?? (project === undefined ? undefined : readProjectPunctuationPolicy(project)) ?? 'preserve'
+    const quoteMode = values['quote-mode'] as QuoteMode
+    const apply = values.apply === true
+    const changed: string[] = []
+    const diagnostics: string[] = []
+    let findings = 0
+    for (const file of files) {
+      const input = readFileSync(file, 'utf8')
+      const result = normalizePunctuation(input, { policy: resolvedPolicy, quoteMode })
+      findings += result.findings.length
+      if (!apply) {
+        diagnostics.push(...result.findings.map(finding => `${file}:${String(finding.line)}:${String(finding.column)}: ${finding.type}: ${finding.message}`))
+        continue
+      }
+      if (result.output !== input) {
+        writeFileSync(file, result.output, 'utf8')
+        changed.push(file)
+        diagnostics.push(`${file}: normalized (${String(result.findings.length)} issue${result.findings.length === 1 ? '' : 's'})`)
+      }
+    }
+    if (apply) diagnostics.push(`Done. Changed files: ${String(changed.length)}`)
+    return [{ schema: 'story-text-normalize/v1', applied: apply, changed_files: changed, diagnostics }, apply ? 0 : findings > 0 ? 1 : 0]
+  }
+  const patterns: Record<string, unknown>[] = []
+  const documents: Record<string, unknown>[] = []
+  const degeneration: Record<string, unknown>[] = []
+  const advisories: string[] = []
+  const policy = project === undefined ? 'preserve' : readProjectPunctuationPolicy(project) ?? 'preserve'
+  for (const file of files) {
+    const input = readFileSync(file, 'utf8')
+    const found = scanAiPatterns(input).map(finding => ({ file, ...finding }))
+    patterns.push(...found)
+    documents.push(aiPatternsDocument(file, input, found.length) as unknown as Record<string, unknown>)
+    degeneration.push(...scanDegeneration(input).map(finding => ({ file, ...finding })))
+    advisories.push(...normalizePunctuation(input, { policy, quoteMode: 'keep' }).findings.map(finding => `${file}:${String(finding.line)}:${String(finding.column)}: ${finding.type}: ${finding.message}`))
+  }
+  if (typeof values.outline === 'string') {
+    const outline = filePath(values.outline, project)
+    for (const file of files) {
+      const copied = checkOutlineCopy(file, outline)
+      if (copied.status === 1) advisories.push(...copied.output.trim().split('\n'))
+    }
+  }
+  const reports = { patterns: { findings: patterns, documents }, degeneration: { findings: degeneration } }
+  const blocking = [...patterns, ...degeneration].filter(finding => finding.severity === 'blocking')
+  return [{ schema: 'story-text-check/v1', ok: blocking.length === 0, reports, advisories }, blocking.length > 0 ? 1 : 0]
+}
+
+async function run(parsed: Parsed): Promise<[unknown, number]> {
+  const { family, action, values } = parsed
+  const workspace = typeof values.workspace === 'string' ? workspacePath(values.workspace) : undefined
+  let project: string | undefined
+  if (['project', 'outline', 'chapter', 'short', 'export', 'detect'].includes(family)) {
+    project = bookPath(workspace ?? '', text(values, 'book'), family === 'project' && action === 'init')
+  }
+  if (family === 'text') {
+    if ((workspace !== undefined) !== (typeof values.book === 'string')) throw new CliError('use --workspace and --book together when scoping a text operation')
+    if (typeof values.book === 'string') project = bookPath(workspace ?? '', values.book)
+    return textCommand(action, values, project)
+  }
+  if (project === undefined && workspace === undefined) throw new CliError('the following arguments are required: --workspace')
+  if (family === 'project') {
+    const book = project ?? ''
+    if (action === 'init') {
+      if (values.kind === 'short' && values.input !== undefined) throw new CliError('short initialization does not accept long-form tracking input')
+      const document = typeof values.input === 'string' ? readObject(values.input) : null
+      if (document !== null) {
+        containedTree(book, join(book, '追踪'))
+        normalizeInitialDocument(document)
+        if (existsSync(statePath(book))) throw new CliError('tracking state already exists; initialization never overwrites it')
+      }
+      const created = !existsSync(book)
+      mkdirSync(book, { recursive: true })
+      if (values.kind === 'long') for (const directory of ['正文', '大纲', '设定']) mkdirSync(join(book, directory), { recursive: true })
+      let state: TrackingState | undefined
+      if (document !== null) {
+        const written = initialize(book, document)
+        state = written.state
+        for (const warning of written.warnings) process.stderr.write(`${warning}\n`)
+      }
+      return [{
+        schema: 'story-project-init/v1', book: values.book, project: book, kind: values.kind,
+        initialized: existsSync(statePath(book)), created,
+        ...(state === undefined ? {} : { last_committed_chapter: state.last_committed_chapter, state_revision: state.state_revision }),
+      }, 0]
+    }
+    if (action === 'check') {
+      containedTree(book, join(book, '追踪'))
+      const state = checkProject(book)
+      return [{ last_committed_chapter: state.last_committed_chapter, state_revision: state.state_revision }, 0]
+    }
+    if (action === 'context') {
+      const source = typeof values.text === 'string' ? readFileSync(filePath(values.text, book), 'utf8') : undefined
+      return [buildContext(book, { ...(integer(values, 'chapter') === undefined ? {} : { chapter: integer(values, 'chapter') as number }), ...(source === undefined ? {} : { text: source }) }), 0]
+    }
+    const expectedRevision = integer(values, 'revision') ?? null
+    if (action === 'status') return [projectQuery(book, { expectedRevision }), 0]
+    return [projectQuery(book, {
+      kind: values.kind as QueryKind, search: text(values, 'search'), selection: values.filter as QueryFilter,
+      chapter: integer(values, 'chapter') ?? null, offset: integer(values, 'offset') ?? 0, limit: integer(values, 'limit') ?? 20, expectedRevision,
+    }), 0]
+  }
+  if (family === 'outline' || family === 'chapter') {
+    const book = project ?? ''
+    const chapter = integer(values, 'chapter') ?? 0
+    if (chapter < 1) throw new CliError('--chapter must be positive')
+    if (family === 'outline') {
+      const path = findChapterFile(join(book, '大纲'), chapter, { outline: true, allowMissing: true })
+      filePath(path, book, true)
+      const report = verifyOutline(path)
+      return [report, report.ok ? 0 : 1]
+    }
+    if (action === 'snapshot') {
+      const stateFile = statePath(book)
+      filePath(stateFile, book)
+      filePath(join(book, '追踪/.tracking-commit.lock'), book, true)
+      return [chapterSnapshot(book, chapter, values['outline-only'] === true), 0]
+    }
+    for (const [directory, outline] of [['大纲', true], ['正文', false]] as const) {
+      filePath(findChapterFile(join(book, directory), chapter, { outline }), book)
+    }
+    if (action === 'check') {
+      const result = chapterCheck(book, chapter)
+      return [result, result.outline_readiness.status === 'pass' && result.quality.status === 'pass' ? 0 : 1]
+    }
+    containedTree(book, join(book, '追踪'))
+    return [chapterCommit(book, chapter, filePath(text(values, 'input'), undefined), action === 'accept-current-length'), 0]
+  }
+  if (family === 'short') {
+    const book = project ?? ''
+    for (const name of action === 'delivery-check' ? ['正文.md'] : ['设定.md', '小节大纲.md']) filePath(name, book, true)
+    if (action === 'plan-check') {
+      const report = verifyPhase2(book, join(packageRoot(), 'knowledge/story/skills/story-write'))
+      return [report, report.ok ? 0 : 1]
+    }
+    const minChars = integer(values, 'min-chars') ?? 0
+    const maxChars = integer(values, 'max-chars') ?? 0
+    const sections = integer(values, 'sections') ?? 0
+    if (!(0 < minChars && minChars <= maxChars && maxChars <= Number.MAX_SAFE_INTEGER) || !(0 < sections && sections <= Number.MAX_SAFE_INTEGER)) {
+      throw new CliError('short delivery requires 0 < min-chars <= max-chars and positive sections within Number.MAX_SAFE_INTEGER')
+    }
+    const report = verifyDelivery(book, { minChars, maxChars, sections })
+    return [report, report.ok ? 0 : 1]
+  }
+  if (family === 'memory') {
+    const root = workspace ?? ''
+    containedTree(root, memoryRoot(root))
+    if (action === 'query') {
+      const kinds = values.kind as string[]
+      return [memoryQuery(root, kinds.length === 0 ? null : kinds, typeof values.book === 'string' ? values.book : null, typeof values.genre === 'string' ? values.genre : null, typeof values.workflow === 'string' ? values.workflow : null), 0]
+    }
+    if (action === 'record') return [memoryRecord(root, filePath(text(values, 'input'), undefined)), 0]
+    if (action === 'commit') return [memoryCommit(root, filePath(text(values, 'input'), undefined)), 0]
+    if (action === 'init') return [memoryInit(root), 0]
+    return [memoryCheck(root), 0]
+  }
+  if (family === 'analysis') {
+    const root = workspace ?? ''
+    const source = filePath(text(values, 'source'), undefined)
+    const document = readObject(text(values, 'input'))
+    if (action === 'inspect') return [inspectAnalysis(root, text(values, 'title'), source, document), 0]
+    const result = writeAnalysisCards(root, text(values, 'title'), source, document)
+    return [result, result.failed.length > 0 ? 1 : 0]
+  }
+  if (family === 'export') {
+    const book = project ?? ''
+    containedTree(book, join(book, '正文'))
+    return [exportNovel(book, resolve(text(values, 'out-dir'))), 0]
+  }
+  if (family === 'lineage') {
+    const root = workspace ?? ''
+    filePath(join(root, LEDGER_NAME), root, true)
+    return [recordEdge(root, {
+      fromDomain: text(values, 'from-domain'), fromPath: text(values, 'from-path'), toDomain: text(values, 'to-domain'), toPath: text(values, 'to-path'),
+      decisions: values.decision as string[], by: text(values, 'by'),
+    }), 0]
+  }
+  const book = project ?? ''
+  const source = filePath(text(values, 'file'), book)
+  const output = typeof values.out === 'string' ? filePath(values.out, book, true) : undefined
+  const outcome = await detectChapter({
+    file: source, target: values.target as number, maxChars: integer(values, 'max-chars') ?? DEFAULT_MAX_CHARS,
+    ...(values['credential-pool-stdin'] === true ? { keyPool: readKeyPool(readFileSync(0, 'utf8')) } : {}),
+  })
+  if (outcome.report.ok === true && output !== undefined) {
+    try {
+      writeReport(output, outcome.report)
+    } catch (error) {
+      throw new CliError(error instanceof Error ? error.message : String(error), 'REPORT_WRITE_FAILED', 3)
+    }
+  }
+  return [outcome.report, outcome.exitCode]
+}
+
+function emit(value: unknown): void {
+  process.stdout.write(`${JSON.stringify(value)}\n`)
+}
+
+const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'SyntaxError'])
+
+/**
+ * Run one command and report its result or structured error on stdout.
+ * @param argv - arguments after the program name.
+ * @returns the process exit code.
+ */
+export async function main(argv: readonly string[]): Promise<number> {
+  try {
+    const [result, code] = await run(parseArguments(argv))
+    emit(result)
+    return code
+  } catch (error) {
+    if (!(error instanceof Error)) throw error
+    let code: number
+    let errorCode: string
+    if (error instanceof CliError) {
+      code = error.exitCode
+      errorCode = error.code
+    } else if (INPUT_ERRORS.has(error.name)) {
+      code = 2
+      errorCode = 'INVALID_INPUT'
+    } else if ('code' in error && typeof error.code === 'string') {
+      code = 3
+      errorCode = 'EXECUTION_FAILED'
+    } else {
+      throw error
+    }
+    emit({ schema: 'story-cli-error/v1', ok: false, command: argv.slice(0, 2).join(' '), error_code: errorCode, message: error.message })
+    process.stderr.write(`dsh-story: ${error.message}\n`)
+    return code
+  }
+}

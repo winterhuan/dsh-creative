@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -17,11 +18,17 @@ if str(_RUNTIME) not in sys.path:
 
 import check_outline_contract
 import tracking_commit
-import wordcount_core as core
-
-for _name in dir(core):
-    if not _name.startswith("_"):
-        globals()[_name] = getattr(core, _name)
+from wordcount_core import (
+    WordcountError,
+    build_project_wordcount_record,
+    chapter_source_digests,
+    chapter_source_snapshot,
+    evaluate_wordcount,
+    require,
+    require_chapter_sources_unchanged,
+    target_from_outline,
+    validate_expected_source_digests,
+)
 
 CHAPTER_CHECK_SCHEMA = "story-chapter-check/v1"
 
@@ -57,28 +64,26 @@ def _json_findings(output: str) -> list[dict[str, Any]] | None:
 
 
 def _run_quality_check(
-    node: str, script: Path, args: list[str], source: str, blocking: list[dict[str, Any]],
-) -> subprocess.CompletedProcess[str] | None:
+    node: str, script: Path, args: list[str], source: str,
+) -> tuple[subprocess.CompletedProcess[str] | None, dict[str, Any] | None]:
+    """Run one checker; return its usable completion, or the tool finding that stands in for it."""
     if not script.is_file():
-        blocking.append({"type": "TOOL_UNAVAILABLE", "source": source, "message": f"missing {script.name}"})
-        return None
+        return None, {"type": "TOOL_UNAVAILABLE", "source": source, "message": f"missing {script.name}"}
     try:
         completed = subprocess.run(
             [node, str(script), *args],
             text=True, encoding="utf-8", capture_output=True, check=False,
         )
     except (OSError, UnicodeError) as exc:
-        blocking.append({"type": "TOOL_ERROR", "source": source, "message": f"unable to execute {script.name}: {exc}"})
-        return None
+        return None, {"type": "TOOL_ERROR", "source": source, "message": f"unable to execute {script.name}: {exc}"}
     if completed.returncode not in {0, 1} or (
         completed.returncode == 1 and (not completed.stdout.strip() or completed.stderr.strip())
     ):
-        blocking.append({
+        return None, {
             "type": "TOOL_ERROR", "source": source,
             "message": f"{script.name} exited {completed.returncode}: {(completed.stderr or completed.stdout).strip()}",
-        })
-        return None
-    return completed
+        }
+    return completed, None
 
 
 def check_blocking_quality(outline: Path, body: Path, project: Path | None = None) -> dict[str, Any]:
@@ -90,44 +95,38 @@ def check_blocking_quality(outline: Path, body: Path, project: Path | None = Non
             "advisories": [],
         }
     root = Path(__file__).parent
+    findings_args = ["--check", "--json", "--fail-on=blocking", str(body)]
+    checks = (
+        ("ai-pattern", "check-ai-patterns.js", findings_args),
+        ("degeneration", "check-degeneration.js", findings_args),
+        ("punctuation", "normalize-punctuation.js",
+         ["--check", *([] if project is None else ["--project", str(project)]), str(body)]),
+        ("outline-copy", "check-outline-copy.js", ["--outline", str(outline), str(body)]),
+    )
+    # The checkers only read the chapter, so they run together; findings are
+    # assembled in declaration order to keep the report deterministic.
+    with ThreadPoolExecutor(max_workers=len(checks)) as pool:
+        runs = list(pool.map(lambda check: _run_quality_check(node, root / check[1], check[2], check[0]), checks))
     blocking: list[dict[str, Any]] = []
     advisories: list[dict[str, Any]] = []
-    for name, script in (
-        ("ai-pattern", "check-ai-patterns.js"),
-        ("degeneration", "check-degeneration.js"),
-    ):
-        completed = _run_quality_check(
-            node, root / script, ["--check", "--json", "--fail-on=blocking", str(body)], name, blocking,
-        )
-        if completed is None:
+    for (name, script, _), (completed, failure) in zip(checks, runs):
+        if failure is not None:
+            blocking.append(failure)
             continue
-        findings = _json_findings(completed.stdout)
-        if findings is None:
-            blocking.append({"type": "TOOL_ERROR", "source": name, "message": f"invalid JSON findings from {script}"})
-            continue
-        expected_status = 1 if any(finding["severity"] == "blocking" for finding in findings) else 0
-        if completed.returncode != expected_status:
-            blocking.append({"type": "TOOL_ERROR", "source": name, "message": f"exit status disagrees with findings from {script}"})
-        for finding in findings:
-            row = {"source": name, **finding}
-            (blocking if finding.get("severity") == "blocking" else advisories).append(row)
-
-    completed = _run_quality_check(
-        node, root / "normalize-punctuation.js",
-        ["--check", *([] if project is None else ["--project", str(project)]), str(body)], "punctuation", blocking,
-    )
-    if completed is not None and completed.returncode == 1:
-        advisories.append(
-            {"source": "punctuation", "type": "PUNCTUATION_REVIEW", "message": completed.stdout.strip()}
-        )
-
-    completed = _run_quality_check(
-        node, root / "check-outline-copy.js", ["--outline", str(outline), str(body)], "outline-copy", blocking,
-    )
-    if completed is not None and completed.returncode == 1:
-        advisories.append(
-            {"source": "outline-copy", "type": "OUTLINE_COPY_REVIEW", "message": completed.stdout.strip()}
-        )
+        if name in {"ai-pattern", "degeneration"}:
+            findings = _json_findings(completed.stdout)
+            if findings is None:
+                blocking.append({"type": "TOOL_ERROR", "source": name, "message": f"invalid JSON findings from {script}"})
+                continue
+            expected_status = 1 if any(finding["severity"] == "blocking" for finding in findings) else 0
+            if completed.returncode != expected_status:
+                blocking.append({"type": "TOOL_ERROR", "source": name, "message": f"exit status disagrees with findings from {script}"})
+            for finding in findings:
+                row = {"source": name, **finding}
+                (blocking if finding.get("severity") == "blocking" else advisories).append(row)
+        elif completed.returncode == 1:
+            review = "PUNCTUATION_REVIEW" if name == "punctuation" else "OUTLINE_COPY_REVIEW"
+            advisories.append({"source": name, "type": review, "message": completed.stdout.strip()})
     return {
         "status": "fail" if blocking else "pass",
         "blocking_findings": blocking,
