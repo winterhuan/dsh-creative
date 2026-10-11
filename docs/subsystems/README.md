@@ -8,7 +8,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Find the subsystem that owns a plugin’s responsibilities and trust boundaries. Each creative workflow has its own reference; Skill Viewer, model options and shared production settings have separate references. The package map includes both installable bundles and their supporting clients.
+Find the subsystem that owns a plugin’s responsibilities and trust boundaries. Each creative workflow has its own reference; Skill Viewer, model options, the per-project default mode and shared production settings have separate references. The package map includes both installable bundles and their supporting clients.
 
 ## Table of Contents
 
@@ -32,6 +32,7 @@ This map assigns every package to its subsystem. Installation and configuration 
 | [Skill Viewer](skill-viewer.md) | [@winterhuan/dsh-skill-viewer](../../packages/skill/skill-viewer/README.md) | Independent bundle |
 | [Skill Viewer](skill-viewer.md) | [@winterhuan/dsh-client-ui-skill-viewer](../../packages/client/ui-skill-viewer/README.md) | Included by Skill Viewer |
 | [Model options](model-options.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../packages/client/ui-settings-model-options/README.md) | Independent bundle |
+| [Project default mode](project-default-mode.md) | [@winterhuan/dsh-project-default-mode](../../packages/preset/project-default-mode/README.md) | Independent bundle |
 | [Production settings](production-settings.md) | [@winterhuan/dsh-client-ui-settings-creative-produce](../../packages/client/ui-settings-creative-produce/README.md) | Included by short drama or video recap |
 
 <a id="related"></a>

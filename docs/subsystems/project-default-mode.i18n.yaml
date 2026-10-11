@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for project-default-mode.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/project-default-mode.md
+/:
+  en: e8e834386512013e
+  zh: 4af82c5a03572f3b
+/project-default-mode:
+  en: dcd602ea24c09a61
+  zh: 83032e10687760e7
+/project-default-mode/summary:
+  en: 18b51410f0f4dbbe
+  zh: 9918afd53728b1fc
+/project-default-mode/table-of-contents:
+  en: 192409fed128e949
+  zh: ab09abfb8d8e4442
+/project-default-mode/package-and-integration:
+  en: 2e2bb67115dd2007
+  zh: 919d33030e6fd4d7
+/project-default-mode/rule-application-boundaries:
+  en: 67304c78d700cdfe
+  zh: 50186e1bfcdcb19f
+/project-default-mode/related-contracts:
+  en: 2743fc64ba1237c5
+  zh: 3ac1a1dd5d87b12e
+/project-default-mode/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

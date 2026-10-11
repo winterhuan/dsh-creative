@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/preset/project-default-mode/README.md
+/:
+  en: 62d7ddafcf62982a
+  zh: 04af1460dcae60f1
+/winterhuan-dsh-project-default-mode:
+  en: 96ea06a8f1658876
+  zh: 641d0b0836002f37
+/winterhuan-dsh-project-default-mode/summary:
+  en: 3efff522becd7b02
+  zh: f1d70446ebbfddcc
+/winterhuan-dsh-project-default-mode/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 126ca34339127fcd
+/winterhuan-dsh-project-default-mode/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/winterhuan-dsh-project-default-mode/use-this-package/install-into-a-profile:
+  en: 4f667e72c7290662
+  zh: 86b531ec8aa8be6b
+/winterhuan-dsh-project-default-mode/use-this-package/set-a-project-default:
+  en: f5c43123da54145c
+  zh: fb7066e218c32d22
+/winterhuan-dsh-project-default-mode/understand-the-implementation:
+  en: 1bf93eda9c273aa9
+  zh: db3fd9a20a3258f5
+/winterhuan-dsh-project-default-mode/further-exploration:
+  en: 0d8f2ffc763f9edb
+  zh: dfb619305f92a9cd
+/winterhuan-dsh-project-default-mode/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/winterhuan-dsh-project-default-mode/model-experience/session-composition:
+  en: 3bf1f7a52037950a
+  zh: 3bf1f7a52037950a
+/winterhuan-dsh-project-default-mode/model-experience/session-composition/what-the-model-sees:
+  en: ce32c6e74d46ed4b
+  zh: f32984beb1e97caa
+/winterhuan-dsh-project-default-mode/model-experience/session-composition/token-effect:
+  en: a7b7ae29397b2588
+  zh: a4d34b385e9c9fbd
+/winterhuan-dsh-project-default-mode/model-experience/session-composition/kv-cache-effect:
+  en: bd4e1633fa3d61eb
+  zh: 218876dbaf597066
+/winterhuan-dsh-project-default-mode/known-limitations-and-deferred-work:
+  en: 8a98044efd5eb32d
+  zh: 50fed438d069d877
+/winterhuan-dsh-project-default-mode/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: e67f633dc6fe7773

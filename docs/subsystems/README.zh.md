@@ -8,7 +8,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 
 ## 概要
 
-按插件查找职责与信任边界的所属文档。各创作流程拥有独立说明，Skill Viewer、模型设置增强与共用生产设置也分别说明。包映射同时覆盖可安装的 bundle 与配套客户端。
+按插件查找职责与信任边界的所属文档。各创作流程拥有独立说明，Skill Viewer、模型设置增强、按项目的默认模式与共用生产设置也分别说明。包映射同时覆盖可安装的 bundle 与配套客户端。
 
 ## 目录
 
@@ -32,6 +32,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-skill-viewer](../../packages/skill/skill-viewer/README.zh.md) | 独立 bundle |
 | [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-client-ui-skill-viewer](../../packages/client/ui-skill-viewer/README.zh.md) | 随技能查看器安装 |
 | [模型设置增强](model-options.zh.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../packages/client/ui-settings-model-options/README.zh.md) | 独立 bundle |
+| [项目默认模式](project-default-mode.zh.md) | [@winterhuan/dsh-project-default-mode](../../packages/preset/project-default-mode/README.zh.md) | 独立 bundle |
 | [生产设置](production-settings.zh.md) | [@winterhuan/dsh-client-ui-settings-creative-produce](../../packages/client/ui-settings-creative-produce/README.zh.md) | 随短剧或视频解说安装 |
 
 <a id="related"></a>

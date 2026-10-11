@@ -18,6 +18,9 @@
     },
     {
       "path": "packages/education/student/tsconfig.host.json"
+    },
+    {
+      "path": "packages/preset/project-default-mode/tsconfig.host.json"
     }
   ]
 }

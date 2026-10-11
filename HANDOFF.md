@@ -21,14 +21,16 @@
 
 ## 1. 现状速览
 
-本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
+本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
 - 依赖 npm 上发布的 DSH `0.2.1-alpha.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-- 10 个包都位于 `@winterhuan` scope 下。
+- 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
+
+2026-10-11 项目默认模式插件：新增 `packages/preset/project-default-mode`（`@winterhuan/dsh-project-default-mode`，Host + Client 单包，独立 bundle）。Host 面维护 volatile `rules` 配置（`workspaceId` → `agentPreset`），在 `agent/created`（仅 `source === 'startup'` 且非 fork/subagent）中把会话 cwd 解析到 Workspace 并用 `agentPresets.select` 切换 preset，失败只记日志不否决创建；Client 面在会话「…」菜单（order 500）加「设为本项目默认模式」对话框，经 `configForms.set('rules', …)` 写入。不新增 Remote，未改上游拷贝文件。审查修正：对话框控制器等设置表单取得首个已接受区段后再暂存项目规则，表单非 `ready` 时拒绝保存（空镜像写回会丢掉其他项目的规则）；补 `@deepseek-ai/dsh-agent-preset-registry/remote` 类型导入。清理构建后 `typecheck`、`build`、包内 4 个文件 49 项测试、文档 16 项与规范 3 项检查全部通过；`pnpm pack` 确认 `lib/index.js`、`lib/client.js`、声明与双语 README 均在包内。隔离 `DSH_HOME` 的 web profile 链接安装后，合成配置含独立的 `project-default-mode` 行，`plugins/??…` 列表包含其 `client.js`，带 rev 取回 16 KB bundle 且只请求 baseline externals（`client-store`、`ui-primitives`、`react`），服务日志无页面脚本错误。未做真实浏览器交互、未调用模型。全量测试中 story 的 Python 脚本测试在本机 SOCKS `all_proxy` 下因 `UNDICI-EHPA` 警告写入子进程 stderr 而失败（[排障速查](#11-排障速查)所述环境问题）；清除代理环境变量后通过。
 
 2026-10-05 移除聚合包：删除 `@winterhuan/dsh-creative` 包及旧通用生产工具、`/creative` 路由，四个领域按各自包安装。各包提供独立 `build`、`typecheck`、`test` 命令；领域测试归回所属包，跨领域组合和媒体交付验证位于根 `tests/`。四个包独立构建、独立压缩包资源与依赖检查、隔离 profile 独立安装均通过；`typecheck`、`build` 和 77 个文件 712 项测试通过。旧聚合入口的路径与别名测试随入口移除。
 
@@ -86,6 +88,8 @@ dsh-creative/
 │   │   ├── novel-to-game/             @winterhuan/dsh-novel-to-game（Host + Client）
 │   ├── education/
 │   │   └── student/                   @winterhuan/dsh-student（Host + Client，学习工作台与状态）
+│   ├── preset/
+│   │   └── project-default-mode/      @winterhuan/dsh-project-default-mode（Host + Client，按项目的默认 Agent 模式）
 │   ├── skill/
 │   │   └── skill-viewer/              @winterhuan/dsh-skill-viewer（Host，skillViewer Remote）
 │   └── client/
@@ -107,8 +111,8 @@ dsh-creative/
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
-├── tsconfig.host.json                 Host 编译面聚合：skill-viewer 与四个领域 Host
-├── tsconfig.client.json               Client 编译面聚合：ui-skill-viewer、ui-settings-creative-produce、ui-settings-story、四个领域 Client
+├── tsconfig.host.json                 Host 编译面聚合：skill-viewer、四个领域 Host 与 project-default-mode
+├── tsconfig.client.json               Client 编译面聚合：ui-skill-viewer、ui-settings-creative-produce、ui-settings-story、四个领域 Client、project-default-mode
 ├── tsconfig.json                      编辑器入口，引用上面两个聚合
 ├── tsdown.config.ts                   Host 面打包 + typert 生成；Client 面交给各包自己的 tsdown.config.ts
 ├── vitest.config.ts
@@ -121,7 +125,7 @@ dsh-creative/
 - 四个领域包分别构建、测试和安装，不依赖其他业务插件；`packages/creative/creative` 聚合包及其旧工具、路由已删除。短剧和视频继续使用已有生产设置页及凭据引用。
 - `skill-viewer` 的 `dependencies` 包含 `ui-skill-viewer`；`ui-skill-viewer` 的 `devDependencies` 包含 `skill-viewer`，用它的 `/types` 和 `/remote`。这个结构沿用上游，所以 `pnpm install` 会提示 `There are cyclic workspace dependencies`，这是预期的。
 - 四个领域包各自构建 Host 和 Client；在仓库根目录执行 `pnpm --filter @winterhuan/dsh-story build` 或 `test`，可只开发小说包。其余领域替换包名。跨领域组合验证位于 `tests/`。
-- 包路径固定为（`packages/education/student`、`packages/creative/story`、`packages/creative/short-drama`、`packages/creative/video-recap`、`packages/creative/novel-to-game`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
+- 包路径固定为（`packages/education/student`、`packages/preset/project-default-mode`、`packages/creative/story`、`packages/creative/short-drama`、`packages/creative/video-recap`、`packages/creative/novel-to-game`、`packages/skill/skill-viewer`、`packages/client/*`），文档和构建脚本按这些路径工作。
 
 ## 3. 与 DSH 的集成方式
 
@@ -129,7 +133,7 @@ dsh-creative/
 
 五个业务包均通过独立原生模式激活：`story`、`short-drama`、`novel-to-game`、`video-recap`、`student`。Host 负责路由和全局设置，`/agent` 负责模式内技能与工具；工作台跟随会话模式。边界及取舍见[领域模式决策](.agents/notes/implemented/feature/2026-10-06-domain-modes.zh.md)。
 
-五个业务包和 `skill-viewer` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
+五个业务包、`skill-viewer` 与 `project-default-mode` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
 
 | bundle | 行 id | 加载的模块 | 作用 |
 |---|---|---|---|
@@ -147,6 +151,7 @@ dsh-creative/
 | short-drama / video-recap | `ui-settings-creative-produce` | `@winterhuan/dsh-client-ui-settings-creative-produce` | 短剧与视频生产设置页的 Node 入口，负责登记浏览器 bundle |
 | skill-viewer | `skill-viewer` | `@winterhuan/dsh-skill-viewer` | Host 服务 `SkillViewerCatalog`（继承 `TypertRemoteService`，Remote 命名空间 `skillViewer`） |
 | skill-viewer | `ui-skill-viewer` | `@winterhuan/dsh-client-ui-skill-viewer` | Skill Viewer 面板的 Node 入口 |
+| project-default-mode | `project-default-mode` | `@winterhuan/dsh-project-default-mode` | 按项目的默认 Agent 模式：Host 在 `agent/created` 应用规则，浏览器半边经 `dsh.client` 清单提供 |
 
 ### 客户端包
 
@@ -263,6 +268,7 @@ pnpm run clean                # 删除 packages/*/*/lib
 | skill-viewer | `lib/index.js`、`lib/typert.host.{js,d.ts}`、`lib/typert.remote-client.{js,d.ts}` |
 | ui-skill-viewer | `lib/index.js`、`lib/client.js` |
 | ui-settings-creative-produce / ui-settings-model-options | `lib/index.js`、`lib/client.js` |
+| project-default-mode | `lib/index.js`、`lib/client.js` |
 
 `lib/`、`*.tsbuildinfo` 和 `.dsh-build/`（`client-build-environment.ts` 的构建记录）都被 git 忽略。`dsh plugin add` 是链接安装，安装和调试前必须先 build。
 
@@ -552,6 +558,7 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 | 测试报 `Unknown file extension ".css"` | 该包没有被 `server.deps.inline` 覆盖，把它加入内联规则 |
 | 构建报 `no packages/*/*/package.json declares the name ...` | 新包的 `package.json` 名字与 `clientBundle()` 的 id 不一致，或者包不在 `packages/<组>/<包>` 下 |
 | `dsh plugin add` 后界面没有变化 | 确认已 `pnpm run build`，并且 profile 是从 web 模板创建的；用 `--dump-config` 查看是否有 `# == @winterhuan/...` 层 |
+| story 的 Python/Node 脚本测试报 `TOOL_ERROR`，消息含 `[UNDICI-EHPA]` | 本机 SOCKS `all_proxy` 使子进程把实验性代理警告写进 stderr，脚本检查把它当作失败；清除 `all_proxy`/`http_proxy`/`https_proxy` 环境变量后重跑 |
 
 ## 12. 本机环境变更记录
 
