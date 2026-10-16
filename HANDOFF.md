@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-12。
+最后更新：2026-10-16。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -30,7 +30,17 @@
 - 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
 
-2026-10-12 学生知识地图与薄弱点：`packages/education/student` 内置一、二年级上下册语文、数学、英语十二份知识地图（`knowledge/curriculum/*.json`，154 个知识点、87 个学习目标、96 条关系），`src/curriculum.ts` 按需加载并用 schema 校验 ID 唯一、单元归属、目标引用和科目方法；内置目标 ID 可直接用于 `task`、`record`、`mistake`、`link-mistake`、`worksheet`，不经家长确认，状态文件只存引用。`learning.ts` 新增 `studyInsight` 与 `curriculumView`：按目标汇总作答、纸上结果与错题阶段，推导到期、需要加强、久未练习、已掌握、练习中、待学习六种状态，排序薄弱点并给出每日建议（先复习到期错题，再补薄弱点，再学新目标）；`study_status` 默认附带前三个薄弱点与建议，新增 `kind=curriculum`、`kind=weak`。工作区接口参数 `mistakeSubject` 改名 `subject`，新增 `mistakeStatus`（all、due、reviewing、mastered），`dashboard` 改为 options 对象并返回 `curriculum`、`weakPoints`、`recommendation`、`mistakeBook`。工作台标签改为今日学习、知识地图、错题本、成长记录、家长设置：主标签含今日建议（可直接开始复习或目标练习）、薄弱点、当前科目知识地图摘要与错题本摘要；知识地图标签展示单元、知识点、关系与掌握状态并可选目标；错题本按状态筛选，30 天间隔的错题显示已巩固；学科方法提示保留在开始表单下。知识地图内容依据 2022 年版课程标准与上海通行教学顺序编写，本机 Web 检索不可用，未逐页核对沪教版教材，`basis` 字段写明限制。加载器通过变量读取 `import.meta.url`，避免 jsdom 测试里 Vite 对 `new URL(…, import.meta.url)` 的资源路径改写（问题见[排障速查](#11-排障速查)）。同日第二轮：`task` 增加 `choices`（2 到 4 个选项，答案必须是选项之一，面板点选作答，评估仍走 `record`）；知识地图可按年级学期浏览（接口 `mapGrade`、`mapTerm`，`study_status kind=curriculum` 带 grade、term；非当前学期无掌握状态且目标不能用于 task）；练习单投影带学习目标标题、来源错题与纸上批改结果，错题详情显示复习阶段与相关练习单，错题本标签显示到期角标；新增 `diagnose` 学习方式作为重复摸底：每科未探查目标按单元轮流取样，再补久未练习和已掌握超 30 天的抽查，每次最多六个，14 天到期，摸底作答必须带 objectiveId，从未独立答对的目标答错一次即标需要加强，建议顺序改为到期错题、薄弱点、到期摸底、新目标，`study_status kind=diagnose` 与工作台「学习摸底」卡片随之提供；今日页在学习段进行中只显示题目与结束表单，科目选择记在 localStorage。清理后 `typecheck`、`build`、全量 99 个文件 882 项测试（含学生包 7 个文件 77 项）、文档 16 项与 hygiene 3 项检查通过；未在真实 DSH 浏览器验证本次界面，未调用真实模型。决策见[知识地图决策](.agents/notes/implemented/feature/2026-10-12-student-knowledge-map.zh.md)。
+2026-10-16 学生学习插件增强（出题要素、错因与拍照闭环）：知识地图新增出题要素层（概念常见错法、目标错因/出题要点/变式维度、单元日常侧重，十二份全覆盖，`study_status kind=elements` 按已教范围返回）；新增分科错因词表与错题 `errorType`、`classify-mistake` 归类、变式阶梯（巩固题按复习阶段换数字→情境→说理且必须换题面）、`paperDrafts` 草稿集合与 `paper-draft`/`confirm-paper` 取代 `paper-result`（拍照先存草稿、家长在工作台核对入库）、`worksheet.kind` 与每日小卷/对话听写双入口（新参考 `daily-routine.md`）、理解提醒（派生展示，不落盘不评分）；掌握收紧为近期无依赖帮助或答错，薄弱点新增反复错因理由与按科目错因汇总，`review-sheet` 升级为 picks+薄弱目标补题并按学校进度过滤。配图联合扩到九种（数轴、钟面、小棒、百数表窗口、结构化钱币），修复图形截断并显式拒绝未知图形。路由白名单补 `school-progress`（修复家长「学校进度」表单 403）、`classify-mistake`、`confirm-paper`。工作台新增「待核对转录」、错因下拉与归类、今日学科环节卡与提醒卡。决策见[出题要素](.agents/notes/implemented/feature/2026-10-16-student-error-elements.zh.md)与[拍照闭环](.agents/notes/implemented/feature/2026-10-16-student-photo-grading.zh.md)。根 `typecheck` 零错误，`build` 通过；全量 99 文件 916 项测试（含学生包 7 文件 105 项）、文档 16 项与规范 3 项检查通过；未在真实 DSH 浏览器验证本次界面，未调用真实模型。
+
+2026-10-16 模型设置增强重试分类扩展：真实 DSH 中一次运行以「Service temporarily unavailable」失败且未重试；该文案不含状态码，被 pi-ai 适配器归入兜底 `PI_AI_ERROR`，不在默认可重试集合，也不在原三类可选项内。`packages/client/ui-settings-model-options` 现为 pi-ai 提供方增加「重试未分类错误（PI_AI_ERROR）」开关（默认关闭），开启后加入该提供方 `retryPolicy.retryableCodes` 并沿用次数上限；deepseek 不产生该码，不显示。中英文案、双语 README、i18n 记录与测试同步更新。`typecheck`、`build`、包内 3 文件 60 项测试、文档 16 项与规范 3 项通过；未在真实 DSH 浏览器验证界面，未调用真实模型。
+
+2026-10-14 教材目录内置：语文和英语的一年级上下册、二年级上册知识地图改为按家长确认的教材目录列出单元和课名（含语文园地、英语各单元栏目和附录）。数学二年级上册的购物单元名为欢乐购物街。三科二年级下册不在这份目录里，仍用先前的学习框架。随包人教语文、北师大数学课页与地图不是同一份目录。
+
+2026-10-14 学校进度界线：家长确认教材后，可用 `school-progress` 标明学校教到的地图单元。今日建议里的到期错题、薄弱点、摸底和新课停在该单元及之前；跟上学校只在当前单元出新课，先补缺则先练已教过的缺口，复习周不开始新目标，预习最多下一单元。没有这条记录时仍按整册建议。更换教材保留已确认的单元。决策见[学校进度](.agents/notes/implemented/feature/2026-10-14-student-school-frontier.zh.md)。
+
+2026-10-13 学生学习工作台与沪教版数学目录：数学一年级上下册、二年级上册的内置单元和知识点改为对齐沪教版《义务教育教科书·数学》（五四制·2024）册次目录（一年级上册含进位加法，一年级下册为退位减法、100 以内加法、长度与身体尺、数学广场，二年级上册为 100 以内减法、欢乐购物、表内乘法、方位与分类；表内除法不在二上）。二年级下册仍用先前的学习框架。工作台改为粘性标签栏、科目分段、今日建议主卡片、单元进度条、可横向滚动的知识关系图，以及主按钮样式。未在真实 DSH 浏览器中验证本次界面。
+
+2026-10-12 学生知识地图与薄弱点：`packages/education/student` 内置一、二年级上下册语文、数学、英语十二份知识地图（`knowledge/curriculum/*.json`，154 个知识点、87 个学习目标、96 条关系），`src/curriculum.ts` 按需加载并用 schema 校验 ID 唯一、单元归属、目标引用和科目方法；内置目标 ID 可直接用于 `task`、`record`、`mistake`、`link-mistake`、`worksheet`，不经家长确认，状态文件只存引用。`learning.ts` 新增 `studyInsight` 与 `curriculumView`：按目标汇总作答、纸上结果与错题阶段，推导到期、需要加强、久未练习、已掌握、练习中、待学习六种状态，排序薄弱点并给出每日建议（先复习到期错题，再补薄弱点，再学新目标）；`study_status` 默认附带前三个薄弱点与建议，新增 `kind=curriculum`、`kind=weak`。工作区接口参数 `mistakeSubject` 改名 `subject`，新增 `mistakeStatus`（all、due、reviewing、mastered），`dashboard` 改为 options 对象并返回 `curriculum`、`weakPoints`、`recommendation`、`mistakeBook`。工作台标签改为今日学习、知识地图、错题本、成长记录、家长设置：主标签含今日建议（可直接开始复习或目标练习）、薄弱点、当前科目知识地图摘要与错题本摘要；知识地图标签展示单元、知识点、关系与掌握状态并可选目标；错题本按状态筛选，30 天间隔的错题显示已巩固；学科方法提示保留在开始表单下。知识地图内容依据 2022 年版课程标准与上海通行教学顺序编写，本机 Web 检索不可用，未逐页核对沪教版教材，`basis` 字段写明限制。加载器通过变量读取 `import.meta.url`，避免 jsdom 测试里 Vite 对 `new URL(…, import.meta.url)` 的资源路径改写（问题见[排障速查](#11-排障速查)）。同日第二轮：`task` 增加 `choices`（2 到 4 个选项，答案必须是选项之一，面板点选作答，评估仍走 `record`）；知识地图可按年级学期浏览（接口 `mapGrade`、`mapTerm`，`study_status kind=curriculum` 带 grade、term；非当前学期无掌握状态且目标不能用于 task）；练习单投影带学习目标标题、来源错题与纸上批改结果，错题详情显示复习阶段与相关练习单，错题本标签显示到期角标；新增 `diagnose` 学习方式作为重复摸底：每科未探查目标按单元轮流取样，再补久未练习和已掌握超 30 天的抽查，每次最多六个，14 天到期，摸底作答必须带 objectiveId，从未独立答对的目标答错一次即标需要加强，建议顺序改为到期错题、薄弱点、到期摸底、新目标，`study_status kind=diagnose` 与工作台「学习摸底」卡片随之提供；今日页在学习段进行中只显示题目与结束表单，科目选择记在 localStorage。第三轮：摸底分轻量/常规/全面三档（3/6/12 题，`start` 的 `intensity`，计划带 `samples`、`coverage`、`recommendedIntensity`，`kind=diagnose` 附近期摸底记录 `history`，dashboard 返回全部三科的 `diagnostics` 与 `checkIns`）；工作台新增「学习摸底」标签；知识地图改为按单元分层的 SVG 关系图加分段进度条、建议学习顺序（按先学关系拓扑排序，`curriculum.order`）、知识点详情面板和单元进度。清理后 `typecheck`、`build`、全量 99 个文件 885 项测试（含学生包 7 个文件 80 项）、文档 16 项与 hygiene 3 项检查通过；未在真实 DSH 浏览器验证本次界面，未调用真实模型。决策见[知识地图决策](.agents/notes/implemented/feature/2026-10-12-student-knowledge-map.zh.md)。
 
 2026-10-11 DSH 升级到 `0.2.1-alpha.2`：12 个包的 375 处 DSH 依赖声明统一改为 `0.2.1-alpha.2`，插件自身版本不变；配套 Cordis 范围仍为 `~4.0.5-alpha.1`、schemastery 仍为 `~3.18.5-alpha.1`（按发布包的 peer 声明核对）。子模块移到 `dsh-v0.2.1-alpha.2`。删除对上游已移除的 `dsh-subagent-in-process-driver` 的依赖，`STRUCTURED_OUTPUT_TOOL` 改从 `dsh-subagent` 导入；story 新增 `dsh-working-directory` 测试依赖——alpha.2 的 `dsh-subagent` 服务注入 `workingDirectory`，手工组合子代理的两个测试必须提供它，宿主侧由上游 `bundle/base` 提供，bundle 补丁不用加行。按工作目录与子代理 activation 升级指南：五个 preset 删掉 persona `suffix` 里的 `{{cwd}}` 语句，八行 `tool-subagent` 删掉 `backgroundMode`，测试夹具删掉 `enableRunInBackground`，三个领域包的 skill-provider 改为按 activation 与结算通知描述委派，角色委派测试改为等子级 activation 完成后在父级请求中核对结算通知。[第 8 节](#8-从上游复制的文件及本地改动)重新同步 `tsdown.client.ts`、`bundle-input-isolation.ts` 并新增 `experimental-package-policy.ts`。typert 生成器的 `isTypeMetaSymbol()` 未变，补丁按 alpha.2 重做（问题 5）；`api-remotes` 仍只把 Remote 包列为 devDependencies（问题 6）；`dsh-client-test-runtime` 仍导入 3 个未发布的 `src` 文件（问题 10）。清理构建后 `pnpm install`、`typecheck`（零错误）、`build`、全量 97 文件 862 项测试、文档 16 项与规范 3 项检查通过。未在真实 DSH 中安装验证；上游同期的 Web 插件设置页重组与实验目录页、新会话总是新建 Agent、`dsh plugin` 要求 `--profile` 位于 pnpm 参数之前，需在下次真实验证时核对。
 
@@ -177,7 +187,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 ### 学生学习
 
-`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台提供今日学习、错题巩固、成长记录和家长设置；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题与奖励。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。未提供教材的二年级上册使用随包课页，用户教材优先。使用方法及计时、教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
+`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台提供今日学习、知识地图、学习摸底、错题巩固、成长记录和家长设置；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题与奖励。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。未提供教材的二年级上册使用随包课页，用户教材优先。使用方法及计时、教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
 
 ### 模型设置增强
 
@@ -565,6 +575,8 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 | 构建报 `no packages/*/*/package.json declares the name ...` | 新包的 `package.json` 名字与 `clientBundle()` 的 id 不一致，或者包不在 `packages/<组>/<包>` 下 |
 | `dsh plugin add` 后界面没有变化 | 确认已 `pnpm run build`，并且 profile 是从 web 模板创建的；用 `--dump-config` 查看是否有 `# == @winterhuan/...` 层 |
 | story 的 Python/Node 脚本测试报 `TOOL_ERROR`，消息含 `[UNDICI-EHPA]` | 本机 SOCKS `all_proxy` 使子进程把实验性代理警告写进 stderr，脚本检查把它当作失败；清除 `all_proxy`/`http_proxy`/`https_proxy` 环境变量后重跑 |
+| 运行失败错误码 `PI_AI_ERROR` 且消息无状态码（如「Service temporarily unavailable」），没有重试 | 该文案未被 pi-ai 适配器归类，落入兜底，不在默认可重试集合；在模型设置里为对应 pi-ai 提供方开启「重试未分类错误（PI_AI_ERROR）」（见[第 1 节](#1-现状速览)） |
+| 家长设置保存「学校进度」报 403，或错题归类、草稿核对请求被拒 | 工作区接口白名单缺少 school-progress、classify-mistake 或 confirm-paper；2026-10-16 的版本已补齐，升级并重启插件后重试 |
 
 ## 12. 本机环境变更记录
 

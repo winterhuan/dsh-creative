@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { builtinConcepts, builtinObjective, builtinObjectives, curriculumFiles, curriculumFor } from '../src/curriculum.ts'
+import { errorTypesBySubject } from '../src/vocabulary.ts'
 
 const grades = [1, 2] as const
 const terms = ['first', 'second'] as const
@@ -62,6 +63,21 @@ describe('shipped knowledge maps', () => {
           expect(first).toBeDefined()
           expect(units.has(first?.unit ?? '')).toBe(true)
         }
+      }
+    }
+  })
+
+  it('ships question elements and daily focuses with every map', () => {
+    for (const grade of grades) for (const term of terms) {
+      for (const file of curriculumFiles({ grade, term })) {
+        expect(file.units.every(unit => unit.focus !== undefined)).toBe(true)
+        for (const objective of file.objectives) {
+          expect(objective.errorTypes?.length ?? 0).toBeGreaterThanOrEqual(1)
+          expect(objective.questionPoints?.length ?? 0).toBeGreaterThanOrEqual(2)
+          for (const type of objective.errorTypes ?? []) expect(errorTypesBySubject[file.subject]).toContain(type)
+        }
+        const withMisconceptions = file.concepts.filter(concept => (concept.misconceptions?.length ?? 0) >= 1).length
+        expect(withMisconceptions / file.concepts.length).toBeGreaterThanOrEqual(0.8)
       }
     }
   })

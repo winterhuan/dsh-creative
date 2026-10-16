@@ -1,7 +1,8 @@
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import { stateSchema, type StudyState } from './schema.ts'
-import { curriculumView, insightSummary, studyInsight, studyStatus, updateStudy } from './learning.ts'
+import { checkInHistory, curriculumView, insightSummary, objectiveElements, reviewPlan, scheduleMistakes, studyInsight, studyStatus, taughtUnit, updateStudy } from './learning.ts'
+import { curriculumFor } from './curriculum.ts'
 
 const MAX_BYTES = 8_388_608
 
@@ -28,7 +29,7 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
     const bytes = await fs.readBytes(target, exec.signal, MAX_BYTES)
     const after = await fs.stat(target, exec.signal)
     if (after?.version !== before.version) throw new Error('学习档案已更新，请查询最新状态后重试。')
-    state = stateSchema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))
+    state = scheduleMistakes(stateSchema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))))
   }
   if (command === undefined) return state
   if (expectedRevision !== undefined && expectedRevision !== (state?.revision ?? 0)) throw new StudyConflict()
@@ -45,12 +46,12 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
  * @param state - current durable learning state, or undefined before setup.
  * @param kind - record collection or projection to read.
  * @param offset - zero-based collection offset.
- * @param options - optional exact record ID, subject filter, and grade/term for browsing another knowledge map.
+ * @param options - optional exact record ID, subject and unit filters, and grade/term for browsing another knowledge map.
  * @returns the projection or one page of records.
  */
-export function queryStudy(state: StudyState | undefined, kind: string, offset: number, options: { id?: string; subject?: 'chinese' | 'math' | 'english'; grade?: number; term?: 'first' | 'second' } = {}) {
+export function queryStudy(state: StudyState | undefined, kind: string, offset: number, options: { id?: string; subject?: 'chinese' | 'math' | 'english'; unit?: string; grade?: number; term?: 'first' | 'second' } = {}) {
   if (!state) return { phase: 'setup-required', path: '.study/state.json' }
-  const { id, subject } = options
+  const { id, subject, unit } = options
   const now = Date.now()
   if (kind === 'status') {
     const summary = studyStatus(state, now)
@@ -58,7 +59,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       progress: summary.progress.slice(0, 20), progressCount: summary.progress.length,
       dueMistakes: summary.dueMistakes.slice(0, 20), dueMistakeCount: summary.dueMistakes.length,
       pendingMistakes: summary.pendingMistakes.slice(0, 20), pendingMistakeCount: summary.pendingMistakes.length,
-      more: 'Use study_status kind=progress, due, weak or curriculum with offset for more records.',
+      more: 'Use study_status kind=progress, due, weak, curriculum or elements with offset for more records.',
     }
   }
   if (kind === 'curriculum') {
@@ -66,10 +67,48 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     const scope = options.grade !== undefined || options.term !== undefined ? { grade: options.grade ?? state.profile.grade, term: options.term ?? state.profile.term } : undefined
     return { revision: state.revision, curriculum: curriculumView(state, subject, studyInsight(state, now), scope) }
   }
+  if (kind === 'elements') {
+    if (!subject) throw new Error('知识要素查询需要指定科目（subject）。')
+    if (options.grade !== undefined || options.term !== undefined) throw new Error('知识要素只支持当前学期的知识地图。')
+    const file = curriculumFor(state.profile, subject)
+    if (!file) throw new Error('当前档案没有该科知识地图。')
+    const page = file.objectives
+      .filter(objective => {
+        const unitId = file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit ?? ''
+        if (!taughtUnit(state, subject, unitId)) return false
+        if (unit !== undefined && unitId !== unit) return false
+        return id === undefined || objective.id === id
+      })
+      .map(objective => {
+        const elements = objectiveElements(state, objective.id)
+        const unitId = file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit ?? ''
+        return {
+          id: objective.id, title: objective.title, goal: objective.goal, method: objective.method, unit: unitId,
+          errorTypes: elements?.errorTypes ?? [], questionPoints: elements?.questionPoints ?? [], variationAxes: elements?.variationAxes ?? [],
+          misconceptions: elements?.misconceptions ?? [], examples: elements?.examples ?? [],
+          knowledgePoints: file.concepts.filter(concept => objective.conceptIds.includes(concept.id)).map(concept => ({
+            id: concept.id, name: concept.name, definition: concept.definition, example: concept.example,
+            ...(concept.misconceptions !== undefined ? { misconceptions: concept.misconceptions } : {}),
+            ...(concept.examples !== undefined ? { examples: concept.examples } : {}),
+          })),
+        }
+      })
+    return {
+      revision: state.revision, subject, objectives: page.slice(offset, offset + 20),
+      nextOffset: offset + 20 < page.length ? offset + 20 : null,
+      more: 'Write each question from the knowledge points, the common mistakes and the question points; vary one axis at a time. Goals without elements fall back to their definition and example; custom goals read kind=objectives with kind=concepts.',
+    }
+  }
+  if (kind === 'review-sheet') {
+    if (!subject) throw new Error('巩固卷查询需要指定科目（subject）。')
+    return { revision: state.revision, ...reviewPlan(state, subject, now),
+      more: 'Write one new question per pick, never the original wording (rejected): use pick.variantLevel (numeric, context, reasoning) to choose the distance, keep the errorType, and draw on pick.elements (misconceptions, examples, questionPoints, variationAxes). At most two sheet items per error cause; errorCoverage lists what the picks already cover. Write one numeric question per objectiveFill with only its objectiveId and no mistakeId. Save one worksheet of kind review. Grade or discard open sheets before reprinting their mistakes.' }
+  }
   if (kind === 'diagnose') {
     const insight = studyInsight(state, now)
     return { revision: state.revision, diagnostics: subject ? insight.diagnostics.filter(plan => plan.subject === subject) : insight.diagnostics,
-      more: 'Start a diagnose block for the subject, ask one short task per sampled objective with objectiveId, record each answer, then study_status kind=weak shows what to strengthen.' }
+      history: checkInHistory(state).filter(item => !subject || item.subject === subject),
+      more: 'Start a diagnose block with intensity light (3), standard (6) or deep (12) for the subject, ask one short task per sampled objective with objectiveId, record each answer, then study_status kind=weak shows what to strengthen.' }
   }
   if (kind === 'weak') {
     const insight = studyInsight(state, now)
@@ -83,7 +122,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     : kind === 'pending' ? state.mistakes.filter(item => item.confirmedAt === undefined)
     : kind === 'progress' ? studyStatus(state, now).progress
     : kind === 'concepts' ? state.concepts : kind === 'objectives' ? state.objectives
-      : kind === 'relations' ? state.relations : kind === 'worksheets' ? state.worksheets
+      : kind === 'relations' ? state.relations : kind === 'worksheets' ? state.worksheets.map(sheet => ({ ...sheet, drafts: state.paperDrafts.filter(draft => draft.worksheetId === sheet.id) }))
         : kind === 'paper-results' ? state.paperResults
     : kind === 'materials' ? state.materials : kind === 'mistakes' ? state.mistakes
       : kind === 'sessions' ? state.sessions : state.attempts

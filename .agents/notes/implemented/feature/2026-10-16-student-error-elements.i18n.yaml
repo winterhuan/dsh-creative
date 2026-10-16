@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-16-student-error-elements.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-16-student-error-elements.md
+/agent-note-question-elements-error-causes-and-the-variation-ladder:
+  en: 22e29f9c26643752
+  zh: e506b1836a658bd5
+/agent-note-question-elements-error-causes-and-the-variation-ladder/problem:
+  en: d98449f4bb6bd0af
+  zh: 024cc2a5469038c7
+/agent-note-question-elements-error-causes-and-the-variation-ladder/decision:
+  en: 31b3f883ec5c234f
+  zh: aa190dcc37a9d0ea
+/agent-note-question-elements-error-causes-and-the-variation-ladder/alternatives-considered:
+  en: fca1dc7db7e05b4e
+  zh: 9741e401306afa33
+/agent-note-question-elements-error-causes-and-the-variation-ladder/verification:
+  en: 297834b8582980a2
+  zh: 6a617e9f7978713b
+/agent-note-question-elements-error-causes-and-the-variation-ladder/consequences:
+  en: dc61f1ac6833e3ec
+  zh: f5bc1e13600e413b

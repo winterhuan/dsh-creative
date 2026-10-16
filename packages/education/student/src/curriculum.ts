@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { z } from 'zod'
+import { errorTypeSchema, unitFocusSchema, variationAxisSchema, type ErrorType, type VariationAxis } from './schema.ts'
+import { errorTypesBySubject, focusBySubject } from './vocabulary.ts'
 
 const recordId = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u)
 const text = z.string().trim().min(1).max(2000)
@@ -27,9 +29,9 @@ export const curriculumMethods: Record<CurriculumSubject, readonly string[]> = {
 export const curriculumSchema = z.object({
   id: recordId, subject: subjectSchema, grade: z.number().int().min(1).max(2), term: termSchema,
   title: text, basis: text,
-  units: z.array(z.object({ id: recordId, name: text, summary: text }).strict()).min(1).max(20),
-  concepts: z.array(z.object({ id: recordId, name: text, unit: recordId, definition: text, example: text, source: text }).strict()).min(1).max(80),
-  objectives: z.array(z.object({ id: recordId, title: text, goal: text, conceptIds: z.array(recordId).min(1).max(5), method: methodSchema }).strict()).min(1).max(60),
+  units: z.array(z.object({ id: recordId, name: text, summary: text, focus: unitFocusSchema.optional() }).strict()).min(1).max(20),
+  concepts: z.array(z.object({ id: recordId, name: text, unit: recordId, definition: text, example: text, source: text, misconceptions: z.array(text).max(3).optional(), examples: z.array(text).max(3).optional() }).strict()).min(1).max(80),
+  objectives: z.array(z.object({ id: recordId, title: text, goal: text, conceptIds: z.array(recordId).min(1).max(5), method: methodSchema, errorTypes: z.array(errorTypeSchema).max(4).optional(), questionPoints: z.array(text).max(4).optional(), variationAxes: z.array(variationAxisSchema).max(4).optional() }).strict()).min(1).max(60),
   relations: z.array(z.object({ id: recordId, fromId: recordId, toId: recordId, kind: relationKindSchema, explanation: text, source: text }).strict()).max(120),
 }).strict().superRefine((file, context) => {
   const fail = (path: (string | number)[], message: string) => context.addIssue({ code: 'custom', path, message })
@@ -47,9 +49,15 @@ export const curriculumSchema = z.object({
   }
   for (const [index, unit] of file.units.entries()) {
     if (!file.concepts.some(concept => concept.unit === unit.id)) fail(['units', index], `单元没有知识点：${unit.id}`)
+    if (unit.focus !== undefined && !focusBySubject[file.subject].includes(unit.focus)) fail(['units', index, 'focus'], `单元的日常侧重与科目不符：${unit.focus}`)
   }
   for (const [index, objective] of file.objectives.entries()) {
     if (!curriculumMethods[file.subject].includes(objective.method)) fail(['objectives', index, 'method'], `学习方法与科目不符：${objective.method}`)
+    for (const [position, errorType] of (objective.errorTypes ?? []).entries()) {
+      if (!errorTypesBySubject[file.subject].includes(errorType)) fail(['objectives', index, 'errorTypes', position], `错因分类与科目不符：${errorType}`)
+    }
+    if (objective.errorTypes !== undefined && new Set(objective.errorTypes).size !== objective.errorTypes.length) fail(['objectives', index, 'errorTypes'], '错因分类不能重复')
+    if (objective.variationAxes !== undefined && new Set(objective.variationAxes).size !== objective.variationAxes.length) fail(['objectives', index, 'variationAxes'], '变式维度不能重复')
     for (const [position, conceptId] of objective.conceptIds.entries()) {
       if (!concepts.has(conceptId)) fail(['objectives', index, 'conceptIds', position], `学习目标引用的知识点不存在：${conceptId}`)
     }
@@ -73,6 +81,9 @@ export interface BuiltinObjective {
   method: CurriculumMethod
   unit: string
   unitName: string
+  errorTypes?: ErrorType[] | undefined
+  questionPoints?: string[] | undefined
+  variationAxes?: VariationAxis[] | undefined
 }
 /** One shipped knowledge point resolved with its subject. */
 export interface BuiltinConcept {
@@ -83,6 +94,8 @@ export interface BuiltinConcept {
   definition: string
   example: string
   source: string
+  misconceptions?: string[] | undefined
+  examples?: string[] | undefined
 }
 
 const SUBJECTS = ['chinese', 'math', 'english'] as const

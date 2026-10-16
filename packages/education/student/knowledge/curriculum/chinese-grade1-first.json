@@ -4,50 +4,1090 @@
   "grade": 1,
   "term": "first",
   "title": "语文一年级上册知识地图",
-  "basis": "依据《义务教育语文课程标准（2022年版）》第一学段要求整理，按统编版语文一年级上册的通行编排组织（识字、汉语拼音、课文、语文园地）；是学习框架，不代替学校课本、教师进度和校内评价。",
+  "basis": "单元和课名对齐家长确认的一年级上册语文教材目录。知识点按目录中的课文、语文园地和附录栏目列出，定义依据《义务教育语文课程标准（2022年版）》第一学段。它是学习框架，不代替学校课本、教师进度和校内评价。",
   "units": [
-    { "id": "c1a-u1", "name": "汉语拼音", "summary": "声母、韵母、声调与拼读" },
-    { "id": "c1a-u2", "name": "识字与写字", "summary": "笔画、笔顺、偏旁与象形识字" },
-    { "id": "c1a-u3", "name": "阅读", "summary": "朗读、背诵、标点与找信息" },
-    { "id": "c1a-u4", "name": "口语与写话", "summary": "看图说话与口语交际" }
+    {
+      "id": "c1a-u0",
+      "name": "我上学了",
+      "summary": "我是中国人、我爱我们的祖国、我是小学生、我爱学语文",
+      "focus": "literacy"
+    },
+    {
+      "id": "c1a-u1",
+      "name": "第一单元 · 识字",
+      "summary": "1 天地人、2 金木水火土、3 口耳目手足、4 日月山川、语文园地一、快乐读书吧：读书真快乐",
+      "focus": "literacy"
+    },
+    {
+      "id": "c1a-u2",
+      "name": "第二单元 · 汉语拼音",
+      "summary": "1 a o e、2 i u ü、3 b p m f、4 d t n l、语文园地二",
+      "focus": "pinyin"
+    },
+    {
+      "id": "c1a-u3",
+      "name": "第三单元 · 汉语拼音",
+      "summary": "5 g k h、6 j q x、7 z c s、8 zh ch sh r、9 y w、语文园地三",
+      "focus": "pinyin"
+    },
+    {
+      "id": "c1a-u4",
+      "name": "第四单元 · 汉语拼音",
+      "summary": "10 ai ei ui、11 ao ou iu、12 ie üe er、13 an en in un ün、14 ang eng ing ong、语文园地四",
+      "focus": "pinyin"
+    },
+    {
+      "id": "c1a-u5",
+      "name": "第五单元 · 阅读",
+      "summary": "1 秋天、2 江南、3 雪地里的小画家、4 四季、语文园地五",
+      "focus": "reading"
+    },
+    {
+      "id": "c1a-u6",
+      "name": "第六单元 · 识字",
+      "summary": "5 对韵歌、6 日月明、7 小书包、8 升国旗、语文园地六",
+      "focus": "literacy"
+    },
+    {
+      "id": "c1a-u7",
+      "name": "第七单元 · 阅读",
+      "summary": "5 小小的船、6 影子、7 两件宝、语文园地七",
+      "focus": "reading"
+    },
+    {
+      "id": "c1a-u8",
+      "name": "第八单元 · 阅读",
+      "summary": "8 比尾巴、9 乌鸦喝水、10 雨点儿、语文园地八",
+      "focus": "reading"
+    },
+    {
+      "id": "c1a-ua",
+      "name": "附录",
+      "summary": "识字表、写字表、笔画名称表、常用偏旁名称表",
+      "focus": "literacy"
+    }
   ],
   "concepts": [
-    { "id": "c1a-shengmu", "name": "声母", "unit": "c1a-u1", "definition": "音节开头的辅音，一共 23 个：b p m f d t n l g k h j q x zh ch sh r z c s y w。", "example": "b—à→bà（爸）。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
-    { "id": "c1a-yunmu", "name": "韵母", "unit": "c1a-u1", "definition": "音节里声母后面的部分，包括单韵母 a o e i u ü、复韵母和鼻韵母。", "example": "m—ā→mā（妈）；ang 是鼻韵母。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
-    { "id": "c1a-shengdiao", "name": "声调", "unit": "c1a-u1", "definition": "普通话有四个声调，还有轻声；一声平、二声扬、三声拐弯、四声降。", "example": "mā（妈）má（麻）mǎ（马）mà（骂）。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
-    { "id": "c1a-pinyin", "name": "拼读音节", "unit": "c1a-u1", "definition": "声母和韵母拼成音节；两拼音节、三拼音节直接拼读，整体认读音节（如 zhi、chi、shi、yi、wu、yu）不用拼，直接读出来。", "example": "j—i—ā→jiā（家）；zhī 是整体认读音节。", "source": "语文课标（2022年版）第一学段「汉语拼音」；统编版一上拼音单元" },
-    { "id": "c1a-bihua", "name": "基本笔画", "unit": "c1a-u2", "definition": "汉字由横、竖、撇、捺、点、提等基本笔画组成，写在田字格里。", "example": "“十”由横和竖组成。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
-    { "id": "c1a-bishun", "name": "笔顺规则", "unit": "c1a-u2", "definition": "写字有先后顺序：从上到下、先横后竖、先撇后捺、从外到内。", "example": "“木”的笔顺：横、竖、撇、捺。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
-    { "id": "c1a-pianpang", "name": "偏旁部首", "unit": "c1a-u2", "definition": "合体字里常见的组成部分叫偏旁，很多偏旁提示字的意思。", "example": "三点水（氵）的字多与水有关：江、河、海。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
-    { "id": "c1a-xiangxing", "name": "象形识字", "unit": "c1a-u2", "definition": "有些字的样子像它表示的东西，看图想物可以帮助识字。", "example": "“日”像太阳，“月”像月牙，“山”像山峰。", "source": "语文课标（2022年版）第一学段「识字与写字」" },
-    { "id": "c1a-liangci", "name": "量词与词语搭配", "unit": "c1a-u2", "definition": "数东西时要用合适的量词，词语搭配要符合习惯。", "example": "一（片）叶子、一（只）小鸟、一（把）伞。", "source": "语文课标（2022年版）第一学段「语言文字积累与梳理」" },
-    { "id": "c1a-langdu", "name": "朗读", "unit": "c1a-u3", "definition": "朗读时读准字音、不加字、不漏字，按标点停顿。", "example": "朗读《小小的船》，读好“弯弯的月儿小小的船”。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
-    { "id": "c1a-beisong", "name": "背诵积累", "unit": "c1a-u3", "definition": "把儿歌、古诗读熟背下来，积累语言。", "example": "背诵《咏鹅》《江南》《画》。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
-    { "id": "c1a-biaodian", "name": "句子与标点", "unit": "c1a-u3", "definition": "一句话说完整；句号表示陈述，问号表示疑问，感叹号表示感叹或强烈语气。", "example": "你去哪里？这里的风景真美！", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
-    { "id": "c1a-zhaoxinxi", "name": "阅读找信息", "unit": "c1a-u3", "definition": "读短文时找出“谁、在哪里、做什么”这些基本信息。", "example": "读《小蜗牛》，找一找小蜗牛什么时候去树林里。", "source": "语文课标（2022年版）第一学段「阅读与鉴赏」" },
-    { "id": "c1a-kantu", "name": "看图说话", "unit": "c1a-u4", "definition": "看图时按顺序观察，说清“谁在什么地方做什么”。", "example": "看图说：小朋友在公园里放风筝。", "source": "语文课标（2022年版）第一学段「表达与交流」" },
-    { "id": "c1a-kouyu", "name": "口语交际：大声说、认真听", "unit": "c1a-u4", "definition": "说话时声音响亮、态度大方；听别人说话要认真，听清再回应。", "example": "玩“我说你做”，听清指令再做动作。", "source": "语文课标（2022年版）第一学段「表达与交流」" }
+    {
+      "id": "c1a-u0-1",
+      "name": "我是中国人",
+      "unit": "c1a-u0",
+      "definition": "认读“我是中国人”，能指着国旗说出自己是中国人。",
+      "example": "读出“我是中国人”，再指一指国旗。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["读句子时指读跳字，把“我是中国人”的“是”漏掉。", "把“中国人”拆成单个字读，连不成词。"]
+    },
+    {
+      "id": "c1a-u0-2",
+      "name": "我爱我们的祖国",
+      "unit": "c1a-u0",
+      "definition": "认读“我爱我们的祖国”，能说出这句话是在表达对祖国的爱。",
+      "example": "读出这句话，再说说祖国是什么。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["把“祖国”当成自己的小家，不懂词的意思。", "读句子时把“我们”读成“我”，漏字。"]
+    },
+    {
+      "id": "c1a-u0-3",
+      "name": "我是小学生",
+      "unit": "c1a-u0",
+      "definition": "认读“我是小学生”，能说出自己是一年级的小学生。",
+      "example": "读出“我是小学生”，再说说自己在学校做什么。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["读“小学生”时一个字一个字读，连不成词。", "把“我是”和“我爱”两句看混，读串行。"]
+    },
+    {
+      "id": "c1a-u0-4",
+      "name": "我爱学语文",
+      "unit": "c1a-u0",
+      "definition": "认读“我爱学语文”，能说出语文课要认字、读书、说话。",
+      "example": "读出“我爱学语文”，再说说今天想认哪个字。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["问语文课要做什么，只答“写字”，漏掉认字、读书、说话。", "把“我爱学语文”和“我是小学生”读串。"]
+    },
+    {
+      "id": "c1a-u1-1",
+      "name": "1 天地人",
+      "unit": "c1a-u1",
+      "definition": "认读天、地、人、你、我、他，看字形想到天、地和人。",
+      "example": "指着“天、地、人”读出来，再说说你是谁。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["“你、我、他”用混，指着自己说他。", "“天”和“大”字形认混。"]
+    },
+    {
+      "id": "c1a-u1-2",
+      "name": "2 金木水火土",
+      "unit": "c1a-u1",
+      "definition": "认读金、木、水、火、土，能说出它们各指什么。",
+      "example": "看到“水”说出是水，看到“火”说出是火。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["认字只看一半，把“水”认成“木”。", "把五个字当儿歌背，单个字拿出来认不出。"]
+    },
+    {
+      "id": "c1a-u1-3",
+      "name": "3 口耳目手足",
+      "unit": "c1a-u1",
+      "definition": "认读口、耳、目、手、足，能指着自己的身体部位说出对应的字。",
+      "example": "老师说“耳”，就指一指耳朵。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["“目”和“日”认混，指着眼睛说“日”。", "“足”认成“走”，脚和走说混。"]
+    },
+    {
+      "id": "c1a-u1-4",
+      "name": "4 日月山川",
+      "unit": "c1a-u1",
+      "definition": "认读日、月、山、川，能说出它们表示的景物。",
+      "example": "看到“山”说出是山，看到“日”说出是太阳。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["把“川”认成“三”，横竖分不清。", "看字形想意思的方法不会用，认“山”只会指图。"]
+    },
+    {
+      "id": "c1a-u1-5",
+      "name": "语文园地一",
+      "unit": "c1a-u1",
+      "definition": "在语文园地一复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地一，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["园地练习只做认读，写字的练习跳过。", "按顺序背字表，打乱顺序就不认。"]
+    },
+    {
+      "id": "c1a-u1-6",
+      "name": "快乐读书吧：读书真快乐",
+      "unit": "c1a-u1",
+      "definition": "快乐读书吧：读书真快乐。听别人读推荐的书，愿意讲一讲书里的人和事。",
+      "example": "听完一个故事，说出故事里有谁。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["只听别人读，自己不愿翻书。", "听完故事说不出书里有谁。"]
+    },
+    {
+      "id": "c1a-u2-1",
+      "name": "1 a o e",
+      "unit": "c1a-u2",
+      "definition": "认读拼音 a o e，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 a o e，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["a o e 按英语字母读，把 a 读成英语的读音。", "二声和四声分不清，á 和 à 读成一个调。"]
+    },
+    {
+      "id": "c1a-u2-2",
+      "name": "2 i u ü",
+      "unit": "c1a-u2",
+      "definition": "认读拼音 i u ü，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 i u ü，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["u 和 ü 认混，读 ü 时忘了把嘴拢圆。", "手势会做，读出来一声和三声还是混。"]
+    },
+    {
+      "id": "c1a-u2-3",
+      "name": "3 b p m f",
+      "unit": "c1a-u2",
+      "definition": "认读拼音 b p m f，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 b p m f，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["b 和 p 读音不分，一个读成另一个。", "b 和 d 写反，p 和 q 的圆朝哪边记不住。"]
+    },
+    {
+      "id": "c1a-u2-4",
+      "name": "4 d t n l",
+      "unit": "c1a-u2",
+      "definition": "认读拼音 d t n l，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 d t n l，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["d 和 t 写混，n 和 l 读音不分。", "字母写在四线格里的位置不对，出格或占错格。"]
+    },
+    {
+      "id": "c1a-u2-5",
+      "name": "语文园地二",
+      "unit": "c1a-u2",
+      "definition": "在语文园地二复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地二，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["拼音练习只读不写，标调错的地方不检查。"]
+    },
+    {
+      "id": "c1a-u3-1",
+      "name": "5 g k h",
+      "unit": "c1a-u3",
+      "definition": "认读拼音 g k h，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 g k h，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["g 和 k 读音不分，两个音互相串。", "字母书写出格，g 的弯钩方向写反。"]
+    },
+    {
+      "id": "c1a-u3-2",
+      "name": "6 j q x",
+      "unit": "c1a-u3",
+      "definition": "认读拼音 j q x，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 j q x，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["j q x 和 ü 相拼时，忘了把两点去掉。", "q 和 p 认混，尾巴左右写反。"]
+    },
+    {
+      "id": "c1a-u3-3",
+      "name": "7 z c s",
+      "unit": "c1a-u3",
+      "definition": "认读拼音 z c s，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 z c s，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["z、c、s 读音混，c 和 s 尤其分不清。", "c 的开口方向写反，写成两个半圆。"]
+    },
+    {
+      "id": "c1a-u3-4",
+      "name": "8 zh ch sh r",
+      "unit": "c1a-u3",
+      "definition": "认读拼音 zh ch sh r，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 zh ch sh r，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["zh ch sh 读成 z c s，舌尖没有翘起来。", "r 和 l 读音混。"]
+    },
+    {
+      "id": "c1a-u3-5",
+      "name": "9 y w",
+      "unit": "c1a-u3",
+      "definition": "认读拼音 y w，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 y w，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["y 和 w 认混，读成英语字母名称。", "把 y、w 和 i、u 当成同一个，写法混。"]
+    },
+    {
+      "id": "c1a-u3-6",
+      "name": "语文园地三",
+      "unit": "c1a-u3",
+      "definition": "在语文园地三复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地三，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["平舌音、翘舌音对比时读成同一个音。"]
+    },
+    {
+      "id": "c1a-u4-1",
+      "name": "10 ai ei ui",
+      "unit": "c1a-u4",
+      "definition": "认读拼音 ai ei ui，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 ai ei ui，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["ai 和 ei 读混，两个音分不清。", "ui 拆成 u 和 i 两个音，连读不起来。"]
+    },
+    {
+      "id": "c1a-u4-2",
+      "name": "11 ao ou iu",
+      "unit": "c1a-u4",
+      "definition": "认读拼音 ao ou iu，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 ao ou iu，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["ao、ou、iu 三个音读混。", "iu 读成 i 和 u 分开读。"]
+    },
+    {
+      "id": "c1a-u4-3",
+      "name": "12 ie üe er",
+      "unit": "c1a-u4",
+      "definition": "认读拼音 ie üe er，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 ie üe er，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["ie 和 üe 读混，读 üe 时忘了圆唇。", "er 读成 e 加 r，舌头没卷起来。"]
+    },
+    {
+      "id": "c1a-u4-4",
+      "name": "13 an en in un ün",
+      "unit": "c1a-u4",
+      "definition": "认读拼音 an en in un ün，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 an en in un ün，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["an 和 ang 不分，前鼻音读成后鼻音。", "in 和 ing 读成同一个音。"]
+    },
+    {
+      "id": "c1a-u4-5",
+      "name": "14 ang eng ing ong",
+      "unit": "c1a-u4",
+      "definition": "认读拼音 ang eng ing ong，读准四声，能在音节里把它们找出来。",
+      "example": "指着字母读出 ang eng ing ong，再各读一个带声调的音节。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["后鼻音收不住，ang 读成 an。", "ing 和 in 混，ong 读得又短又轻。"]
+    },
+    {
+      "id": "c1a-u4-6",
+      "name": "语文园地四",
+      "unit": "c1a-u4",
+      "definition": "在语文园地四复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地四，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["前后鼻音对比练习时，两个音读得一样。"]
+    },
+    {
+      "id": "c1a-u5-1",
+      "name": "1 秋天",
+      "unit": "c1a-u5",
+      "definition": "朗读《秋天》，找出秋天的天气和景物。",
+      "example": "读完说出秋天里有什么。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["说不全秋天里有什么，只答“秋天到了”。", "朗读丢字，把“树叶黄了”读成“树叶黄”。"]
+    },
+    {
+      "id": "c1a-u5-2",
+      "name": "2 江南",
+      "unit": "c1a-u5",
+      "definition": "朗读《江南》，读出采莲的句子，想象鱼在莲叶间游。",
+      "example": "读“鱼戏莲叶间”，说说鱼在做什么。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["说不出鱼在做什么，图和句子对不上。", "朗读时“东、西、南、北”读串，方向颠倒。"]
+    },
+    {
+      "id": "c1a-u5-3",
+      "name": "3 雪地里的小画家",
+      "unit": "c1a-u5",
+      "definition": "朗读《雪地里的小画家》，说出哪些小动物在雪地里留下了脚印。",
+      "example": "说出小鸡的脚印像竹叶。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["动物脚印配错，说小鸡的脚印像枫叶。", "漏掉青蛙没来参加，不知道它在洞里睡觉。"]
+    },
+    {
+      "id": "c1a-u5-4",
+      "name": "4 四季",
+      "unit": "c1a-u5",
+      "definition": "朗读《四季》，按春、夏、秋、冬说出每个季节的样子。",
+      "example": "草芽尖尖是春天，荷叶圆圆是夏天。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["季节和景物配错，说荷叶圆圆是春天。", "四季顺序跳着说，背乱春夏秋冬。"]
+    },
+    {
+      "id": "c1a-u5-5",
+      "name": "语文园地五",
+      "unit": "c1a-u5",
+      "definition": "在语文园地五复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地五，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["园地五的背诵练习跳过，只念不背。"]
+    },
+    {
+      "id": "c1a-u6-1",
+      "name": "5 对韵歌",
+      "unit": "c1a-u6",
+      "definition": "朗读《对韵歌》，找出一对一对的事物。",
+      "example": "云对雨，雪对风。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["背对韵歌时对错字，把“云对雨”背成“云对雪”。", "找出成对事物时只看字面，配对错。"]
+    },
+    {
+      "id": "c1a-u6-2",
+      "name": "6 日月明",
+      "unit": "c1a-u6",
+      "definition": "认读会意字，知道“日”和“月”合在一起是“明”。",
+      "example": "日加月是明，小加大是尖。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["会背“日加月是明”，说不出合起来表意思的道理。", "换成“小加大是尖”就不会推了。"]
+    },
+    {
+      "id": "c1a-u6-3",
+      "name": "7 小书包",
+      "unit": "c1a-u6",
+      "definition": "朗读《小书包》，说出书包里有哪些文具。",
+      "example": "课本、铅笔、橡皮放在书包里。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["文具名认不全，把橡皮说成铅笔。", "朗读时把文具词读串，漏字。"]
+    },
+    {
+      "id": "c1a-u6-4",
+      "name": "8 升国旗",
+      "unit": "c1a-u6",
+      "definition": "朗读《升国旗》，说出升旗时小朋友怎样做。",
+      "example": "升国旗时要立正。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["说不出升旗时要立正、敬礼，只答“站着”。", "把《升国旗》的句子和别的课文背串。"]
+    },
+    {
+      "id": "c1a-u6-5",
+      "name": "语文园地六",
+      "unit": "c1a-u6",
+      "definition": "在语文园地六复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地六，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["园地六的识字练习读一遍就算过，不组词不辨字。"]
+    },
+    {
+      "id": "c1a-u7-1",
+      "name": "5 小小的船",
+      "unit": "c1a-u7",
+      "definition": "朗读《小小的船》，想象弯弯的月儿像小船。",
+      "example": "读出“弯弯的月儿小小的船”。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["把月儿说成真的船，分不清是想出来的。", "朗读叠词丢字，“弯弯的月儿”读成“弯的月儿”。"]
+    },
+    {
+      "id": "c1a-u7-2",
+      "name": "6 影子",
+      "unit": "c1a-u7",
+      "definition": "朗读《影子》，说出影子常常跟着人。",
+      "example": "影子像一条小黑狗，跟着人走。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["说不准影子在前还是在后，前后说反。", "把影子当成真的小黑狗，不懂这是打比方。"]
+    },
+    {
+      "id": "c1a-u7-3",
+      "name": "7 两件宝",
+      "unit": "c1a-u7",
+      "definition": "朗读《两件宝》，说出课文把什么称作两件宝。",
+      "example": "读完指出课文里的两件宝。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["说不出两件宝是双手和大脑，只会背课文。", "认“宝”字靠上下文猜，单独拿出来不认。"]
+    },
+    {
+      "id": "c1a-u7-4",
+      "name": "语文园地七",
+      "unit": "c1a-u7",
+      "definition": "在语文园地七复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地七，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["园地七挑着做，写字格空着不写。"]
+    },
+    {
+      "id": "c1a-u8-1",
+      "name": "8 比尾巴",
+      "unit": "c1a-u8",
+      "definition": "朗读《比尾巴》，用问答说出动物尾巴的样子。",
+      "example": "谁的尾巴最好看？孔雀的尾巴最好看。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["问答读反，问句和答句接错。", "尾巴样子配错，把松鼠的尾巴说成孔雀的。"]
+    },
+    {
+      "id": "c1a-u8-2",
+      "name": "9 乌鸦喝水",
+      "unit": "c1a-u8",
+      "definition": "朗读《乌鸦喝水》，说出乌鸦怎样喝到瓶子里的水。",
+      "example": "乌鸦把石子放进瓶子，水面就升高了。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["说不清乌鸦的办法，把放石子说成倒水。", "顺序说乱，先喝到水再放石子。"]
+    },
+    {
+      "id": "c1a-u8-3",
+      "name": "10 雨点儿",
+      "unit": "c1a-u8",
+      "definition": "朗读《雨点儿》，说出大雨点和小雨点分别去了哪里。",
+      "example": "小雨点去有花有草的地方。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["大雨点、小雨点去的地方说反。", "朗读丢字，“数不清的雨点儿”漏掉“数不清”。"]
+    },
+    {
+      "id": "c1a-u8-4",
+      "name": "语文园地八",
+      "unit": "c1a-u8",
+      "definition": "在语文园地八复习本单元学过的字、词和课文，完成园地里的练习。",
+      "example": "打开语文园地八，指出一项要完成的练习。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["园地八只做一两种练习，其余跳过。"]
+    },
+    {
+      "id": "c1a-ua-1",
+      "name": "识字表",
+      "unit": "c1a-ua",
+      "definition": "用识字表按课文复习本册要求会认的字，能指着字读出来。",
+      "example": "在识字表里找到今天课文的生字，读一遍。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["从头顺读很流利，抽出单个字就不认。", "形近字认混，如“木”和“禾”。"]
+    },
+    {
+      "id": "c1a-ua-2",
+      "name": "写字表",
+      "unit": "c1a-ua",
+      "definition": "用写字表按课文复习本册要求会写的字，按笔顺写端正。",
+      "example": "在写字表里找一个字，说一说笔顺再写。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["写字只描不记，离开字帖笔顺就乱。", "字写不进田字格，大小控不住。"]
+    },
+    {
+      "id": "c1a-ua-3",
+      "name": "笔画名称表",
+      "unit": "c1a-ua",
+      "definition": "认识基本笔画的名称，写字时能说出这一笔叫什么。",
+      "example": "指出横、竖、撇、捺、点，说出名称。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["笔画名称记混，把“捺”说成“点”。", "数笔画时把一笔拆成两笔，如把“了”数成三笔。"]
+    },
+    {
+      "id": "c1a-ua-4",
+      "name": "常用偏旁名称表",
+      "unit": "c1a-ua",
+      "definition": "认识常用偏旁的名称，看到偏旁能叫出名字。",
+      "example": "三点水、木字旁、口字旁，各说一个例字。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段",
+      "misconceptions": ["偏旁名称叫不出，只说“那个三点”。", "偏旁名字会背，举不出例子字。"]
+    }
   ],
   "objectives": [
-    { "id": "c1a-o-pinyin", "title": "认读声母、韵母和四声", "goal": "能看着字母读出声母和韵母，读准四个声调。", "conceptIds": ["c1a-shengmu", "c1a-yunmu", "c1a-shengdiao"], "method": "recognize" },
-    { "id": "c1a-o-pindu", "title": "拼读两拼、三拼和整体认读音节", "goal": "能把声母和韵母拼成音节，整体认读音节直接读出来。", "conceptIds": ["c1a-pinyin"], "method": "recognize" },
-    { "id": "c1a-o-bishun", "title": "按笔顺书写基本笔画和独体字", "goal": "能说出一个字的笔顺，在田字格里写端正。", "conceptIds": ["c1a-bihua", "c1a-bishun"], "method": "recognize" },
-    { "id": "c1a-o-zici", "title": "借助象形、偏旁和量词认识常用字词", "goal": "能用字形联想和偏旁提示记字，用对常见量词。", "conceptIds": ["c1a-xiangxing", "c1a-pianpang", "c1a-liangci"], "method": "recognize" },
-    { "id": "c1a-o-langdu", "title": "朗读儿歌短文，不加字不漏字", "goal": "能读准字音，按标点停顿，背下要求背诵的儿歌古诗。", "conceptIds": ["c1a-langdu", "c1a-beisong"], "method": "read-evidence" },
-    { "id": "c1a-o-biaodian", "title": "认识句号、问号、感叹号并读出语气", "goal": "能说出句子用什么标点，并读出相应的语气。", "conceptIds": ["c1a-biaodian"], "method": "read-evidence" },
-    { "id": "c1a-o-zhaoxinxi", "title": "从短文里找出人物、地点和事情", "goal": "能指着文中的句子说出谁在哪里做什么。", "conceptIds": ["c1a-zhaoxinxi"], "method": "read-evidence" },
-    { "id": "c1a-o-kantu", "title": "看图按顺序说两三句话", "goal": "能按顺序观察图片，说清谁在哪里做什么，声音响亮。", "conceptIds": ["c1a-kantu", "c1a-kouyu"], "method": "express" }
+    {
+      "id": "c1a-o0",
+      "title": "我上学了：我是中国人",
+      "goal": "能完成本单元这些内容：我是中国人、我爱我们的祖国、我是小学生、我爱学语文。",
+      "conceptIds": [
+        "c1a-u0-1",
+        "c1a-u0-2",
+        "c1a-u0-3",
+        "c1a-u0-4"
+      ],
+      "method": "recognize",
+      "errorTypes": ["character-form", "word-meaning"],
+      "questionPoints": ["指读“我是中国人”等句子，手口一致", "结合国旗、校园图片认读", "只要求认读，不要求默写"],
+      "variationAxes": ["representation", "context"]
+    },
+    {
+      "id": "c1a-o1",
+      "title": "第一单元 · 识字：1 天地人",
+      "goal": "能完成本单元这些内容：1 天地人、2 金木水火土、3 口耳目手足、4 日月山川、语文园地一。",
+      "conceptIds": [
+        "c1a-u1-1",
+        "c1a-u1-2",
+        "c1a-u1-3",
+        "c1a-u1-4",
+        "c1a-u1-5"
+      ],
+      "method": "recognize",
+      "errorTypes": ["character-form", "character-usage"],
+      "questionPoints": ["认读为主，单个字拿出来也要认", "形近字对比出现，如“日”和“目”", "看图配字、指实物识字各一道"],
+      "variationAxes": ["representation", "context", "reverse"]
+    },
+    {
+      "id": "c1a-o1b",
+      "title": "第一单元 · 识字：快乐读书吧：读书真快乐",
+      "goal": "能完成本单元这些内容：快乐读书吧：读书真快乐。",
+      "conceptIds": [
+        "c1a-u1-6"
+      ],
+      "method": "recognize",
+      "errorTypes": ["reading-evidence", "listening"],
+      "questionPoints": ["听完故事说出有谁、发生了什么", "家长读一遍后请孩子看着插图再讲", "不考查字词，重在愿意听、愿意读"],
+      "variationAxes": ["context", "explain"]
+    },
+    {
+      "id": "c1a-o2",
+      "title": "第二单元 · 汉语拼音：1 a o e",
+      "goal": "能完成本单元这些内容：1 a o e、2 i u ü、3 b p m f、4 d t n l、语文园地二。",
+      "conceptIds": [
+        "c1a-u2-1",
+        "c1a-u2-2",
+        "c1a-u2-3",
+        "c1a-u2-4",
+        "c1a-u2-5"
+      ],
+      "method": "recognize",
+      "errorTypes": ["pinyin-tone", "character-form"],
+      "questionPoints": ["四声逐一读，配合手势", "声母韵母放到音节里指认", "字母认读和书写分开考"],
+      "variationAxes": ["representation", "reverse"]
+    },
+    {
+      "id": "c1a-o3",
+      "title": "第三单元 · 汉语拼音：5 g k h",
+      "goal": "能完成本单元这些内容：5 g k h、6 j q x、7 z c s、8 zh ch sh r、9 y w。",
+      "conceptIds": [
+        "c1a-u3-1",
+        "c1a-u3-2",
+        "c1a-u3-3",
+        "c1a-u3-4",
+        "c1a-u3-5"
+      ],
+      "method": "recognize",
+      "errorTypes": ["pinyin-tone", "character-form"],
+      "questionPoints": ["平舌音、翘舌音对比着读", "j q x 和 ü 相拼去两点要练到", "y、w 的读音和 i、u 的区别点出来"],
+      "variationAxes": ["representation", "reverse"]
+    },
+    {
+      "id": "c1a-o3b",
+      "title": "第三单元 · 汉语拼音：语文园地三",
+      "goal": "能完成本单元这些内容：语文园地三。",
+      "conceptIds": [
+        "c1a-u3-6"
+      ],
+      "method": "recognize",
+      "errorTypes": ["pinyin-tone"],
+      "questionPoints": ["平翘舌对比练习为主", "读错的音当天回炉再读", "结合学过的音节拼读"],
+      "variationAxes": ["representation", "context"]
+    },
+    {
+      "id": "c1a-o4",
+      "title": "第四单元 · 汉语拼音：10 ai ei ui",
+      "goal": "能完成本单元这些内容：10 ai ei ui、11 ao ou iu、12 ie üe er、13 an en in un ün、14 ang eng ing ong。",
+      "conceptIds": [
+        "c1a-u4-1",
+        "c1a-u4-2",
+        "c1a-u4-3",
+        "c1a-u4-4",
+        "c1a-u4-5"
+      ],
+      "method": "recognize",
+      "errorTypes": ["pinyin-tone"],
+      "questionPoints": ["前后鼻音对比读，an 和 ang 成对出现", "复韵母整体连读，不拆开", "标调练习放到音节里做"],
+      "variationAxes": ["representation", "reverse"]
+    },
+    {
+      "id": "c1a-o4b",
+      "title": "第四单元 · 汉语拼音：语文园地四",
+      "goal": "能完成本单元这些内容：语文园地四。",
+      "conceptIds": [
+        "c1a-u4-6"
+      ],
+      "method": "recognize",
+      "errorTypes": ["pinyin-tone"],
+      "questionPoints": ["前后鼻音、声调分类听辨", "拼音和学过的字连起来读"],
+      "variationAxes": ["representation", "context"]
+    },
+    {
+      "id": "c1a-o5",
+      "title": "第五单元 · 阅读：1 秋天",
+      "goal": "能完成本单元这些内容：1 秋天、2 江南、3 雪地里的小画家、4 四季、语文园地五。",
+      "conceptIds": [
+        "c1a-u5-1",
+        "c1a-u5-2",
+        "c1a-u5-3",
+        "c1a-u5-4",
+        "c1a-u5-5"
+      ],
+      "method": "read-evidence",
+      "errorTypes": ["reading-evidence", "expression-incomplete"],
+      "questionPoints": ["朗读要读准字音、不加字漏字", "问“课文里写了什么”，答案回课文找", "按顺序复述给提示词"],
+      "variationAxes": ["representation", "context"]
+    },
+    {
+      "id": "c1a-o6",
+      "title": "第六单元 · 识字：5 对韵歌",
+      "goal": "能完成本单元这些内容：5 对韵歌、6 日月明、7 小书包、8 升国旗、语文园地六。",
+      "conceptIds": [
+        "c1a-u6-1",
+        "c1a-u6-2",
+        "c1a-u6-3",
+        "c1a-u6-4",
+        "c1a-u6-5"
+      ],
+      "method": "recognize",
+      "errorTypes": ["character-form", "character-usage"],
+      "questionPoints": ["会意字要说“两部分合起来表意思”", "对韵歌背对子、填空各一半", "文具词看图配字"],
+      "variationAxes": ["representation", "reverse"]
+    },
+    {
+      "id": "c1a-o7",
+      "title": "第七单元 · 阅读：5 小小的船",
+      "goal": "能完成本单元这些内容：5 小小的船、6 影子、7 两件宝、语文园地七。",
+      "conceptIds": [
+        "c1a-u7-1",
+        "c1a-u7-2",
+        "c1a-u7-3",
+        "c1a-u7-4"
+      ],
+      "method": "read-evidence",
+      "errorTypes": ["reading-evidence", "expression-incomplete"],
+      "questionPoints": ["想象类课文先看图再说句子", "指认“月儿像小船”这样的说法", "朗读叠词要读稳，不丢字"],
+      "variationAxes": ["representation", "explain"]
+    },
+    {
+      "id": "c1a-o8",
+      "title": "第八单元 · 阅读：8 比尾巴",
+      "goal": "能完成本单元这些内容：8 比尾巴、9 乌鸦喝水、10 雨点儿、语文园地八。",
+      "conceptIds": [
+        "c1a-u8-1",
+        "c1a-u8-2",
+        "c1a-u8-3",
+        "c1a-u8-4"
+      ],
+      "method": "read-evidence",
+      "errorTypes": ["reading-evidence", "order"],
+      "questionPoints": ["一问一答的课文配对着读", "《乌鸦喝水》按顺序排图", "复述给关键句提示"],
+      "variationAxes": ["representation", "explain"]
+    },
+    {
+      "id": "c1a-oa",
+      "title": "附录：识字表",
+      "goal": "能完成本单元这些内容：识字表、写字表、笔画名称表、常用偏旁名称表。",
+      "conceptIds": [
+        "c1a-ua-1",
+        "c1a-ua-2",
+        "c1a-ua-3",
+        "c1a-ua-4"
+      ],
+      "method": "recognize",
+      "errorTypes": ["character-form", "character-usage"],
+      "questionPoints": ["识字表抽认、写字表听写分开做", "笔画名称、偏旁名称逐个过关", "错字登记，第二轮回炉"],
+      "variationAxes": ["representation", "reverse"]
+    }
   ],
   "relations": [
-    { "id": "c1a-r-shengmu-pinyin", "fromId": "c1a-shengmu", "toId": "c1a-pinyin", "kind": "prerequisite", "explanation": "先认声母，才能和韵母拼成音节。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-yunmu-pinyin", "fromId": "c1a-yunmu", "toId": "c1a-pinyin", "kind": "prerequisite", "explanation": "先认韵母，才能拼读带声调的音节。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-shengdiao-pinyin", "fromId": "c1a-shengdiao", "toId": "c1a-pinyin", "kind": "prerequisite", "explanation": "拼读时要带上声调，读准声调才算读对音节。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-bihua-bishun", "fromId": "c1a-bihua", "toId": "c1a-bishun", "kind": "prerequisite", "explanation": "先认识基本笔画，再按笔顺规则写字。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-pinyin-langdu", "fromId": "c1a-pinyin", "toId": "c1a-langdu", "kind": "prerequisite", "explanation": "借助拼音读准字音，才能正确地朗读。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-biaodian-langdu", "fromId": "c1a-biaodian", "toId": "c1a-langdu", "kind": "explains", "explanation": "标点解释了朗读时在哪里停顿、用什么语气。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-langdu-beisong", "fromId": "c1a-langdu", "toId": "c1a-beisong", "kind": "prerequisite", "explanation": "读熟了才能背下来。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-xiangxing-pianpang", "fromId": "c1a-xiangxing", "toId": "c1a-pianpang", "kind": "contrast", "explanation": "象形字看字形想实物，偏旁提示字义，两种识字方法对照使用。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-kouyu-kantu", "fromId": "c1a-kouyu", "toId": "c1a-kantu", "kind": "prerequisite", "explanation": "先做到大声说、认真听，再看图有条理地说话。", "source": "语文课标（2022年版）第一学段内容顺序" },
-    { "id": "c1a-r-zhaoxinxi-kantu", "fromId": "c1a-zhaoxinxi", "toId": "c1a-kantu", "kind": "prerequisite", "explanation": "会从文字里找“谁在哪里做什么”，看图说话也有同样的条理。", "source": "语文课标（2022年版）第一学段内容顺序" }
+    {
+      "id": "c1a-r1",
+      "fromId": "c1a-u0-1",
+      "toId": "c1a-u0-2",
+      "kind": "prerequisite",
+      "explanation": "先学「我是中国人」，再学「我爱我们的祖国」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r2",
+      "fromId": "c1a-u0-2",
+      "toId": "c1a-u0-3",
+      "kind": "prerequisite",
+      "explanation": "先学「我爱我们的祖国」，再学「我是小学生」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r3",
+      "fromId": "c1a-u0-3",
+      "toId": "c1a-u0-4",
+      "kind": "prerequisite",
+      "explanation": "先学「我是小学生」，再学「我爱学语文」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r4",
+      "fromId": "c1a-u1-1",
+      "toId": "c1a-u1-2",
+      "kind": "prerequisite",
+      "explanation": "先学「1 天地人」，再学「2 金木水火土」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r5",
+      "fromId": "c1a-u1-2",
+      "toId": "c1a-u1-3",
+      "kind": "prerequisite",
+      "explanation": "先学「2 金木水火土」，再学「3 口耳目手足」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r6",
+      "fromId": "c1a-u1-3",
+      "toId": "c1a-u1-4",
+      "kind": "prerequisite",
+      "explanation": "先学「3 口耳目手足」，再学「4 日月山川」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r7",
+      "fromId": "c1a-u1-4",
+      "toId": "c1a-u1-5",
+      "kind": "prerequisite",
+      "explanation": "先学「4 日月山川」，再学「语文园地一」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r8",
+      "fromId": "c1a-u1-5",
+      "toId": "c1a-u1-6",
+      "kind": "prerequisite",
+      "explanation": "先学「语文园地一」，再学「快乐读书吧：读书真快乐」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r9",
+      "fromId": "c1a-u2-1",
+      "toId": "c1a-u2-2",
+      "kind": "prerequisite",
+      "explanation": "先学「1 a o e」，再学「2 i u ü」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r10",
+      "fromId": "c1a-u2-2",
+      "toId": "c1a-u2-3",
+      "kind": "prerequisite",
+      "explanation": "先学「2 i u ü」，再学「3 b p m f」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r11",
+      "fromId": "c1a-u2-3",
+      "toId": "c1a-u2-4",
+      "kind": "prerequisite",
+      "explanation": "先学「3 b p m f」，再学「4 d t n l」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r12",
+      "fromId": "c1a-u2-4",
+      "toId": "c1a-u2-5",
+      "kind": "prerequisite",
+      "explanation": "先学「4 d t n l」，再学「语文园地二」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r13",
+      "fromId": "c1a-u3-1",
+      "toId": "c1a-u3-2",
+      "kind": "prerequisite",
+      "explanation": "先学「5 g k h」，再学「6 j q x」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r14",
+      "fromId": "c1a-u3-2",
+      "toId": "c1a-u3-3",
+      "kind": "prerequisite",
+      "explanation": "先学「6 j q x」，再学「7 z c s」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r15",
+      "fromId": "c1a-u3-3",
+      "toId": "c1a-u3-4",
+      "kind": "prerequisite",
+      "explanation": "先学「7 z c s」，再学「8 zh ch sh r」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r16",
+      "fromId": "c1a-u3-4",
+      "toId": "c1a-u3-5",
+      "kind": "prerequisite",
+      "explanation": "先学「8 zh ch sh r」，再学「9 y w」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r17",
+      "fromId": "c1a-u3-5",
+      "toId": "c1a-u3-6",
+      "kind": "prerequisite",
+      "explanation": "先学「9 y w」，再学「语文园地三」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r18",
+      "fromId": "c1a-u4-1",
+      "toId": "c1a-u4-2",
+      "kind": "prerequisite",
+      "explanation": "先学「10 ai ei ui」，再学「11 ao ou iu」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r19",
+      "fromId": "c1a-u4-2",
+      "toId": "c1a-u4-3",
+      "kind": "prerequisite",
+      "explanation": "先学「11 ao ou iu」，再学「12 ie üe er」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r20",
+      "fromId": "c1a-u4-3",
+      "toId": "c1a-u4-4",
+      "kind": "prerequisite",
+      "explanation": "先学「12 ie üe er」，再学「13 an en in un ün」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r21",
+      "fromId": "c1a-u4-4",
+      "toId": "c1a-u4-5",
+      "kind": "prerequisite",
+      "explanation": "先学「13 an en in un ün」，再学「14 ang eng ing ong」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r22",
+      "fromId": "c1a-u4-5",
+      "toId": "c1a-u4-6",
+      "kind": "prerequisite",
+      "explanation": "先学「14 ang eng ing ong」，再学「语文园地四」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r23",
+      "fromId": "c1a-u5-1",
+      "toId": "c1a-u5-2",
+      "kind": "prerequisite",
+      "explanation": "先学「1 秋天」，再学「2 江南」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r24",
+      "fromId": "c1a-u5-2",
+      "toId": "c1a-u5-3",
+      "kind": "prerequisite",
+      "explanation": "先学「2 江南」，再学「3 雪地里的小画家」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r25",
+      "fromId": "c1a-u5-3",
+      "toId": "c1a-u5-4",
+      "kind": "prerequisite",
+      "explanation": "先学「3 雪地里的小画家」，再学「4 四季」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r26",
+      "fromId": "c1a-u5-4",
+      "toId": "c1a-u5-5",
+      "kind": "prerequisite",
+      "explanation": "先学「4 四季」，再学「语文园地五」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r27",
+      "fromId": "c1a-u6-1",
+      "toId": "c1a-u6-2",
+      "kind": "prerequisite",
+      "explanation": "先学「5 对韵歌」，再学「6 日月明」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r28",
+      "fromId": "c1a-u6-2",
+      "toId": "c1a-u6-3",
+      "kind": "prerequisite",
+      "explanation": "先学「6 日月明」，再学「7 小书包」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r29",
+      "fromId": "c1a-u6-3",
+      "toId": "c1a-u6-4",
+      "kind": "prerequisite",
+      "explanation": "先学「7 小书包」，再学「8 升国旗」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r30",
+      "fromId": "c1a-u6-4",
+      "toId": "c1a-u6-5",
+      "kind": "prerequisite",
+      "explanation": "先学「8 升国旗」，再学「语文园地六」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r31",
+      "fromId": "c1a-u7-1",
+      "toId": "c1a-u7-2",
+      "kind": "prerequisite",
+      "explanation": "先学「5 小小的船」，再学「6 影子」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r32",
+      "fromId": "c1a-u7-2",
+      "toId": "c1a-u7-3",
+      "kind": "prerequisite",
+      "explanation": "先学「6 影子」，再学「7 两件宝」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r33",
+      "fromId": "c1a-u7-3",
+      "toId": "c1a-u7-4",
+      "kind": "prerequisite",
+      "explanation": "先学「7 两件宝」，再学「语文园地七」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r34",
+      "fromId": "c1a-u8-1",
+      "toId": "c1a-u8-2",
+      "kind": "prerequisite",
+      "explanation": "先学「8 比尾巴」，再学「9 乌鸦喝水」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r35",
+      "fromId": "c1a-u8-2",
+      "toId": "c1a-u8-3",
+      "kind": "prerequisite",
+      "explanation": "先学「9 乌鸦喝水」，再学「10 雨点儿」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r36",
+      "fromId": "c1a-u8-3",
+      "toId": "c1a-u8-4",
+      "kind": "prerequisite",
+      "explanation": "先学「10 雨点儿」，再学「语文园地八」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r37",
+      "fromId": "c1a-ua-1",
+      "toId": "c1a-ua-2",
+      "kind": "prerequisite",
+      "explanation": "先学「识字表」，再学「写字表」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r38",
+      "fromId": "c1a-ua-2",
+      "toId": "c1a-ua-3",
+      "kind": "prerequisite",
+      "explanation": "先学「写字表」，再学「笔画名称表」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r39",
+      "fromId": "c1a-ua-3",
+      "toId": "c1a-ua-4",
+      "kind": "prerequisite",
+      "explanation": "先学「笔画名称表」，再学「常用偏旁名称表」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r40",
+      "fromId": "c1a-u0-4",
+      "toId": "c1a-u1-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「我上学了」，再进入「第一单元 · 识字」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r41",
+      "fromId": "c1a-u1-6",
+      "toId": "c1a-u2-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第一单元 · 识字」，再进入「第二单元 · 汉语拼音」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r42",
+      "fromId": "c1a-u2-5",
+      "toId": "c1a-u3-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第二单元 · 汉语拼音」，再进入「第三单元 · 汉语拼音」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r43",
+      "fromId": "c1a-u3-6",
+      "toId": "c1a-u4-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第三单元 · 汉语拼音」，再进入「第四单元 · 汉语拼音」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r44",
+      "fromId": "c1a-u4-6",
+      "toId": "c1a-u5-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第四单元 · 汉语拼音」，再进入「第五单元 · 阅读」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r45",
+      "fromId": "c1a-u5-5",
+      "toId": "c1a-u6-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第五单元 · 阅读」，再进入「第六单元 · 识字」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r46",
+      "fromId": "c1a-u6-5",
+      "toId": "c1a-u7-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第六单元 · 识字」，再进入「第七单元 · 阅读」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r47",
+      "fromId": "c1a-u7-4",
+      "toId": "c1a-u8-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第七单元 · 阅读」，再进入「第八单元 · 阅读」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    },
+    {
+      "id": "c1a-r48",
+      "fromId": "c1a-u8-4",
+      "toId": "c1a-ua-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「第八单元 · 阅读」，再进入「附录」。",
+      "source": "家长确认的教材目录（一年级上册语文）；语文课标（2022年版）第一学段"
+    }
   ]
 }

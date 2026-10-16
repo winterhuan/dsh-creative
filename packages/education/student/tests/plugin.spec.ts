@@ -94,7 +94,7 @@ describe('independently loaded student plugin', () => {
     await expect(status.execute({ kind: 'curriculum' }, execution('study_status'))).rejects.toThrow('科目')
     expect(await status.execute({ kind: 'weak' }, execution('study_status'))).toMatchObject({ recommendation: { kind: 'diagnose' }, weakPoints: [], practised: [] })
     expect(await status.execute({}, execution('study_status'))).toMatchObject({ phase: 'ready', recommendation: { kind: 'diagnose', subject: 'chinese' }, diagnostics: [{ subject: 'chinese', due: true }, { subject: 'math', due: true }, { subject: 'english', due: true }] })
-    expect(await status.execute({ kind: 'diagnose', subject: 'math' }, execution('study_status'))).toMatchObject({ diagnostics: [{ subject: 'math', due: true }] })
+    expect(await status.execute({ kind: 'diagnose', subject: 'math' }, execution('study_status'))).toMatchObject({ diagnostics: [{ subject: 'math', due: true, recommendedIntensity: 'standard', samples: { light: expect.any(Array), deep: expect.any(Array) } }], history: [] })
     expect(await status.execute({ kind: 'curriculum', subject: 'math', grade: 1, term: 'first' }, execution('study_status'))).toMatchObject({ curriculum: { id: 'math-grade1-first', scope: { current: false } } })
   })
 
@@ -104,6 +104,16 @@ describe('independently loaded student plugin', () => {
     await expect(call({ ...setup, injected: true })).rejects.toThrow()
     await expect(call({ ...setup, profile: { ...setup.profile, limits: { ...setup.profile.limits, breakMinutes: 0 } } })).rejects.toThrow()
     expect(await readdir(cwd)).toEqual([])
+  })
+
+  it('rejects an unknown error cause and serves the elements query', async () => {
+    const { ctx, execution, call } = await fixture()
+    await call(setup)
+    await expect(call({ action: 'mistake', mistake: { ...mistake, errorType: 'not-a-cause' } })).rejects.toThrow()
+    await expect(call({ action: 'classify-mistake', mistakeId: mistake.id, errorType: 'not-a-cause' })).rejects.toThrow()
+    const status = ctx.tools.get('study_status')!
+    expect(await status.execute({ kind: 'elements', subject: 'math' }, execution('study_status'))).toMatchObject({ objectives: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-sub' })]) })
+    await expect(status.execute({ kind: 'elements' }, execution('study_status'))).rejects.toThrow('科目')
   })
 
   it('returns serializable results through the DSH execution pipeline', async () => {

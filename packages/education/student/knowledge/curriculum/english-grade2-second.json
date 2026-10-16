@@ -6,32 +6,32 @@
   "title": "英语二年级下册知识地图",
   "basis": "上海市小学英语从一年级起开设，一、二年级以听、说、认读为主，为《义务教育英语课程标准（2022年版）》一级学习做准备。本图按一年级起点的通行话题组织（五感、喜好、四季与规则、衣服与节日），是学习框架，不代替学校课本和教师进度；单词与句型以学校实际教材为准。",
   "units": [
-    { "id": "e2b-u1", "name": "五感与触摸", "summary": "看听说问句、触摸感觉" },
-    { "id": "e2b-u2", "name": "喜好与动物", "summary": "喜欢的活动、食物、动物" },
-    { "id": "e2b-u3", "name": "四季与规则", "summary": "四季活动、简单规则" },
-    { "id": "e2b-u4", "name": "衣服与节日", "summary": "穿衣、母亲节、故事阅读、字母读音" }
+    { "id": "e2b-u1", "name": "五感与触摸", "summary": "看听说问句、触摸感觉", "focus": "sentences" },
+    { "id": "e2b-u2", "name": "喜好与动物", "summary": "喜欢的活动、食物、动物", "focus": "sentences" },
+    { "id": "e2b-u3", "name": "四季与规则", "summary": "四季活动、简单规则", "focus": "sentences" },
+    { "id": "e2b-u4", "name": "衣服与节日", "summary": "穿衣、母亲节、故事阅读、字母读音", "focus": "story" }
   ],
   "concepts": [
-    { "id": "e2b-what-see", "name": "五感问句：What can you see/hear?", "unit": "e2b-u1", "definition": "用 What can you see? / What can you hear? 问看到、听到什么，用 I can see/hear… 回答。", "example": "—What can you see? —I can see a bird.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」" },
-    { "id": "e2b-touch", "name": "触摸感觉", "unit": "e2b-u1", "definition": "用 soft、hard、rough、smooth 说摸上去的感觉。", "example": "The toy is soft. The desk is hard.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」" },
-    { "id": "e2b-like-doing", "name": "喜欢的活动：I like doing…", "unit": "e2b-u2", "definition": "用 I like swimming/singing… 说自己喜欢做什么。", "example": "I like swimming. I like reading.", "source": "英语课标（2022年版）一级准备内容；通行话题「喜好」" },
-    { "id": "e2b-fav-food", "name": "最喜欢的食物", "unit": "e2b-u2", "definition": "用 My favourite food is… 说出最喜欢的食物。", "example": "My favourite food is noodles.", "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」" },
-    { "id": "e2b-like-animals", "name": "喜欢的动物", "unit": "e2b-u2", "definition": "用 Do you like…? 问别人喜不喜欢，用 Yes, I do. / No, I don't. 回答。", "example": "—Do you like monkeys? —Yes, I do.", "source": "英语课标（2022年版）一级准备内容；通行话题「动物」" },
-    { "id": "e2b-seasons", "name": "四季与活动", "unit": "e2b-u3", "definition": "说四季的天气和在每个季节做的事。", "example": "In spring, it is warm. We fly kites in spring.", "source": "英语课标（2022年版）一级准备内容；通行话题「自然」" },
-    { "id": "e2b-rules", "name": "简单规则", "unit": "e2b-u3", "definition": "听懂并会说 Don't… 和 Keep quiet. 等规则。", "example": "Don't run in the classroom. Wait for the green light.", "source": "英语课标（2022年版）一级准备内容；通行话题「规则」" },
-    { "id": "e2b-clothes", "name": "衣服与穿着", "unit": "e2b-u4", "definition": "用 put on、wear 说穿衣动作，认识更多衣物。", "example": "I put on my coat. She wears a red dress.", "source": "英语课标（2022年版）一级准备内容；通行话题「衣物」" },
-    { "id": "e2b-mothers-day", "name": "母亲节", "unit": "e2b-u4", "definition": "母亲节说 Happy Mother's Day!，会表达感谢。", "example": "—Happy Mother's Day! —Thank you.", "source": "英语课标（2022年版）一级准备内容；通行话题「节日」" },
-    { "id": "e2b-story", "name": "故事阅读", "unit": "e2b-u4", "definition": "读短故事，说出主要人物和发生了什么。", "example": "读小故事后说：The story is about a duck. The duck is happy.", "source": "英语课标（2022年版）一级准备内容；通行话题「故事」" },
-    { "id": "e2b-sounds", "name": "字母的常见读音", "unit": "e2b-u4", "definition": "认识常见辅音字母在单词里的读音，帮助认读新词。", "example": "b—/b/—bag；d—/d/—dog。", "source": "英语课标（2022年版）一级准备内容；自然拼读准备" }
+    { "id": "e2b-what-see", "name": "五感问句：What can you see/hear?", "unit": "e2b-u1", "definition": "用 What can you see? / What can you hear? 问看到、听到什么，用 I can see/hear… 回答。", "example": "—What can you see? —I can see a bird.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」", "misconceptions": ["回答时漏掉 I can，只说 see a bird。", "听到的问句也答 I can see，see 和 hear 分不清。"] },
+    { "id": "e2b-touch", "name": "触摸感觉", "unit": "e2b-u1", "definition": "用 soft、hard、rough、smooth 说摸上去的感觉。", "example": "The toy is soft. The desk is hard.", "source": "英语课标（2022年版）一级准备内容；通行话题「感觉」", "misconceptions": ["把 soft 和 hard 用反，说石头是 soft。", "rough 和 smooth 混淆，说玻璃是 rough。"] },
+    { "id": "e2b-like-doing", "name": "喜欢的活动：I like doing…", "unit": "e2b-u2", "definition": "用 I like swimming/singing… 说自己喜欢做什么。", "example": "I like swimming. I like reading.", "source": "英语课标（2022年版）一级准备内容；通行话题「喜好」", "misconceptions": ["说成 I like swim，swim 后面忘记加 -ing。", "问喜好答成能力，说 I like 后接 I can sing。"] },
+    { "id": "e2b-fav-food", "name": "最喜欢的食物", "unit": "e2b-u2", "definition": "用 My favourite food is… 说出最喜欢的食物。", "example": "My favourite food is noodles.", "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」", "misconceptions": ["favourite 拼成 favrite、faverite。", "答成 My favourite food is like noodles，is 和 like 叠着用。"] },
+    { "id": "e2b-like-animals", "name": "喜欢的动物", "unit": "e2b-u2", "definition": "用 Do you like…? 问别人喜不喜欢，用 Yes, I do. / No, I don't. 回答。", "example": "—Do you like monkeys? —Yes, I do.", "source": "英语课标（2022年版）一级准备内容；通行话题「动物」", "misconceptions": ["简答只说 Yes / No，漏掉 I do / I don’t。", "把 Do you like…? 答成 I like monkeys，不用 Yes, I do. 的固定答句。"] },
+    { "id": "e2b-seasons", "name": "四季与活动", "unit": "e2b-u3", "definition": "说四季的天气和在每个季节做的事。", "example": "In spring, it is warm. We fly kites in spring.", "source": "英语课标（2022年版）一级准备内容；通行话题「自然」", "misconceptions": ["季节词背混，把 spring 当成秋天。", "季节和活动配错，说 In winter, we swim。"] },
+    { "id": "e2b-rules", "name": "简单规则", "unit": "e2b-u3", "definition": "听懂并会说 Don't… 和 Keep quiet. 等规则。", "example": "Don't run in the classroom. Wait for the green light.", "source": "英语课标（2022年版）一级准备内容；通行话题「规则」", "misconceptions": ["Don’t 后面多加词或 -ing，说成 You don’t running。", "听漏 Don’t，把“不要跑”听成“快跑”。"] },
+    { "id": "e2b-clothes", "name": "衣服与穿着", "unit": "e2b-u4", "definition": "用 put on、wear 说穿衣动作，认识更多衣物。", "example": "I put on my coat. She wears a red dress.", "source": "英语课标（2022年版）一级准备内容；通行话题「衣物」", "misconceptions": ["put on 和 wear 混用，说 I wear on my coat。", "衣物单词拼错，sweater 写成 swetter。"] },
+    { "id": "e2b-mothers-day", "name": "母亲节", "unit": "e2b-u4", "definition": "母亲节说 Happy Mother's Day!，会表达感谢。", "example": "—Happy Mother's Day! —Thank you.", "source": "英语课标（2022年版）一级准备内容；通行话题「节日」", "misconceptions": ["祝福漏掉 ’s，说成 Happy Mother Day。", "别人祝贺时不会回 Thank you，又把祝福说一遍。"] },
+    { "id": "e2b-story", "name": "故事阅读", "unit": "e2b-u4", "definition": "读短故事，说出主要人物和发生了什么。", "example": "读小故事后说：The story is about a duck. The duck is happy.", "source": "英语课标（2022年版）一级准备内容；通行话题「故事」", "misconceptions": ["读故事只盯着单词，说不出人物和情节。", "复述时把人物搞混，把两个人的事说串。"] },
+    { "id": "e2b-sounds", "name": "字母的常见读音", "unit": "e2b-u4", "definition": "认识常见辅音字母在单词里的读音，帮助认读新词。", "example": "b—/b/—bag；d—/d/—dog。", "source": "英语课标（2022年版）一级准备内容；自然拼读准备", "misconceptions": ["把 b 和 d 的字形或读音弄反。", "用字母名称读单词，把 bag 读成 B-A-G。"] }
   ],
   "objectives": [
-    { "id": "e2b-o-see", "title": "用 What can you see/hear? 问答", "goal": "会问看到、听到什么，并用 I can see/hear… 回答。", "conceptIds": ["e2b-what-see"], "method": "speak" },
-    { "id": "e2b-o-touch", "title": "用 soft/hard 等词说触摸感觉", "goal": "摸到东西能说出 soft、hard、rough、smooth。", "conceptIds": ["e2b-touch"], "method": "speak" },
-    { "id": "e2b-o-likes", "title": "用 I like doing… 和 My favourite… 表达喜好", "goal": "能说出喜欢的活动、最喜欢的食物和动物，会一问一答。", "conceptIds": ["e2b-like-doing", "e2b-fav-food", "e2b-like-animals"], "method": "speak" },
-    { "id": "e2b-o-seasons", "title": "说四季天气和活动", "goal": "能说出四季的天气和每个季节做的事。", "conceptIds": ["e2b-seasons"], "method": "speak" },
-    { "id": "e2b-o-rules", "title": "听懂并说出简单规则", "goal": "听到 Don't… 等规则能做出正确反应。", "conceptIds": ["e2b-rules"], "method": "listen" },
-    { "id": "e2b-o-clothes", "title": "说穿衣动作和衣服", "goal": "会用 put on、wear 说穿衣。", "conceptIds": ["e2b-clothes", "e2b-mothers-day"], "method": "speak" },
-    { "id": "e2b-o-story", "title": "读短故事，说出人物和发生了什么", "goal": "能借助图片读懂短故事，说出主要人物和情节。", "conceptIds": ["e2b-story", "e2b-sounds"], "method": "listen" }
+    { "id": "e2b-o-see", "title": "用 What can you see/hear? 问答", "goal": "会问看到、听到什么，并用 I can see/hear… 回答。", "conceptIds": ["e2b-what-see"], "method": "speak", "errorTypes": ["sentence-pattern", "spoken-response"], "questionPoints": ["问句和答句成套出现，成对记", "答句要说完整 I can see/hear…", "图片里只放学过的词，不出生词"], "variationAxes": ["context", "representation"] },
+    { "id": "e2b-o-touch", "title": "用 soft/hard 等词说触摸感觉", "goal": "摸到东西能说出 soft、hard、rough、smooth。", "conceptIds": ["e2b-touch"], "method": "speak", "errorTypes": ["word-meaning", "spoken-response"], "questionPoints": ["用摸一摸的真实物品或图片考感觉词", "soft、hard、rough、smooth 四个词轮换考", "允许先说单词，再补整句 The toy is soft."], "variationAxes": ["context", "representation"] },
+    { "id": "e2b-o-likes", "title": "用 I like doing… 和 My favourite… 表达喜好", "goal": "能说出喜欢的活动、最喜欢的食物和动物，会一问一答。", "conceptIds": ["e2b-like-doing", "e2b-fav-food", "e2b-like-animals"], "method": "speak", "errorTypes": ["sentence-pattern", "word-form", "spoken-response"], "questionPoints": ["like 后接动作的题配动作图", "一问一答配对，问 Do you like…? 答 Yes, I do.", "favourite 只练说和认，不要求默写"], "variationAxes": ["context", "reverse"] },
+    { "id": "e2b-o-seasons", "title": "说四季天气和活动", "goal": "能说出四季的天气和每个季节做的事。", "conceptIds": ["e2b-seasons"], "method": "speak", "errorTypes": ["word-meaning", "sentence-pattern"], "questionPoints": ["四季按顺序出现，先天气后活动", "In spring, it is… 句框给足，只换词", "季节和活动配对不出没学过的活动词"], "variationAxes": ["context", "representation"] },
+    { "id": "e2b-o-rules", "title": "听懂并说出简单规则", "goal": "听到 Don't… 等规则能做出正确反应。", "conceptIds": ["e2b-rules"], "method": "listen", "errorTypes": ["listening", "sentence-pattern"], "questionPoints": ["指令句子不超过 5 个词，词都学过", "含 Don’t 的指令和不含的混着出", "听完做动作或选图片，不要求复述"], "variationAxes": ["context", "reverse"] },
+    { "id": "e2b-o-clothes", "title": "说穿衣动作和衣服", "goal": "会用 put on、wear 说穿衣。", "conceptIds": ["e2b-clothes", "e2b-mothers-day"], "method": "speak", "errorTypes": ["word-form", "usage-context", "spelling"], "questionPoints": ["put on 和 wear 单独设计小题区分", "衣物词先听说后拼写，拼写只考高频词", "配图选词，不出纯中译英题"], "variationAxes": ["context", "representation"] },
+    { "id": "e2b-o-story", "title": "读短故事，说出人物和发生了什么", "goal": "能借助图片读懂短故事，说出主要人物和情节。", "conceptIds": ["e2b-story", "e2b-sounds"], "method": "listen", "errorTypes": ["listening", "spoken-response"], "questionPoints": ["故事只用学过的词和句型", "人物和情节各问一题，可看图作答", "先听读看图，答不出时允许翻回插图"], "variationAxes": ["context", "representation"] }
   ],
   "relations": [
     { "id": "e2b-r-see-touch", "fromId": "e2b-what-see", "toId": "e2b-touch", "kind": "contrast", "explanation": "看和听用眼睛耳朵，触摸用手，两组感官表达对照学习。", "source": "英语课标（2022年版）一级准备内容顺序" },

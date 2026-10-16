@@ -13,7 +13,7 @@ import { queueWorksheet, renderWorksheet } from './worksheet.ts'
 
 const mutation = z.object({ revision: z.number().int().nonnegative(), change: commandSchema }).strict()
 const printRequest = z.object({ revision: z.number().int().nonnegative(), worksheetId: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u), confirmed: z.literal(true) }).strict()
-const allowed = new Set(['setup', 'limits', 'configure-course', 'start', 'answer', 'hint', 'stop', 'confirm-mistake', 'confirm-concept', 'link-mistake'])
+const allowed = new Set(['setup', 'limits', 'configure-course', 'school-progress', 'start', 'answer', 'hint', 'stop', 'confirm-mistake', 'confirm-concept', 'link-mistake', 'classify-mistake', 'grade-sheet', 'discard-sheet', 'confirm-paper'])
 
 /** Browser requests must address the local DSH host and originate from the same authority. */
 export function trustedStudyRequest(request: Pick<IncomingMessage, 'headers'>): boolean {
@@ -45,7 +45,7 @@ async function body(request: IncomingMessage, limit: number): Promise<unknown> {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'))
 }
 
-/** The UI can submit learner actions; grading and rewards remain in the shared learning reducer. */
+/** The UI can submit learner actions and the parent's marks on a printed sheet; tutor assessment and rewards stay with the model tools. */
 export async function handleStudyRequest(context: Context, request: IncomingMessage, response: ServerResponse): Promise<void> {
   const abort = new AbortController()
   const onClose = () => { if (!response.writableEnded) abort.abort() }

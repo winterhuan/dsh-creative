@@ -1,6 +1,6 @@
 import type { StudyState } from './schema.ts'
 import type { CurriculumSubject } from './curriculum.ts'
-import { curriculumView, insightSummary, objectiveInfo, studyInsight, studyStatus } from './learning.ts'
+import { checkInHistory, curriculumView, insightSummary, itemObjectiveId, objectiveInfo, reviewPlan, sheetOpen, studyInsight, studyStatus } from './learning.ts'
 
 /** Mistake-book filter for the confirmed list. */
 export type MistakeStatus = 'all' | 'due' | 'reviewing' | 'mastered'
@@ -45,15 +45,22 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
     concepts: state.concepts.filter(item => item.subject === subject).slice(-20).reverse(),
     objectives: state.objectives.filter(item => item.subject === subject).slice(-20).reverse(),
     relations: state.relations.filter(item => state.concepts.some(concept => concept.id === item.fromId && concept.subject === subject)).slice(-20),
-    worksheets: state.worksheets.filter(item => item.subject === subject).slice(-20).reverse().map(sheet => ({
-      ...sheet,
-      objectiveTitle: objectiveInfo(state, sheet.objectiveId)?.title ?? sheet.objectiveId,
-      results: state.paperResults.filter(item => item.worksheetId === sheet.id).map(item => ({ itemId: item.itemId, result: item.result, response: item.response })),
-      sources: sheet.items.map(item => {
-        const mistake = state.mistakes.find(candidate => candidate.id === item.mistakeId)
-        return { itemId: item.id, mistakeId: item.mistakeId, topic: mistake?.topic ?? item.mistakeId, stage: mistake?.stage ?? 0 }
-      }),
-    })),
+    worksheets: state.worksheets.filter(item => item.subject === subject && item.discardedAt === undefined).slice(-20).reverse().map(sheet => {
+      const titles = [...new Set(sheet.items.map(item => objectiveInfo(state, itemObjectiveId(state, sheet, item) ?? '')?.title).filter(title => title !== undefined))]
+      return {
+        ...sheet,
+        objectiveTitle: titles.length <= 2 ? titles.join('、') : `${titles.slice(0, 2).join('、')}等 ${titles.length} 个目标`,
+        open: sheetOpen(state, sheet),
+        results: state.paperResults.filter(item => item.worksheetId === sheet.id).map(item => ({ itemId: item.itemId, result: item.result, response: item.response })),
+        drafts: state.paperDrafts.filter(item => item.worksheetId === sheet.id).map(item => ({ itemId: item.itemId, response: item.response, result: item.result, assistance: item.assistance, uncertainties: item.uncertainties, ...(item.errorType !== undefined ? { errorType: item.errorType } : {}) })),
+        sources: sheet.items.map(item => {
+          const mistake = item.mistakeId ? state.mistakes.find(candidate => candidate.id === item.mistakeId) : undefined
+          const fromHere = mistake?.source?.worksheetId === sheet.id && mistake.source.itemId === item.id
+          return { itemId: item.id, ...(item.mistakeId && !fromHere ? { mistakeId: item.mistakeId } : {}), topic: fromHere ? '' : mistake?.topic ?? '', stage: mistake?.stage ?? 0 }
+        }),
+      }
+    }),
+    reviewPlan: (({ picks, objectiveFills, remaining, unlinkedDue, openSheets }) => ({ picks: picks.length, fills: objectiveFills.length, remaining, unlinkedDue: unlinkedDue.length, openSheets: openSheets.length }))(reviewPlan(state, subject, now, 8, insight)),
     paperResults: state.paperResults.filter(item => state.worksheets.some(sheet => sheet.id === item.worksheetId && sheet.subject === subject)).slice(-20).reverse(),
     dueMistakes: due.slice(0, 20), dueCount: due.length, dueTotal: status.dueMistakes.length, dueSubjects: due.length ? [subject] : [],
     pendingMistakes: pending.slice(0, 20), pendingCount: pending.length,
@@ -67,23 +74,12 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
     },
     curriculum: curriculumView(state, subject, insight, scope),
     diagnostic: insight.diagnostics.find(plan => plan.subject === subject) ?? null,
-    lastDiagnosis: lastDiagnosis(state, subject),
+    checkIns: checkInHistory(state),
     ...insightSummary(insight),
+    diagnostics: insight.diagnostics,
     materials: state.materials.filter(item => state.courses.some(course => course.materialId === item.id)),
     recentAttempts: state.attempts.filter(item => item.subject === subject).slice(-20).reverse(),
   } }
-}
-
-function lastDiagnosis(state: StudyState, subject: CurriculumSubject) {
-  const session = state.sessions.filter(item => item.mode === 'diagnose' && item.subject === subject).at(-1)
-  if (!session) return null
-  return {
-    sessionId: session.id, startedAt: session.startedAt, endedAt: session.endedAt ?? null,
-    results: state.attempts.filter(item => item.sessionId === session.id).map(item => ({
-      id: item.id, objectiveId: item.objectiveId ?? null, result: item.result, assistance: item.assistance,
-      title: item.objectiveId ? objectiveInfo(state, item.objectiveId)?.title ?? item.topic : item.topic,
-    })),
-  }
 }
 
 /** Shared HTTP response shape; client imports this type without host runtime code. */

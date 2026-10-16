@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import type { Command, StudyState } from '../schema.ts'
+import { errorTypesBySubject } from '../vocabulary.ts'
 import type { Dashboard } from '../dashboard.ts'
 import type { Translate } from './locales.ts'
 
@@ -35,7 +36,15 @@ function SaveForm({ revision, submit, children, t, disabled = false, button = 's
 }
 
 /** Parent-confirmed setup, limits and an atomic textbook/course update. */
-export function ParentSettings({ data, change, t }: { data: Dashboard; change: ChangeStudy; t: Translate }) {
+export function ParentSettings({ data, change, t, curriculum = null, subject = 'math', onSubject }: {
+  data: Dashboard
+  change: ChangeStudy
+  t: Translate
+  curriculum?: NonNullable<Dashboard['study']>['curriculum']
+  subject?: typeof subjects[number]
+  onSubject?: (subject: typeof subjects[number]) => void
+}) {
+  const [progressError, setProgressError] = useState('')
   const study = data.study
   const profile = study?.profile
   const today = new Date(data.serverNow + 8 * 60 * 60 * 1000)
@@ -71,17 +80,55 @@ export function ParentSettings({ data, change, t }: { data: Dashboard; change: C
     {profile && <>
       <h3>{t('curriculum')}</h3><p>{t('materialHelp')}</p>
       {study.courses.map(course => <p key={course.subject}>{t(course.subject)} · {study.materials.find(item => item.id === course.materialId)?.title} · {course.unit}</p>)}
-      <SaveForm revision={data.revision} t={t} disabled={!!study.active} submit={(form, revision) => {
+      <SaveForm revision={data.revision} t={t} disabled={!!study.active} submit={async (form, revision) => {
         const materialId = crypto.randomUUID()
         const selected = read(form, 'subject')
-        const subject = subjects.find(item => item === selected) ?? 'math'
+        const courseSubject = subjects.find(item => item === selected) ?? subject
+        const unitId = read(form, 'unitId')
+        const unit = curriculum?.scope.current ? curriculum.units.find(item => item.id === unitId) : undefined
         const { region, grade, term, schoolYear, schoolSystem } = profile
-        return change({ action: 'configure-course', material: { id: materialId, subject, scope: { region, grade, term, schoolYear, schoolSystem }, title: read(form, 'title'), publisher: read(form, 'publisher'), edition: read(form, 'edition'), editionStatus: 'identified', kind: 'official-textbook', locator: read(form, 'locator'), evidence: read(form, 'evidence') }, course: { subject, materialId, unit: read(form, 'unit'), parentConfirmation: t('materialConfirm') } }, revision)
+        const saved = await change({ action: 'configure-course', material: { id: materialId, subject: courseSubject, scope: { region, grade, term, schoolYear, schoolSystem }, title: curriculum?.scope.current ? curriculum.title : t(courseSubject), publisher: t('mapMaterialPublisher'), edition: curriculum?.scope.current ? curriculum.id : t('mapMaterialEdition'), editionStatus: 'identified', kind: 'official-textbook', locator: curriculum?.scope.current ? `knowledge/curriculum/${curriculum.id}.json` : t('mapMaterialLocator'), evidence: t('mapMaterialEvidence') }, course: { subject: courseSubject, materialId, unit: unit?.name ?? read(form, 'unit'), parentConfirmation: t('materialConfirm') } }, revision)
+        if (!unit) return saved
+        const existing = saved.study?.courses.find(item => item.subject === courseSubject)?.progress
+        return change({ action: 'school-progress', subject: courseSubject, unitId: unit.id, posture: existing?.posture ?? 'keep-up', preview: existing?.preview ? 'on' : 'off', pace: existing?.pace ?? 'teaching', parentConfirmation: t('confirmSchoolProgress') }, saved.revision)
       }}>
-        <label>{t('subject')}<select name="subject" aria-label={t('subject')}>{subjects.map(subject => <option key={subject} value={subject}>{t(subject)}</option>)}</select></label>
-        {(['title', 'publisher', 'edition', 'locator', 'evidence', 'unit'] as const).map(name => <Field key={name} name={name} label={t(name === 'title' ? 'titleField' : name === 'evidence' ? 'evidenceField' : name)} />)}
+        <label>{t('subject')}<select name="subject" aria-label={t('subject')} value={subject} onChange={event => { const next = subjects.find(item => item === event.target.value); if (next) onSubject?.(next) }}>{subjects.map(item => <option key={item} value={item}>{t(item)}</option>)}</select></label>
+        {curriculum?.scope.current ? <label>{t('unit')}<select name="unitId" aria-label={t('unit')} key={subject} defaultValue={study.courses.find(item => item.subject === subject)?.progress?.unitId ?? ''} required>
+          <option value="" disabled>{t('chooseUnit')}</option>
+          {curriculum.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+        </select></label> : <Field name="unit" label={t('unit')} />}
         <label className="student-check"><input type="checkbox" required />{t('materialConfirm')}</label>
       </SaveForm>
+      {curriculum?.scope.current && <>
+        <h3>{t('schoolFrontier')}</h3>
+        <p>{t('schoolProgressHelp')}</p>
+        {onSubject && <nav className="student-segments" aria-label={t('schoolFrontier')}>{subjects.map(item => <button key={item} type="button" aria-pressed={subject === item} onClick={() => onSubject(item)}>{t(item)}</button>)}</nav>}
+        {study.courses.some(course => course.subject === subject) ? <form key={`${subject}:${study.courses.find(course => course.subject === subject)?.progress?.unitId ?? ''}`} onSubmit={event => {
+          event.preventDefault()
+          const form = new FormData(event.currentTarget)
+          const submitter = (event.nativeEvent as SubmitEvent).submitter
+          const move = submitter instanceof HTMLButtonElement ? submitter.value : 'stay'
+          const units = curriculum.units
+          const selected = String(form.get('unitId') ?? '')
+          const index = units.findIndex(unit => unit.id === selected)
+          const next = units[index + 1]
+          if (index < 0) return
+          if (move === 'next' && !next) { setProgressError(t('noNextUnit')); return }
+          setProgressError('')
+          void change({ action: 'school-progress', subject, unitId: move === 'next' && next ? next.id : selected, posture: form.get('posture') === 'catch-up' ? 'catch-up' : 'keep-up', preview: form.get('preview') === 'on' ? 'on' : 'off', pace: move === 'review' ? 'review' : 'teaching', parentConfirmation: t('confirmSchoolProgress') }, data.revision)
+        }}>
+          <label>{t('schoolFrontier')}<select name="unitId" aria-label={t('schoolFrontier')} defaultValue={study.courses.find(course => course.subject === subject)?.progress?.unitId ?? curriculum.units[0]?.id} required>{curriculum.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
+          <label>{t('keepUp')}<select name="posture" aria-label={t('keepUp')} defaultValue={study.courses.find(course => course.subject === subject)?.progress?.posture ?? 'keep-up'}><option value="keep-up">{t('keepUp')}</option><option value="catch-up">{t('catchUp')}</option></select></label>
+          <label className="student-check"><input type="checkbox" name="preview" defaultChecked={study.courses.find(course => course.subject === subject)?.progress?.preview === true} />{t('previewUnit')}</label>
+          <label className="student-check"><input type="checkbox" required />{t('confirmSchoolProgress')}</label>
+          {progressError && <p role="alert">{progressError}</p>}
+          <div className="student-segments">
+            <button type="submit" value="stay" disabled={!!study.active}>{t('stillThisUnit')}</button>
+            <button type="submit" value="next" disabled={!!study.active}>{t('nextSchoolUnit')}</button>
+            <button type="submit" value="review" disabled={!!study.active}>{t('reviewWeek')}</button>
+          </div>
+        </form> : <p>{t('schoolProgressNeedsCourse')}</p>}
+      </>}
     </>}
   </section>
 }
@@ -91,8 +138,16 @@ export function MistakeConfirmation({ mistake, revision, change, t }: { mistake:
   return <details><summary>{mistake.topic}</summary>
     <p>{t('learnerAnswer')}: {mistake.learnerAnswer}</p>
     {mistake.uncertainties && <p>{t('uncertainties')}: {mistake.uncertainties}</p>}
-    <SaveForm revision={revision} t={t} button="confirm" submit={(form, base) => change({ action: 'confirm-mistake', id: mistake.id, prompt: read(form, 'prompt'), learnerAnswer: read(form, 'learnerAnswer'), correction: read(form, 'correction'), explanation: read(form, 'explanation'), answerEvidence: read(form, 'answerEvidence'), userConfirmation: t('confirmMistake') }, base)}>
+    <SaveForm revision={revision} t={t} button="confirm" submit={(form, base) => {
+      const picked = read(form, 'errorType')
+      const errorType = errorTypesBySubject[mistake.subject].find(candidate => candidate === picked)
+      return change({ action: 'confirm-mistake', id: mistake.id, prompt: read(form, 'prompt'), learnerAnswer: read(form, 'learnerAnswer'), correction: read(form, 'correction'), explanation: read(form, 'explanation'), answerEvidence: read(form, 'answerEvidence'), ...(errorType !== undefined ? { errorType } : {}), userConfirmation: t('confirmMistake') }, base)
+    }}>
       {(['prompt', 'learnerAnswer', 'correction', 'explanation', 'answerEvidence'] as const).map(name => <label key={name}>{t(name)}<textarea aria-label={t(name)} name={name} defaultValue={mistake[name]} required maxLength={2000} /></label>)}
+      <label>{t('errorTypeLabel')}<select name="errorType" defaultValue={mistake.errorType ?? ''}>
+        <option value="">{t('errorTypeNone')}</option>
+        {errorTypesBySubject[mistake.subject].map(type => <option key={type} value={type}>{t(type)}</option>)}
+      </select></label>
       <label className="student-check"><input type="checkbox" required />{t('confirmMistake')}</label>
     </SaveForm>
   </details>

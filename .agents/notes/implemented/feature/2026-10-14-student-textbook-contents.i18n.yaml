@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-14-student-textbook-contents.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-14-student-textbook-contents.md
+/agent-note-textbook-contents-in-the-knowledge-maps:
+  en: fe82731d0fcf2883
+  zh: d061f6b4a79c4449
+/agent-note-textbook-contents-in-the-knowledge-maps/problem:
+  en: e38e66ad9c01be51
+  zh: 44f86ff28560a3c6
+/agent-note-textbook-contents-in-the-knowledge-maps/decision:
+  en: b64074dc764935c7
+  zh: 9bd04fbb8f80c5a7
+/agent-note-textbook-contents-in-the-knowledge-maps/alternatives-considered:
+  en: 2582da901d0513b9
+  zh: f21eb78b65988e36
+/agent-note-textbook-contents-in-the-knowledge-maps/consequences:
+  en: 3b9cee4a361da125
+  zh: f62bfd59fa0fc3a7

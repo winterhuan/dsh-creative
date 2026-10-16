@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-14-student-school-frontier.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-14-student-school-frontier.md
+/agent-note-school-progress-frontier:
+  en: 0e92d68f9afa8125
+  zh: 7bd01d921818f5b5
+/agent-note-school-progress-frontier/problem:
+  en: 944b3e6d1cdac450
+  zh: cefdf93d49f16cbd
+/agent-note-school-progress-frontier/decision:
+  en: eed0473764e972f3
+  zh: 2d02b7a7bf38e0aa
+/agent-note-school-progress-frontier/alternatives-considered:
+  en: 977ad83c0982690a
+  zh: dd10f470519fdf9d
+/agent-note-school-progress-frontier/consequences:
+  en: ce457b55eaf17e4a
+  zh: 09514bbd623a6c02

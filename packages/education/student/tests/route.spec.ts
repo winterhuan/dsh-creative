@@ -77,7 +77,7 @@ describe('student workspace boundary', () => {
     expect(result.status).toBe(200)
     expect(result.result.study).toMatchObject({ confirmedCount: 21, confirmedCounts: { chinese: 0, math: 21, english: 0 }, confirmedOffset: 20, confirmedSubject: 'math', confirmedMistakes: [{ id: 'error-0' }], mistakeStatus: 'all', mistakeBook: { mastered: 0, pending: 0 } })
     expect(result.result.study.mistakeBook.due + result.result.study.mistakeBook.reviewing).toBe(21)
-    expect(result.result.study.curriculum).toMatchObject({ id: 'math-grade2-first', summary: expect.objectContaining({ concepts: 12 }) })
+    expect(result.result.study.curriculum).toMatchObject({ id: 'math-grade2-first', summary: expect.objectContaining({ concepts: 20 }) })
     const browsed = await request({ path: '/student/workspace?sessionId=test&subject=math&mapGrade=1&mapTerm=second' })
     expect(browsed.result.study).toMatchObject({ curriculum: { id: 'math-grade1-second', scope: { grade: 1, term: 'second', current: false } }, diagnostic: { subject: 'math' } })
     const filtered = await request({ path: '/student/workspace?sessionId=test&subject=math&mistakeStatus=mastered' })
@@ -107,7 +107,13 @@ describe('student workspace boundary', () => {
     expect((await request({ method: 'POST', body: JSON.stringify({ change: setup }) })).status).toBe(400)
     expect((await request({ method: 'POST', body: 'x'.repeat(65_537) })).status).toBe(413)
     expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change: { action: 'task', task: { id: 'q', sessionId: 's', subject: 'math', topic: 'sum', prompt: '1+1?' } } }) })).status).toBe(403)
+    expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change: { action: 'paper-draft', paperDraft: { worksheetId: 'w', itemId: 'q', response: '2', result: 'correct', assistance: 'independent', uncertainties: '' } } }) })).status).toBe(403)
     expect(studyStore).not.toHaveBeenCalled()
+    for (const change of [
+      { action: 'school-progress', subject: 'math', unitId: 'm2a-u-mul', posture: 'keep-up', preview: 'off', pace: 'teaching', parentConfirmation: '家长确认学校进度。' },
+      { action: 'classify-mistake', mistakeId: 'error-1', errorType: 'carry-borrow' },
+      { action: 'confirm-paper', worksheetId: 'w', results: [{ itemId: 'q', result: 'correct' }], userConfirmation: '家长核对照片。' },
+    ]) expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change }) })).status).toBe(200)
   })
   it('passes the observed revision and reports conflicts without retrying writes', async () => {
     vi.mocked(studyStore).mockRejectedValue(new StudyConflict())

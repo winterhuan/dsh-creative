@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-16-student-photo-grading.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-16-student-photo-grading.md
+/agent-note-photo-transcription-drafts-and-parent-confirmation:
+  en: 0301cefd5579f963
+  zh: fc953bbe5f033c8f
+/agent-note-photo-transcription-drafts-and-parent-confirmation/problem:
+  en: 214df3c157dfb656
+  zh: 158b9af64e587827
+/agent-note-photo-transcription-drafts-and-parent-confirmation/decision:
+  en: a7b015267ce84ae6
+  zh: 3666bb89f087faa9
+/agent-note-photo-transcription-drafts-and-parent-confirmation/alternatives-considered:
+  en: dfe2c854bf090457
+  zh: bcda59b88f134dc3
+/agent-note-photo-transcription-drafts-and-parent-confirmation/verification:
+  en: 32a02c3cb63c3d44
+  zh: 2b0962d5c3e7b368
+/agent-note-photo-transcription-drafts-and-parent-confirmation/consequences:
+  en: 407459e3b6ff1c36
+  zh: 811bbb86b043d002

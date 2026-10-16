@@ -4,270 +4,1235 @@
   "grade": 1,
   "term": "first",
   "title": "英语一年级上册知识地图",
-  "basis": "上海市小学英语从一年级起开设，一、二年级以听、说、认读为主，为《义务教育英语课程标准（2022年版）》一级学习做准备。本图按一年级起点的通行话题组织（问候、自己与家人、教室、动物），是学习框架，不代替学校课本和教师进度；单词与句型以学校实际教材为准。",
+  "basis": "单元和栏目对齐家长确认的一年级上册英语教材目录，包含各单元的小任务、话题词、歌谣、故事和小项目。定义依据《义务教育英语课程标准（2022年版）》一级准备要求。它是学习框架，不代替学校课本、教师进度和校内评价。",
   "units": [
     {
+      "id": "e1a-u0",
+      "name": "Starter: Our families and friends",
+      "summary": "Our teachers；We learn English!",
+      "focus": "sentences"
+    },
+    {
       "id": "e1a-u1",
-      "name": "字母与问候",
-      "summary": "字母认读、打招呼、介绍自己"
+      "name": "Unit 1 Greetings",
+      "summary": "Greeting people；morning, afternoon, evening",
+      "focus": "words"
     },
     {
       "id": "e1a-u2",
-      "name": "我和家人朋友",
-      "summary": "五官、家庭成员、能力"
+      "name": "Unit 2 New friends",
+      "summary": "Making new friends；hello, friend, welcome, name, hi",
+      "focus": "words"
     },
     {
       "id": "e1a-u3",
-      "name": "教室与身边事物",
-      "summary": "课堂指令、文具、数字、水果"
+      "name": "Unit 3 My schoolbag",
+      "summary": "Packing my schoolbag；pack, my, schoolbag, book, pencil, ruler, eraser, pencil case",
+      "focus": "words"
     },
     {
       "id": "e1a-u4",
-      "name": "自然与动物",
-      "summary": "农场动物、动物园、公园"
+      "name": "Unit 4 My classroom",
+      "summary": "Cleaning our classroom；clean, classroom, desk, door, chair, on duty, blackboard, floor",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-u5",
+      "name": "Unit 5 Lovely faces",
+      "summary": "Making a lovely face；face, eye, ear, nose, mouth",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-u6",
+      "name": "Unit 6 My family",
+      "summary": "Showing my family photo；family, mum, dad, brother, sister, me, love, warm, happy",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-u7",
+      "name": "Unit 7 Animals in our lives",
+      "summary": "Designing a pet home；helpful, animal, horse, dog, hen, bee, cat",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-u8",
+      "name": "Unit 8 Have a go!",
+      "summary": "Acting out a story；bird, hill, fly away, come back, flap wings",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-u9",
+      "name": "Unit 9 Yes, I can!",
+      "summary": "Doing a survey；wash, tie shoelaces, take a photo",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-u10",
+      "name": "Unit 10 Fun numbers",
+      "summary": "Finding fun numbers；one, two, three, four, five, six",
+      "focus": "words"
+    },
+    {
+      "id": "e1a-ua",
+      "name": "附录",
+      "summary": "Word bank、Mini-project sheets、Cut, make and role-play、Cut and stick、Audio",
+      "focus": "review"
     }
   ],
   "concepts": [
     {
-      "id": "e1a-letters",
-      "name": "字母 Aa～Zz",
+      "id": "e1a-u0-1",
+      "name": "Our teachers",
+      "unit": "e1a-u0",
+      "definition": "认识老师，会用英语向老师打招呼，能说出 teacher。",
+      "example": "This is our teacher.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["说 This is our teacher. 时漏掉 our。", "向老师打招呼用错时间，下午说 Good morning。"]
+    },
+    {
+      "id": "e1a-u0-2",
+      "name": "We learn English!",
+      "unit": "e1a-u0",
+      "definition": "知道这节课学习英语，会说 We learn English!",
+      "example": "We learn English!",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["读 We learn English! 时 English 的读音吞掉。", "说不出这句话的意思，只会跟着重复。"]
+    },
+    {
+      "id": "e1a-u1-1",
+      "name": "Small task: Greeting people",
       "unit": "e1a-u1",
-      "definition": "认识 26 个字母的大小写，看到能读，听到能指。",
-      "example": "A—apple；B—bag。",
-      "source": "上海市小学英语（一年级起点）通行内容"
+      "definition": "完成本单元小任务“Greeting people”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Greeting people",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["只认识任务名称，真见到人打招呼时不敢开口。", "打招呼只会说 Hello，不会按时间说 Good morning。"]
     },
     {
-      "id": "e1a-greet",
-      "name": "问候与告别",
+      "id": "e1a-u1-2",
+      "name": "Topic words: morning, afternoon, evening",
       "unit": "e1a-u1",
-      "definition": "见面打招呼、分别说再见，早上用 Good morning。",
-      "example": "—Hello! —Hi! —Goodbye!",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「问候」"
+      "definition": "认读本单元话题词：morning, afternoon, evening。听到或看到时能说出意思。",
+      "example": "morning, afternoon, evening",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["早上、下午、晚上三个词用混，下午说成 evening。", "afternoon 太长读不全，吞掉一半音节。"]
     },
     {
-      "id": "e1a-intro",
-      "name": "介绍自己",
+      "id": "e1a-u1-3",
+      "name": "Song/Rhyme/Chant time: Greetings",
       "unit": "e1a-u1",
-      "definition": "用 I'm… 或 My name is… 说出自己的名字。",
-      "example": "I'm Danny. My name is Alice.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「个人情况」"
+      "definition": "听唱《Greetings》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Greetings.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["只跟旋律唱，不跟读歌词。", "唱到 afternoon 就含糊带过。"]
     },
     {
-      "id": "e1a-askname",
-      "name": "询问名字",
+      "id": "e1a-u1-4",
+      "name": "Talking/Story time: The first day",
       "unit": "e1a-u1",
-      "definition": "用 What's your name? 问别人的名字，并回答。",
-      "example": "—What's your name? —I'm Alice.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「个人情况」"
+      "definition": "听读故事《The first day》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: The first day.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听完说不出故事里谁在说话。", "模仿句子时把早上和下午的问候说反。"]
     },
     {
-      "id": "e1a-instructions",
-      "name": "课堂指令",
-      "unit": "e1a-u3",
-      "definition": "听懂并做出课堂常用指令的动作。",
-      "example": "Stand up. Sit down. Open your book.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「学校生活」"
+      "id": "e1a-u1-5",
+      "name": "Mini-project: Greeting people",
+      "unit": "e1a-u1",
+      "definition": "完成小项目“Greeting people”，用本单元的词向别人介绍自己的作品。",
+      "example": "Greeting people",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["做打招呼的小卡片很起劲，介绍时一句英语也说不出来。"]
     },
     {
-      "id": "e1a-face",
-      "name": "五官",
+      "id": "e1a-u2-1",
+      "name": "Small task: Making new friends",
       "unit": "e1a-u2",
-      "definition": "认识 eye、ear、nose、mouth、face，会说会指。",
-      "example": "Touch your nose. This is my face.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「身体」"
+      "definition": "完成本单元小任务“Making new friends”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Making new friends",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["只认识任务名称，真去认识新朋友时说不出英语。"]
     },
     {
-      "id": "e1a-family",
-      "name": "家庭成员",
+      "id": "e1a-u2-2",
+      "name": "Topic words: hello, friend, welcome, name, hi",
       "unit": "e1a-u2",
-      "definition": "认识 father、mother、brother、sister 等称呼。",
-      "example": "This is my father.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「家庭」"
+      "definition": "认读本单元话题词：hello, friend, welcome, name, hi。听到或看到时能说出意思。",
+      "example": "hello, friend, welcome",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["问名字时说 What your name?，漏掉 ’s。", "friend 读音不准，读成“弗兰德”。"]
     },
     {
-      "id": "e1a-can",
-      "name": "能力：I can…",
+      "id": "e1a-u2-3",
+      "name": "Song/Rhyme/Chant time: Hello",
       "unit": "e1a-u2",
-      "definition": "用 I can… 说自己会做什么。",
-      "example": "I can sing. I can dance. I can draw.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「个人能力」"
+      "definition": "听唱《Hello》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Hello.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["会唱 Hello 歌，hello 和 hi 的意思分不清。"]
     },
     {
-      "id": "e1a-schoolthings",
-      "name": "文具与教室物品",
+      "id": "e1a-u2-4",
+      "name": "Talking/Story time: Meeting Lily",
+      "unit": "e1a-u2",
+      "definition": "听读故事《Meeting Lily》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: Meeting Lily.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["指出谁在说话时把 Lily 认成别人。", "模仿台词时 hello 和 welcome 张冠李戴。"]
+    },
+    {
+      "id": "e1a-u2-5",
+      "name": "Mini-project: Making new friends",
+      "unit": "e1a-u2",
+      "definition": "完成小项目“Making new friends”，用本单元的词向别人介绍自己的作品。",
+      "example": "Making new friends",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["介绍新朋友作品时只会说名字，不会说 welcome。"]
+    },
+    {
+      "id": "e1a-u3-1",
+      "name": "Small task: Packing my schoolbag",
       "unit": "e1a-u3",
-      "definition": "认识 book、pen、pencil、bag、desk、chair，用 It's a… 指认。",
-      "example": "It's a pencil. This is my desk.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「学校生活」"
+      "definition": "完成本单元小任务“Packing my schoolbag”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Packing my schoolbag",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["会读任务名，整理书包时说不出文具的英语。"]
     },
     {
-      "id": "e1a-numbers",
-      "name": "数字 1～10",
+      "id": "e1a-u3-2",
+      "name": "Topic words: pack, my, schoolbag, book, pencil, ruler, eraser, pencil case",
       "unit": "e1a-u3",
-      "definition": "one 到 ten，会数数、会说数量。",
-      "example": "I have three books.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「数字」"
+      "definition": "认读本单元话题词：pack, my, schoolbag, book, pencil, ruler, eraser, pencil case。听到或看到时能说出意思。",
+      "example": "pack, my, schoolbag",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["ruler 和 eraser 认混。", "pencil case 和 pencil 分不清，把铅笔袋说成铅笔。"]
     },
     {
-      "id": "e1a-fruits",
-      "name": "水果",
+      "id": "e1a-u3-3",
+      "name": "Song/Rhyme/Chant time: Pack my schoolbag",
       "unit": "e1a-u3",
-      "definition": "认识 apple、orange、banana、pear，会用 May I have…? 要东西。",
-      "example": "—May I have an apple? —Here you are.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「饮食」"
+      "definition": "听唱《Pack my schoolbag》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Pack my schoolbag.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["唱 Pack my schoolbag 时把文具词读串。"]
     },
     {
-      "id": "e1a-farmanimals",
-      "name": "农场动物",
-      "unit": "e1a-u4",
-      "definition": "认识 duck、chick、hen、cow、pig、sheep，会问答 What's this?。",
-      "example": "—What's this? —It's a duck.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「动物」"
+      "id": "e1a-u3-4",
+      "name": "Talking/Story time: My pencil case",
+      "unit": "e1a-u3",
+      "definition": "听读故事《My pencil case》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: My pencil case.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听完说不清文具在谁的铅笔袋里。", "把 pencil case 和 schoolbag 说反。"]
     },
     {
-      "id": "e1a-zooanimals",
-      "name": "动物园动物",
-      "unit": "e1a-u4",
-      "definition": "认识 panda、monkey、tiger、elephant、bear，会说我看到了什么。",
-      "example": "I see a panda. Look at the monkey.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「动物」"
+      "id": "e1a-u3-5",
+      "name": "Mini-project: Packing my schoolbag",
+      "unit": "e1a-u3",
+      "definition": "完成小项目“Packing my schoolbag”，用本单元的词向别人介绍自己的作品。",
+      "example": "Packing my schoolbag",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["书包整理好了，介绍时文具词一个也说不出。"]
     },
     {
-      "id": "e1a-park",
-      "name": "公园与自然",
+      "id": "e1a-u4-1",
+      "name": "Small task: Cleaning our classroom",
       "unit": "e1a-u4",
-      "definition": "认识 tree、flower、kite、boat 等常见事物。",
-      "example": "Look at the kite. It's a red flower.",
-      "source": "英语课标（2022年版）一级准备内容；通行话题「自然」"
+      "definition": "完成本单元小任务“Cleaning our classroom”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Cleaning our classroom",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["会做值日，说不出 on duty 的意思。"]
+    },
+    {
+      "id": "e1a-u4-2",
+      "name": "Topic words: clean, classroom, desk, door, chair, on duty, blackboard, floor",
+      "unit": "e1a-u4",
+      "definition": "认读本单元话题词：clean, classroom, desk, door, chair, on duty, blackboard, floor。听到或看到时能说出意思。",
+      "example": "clean, classroom, desk",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["desk 和 chair 配错，桌子和椅子说反。", "door 和 floor 听混，读音分不清。"]
+    },
+    {
+      "id": "e1a-u4-3",
+      "name": "Song/Rhyme/Chant time: Clean our classroom",
+      "unit": "e1a-u4",
+      "definition": "听唱《Clean our classroom》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Clean our classroom.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["跟唱时省略 clean，只唱出 classroom。"]
+    },
+    {
+      "id": "e1a-u4-4",
+      "name": "Talking/Story time: Who's on duty?",
+      "unit": "e1a-u4",
+      "definition": "听读故事《Who's on duty?》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: Who's on duty?.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听不懂 Who's on duty? 是问今天谁值日。", "指出谁在说话时把人认错。"]
+    },
+    {
+      "id": "e1a-u4-5",
+      "name": "Mini-project: Cleaning our classroom",
+      "unit": "e1a-u4",
+      "definition": "完成小项目“Cleaning our classroom”，用本单元的词向别人介绍自己的作品。",
+      "example": "Cleaning our classroom",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["值日做得好，介绍时不会说 on duty。"]
+    },
+    {
+      "id": "e1a-u5-1",
+      "name": "Small task: Making a lovely face",
+      "unit": "e1a-u5",
+      "definition": "完成本单元小任务“Making a lovely face”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Making a lovely face",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["会画脸，说不出脸和五官的英语。"]
+    },
+    {
+      "id": "e1a-u5-2",
+      "name": "Topic words: face, eye, ear, nose, mouth",
+      "unit": "e1a-u5",
+      "definition": "认读本单元话题词：face, eye, ear, nose, mouth。听到或看到时能说出意思。",
+      "example": "face, eye, ear",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["eye 和 ear 读音听混，眼睛、耳朵配错。", "mouth 的尾音读不清。"]
+    },
+    {
+      "id": "e1a-u5-3",
+      "name": "Song/Rhyme/Chant time: Draw a face",
+      "unit": "e1a-u5",
+      "definition": "听唱《Draw a face》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Draw a face.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["跟着唱 Draw a face，五官词认不全。"]
+    },
+    {
+      "id": "e1a-u5-4",
+      "name": "Talking/Story time: Finding faces",
+      "unit": "e1a-u5",
+      "definition": "听读故事《Finding faces》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: Finding faces.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听完说不出在哪里找到了脸。"]
+    },
+    {
+      "id": "e1a-u5-5",
+      "name": "Mini-project: A lovely face",
+      "unit": "e1a-u5",
+      "definition": "完成小项目“A lovely face”，用本单元的词向别人介绍自己的作品。",
+      "example": "A lovely face",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["做好娃娃脸，介绍时只会说 face，说不全五官。"]
+    },
+    {
+      "id": "e1a-u6-1",
+      "name": "Small task: Showing my family photo",
+      "unit": "e1a-u6",
+      "definition": "完成本单元小任务“Showing my family photo”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Showing my family photo",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["拿着照片不敢开口，只会指指点点。", "介绍时把 me 漏掉，说不清哪一个是自己。"]
+    },
+    {
+      "id": "e1a-u6-2",
+      "name": "Topic words: family, mum, dad, brother, sister, me, love, warm, happy",
+      "unit": "e1a-u6",
+      "definition": "认读本单元话题词：family, mum, dad, brother, sister, me, love, warm, happy。听到或看到时能说出意思。",
+      "example": "family, mum, dad",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["mum 和 me 读音混。", "warm 和 happy 意思配错，把温暖说成开心。"]
+    },
+    {
+      "id": "e1a-u6-3",
+      "name": "Song/Rhyme/Chant time: Family",
+      "unit": "e1a-u6",
+      "definition": "听唱《Family》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Family.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["会唱 Family 歌，family 和 friends 唱混。"]
+    },
+    {
+      "id": "e1a-u6-4",
+      "name": "Talking/Story time: Love",
+      "unit": "e1a-u6",
+      "definition": "听读故事《Love》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: Love.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["说不出故事里谁爱谁。", "模仿句子时 love 前面的人名说错。"]
+    },
+    {
+      "id": "e1a-u6-5",
+      "name": "Mini-project: Showing my family photo",
+      "unit": "e1a-u6",
+      "definition": "完成小项目“Showing my family photo”，用本单元的词向别人介绍自己的作品。",
+      "example": "Showing my family photo",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["介绍全家福只会指人，不会用英语说称呼。"]
+    },
+    {
+      "id": "e1a-u7-1",
+      "name": "Small task: Designing a pet home",
+      "unit": "e1a-u7",
+      "definition": "完成本单元小任务“Designing a pet home”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Designing a pet home",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["设计宠物家很起劲，说不出宠物名和 helpful。"]
+    },
+    {
+      "id": "e1a-u7-2",
+      "name": "Topic words: helpful, animal, horse, dog, hen, bee, cat",
+      "unit": "e1a-u7",
+      "definition": "认读本单元话题词：helpful, animal, horse, dog, hen, bee, cat。听到或看到时能说出意思。",
+      "example": "helpful, animal, horse",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["horse 和 hen 听混，马和母鸡配错图。", "animal 太长读不全。"]
+    },
+    {
+      "id": "e1a-u7-3",
+      "name": "Song/Rhyme/Chant time: Helpful animals",
+      "unit": "e1a-u7",
+      "definition": "听唱《Helpful animals》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Helpful animals.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["唱 Helpful animals 时动物词漏掉。"]
+    },
+    {
+      "id": "e1a-u7-4",
+      "name": "Talking/Story time: Helping Mira",
+      "unit": "e1a-u7",
+      "definition": "听读故事《Helping Mira》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: Helping Mira.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["说不清是哪个动物帮了 Mira。"]
+    },
+    {
+      "id": "e1a-u7-5",
+      "name": "Mini-project: Our pet home",
+      "unit": "e1a-u7",
+      "definition": "完成小项目“Our pet home”，用本单元的词向别人介绍自己的作品。",
+      "example": "Our pet home",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["介绍宠物家时只会说 This is a home，动物名说不出。"]
+    },
+    {
+      "id": "e1a-u8-1",
+      "name": "Small task: Acting out a story",
+      "unit": "e1a-u8",
+      "definition": "完成本单元小任务“Acting out a story”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Acting out a story",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["只做动作不出声，故事里的词一句也说不出。"]
+    },
+    {
+      "id": "e1a-u8-2",
+      "name": "Topic words: bird, hill, fly away, come back, flap wings",
+      "unit": "e1a-u8",
+      "definition": "认读本单元话题词：bird, hill, fly away, come back, flap wings。听到或看到时能说出意思。",
+      "example": "bird, hill, fly away",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["fly away 和 come back 用反，飞走和飞回说反。", "flap wings 连读不出来，只会说 bird。"]
+    },
+    {
+      "id": "e1a-u8-3",
+      "name": "Song/Rhyme/Chant time: Two little blackbirds",
+      "unit": "e1a-u8",
+      "definition": "听唱《Two little blackbirds》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Two little blackbirds.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["歌会唱，bird 和 hill 的意思分不清。"]
+    },
+    {
+      "id": "e1a-u8-4",
+      "name": "Talking/Story time: You can do it!",
+      "unit": "e1a-u8",
+      "definition": "听读故事《You can do it!》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: You can do it!.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听不懂 You can do it! 是在鼓励别人。", "模仿台词时把鼓励的话说得凶巴巴。"]
+    },
+    {
+      "id": "e1a-u8-5",
+      "name": "Mini-project: Acting out a story",
+      "unit": "e1a-u8",
+      "definition": "完成小项目“Acting out a story”，用本单元的词向别人介绍自己的作品。",
+      "example": "Acting out a story",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["表演时动作齐全，台词只会说一两句。"]
+    },
+    {
+      "id": "e1a-u9-1",
+      "name": "Small task: Doing a survey",
+      "unit": "e1a-u9",
+      "definition": "完成本单元小任务“Doing a survey”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Doing a survey",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["调查只完成表格，问答句子不会说。"]
+    },
+    {
+      "id": "e1a-u9-2",
+      "name": "Topic words: wash, tie shoelaces, take a photo",
+      "unit": "e1a-u9",
+      "definition": "认读本单元话题词：wash, tie shoelaces, take a photo。听到或看到时能说出意思。",
+      "example": "wash, tie shoelaces, take a photo",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["tie shoelaces 太长说不全，只会说 tie。", "wash 和 watch 听混。"]
+    },
+    {
+      "id": "e1a-u9-3",
+      "name": "Song/Rhyme/Chant time: Do it by myself",
+      "unit": "e1a-u9",
+      "definition": "听唱《Do it by myself》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Do it by myself.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["跟唱时 by myself 含糊带过。"]
+    },
+    {
+      "id": "e1a-u9-4",
+      "name": "Talking/Story time: Yes, I can!",
+      "unit": "e1a-u9",
+      "definition": "听读故事《Yes, I can!》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: Yes, I can!.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["把 Yes, I can! 和 No, I can't 用反，会也说不会。"]
+    },
+    {
+      "id": "e1a-u9-5",
+      "name": "Mini-project: Doing a survey",
+      "unit": "e1a-u9",
+      "definition": "完成小项目“Doing a survey”，用本单元的词向别人介绍自己的作品。",
+      "example": "Doing a survey",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["介绍调查结果时只会报名字，说不出 can、can't。"]
+    },
+    {
+      "id": "e1a-u10-1",
+      "name": "Small task: Finding fun numbers",
+      "unit": "e1a-u10",
+      "definition": "完成本单元小任务“Finding fun numbers”。听懂要做什么，并用本单元的词说一说。",
+      "example": "Finding fun numbers",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["会找数字，数字词的英语说不全。"]
+    },
+    {
+      "id": "e1a-u10-2",
+      "name": "Topic words: one, two, three, four, five, six",
+      "unit": "e1a-u10",
+      "definition": "认读本单元话题词：one, two, three, four, five, six。听到或看到时能说出意思。",
+      "example": "one, two, three",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["three 和 tree 听混。", "four 和 five 认混，数字配对错。"]
+    },
+    {
+      "id": "e1a-u10-3",
+      "name": "Song/Rhyme/Chant time: Fun numbers",
+      "unit": "e1a-u10",
+      "definition": "听唱《Fun numbers》，跟读里面的本单元词语。",
+      "example": "Listen and chant: Fun numbers.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["唱到 three、five 就含糊，数字词不跟读。"]
+    },
+    {
+      "id": "e1a-u10-4",
+      "name": "Talking/Story time: On the sports field",
+      "unit": "e1a-u10",
+      "definition": "听读故事《On the sports field》，能指出谁在说话，并模仿其中一句。",
+      "example": "Story: On the sports field.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听完说不出操场上数的是什么。"]
+    },
+    {
+      "id": "e1a-u10-5",
+      "name": "Mini-project: Finding fun numbers",
+      "unit": "e1a-u10",
+      "definition": "完成小项目“Finding fun numbers”，用本单元的词向别人介绍自己的作品。",
+      "example": "Finding fun numbers",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["介绍找到的数字时只指不说。"]
+    },
+    {
+      "id": "e1a-ua-1",
+      "name": "Word bank",
+      "unit": "e1a-ua",
+      "definition": "用单词表按单元复习本册单词，看到单词能读出来并说出意思。",
+      "example": "Read a word from the word bank.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["单词表只顺读，不熟的词一直跳过。", "看到单词会读，遮住中文说不出意思。"]
+    },
+    {
+      "id": "e1a-ua-2",
+      "name": "Mini-project sheets",
+      "unit": "e1a-ua",
+      "definition": "使用小项目练习纸，按步骤完成本册的制作活动。",
+      "example": "Follow a mini-project sheet.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["练习纸只做手工部分，朗读步骤跳过。"]
+    },
+    {
+      "id": "e1a-ua-3",
+      "name": "Cut, make and role-play",
+      "unit": "e1a-ua",
+      "definition": "剪下图卡，做一做、演一演本册的对话。",
+      "example": "Cut the card and act out a line.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["剪完图卡就收起来，不演对话。", "演对话只会自己那一句，接不上别人的话。"]
+    },
+    {
+      "id": "e1a-ua-4",
+      "name": "Cut and stick",
+      "unit": "e1a-ua",
+      "definition": "剪贴图卡，把单词和图配对。",
+      "example": "Stick the word next to its picture.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["图词配对靠图标猜，不看单词本身。"]
+    },
+    {
+      "id": "e1a-ua-5",
+      "name": "Audio",
+      "unit": "e1a-ua",
+      "definition": "听本册音频，跟读单词、歌谣和对话。",
+      "example": "Listen and repeat the audio.",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "misconceptions": ["听音频只当背景音，不跟读。", "听不懂就关掉，不愿再听第二遍。"]
     }
   ],
   "objectives": [
     {
-      "id": "e1a-o-letters",
-      "title": "认读字母大小写 Aa～Zz",
-      "goal": "看到字母能读出来，听到字母能指出大小写。",
+      "id": "e1a-o0",
+      "title": "Starter: Our families and friends",
+      "goal": "能向老师打招呼，并说出 We learn English!",
       "conceptIds": [
-        "e1a-letters"
+        "e1a-u0-1",
+        "e1a-u0-2"
       ],
-      "method": "listen"
+      "method": "speak",
+      "errorTypes": ["spoken-response", "word-meaning"],
+      "questionPoints": ["对着老师照片练打招呼", "We learn English! 整句跟读", "不考拼写"],
+      "variationAxes": ["context", "representation"]
     },
     {
-      "id": "e1a-o-greet",
-      "title": "用问候语和告别语打招呼",
-      "goal": "见面、分别、早上都能用合适的问候语。",
+      "id": "e1a-o1",
+      "title": "Unit 1 Greetings",
+      "goal": "能认读 morning, afternoon, evening，并完成“Greeting people”和“Greeting people”。",
       "conceptIds": [
-        "e1a-greet"
+        "e1a-u1-1",
+        "e1a-u1-2",
+        "e1a-u1-3",
+        "e1a-u1-4",
+        "e1a-u1-5"
       ],
-      "method": "speak"
+      "method": "speak",
+      "errorTypes": ["word-meaning", "spoken-response", "listening"],
+      "questionPoints": ["按早上、下午、晚上分时间段出题", "听到问候语做出回应", "看图说问候，不要求拼写"],
+      "variationAxes": ["context", "representation"]
     },
     {
-      "id": "e1a-o-intro",
-      "title": "介绍自己并询问名字",
-      "goal": "会用 I'm… 介绍自己，会问 What's your name? 并回答。",
+      "id": "e1a-o2",
+      "title": "Unit 2 New friends",
+      "goal": "能认读 hello, friend, welcome, name, hi，并完成“Making new friends”和“Making new friends”。",
       "conceptIds": [
-        "e1a-intro",
-        "e1a-askname"
+        "e1a-u2-1",
+        "e1a-u2-2",
+        "e1a-u2-3",
+        "e1a-u2-4",
+        "e1a-u2-5"
       ],
-      "method": "speak"
+      "method": "speak",
+      "errorTypes": ["word-form", "spoken-response"],
+      "questionPoints": ["hello、hi、welcome 在见面情境里练", "问名字用一问一答", "认识新朋友的情境配图"],
+      "variationAxes": ["context", "reverse"]
     },
     {
-      "id": "e1a-o-instructions",
-      "title": "听懂课堂指令并做动作",
-      "goal": "听到 Stand up、Sit down 等指令能马上做对。",
+      "id": "e1a-o3",
+      "title": "Unit 3 My schoolbag",
+      "goal": "能认读 pack, my, schoolbag, book, pencil, ruler, eraser, pencil case，并完成“Packing my schoolbag”和“Packing my schoolbag”。",
       "conceptIds": [
-        "e1a-instructions"
+        "e1a-u3-1",
+        "e1a-u3-2",
+        "e1a-u3-3",
+        "e1a-u3-4",
+        "e1a-u3-5"
       ],
-      "method": "listen"
+      "method": "speak",
+      "errorTypes": ["word-meaning", "spelling"],
+      "questionPoints": ["文具词配实物认读", "pencil case 和 pencil 放在一起区分", "pack 配整理书包的动作说"],
+      "variationAxes": ["context", "representation"]
     },
     {
-      "id": "e1a-o-name",
-      "title": "指认五官、家人、文具和水果",
-      "goal": "看到实物或图片能说出单词，会 It's a… / This is my…",
+      "id": "e1a-o4",
+      "title": "Unit 4 My classroom",
+      "goal": "能认读 clean, classroom, desk, door, chair, on duty, blackboard, floor，并完成“Cleaning our classroom”和“Cleaning our classroom”。",
       "conceptIds": [
-        "e1a-face",
-        "e1a-family",
-        "e1a-schoolthings",
-        "e1a-fruits"
+        "e1a-u4-1",
+        "e1a-u4-2",
+        "e1a-u4-3",
+        "e1a-u4-4",
+        "e1a-u4-5"
       ],
-      "method": "speak"
+      "method": "speak",
+      "errorTypes": ["listening", "word-meaning"],
+      "questionPoints": ["听到教室物品的词，指认位置", "on duty 用值日情境带出", "door 和 floor 对比听"],
+      "variationAxes": ["context", "representation"]
     },
     {
-      "id": "e1a-o-numbers",
-      "title": "用数字 1～10 说数量",
-      "goal": "能数出物品个数并说出来。",
+      "id": "e1a-o5",
+      "title": "Unit 5 Lovely faces",
+      "goal": "能认读 face, eye, ear, nose, mouth，并完成“Making a lovely face”和“A lovely face”。",
       "conceptIds": [
-        "e1a-numbers"
+        "e1a-u5-1",
+        "e1a-u5-2",
+        "e1a-u5-3",
+        "e1a-u5-4",
+        "e1a-u5-5"
       ],
-      "method": "speak"
+      "method": "speak",
+      "errorTypes": ["word-meaning", "spoken-response"],
+      "questionPoints": ["对着镜子指五官说词", "eye、ear 对比听辨", "画脸时边画边说"],
+      "variationAxes": ["context", "representation"]
     },
     {
-      "id": "e1a-o-animals",
-      "title": "说出常见动物并问答 What's this?",
-      "goal": "认识农场和动物园的常见动物，会一问一答。",
+      "id": "e1a-o6",
+      "title": "Unit 6 My family",
+      "goal": "能认读 family, mum, dad, brother, sister, me, love, warm, happy，并完成“Showing my family photo”和“Showing my family photo”。",
       "conceptIds": [
-        "e1a-farmanimals",
-        "e1a-zooanimals",
-        "e1a-park"
+        "e1a-u6-1",
+        "e1a-u6-2",
+        "e1a-u6-3",
+        "e1a-u6-4",
+        "e1a-u6-5"
       ],
-      "method": "speak"
+      "method": "speak",
+      "errorTypes": ["word-meaning", "spoken-response"],
+      "questionPoints": ["指着全家福说称呼", "mum、dad 等词配家人的照片练", "brother、sister 按家里的实际情况说"],
+      "variationAxes": ["context", "representation"]
+    },
+    {
+      "id": "e1a-o7",
+      "title": "Unit 7 Animals in our lives",
+      "goal": "能认读 helpful, animal, horse, dog, hen, bee, cat，并完成“Designing a pet home”和“Our pet home”。",
+      "conceptIds": [
+        "e1a-u7-1",
+        "e1a-u7-2",
+        "e1a-u7-3",
+        "e1a-u7-4",
+        "e1a-u7-5"
+      ],
+      "method": "speak",
+      "errorTypes": ["word-meaning", "listening"],
+      "questionPoints": ["动物词配图卡练", "horse 和 hen 对比听", "helpful 用帮大人做事的情境说"],
+      "variationAxes": ["context", "representation"]
+    },
+    {
+      "id": "e1a-o8",
+      "title": "Unit 8 Have a go!",
+      "goal": "能认读 bird, hill, fly away, come back, flap wings，并完成“Acting out a story”和“Acting out a story”。",
+      "conceptIds": [
+        "e1a-u8-1",
+        "e1a-u8-2",
+        "e1a-u8-3",
+        "e1a-u8-4",
+        "e1a-u8-5"
+      ],
+      "method": "speak",
+      "errorTypes": ["listening", "spoken-response"],
+      "questionPoints": ["边演边说出 fly away、come back", "动作和词配对", "You can do it! 在鼓励同伴时练"],
+      "variationAxes": ["context", "representation"]
+    },
+    {
+      "id": "e1a-o9",
+      "title": "Unit 9 Yes, I can!",
+      "goal": "能认读 wash, tie shoelaces, take a photo，并完成“Doing a survey”和“Doing a survey”。",
+      "conceptIds": [
+        "e1a-u9-1",
+        "e1a-u9-2",
+        "e1a-u9-3",
+        "e1a-u9-4",
+        "e1a-u9-5"
+      ],
+      "method": "speak",
+      "errorTypes": ["sentence-pattern", "spoken-response"],
+      "questionPoints": ["Yes, I can. 和 No, I can't. 按实际会不会回答", "动作配图做问答", "调查表按真实会做的事填"],
+      "variationAxes": ["context", "reverse"]
+    },
+    {
+      "id": "e1a-o10",
+      "title": "Unit 10 Fun numbers",
+      "goal": "能认读 one, two, three, four, five, six，并完成“Finding fun numbers”和“Finding fun numbers”。",
+      "conceptIds": [
+        "e1a-u10-1",
+        "e1a-u10-2",
+        "e1a-u10-3",
+        "e1a-u10-4",
+        "e1a-u10-5"
+      ],
+      "method": "speak",
+      "errorTypes": ["word-meaning", "listening"],
+      "questionPoints": ["数字词配实物数一数", "听到数字举出对应数量的手指", "three 和 tree 之类的音对比听"],
+      "variationAxes": ["context", "representation"]
+    },
+    {
+      "id": "e1a-oa",
+      "title": "附录",
+      "goal": "能用单词表、练习纸、图卡和音频复习本册内容。",
+      "conceptIds": [
+        "e1a-ua-1",
+        "e1a-ua-2",
+        "e1a-ua-3",
+        "e1a-ua-4",
+        "e1a-ua-5"
+      ],
+      "method": "context",
+      "errorTypes": ["listening", "word-meaning"],
+      "questionPoints": ["单词表抽认，先认后读", "音频跟读每天一遍，短时高频", "图卡剪贴和角色扮演结合做"],
+      "variationAxes": ["context", "representation"]
     }
   ],
   "relations": [
     {
-      "id": "e1a-r-letters-schoolthings",
-      "fromId": "e1a-letters",
-      "toId": "e1a-schoolthings",
+      "id": "e1a-r1",
+      "fromId": "e1a-u0-1",
+      "toId": "e1a-u0-2",
       "kind": "prerequisite",
-      "explanation": "认识字母，才能认读单词。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
+      "explanation": "先学「Our teachers」，再学「We learn English!」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
     },
     {
-      "id": "e1a-r-greet-intro",
-      "fromId": "e1a-greet",
-      "toId": "e1a-intro",
+      "id": "e1a-r2",
+      "fromId": "e1a-u1-1",
+      "toId": "e1a-u1-2",
       "kind": "prerequisite",
-      "explanation": "先会打招呼，再学着介绍自己。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
+      "explanation": "先学「Small task: Greeting people」，再学「Topic words: morning, afternoon, evening」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
     },
     {
-      "id": "e1a-r-intro-askname",
-      "fromId": "e1a-intro",
-      "toId": "e1a-askname",
-      "kind": "contrast",
-      "explanation": "“介绍自己”和“询问别人”是一组对照的问答表达。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
-    },
-    {
-      "id": "e1a-r-instructions-schoolthings",
-      "fromId": "e1a-instructions",
-      "toId": "e1a-schoolthings",
+      "id": "e1a-r3",
+      "fromId": "e1a-u1-2",
+      "toId": "e1a-u1-3",
       "kind": "prerequisite",
-      "explanation": "课堂指令里常出现文具名称，先听懂指令再指认文具。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
+      "explanation": "先学「Topic words: morning, afternoon, evening」，再学「Song/Rhyme/Chant time: Greetings」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
     },
     {
-      "id": "e1a-r-intro-family",
-      "fromId": "e1a-intro",
-      "toId": "e1a-family",
+      "id": "e1a-r4",
+      "fromId": "e1a-u1-3",
+      "toId": "e1a-u1-4",
       "kind": "prerequisite",
-      "explanation": "会介绍自己，再学着介绍家人。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
+      "explanation": "先学「Song/Rhyme/Chant time: Greetings」，再学「Talking/Story time: The first day」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
     },
     {
-      "id": "e1a-r-numbers-fruits",
-      "fromId": "e1a-numbers",
-      "toId": "e1a-fruits",
+      "id": "e1a-r5",
+      "fromId": "e1a-u1-4",
+      "toId": "e1a-u1-5",
       "kind": "prerequisite",
-      "explanation": "会数数，才能说要几个水果。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
+      "explanation": "先学「Talking/Story time: The first day」，再学「Mini-project: Greeting people」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
     },
     {
-      "id": "e1a-r-farm-zoo",
-      "fromId": "e1a-farmanimals",
-      "toId": "e1a-zooanimals",
-      "kind": "contrast",
-      "explanation": "农场动物和动物园动物对照认读，扩大词汇。",
-      "source": "英语课标（2022年版）一级准备内容顺序"
+      "id": "e1a-r6",
+      "fromId": "e1a-u2-1",
+      "toId": "e1a-u2-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Making new friends」，再学「Topic words: hello, friend, welcome, name, hi」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r7",
+      "fromId": "e1a-u2-2",
+      "toId": "e1a-u2-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: hello, friend, welcome, name, hi」，再学「Song/Rhyme/Chant time: Hello」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r8",
+      "fromId": "e1a-u2-3",
+      "toId": "e1a-u2-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Hello」，再学「Talking/Story time: Meeting Lily」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r9",
+      "fromId": "e1a-u2-4",
+      "toId": "e1a-u2-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: Meeting Lily」，再学「Mini-project: Making new friends」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r10",
+      "fromId": "e1a-u3-1",
+      "toId": "e1a-u3-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Packing my schoolbag」，再学「Topic words: pack, my, schoolbag, book, pencil, ruler, eraser, pencil case」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r11",
+      "fromId": "e1a-u3-2",
+      "toId": "e1a-u3-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: pack, my, schoolbag, book, pencil, ruler, eraser, pencil case」，再学「Song/Rhyme/Chant time: Pack my schoolbag」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r12",
+      "fromId": "e1a-u3-3",
+      "toId": "e1a-u3-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Pack my schoolbag」，再学「Talking/Story time: My pencil case」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r13",
+      "fromId": "e1a-u3-4",
+      "toId": "e1a-u3-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: My pencil case」，再学「Mini-project: Packing my schoolbag」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r14",
+      "fromId": "e1a-u4-1",
+      "toId": "e1a-u4-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Cleaning our classroom」，再学「Topic words: clean, classroom, desk, door, chair, on duty, blackboard, floor」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r15",
+      "fromId": "e1a-u4-2",
+      "toId": "e1a-u4-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: clean, classroom, desk, door, chair, on duty, blackboard, floor」，再学「Song/Rhyme/Chant time: Clean our classroom」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r16",
+      "fromId": "e1a-u4-3",
+      "toId": "e1a-u4-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Clean our classroom」，再学「Talking/Story time: Who's on duty?」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r17",
+      "fromId": "e1a-u4-4",
+      "toId": "e1a-u4-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: Who's on duty?」，再学「Mini-project: Cleaning our classroom」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r18",
+      "fromId": "e1a-u5-1",
+      "toId": "e1a-u5-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Making a lovely face」，再学「Topic words: face, eye, ear, nose, mouth」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r19",
+      "fromId": "e1a-u5-2",
+      "toId": "e1a-u5-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: face, eye, ear, nose, mouth」，再学「Song/Rhyme/Chant time: Draw a face」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r20",
+      "fromId": "e1a-u5-3",
+      "toId": "e1a-u5-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Draw a face」，再学「Talking/Story time: Finding faces」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r21",
+      "fromId": "e1a-u5-4",
+      "toId": "e1a-u5-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: Finding faces」，再学「Mini-project: A lovely face」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r22",
+      "fromId": "e1a-u6-1",
+      "toId": "e1a-u6-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Showing my family photo」，再学「Topic words: family, mum, dad, brother, sister, me, love, warm, happy」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r23",
+      "fromId": "e1a-u6-2",
+      "toId": "e1a-u6-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: family, mum, dad, brother, sister, me, love, warm, happy」，再学「Song/Rhyme/Chant time: Family」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r24",
+      "fromId": "e1a-u6-3",
+      "toId": "e1a-u6-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Family」，再学「Talking/Story time: Love」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r25",
+      "fromId": "e1a-u6-4",
+      "toId": "e1a-u6-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: Love」，再学「Mini-project: Showing my family photo」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r26",
+      "fromId": "e1a-u7-1",
+      "toId": "e1a-u7-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Designing a pet home」，再学「Topic words: helpful, animal, horse, dog, hen, bee, cat」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r27",
+      "fromId": "e1a-u7-2",
+      "toId": "e1a-u7-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: helpful, animal, horse, dog, hen, bee, cat」，再学「Song/Rhyme/Chant time: Helpful animals」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r28",
+      "fromId": "e1a-u7-3",
+      "toId": "e1a-u7-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Helpful animals」，再学「Talking/Story time: Helping Mira」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r29",
+      "fromId": "e1a-u7-4",
+      "toId": "e1a-u7-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: Helping Mira」，再学「Mini-project: Our pet home」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r30",
+      "fromId": "e1a-u8-1",
+      "toId": "e1a-u8-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Acting out a story」，再学「Topic words: bird, hill, fly away, come back, flap wings」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r31",
+      "fromId": "e1a-u8-2",
+      "toId": "e1a-u8-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: bird, hill, fly away, come back, flap wings」，再学「Song/Rhyme/Chant time: Two little blackbirds」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r32",
+      "fromId": "e1a-u8-3",
+      "toId": "e1a-u8-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Two little blackbirds」，再学「Talking/Story time: You can do it!」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r33",
+      "fromId": "e1a-u8-4",
+      "toId": "e1a-u8-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: You can do it!」，再学「Mini-project: Acting out a story」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r34",
+      "fromId": "e1a-u9-1",
+      "toId": "e1a-u9-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Doing a survey」，再学「Topic words: wash, tie shoelaces, take a photo」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r35",
+      "fromId": "e1a-u9-2",
+      "toId": "e1a-u9-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: wash, tie shoelaces, take a photo」，再学「Song/Rhyme/Chant time: Do it by myself」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r36",
+      "fromId": "e1a-u9-3",
+      "toId": "e1a-u9-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Do it by myself」，再学「Talking/Story time: Yes, I can!」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r37",
+      "fromId": "e1a-u9-4",
+      "toId": "e1a-u9-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: Yes, I can!」，再学「Mini-project: Doing a survey」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r38",
+      "fromId": "e1a-u10-1",
+      "toId": "e1a-u10-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Small task: Finding fun numbers」，再学「Topic words: one, two, three, four, five, six」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r39",
+      "fromId": "e1a-u10-2",
+      "toId": "e1a-u10-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Topic words: one, two, three, four, five, six」，再学「Song/Rhyme/Chant time: Fun numbers」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r40",
+      "fromId": "e1a-u10-3",
+      "toId": "e1a-u10-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Song/Rhyme/Chant time: Fun numbers」，再学「Talking/Story time: On the sports field」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r41",
+      "fromId": "e1a-u10-4",
+      "toId": "e1a-u10-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Talking/Story time: On the sports field」，再学「Mini-project: Finding fun numbers」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r42",
+      "fromId": "e1a-ua-1",
+      "toId": "e1a-ua-2",
+      "kind": "prerequisite",
+      "explanation": "先学「Word bank」，再学「Mini-project sheets」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r43",
+      "fromId": "e1a-ua-2",
+      "toId": "e1a-ua-3",
+      "kind": "prerequisite",
+      "explanation": "先学「Mini-project sheets」，再学「Cut, make and role-play」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r44",
+      "fromId": "e1a-ua-3",
+      "toId": "e1a-ua-4",
+      "kind": "prerequisite",
+      "explanation": "先学「Cut, make and role-play」，再学「Cut and stick」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r45",
+      "fromId": "e1a-ua-4",
+      "toId": "e1a-ua-5",
+      "kind": "prerequisite",
+      "explanation": "先学「Cut and stick」，再学「Audio」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r46",
+      "fromId": "e1a-u0-2",
+      "toId": "e1a-u1-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Starter: Our families and friends」，再进入「Unit 1 Greetings」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r47",
+      "fromId": "e1a-u1-5",
+      "toId": "e1a-u2-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 1 Greetings」，再进入「Unit 2 New friends」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r48",
+      "fromId": "e1a-u2-5",
+      "toId": "e1a-u3-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 2 New friends」，再进入「Unit 3 My schoolbag」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r49",
+      "fromId": "e1a-u3-5",
+      "toId": "e1a-u4-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 3 My schoolbag」，再进入「Unit 4 My classroom」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r50",
+      "fromId": "e1a-u4-5",
+      "toId": "e1a-u5-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 4 My classroom」，再进入「Unit 5 Lovely faces」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r51",
+      "fromId": "e1a-u5-5",
+      "toId": "e1a-u6-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 5 Lovely faces」，再进入「Unit 6 My family」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r52",
+      "fromId": "e1a-u6-5",
+      "toId": "e1a-u7-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 6 My family」，再进入「Unit 7 Animals in our lives」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r53",
+      "fromId": "e1a-u7-5",
+      "toId": "e1a-u8-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 7 Animals in our lives」，再进入「Unit 8 Have a go!」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r54",
+      "fromId": "e1a-u8-5",
+      "toId": "e1a-u9-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 8 Have a go!」，再进入「Unit 9 Yes, I can!」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r55",
+      "fromId": "e1a-u9-5",
+      "toId": "e1a-u10-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 9 Yes, I can!」，再进入「Unit 10 Fun numbers」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
+    },
+    {
+      "id": "e1a-r56",
+      "fromId": "e1a-u10-5",
+      "toId": "e1a-ua-1",
+      "kind": "prerequisite",
+      "explanation": "先学完「Unit 10 Fun numbers」，再进入「附录」。",
+      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备"
     }
   ]
 }
