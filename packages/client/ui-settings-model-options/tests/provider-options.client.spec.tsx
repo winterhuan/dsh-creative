@@ -87,6 +87,29 @@ describe('provider options', () => {
     ], 7) })
   })
 
+  it('saves unclassified-error eligibility with the same fenced save', async () => {
+    const b = bench()
+    await b.open()
+    const checkbox = screen.getByLabelText(b.props.t('retryUnclassifiedErrors'))
+    expect(checkbox).toHaveProperty('checked', false)
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('save') }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
+      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'PI_AI_ERROR'] },
+    ], 7) })
+  })
+
+  it('omits the unclassified class on other adapter families', async () => {
+    const b = bench()
+    await b.open()
+    expect(screen.getByLabelText(b.props.t('retryUnclassifiedErrors'))).toBeTruthy()
+    b.props = { ...b.props, provider: { ...b.props.provider, settingsNs: 'llm-deepseek' } }
+    b.view.rerender(<ProviderOptions {...b.props} />)
+    expect(screen.queryByLabelText(b.props.t('retryUnclassifiedErrors'))).toBeNull()
+    expect(screen.getByLabelText(b.props.t('retryAuthErrors'))).toBeTruthy()
+  })
+
   it.each(['en', 'zh'] as const)('saves QUOTA eligibility with a zero retry limit in %s', async locale => {
     const b = bench(locale)
     await b.open()
@@ -119,6 +142,8 @@ describe('provider options', () => {
     expect(checkbox).toHaveProperty('disabled', true)
     expect(screen.getByLabelText(b.props.t('retryQuotaErrors'))).toHaveProperty('checked', true)
     expect(screen.getByLabelText(b.props.t('retryQuotaErrors'))).toHaveProperty('disabled', true)
+    expect(screen.getByLabelText(b.props.t('retryUnclassifiedErrors'))).toHaveProperty('checked', true)
+    expect(screen.getByLabelText(b.props.t('retryUnclassifiedErrors'))).toHaveProperty('disabled', true)
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '0' } })
     expect(checkbox).toHaveProperty('disabled', false)
     expect(checkbox).toHaveProperty('checked', false)
@@ -145,11 +170,11 @@ describe('provider options', () => {
     ], 7) })
   })
 
-  it('explains the fallback when disabling the only configured error class', async () => {
+  it.each([['retryInvalidRequests', 'INVALID_REQUEST'], ['retryUnclassifiedErrors', 'PI_AI_ERROR']] as const)('explains the fallback when %s is the only configured error class', async (field, code) => {
     const b = bench()
-    b.snapshot.value = { providers: { gateway: { retryPolicy: { mode: 'normal', retryableCodes: ['INVALID_REQUEST'] } } } }
+    b.snapshot.value = { providers: { gateway: { retryPolicy: { mode: 'normal', retryableCodes: [code] } } } }
     await b.open()
-    fireEvent.click(screen.getByLabelText(b.props.t('retryInvalidRequests')))
+    fireEvent.click(screen.getByLabelText(b.props.t(field)))
     expect(screen.getByText(b.props.t('retryDefaultsRestored'))).toBeTruthy()
   })
 

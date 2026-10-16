@@ -33,6 +33,7 @@ export interface OptionsDraft {
   retryInvalidRequests?: boolean
   retryAuthErrors?: boolean
   retryQuotaErrors?: boolean
+  retryUnclassifiedErrors?: boolean
 }
 
 /** One configured or catalog model, with its adapter-owned settings address. */
@@ -161,7 +162,7 @@ export function optionOperations(draft: OptionsDraft, providerPath: readonly str
       ops.push({ op: 'set', path: [...path, 'maxRetries'], value: Number(draft.retry.count) })
     }
   }
-  if (draft.retryInvalidRequests !== undefined || draft.retryAuthErrors !== undefined || draft.retryQuotaErrors !== undefined) {
+  if (draft.retryInvalidRequests !== undefined || draft.retryAuthErrors !== undefined || draft.retryQuotaErrors !== undefined || draft.retryUnclassifiedErrors !== undefined) {
     const path = [...providerPath, 'retryPolicy']
     const current = retryableCodes(draft.snapshot.value, providerPath, read)
     let codes = [...current]
@@ -169,6 +170,7 @@ export function optionOperations(draft: OptionsDraft, providerPath: readonly str
       ['INVALID_REQUEST', draft.retryInvalidRequests],
       ['AUTH', draft.retryAuthErrors],
       ['QUOTA', draft.retryQuotaErrors],
+      ['PI_AI_ERROR', draft.retryUnclassifiedErrors],
     ] as const) {
       if (enabled === undefined) continue
       codes = enabled

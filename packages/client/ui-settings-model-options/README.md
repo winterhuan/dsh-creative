@@ -53,6 +53,8 @@ Enable **Retry authentication errors (AUTH)** to include failures the adapter cl
 
 Enable **Retry quota errors (QUOTA)** to include quota failures classified as `QUOTA`. The option is off by default and uses the same retry limit; `0` still disables retries. Requests are sent again unchanged and do not add quota. Use this when the provider can recover between attempts.
 
+Enable **Retry unclassified errors (PI_AI_ERROR)** to include failures the pi-ai adapter cannot classify, such as a transient gateway message without a status code. The option appears only on pi-ai providers, is off by default, and uses the same retry limit; `0` still disables retries. Unclassified failures can be permanent, so requests may repeat without succeeding.
+
 The provider policy is executed by DSH's `llm-retry` plugin, which the web profile includes. It retries eligible failed model steps and supports cancellation; raw LLM stream calls do not acquire retries from these controls. See the [retry executor](../../../upstream/packages/llm/llm-retry/README.md) for the execution rules.
 
 ### Save and recover
@@ -71,7 +73,7 @@ Ownership and trust boundaries: [Model options subsystem](../../../docs/subsyste
 
 The [bundle patch](cordis.patch.yml) installs one browser plugin. It registers in the existing `settings.models.provider-card` slot for `llm-pi-ai` and `llm-deepseek`; only the pi-ai family exposes model thinking metadata. The [browser entry](src/client/index.ts) binds the shared settings mirror, native model catalog, and an application-wide save toast. The Host entry registers no settings namespace or request executor.
 
-[Draft operations](src/client/options.ts) address custom models through their existing array entries and built-in models through `modelOverrides`. Each save carries the revision captured on the first edit or when opening a batch preview, and changes only the selected fields. No catalog is copied to change a built-in model, and credentials and retry backoff are preserved. The invalid-request, authentication, and quota options add or remove only their respective error classes from the existing policy. Omitted classes use the pinned DSH defaults; if removing the optional classes would leave an empty list, the UI restores the default transient error classes. The adapters validate saved settings and publish their live capabilities to the existing chat selector.
+[Draft operations](src/client/options.ts) address custom models through their existing array entries and built-in models through `modelOverrides`. Each save carries the revision captured on the first edit or when opening a batch preview, and changes only the selected fields. No catalog is copied to change a built-in model, and credentials and retry backoff are preserved. The error-class options add or remove only their respective classes from the existing policy; the unclassified-error option appears only on pi-ai providers. Omitted classes use the pinned DSH defaults; if removing the optional classes would leave an empty list, the UI restores the default transient error classes. The adapters validate saved settings and publish their live capabilities to the existing chat selector.
 
 Tests cover field edits, runtime capability reporting, retry-default parity, error-class preservation, read-only controls, retained drafts, revision conflicts, and slot disposal.
 

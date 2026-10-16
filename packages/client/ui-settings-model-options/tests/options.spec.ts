@@ -88,7 +88,7 @@ describe('retry counts', () => {
     expect(policy.retryableCodes).toEqual(['SERVER', 'CUSTOM', 'INVALID_REQUEST'])
   })
 
-  it.each([['AUTH', 'retryAuthErrors'], ['QUOTA', 'retryQuotaErrors']] as const)('adds %s without replacing other error codes or backoff', (code, field) => {
+  it.each([['AUTH', 'retryAuthErrors'], ['QUOTA', 'retryQuotaErrors'], ['PI_AI_ERROR', 'retryUnclassifiedErrors']] as const)('adds %s without replacing other error codes or backoff', (code, field) => {
     const policy = { mode: 'normal', maxRetries: 2, retryableCodes: ['SERVER', 'CUSTOM'], backoff: { initialDelayMs: 1000 } }
     const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: policy }), reasoning: new Map(), [field]: true }
     expect(optionOperations(edits, [], [], read)).toEqual([
@@ -104,9 +104,17 @@ describe('retry counts', () => {
     ])
   })
 
-  it('restores transient defaults when invalid requests are the only configured error class', () => {
-    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: { mode: 'normal', retryableCodes: ['INVALID_REQUEST'] } }),
-      reasoning: new Map(), retryInvalidRequests: false }
+  it('removes the unclassified class while retaining AUTH and INVALID_REQUEST', () => {
+    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: { mode: 'normal', retryableCodes: ['AUTH', 'PI_AI_ERROR', 'INVALID_REQUEST'] } }),
+      reasoning: new Map(), retryUnclassifiedErrors: false }
+    expect(optionOperations(edits, [], [], read)).toEqual([
+      { op: 'set', path: ['retryPolicy', 'retryableCodes'], value: ['AUTH', 'INVALID_REQUEST'] },
+    ])
+  })
+
+  it.each([['INVALID_REQUEST', 'retryInvalidRequests'], ['PI_AI_ERROR', 'retryUnclassifiedErrors']] as const)('restores transient defaults when %s is the only configured error class', (code, field) => {
+    const edits: OptionsDraft = { snapshot: snapshot({ retryPolicy: { mode: 'normal', retryableCodes: [code] } }),
+      reasoning: new Map(), [field]: false }
     const defaults = resolveRetryPolicy(undefined, 'test')
     if (defaults.mode !== 'normal') throw new Error('Expected finite retry defaults')
     expect(optionOperations(edits, [], [], read)).toEqual([

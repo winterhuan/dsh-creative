@@ -80,6 +80,7 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
   const retryInvalid = unlimited || (draft?.retryInvalidRequests ?? codes.includes('INVALID_REQUEST'))
   const retryAuth = unlimited || (draft?.retryAuthErrors ?? codes.includes('AUTH'))
   const retryQuota = unlimited || (draft?.retryQuotaErrors ?? codes.includes('QUOTA'))
+  const retryUnclassified = unlimited || (draft?.retryUnclassifiedErrors ?? codes.includes('PI_AI_ERROR'))
 
   const edit = (change: (current: OptionsDraft) => OptionsDraft): void => {
     setDraft(current => change(current ?? { snapshot: source, reasoning: new Map() }))
@@ -206,7 +207,15 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
         {t('retryQuotaErrors')}
       </label>
       <p className={css.hint} id={`${id}-quota-retry-hint`}>{t('retryQuotaHint')}</p>
-      {!unlimited && !retryInvalid && !retryAuth && !retryQuota && codes.length > 0 && codes.every(code => code === 'INVALID_REQUEST' || code === 'AUTH' || code === 'QUOTA')
+      {piAi ? <>
+        <label className={css.check}>
+          <input type="checkbox" checked={retryUnclassified} disabled={unlimited} aria-describedby={`${id}-unclassified-retry-hint`}
+            onChange={event => { const checked = event.target.checked; edit(current => ({ ...current, retryUnclassifiedErrors: checked })) }} />
+          {t('retryUnclassifiedErrors')}
+        </label>
+        <p className={css.hint} id={`${id}-unclassified-retry-hint`}>{t('retryUnclassifiedHint')}</p>
+      </> : null}
+      {!unlimited && !retryInvalid && !retryAuth && !retryQuota && !retryUnclassified && codes.length > 0 && codes.every(code => code === 'INVALID_REQUEST' || code === 'AUTH' || code === 'QUOTA' || code === 'PI_AI_ERROR')
         ? <p className={css.hint}>{t('retryDefaultsRestored')}</p> : null}
     </fieldset>
     <div className={css.validation} aria-live="polite">
