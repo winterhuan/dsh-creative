@@ -26,6 +26,20 @@ function figureHeight(figure: Figure, width: number): number {
     case 'sticks': return 42
     case 'vertical': return 108
     case 'shapes': return figure.rows.length * 30
+    case 'overlap': return 112 + (figure.total !== undefined ? 44 : 16)
+    case 'split': return 66
+    case 'sequence': return 40
+    case 'wall': return figure.rows.length * 26 + 8
+    case 'grid': return (figure.rows.length + (figure.columns !== undefined ? 1 : 0)) * 30 + 8
+    case 'dot-array': return figure.rows * 16 + 8 + (figure.total !== undefined ? 26 : 0)
+    case 'plane': return figure.mark === 'yes' ? 56 : 40
+    case 'solid': return figure.mark === 'yes' ? 56 : 40
+    case 'counter': return 150
+    case 'measure': return figure.bars.length * 22 + (figure.ruler === 'yes' ? 40 : 8)
+    case 'compass': return 160
+    case 'balance': return 116
+    case 'writing': return figure.style === 'tianzige' ? 52 : 44
+    case 'sketch': return figure.height + 8
     default: throw new Error('练习单包含无法绘制的图形。')
   }
 }
@@ -240,6 +254,346 @@ function drawSticks(doc: Doc, figure: Extract<Figure, { kind: 'sticks' }>, x: nu
   return 42
 }
 
+/** Two overlapping set circles with one number per region; an optional total sits below a bracket. */
+function drawOverlap(doc: Doc, figure: Extract<Figure, { kind: 'overlap' }>, x: number, y: number, width: number): number {
+  const radius = 56
+  const span = radius * 3
+  const left = x + (width - span) / 2
+  const cx1 = left + radius
+  const cx2 = left + radius * 2
+  const cy = y + 8 + radius
+  doc.circle(cx1, cy, radius).strokeColor(INK).lineWidth(1.2).stroke()
+  doc.circle(cx2, cy, radius).strokeColor(INK).lineWidth(1.2).stroke()
+  doc.fillColor(INK).fontSize(11).text(figure.left, cx1 - 28, cy - radius + 8, { width: 56, align: 'center', lineBreak: false })
+  doc.fillColor(INK).fontSize(11).text(figure.right, cx2 - 28, cy - radius + 8, { width: 56, align: 'center', lineBreak: false })
+  labelOrBox(doc, figure.leftOnly, cx1 - radius, cy - 9, radius)
+  labelOrBox(doc, figure.both, cx1, cy - 9, radius)
+  labelOrBox(doc, figure.rightOnly, cx2, cy - 9, radius)
+  const bottom = y + 8 + radius * 2
+  if (figure.total === undefined) return bottom + 8 - y
+  doc.moveTo(left, bottom + 6).lineTo(left, bottom + 12).lineTo(left + span, bottom + 12).lineTo(left + span, bottom + 6).strokeColor(INK).lineWidth(1).stroke()
+  labelOrBox(doc, figure.total, left, bottom + 14, span)
+  return bottom + 36 - y
+}
+
+/** A small line-art shape used by sequence strips. */
+function drawSmallShape(doc: Doc, shape: 'circle' | 'square' | 'triangle' | 'star', cx: number, cy: number) {
+  doc.strokeColor(INK).lineWidth(1.2)
+  if (shape === 'circle') doc.circle(cx, cy, 7)
+  else if (shape === 'square') doc.rect(cx - 7, cy - 7, 14, 14)
+  else if (shape === 'triangle') doc.polygon([cx, cy - 8], [cx + 8, cy + 7], [cx - 8, cy + 7])
+  else {
+    const points: [number, number][] = []
+    for (let index = 0; index < 10; index += 1) {
+      const radius = index % 2 === 0 ? 8 : 3.4
+      const angle = -Math.PI / 2 + index * Math.PI / 5
+      points.push([cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius])
+    }
+    doc.polygon(...points)
+  }
+  doc.stroke()
+}
+
+/** One split diagram per part: a top number branching into left and right boxes. */
+function drawSplit(doc: Doc, figure: Extract<Figure, { kind: 'split' }>, x: number, y: number, width: number): number {
+  const partWidth = Math.min(150, (width - 16) / figure.parts.length - 12)
+  const left = x + (width - (partWidth + 12) * figure.parts.length + 12) / 2
+  figure.parts.forEach((part, index) => {
+    const partLeft = left + index * (partWidth + 12)
+    const stemLeft = partLeft + partWidth / 2
+    const branchLeft = partLeft + partWidth / 4
+    const branchRight = partLeft + partWidth * 3 / 4
+    labelOrBox(doc, part.top, partLeft, y, partWidth)
+    doc.moveTo(stemLeft, y + 20).lineTo(branchLeft, y + 36).strokeColor(INK).lineWidth(1).stroke()
+    doc.moveTo(stemLeft, y + 20).lineTo(branchRight, y + 36).strokeColor(INK).lineWidth(1).stroke()
+    labelOrBox(doc, part.left, branchLeft - partWidth / 4, y + 40, partWidth / 2)
+    labelOrBox(doc, part.right, branchRight - partWidth / 4, y + 40, partWidth / 2)
+  })
+  return 66
+}
+
+/** One repeating strip of small shapes with dashed slots at the end. */
+function drawSequence(doc: Doc, figure: Extract<Figure, { kind: 'sequence' }>, x: number, y: number): number {
+  let cursor = x + 8
+  for (const item of figure.items) {
+    for (let index = 0; index < item.count; index += 1) {
+      drawSmallShape(doc, item.shape, cursor + 8, y + 20)
+      cursor += 20
+    }
+  }
+  for (let index = 0; index < (figure.blank ?? 0); index += 1) {
+    doc.dash(2, { space: 3 }).rect(cursor, y + 12, 16, 16).strokeColor(FAINT).lineWidth(1).stroke().undash()
+    cursor += 20
+  }
+  return 40
+}
+
+/** Staggered number-wall bricks; every row below the first has one more cell. */
+function drawWall(doc: Doc, figure: Extract<Figure, { kind: 'wall' }>, x: number, y: number, width: number): number {
+  const widest = figure.rows.reduce((max, row) => Math.max(max, row.length), 0)
+  const brickWidth = Math.min(64, (width - 24) / widest)
+  figure.rows.forEach((row, rowIndex) => {
+    const rowLeft = x + (width - row.length * brickWidth) / 2
+    row.forEach((cell, column) => {
+      const left = rowLeft + column * brickWidth
+      const top = y + rowIndex * 26
+      doc.rect(left, top, brickWidth, 26).strokeColor(INK).lineWidth(1).stroke()
+      if (cell !== '') doc.fillColor(INK).fontSize(11).text(cell, left, top + 8, { width: brickWidth, align: 'center', lineBreak: false })
+    })
+  })
+  return figure.rows.length * 26 + 8
+}
+
+/** A bordered cell table with an optional header row and row labels; empty cells stay blank. */
+function drawGrid(doc: Doc, figure: Extract<Figure, { kind: 'grid' }>, x: number, y: number, width: number): number {
+  const columns = figure.rows.reduce((max, row) => Math.max(max, row.cells.length), 0)
+  const nameWidth = figure.rows.some(row => row.name !== undefined) ? 64 : 0
+  const cellWidth = Math.min(46, (width - nameWidth - 8) / columns)
+  const cellHeight = 30
+  const left = x + nameWidth + (width - nameWidth - columns * cellWidth) / 2
+  let top = y
+  if (figure.columns !== undefined) {
+    figure.columns.forEach((head, index) => {
+      const cellLeft = left + index * cellWidth
+      doc.rect(cellLeft, top, cellWidth, cellHeight).strokeColor(INK).lineWidth(1).stroke()
+      doc.fillColor(INK).fontSize(10).text(head, cellLeft, top + 9, { width: cellWidth, align: 'center', lineBreak: false })
+    })
+    top += cellHeight
+  }
+  figure.rows.forEach((row, rowIndex) => {
+    const rowTop = top + rowIndex * cellHeight
+    if (row.name !== undefined) doc.fillColor(INK).fontSize(10).text(row.name, x, rowTop + 9, { width: nameWidth - 8, align: 'right', lineBreak: false })
+    row.cells.forEach((cell, column) => {
+      const cellLeft = left + column * cellWidth
+      doc.rect(cellLeft, rowTop, cellWidth, cellHeight).strokeColor(INK).lineWidth(1).stroke()
+      if (cell !== '') doc.fillColor(INK).fontSize(12).text(cell, cellLeft, rowTop + 8, { width: cellWidth, align: 'center', lineBreak: false })
+    })
+  })
+  return (figure.rows.length + (figure.columns !== undefined ? 1 : 0)) * cellHeight + 8
+}
+
+/** A rectangular dot grid for multiplication meaning, with an optional bracket total. */
+function drawDotArray(doc: Doc, figure: Extract<Figure, { kind: 'dot-array' }>, x: number, y: number, width: number): number {
+  const spacing = 16
+  const gridWidth = (figure.columns - 1) * spacing
+  const left = x + (width - gridWidth) / 2
+  for (let row = 0; row < figure.rows; row += 1) {
+    for (let column = 0; column < figure.columns; column += 1) doc.circle(left + column * spacing, y + 8 + row * spacing, 3.2).fillColor(INK).fill()
+  }
+  const bottom = y + 8 + figure.rows * spacing
+  if (figure.total === undefined) return bottom - y
+  doc.moveTo(left - 10, bottom + 4).lineTo(left - 10, bottom + 8).lineTo(left + gridWidth + 10, bottom + 8).lineTo(left + gridWidth + 10, bottom + 4).strokeColor(INK).lineWidth(1).stroke()
+  labelOrBox(doc, figure.total, left - 10, bottom + 10, gridWidth + 20)
+  return bottom - y + 26
+}
+
+type PlaneShape = Extract<Figure, { kind: 'plane' }>['items'][number]['shape']
+type SolidShape = Extract<Figure, { kind: 'solid' }>['items'][number]['shape']
+
+/** Small line-art plane figures for a recognition row. */
+function drawPlaneShape(doc: Doc, shape: PlaneShape, cx: number, cy: number) {
+  doc.strokeColor(INK).lineWidth(1.2)
+  if (shape === 'circle') doc.circle(cx, cy, 8)
+  else if (shape === 'square') doc.rect(cx - 7, cy - 7, 14, 14)
+  else if (shape === 'rectangle') doc.rect(cx - 11, cy - 6, 22, 12)
+  else if (shape === 'triangle') doc.polygon([cx, cy - 8], [cx + 8, cy + 7], [cx - 8, cy + 7])
+  else if (shape === 'quadrilateral') doc.polygon([cx - 11, cy + 3], [cx - 5, cy - 8], [cx + 9, cy - 6], [cx + 10, cy + 6])
+  else doc.ellipse(cx, cy, 10, 7)
+  doc.stroke()
+}
+
+/** Small line-art solid figures for a recognition row. */
+function drawSolidShape(doc: Doc, shape: SolidShape, cx: number, cy: number) {
+  doc.strokeColor(INK).lineWidth(1.2)
+  if (shape === 'cube') {
+    doc.rect(cx - 8, cy - 6, 15, 15)
+    doc.polygon([cx - 8, cy - 6], [cx - 2, cy - 12], [cx + 13, cy - 12], [cx + 7, cy - 6])
+    doc.polygon([cx + 7, cy - 6], [cx + 13, cy - 12], [cx + 13, cy + 3], [cx + 7, cy + 9])
+  } else if (shape === 'cuboid') {
+    doc.rect(cx - 11, cy - 4, 22, 12)
+    doc.polygon([cx - 11, cy - 4], [cx - 5, cy - 10], [cx + 17, cy - 10], [cx + 11, cy - 4])
+    doc.polygon([cx + 11, cy - 4], [cx + 17, cy - 10], [cx + 17, cy + 2], [cx + 11, cy + 8])
+  } else if (shape === 'cylinder') {
+    doc.ellipse(cx, cy - 8, 8, 3)
+    doc.moveTo(cx - 8, cy - 8).lineTo(cx - 8, cy + 8)
+    doc.moveTo(cx + 8, cy - 8).lineTo(cx + 8, cy + 8)
+    doc.moveTo(cx - 8, cy + 8).quadraticCurveTo(cx, cy + 14, cx + 8, cy + 8)
+  } else {
+    doc.circle(cx, cy, 9)
+    doc.ellipse(cx, cy, 9, 3)
+  }
+  doc.stroke()
+}
+
+/** One row of mixed plane or solid figures, with optional mark boxes under each group. */
+function drawFigureRow(doc: Doc, figure: Extract<Figure, { kind: 'plane' | 'solid' }>, solid: boolean, x: number, y: number, width: number): number {
+  const pitch = 26
+  const gap = 22
+  const total = figure.items.reduce((sum, item) => sum + item.count, 0)
+  let cursor = x + (width - (total * pitch + (figure.items.length - 1) * gap)) / 2
+  for (const item of figure.items) {
+    const groupLeft = cursor
+    for (let index = 0; index < item.count; index += 1) {
+      if (solid) drawSolidShape(doc, item.shape as SolidShape, cursor + 13, y + 20)
+      else drawPlaneShape(doc, item.shape as PlaneShape, cursor + 13, y + 20)
+      cursor += pitch
+    }
+    if (figure.mark === 'yes') doc.rect(groupLeft + (item.count * pitch - 26) / 2, y + 40, 26, 14).strokeColor(FAINT).lineWidth(1).stroke()
+    cursor += gap
+  }
+  return figure.mark === 'yes' ? 56 : 40
+}
+
+/** An abacus-style counter with beads on the hundreds, tens and ones rods. */
+function drawCounter(doc: Doc, figure: Extract<Figure, { kind: 'counter' }>, x: number, y: number, width: number): number {
+  const rods: [string, number][] = [['百位', figure.hundreds], ['十位', figure.tens], ['个位', figure.ones]]
+  const spacing = 76
+  const left = x + (width - spacing * 3) / 2
+  const baseY = y + 116
+  doc.rect(left, baseY, spacing * 3, 14).strokeColor(INK).lineWidth(1.2).stroke()
+  for (const [index, entry] of rods.entries()) {
+    const [name, beads] = entry
+    const cx = left + spacing / 2 + index * spacing
+    doc.moveTo(cx, baseY).lineTo(cx, baseY - 110).strokeColor(INK).lineWidth(1.2).stroke()
+    for (let bead = 0; bead < beads; bead += 1) doc.circle(cx, baseY - 9 - bead * 12, 5.6).strokeColor(INK).lineWidth(1.2).stroke()
+    doc.fillColor(INK).fontSize(10).text(name, cx - 22, baseY + 18, { width: 44, align: 'center', lineBreak: false })
+  }
+  return 150
+}
+
+/** A centimetre ruler with bars measured from zero, or plain bars for length comparison. */
+function drawMeasure(doc: Doc, figure: Extract<Figure, { kind: 'measure' }>, x: number, y: number, width: number): number {
+  const showRuler = figure.ruler === 'yes'
+  const unit = Math.min(28, (width - 60) / 15)
+  const rulerLeft = x + (width - unit * 15) / 2
+  figure.bars.forEach((bar, index) => {
+    const barY = y + index * 22 + 8
+    const barLeft = showRuler ? rulerLeft : x + 16
+    const barLength = showRuler ? bar.length * unit : Math.min(bar.length * 16, width - 32)
+    if (bar.name !== '') doc.fillColor(INK).fontSize(10).text(bar.name, barLeft, barY - 13, { width: Math.max(barLength, 60), align: 'center', lineBreak: false })
+    if (bar.style === 'curved') {
+      let cursor = barLeft
+      let up = true
+      doc.moveTo(barLeft, barY)
+      while (cursor < barLeft + barLength - 0.5) {
+        const next = Math.min(cursor + 18, barLeft + barLength)
+        doc.quadraticCurveTo((cursor + next) / 2, barY + (up ? -6 : 6), next, barY)
+        cursor = next
+        up = !up
+      }
+      doc.strokeColor(INK).lineWidth(1.4).stroke()
+    } else {
+      doc.moveTo(barLeft, barY).lineTo(barLeft + barLength, barY).strokeColor(INK).lineWidth(2.4).stroke()
+    }
+  })
+  if (!showRuler) return figure.bars.length * 22 + 8
+  const rulerTop = y + figure.bars.length * 22 + 6
+  doc.rect(rulerLeft, rulerTop, unit * 15, 26).strokeColor(INK).lineWidth(1).stroke()
+  for (let cm = 0; cm <= 15; cm += 1) {
+    const tickX = rulerLeft + cm * unit
+    doc.moveTo(tickX, rulerTop).lineTo(tickX, rulerTop + 8).strokeColor(INK).lineWidth(1).stroke()
+    doc.fillColor(INK).fontSize(8).text(String(cm), tickX - 8, rulerTop + 10, { width: 16, align: 'center', lineBreak: false })
+  }
+  return figure.bars.length * 22 + 40
+}
+
+/** A direction cross; blank mode prints four write-in boxes instead of the four characters. */
+function drawCompass(doc: Doc, figure: Extract<Figure, { kind: 'compass' }>, x: number, y: number, width: number): number {
+  const cx = x + width / 2
+  const cy = y + 78
+  const reach = 52
+  const arrow = (tx: number, ty: number, dx: number, dy: number) => doc.polygon([tx, ty], [tx - dx * 9 + dy * 4, ty - dy * 9 - dx * 4], [tx - dx * 9 - dy * 4, ty - dy * 9 + dx * 4]).fillColor(INK).fill()
+  doc.moveTo(cx, cy - reach).lineTo(cx, cy + reach).strokeColor(INK).lineWidth(1.2).stroke()
+  doc.moveTo(cx - reach, cy).lineTo(cx + reach, cy).strokeColor(INK).lineWidth(1.2).stroke()
+  arrow(cx, cy - reach, 0, -1)
+  arrow(cx, cy + reach, 0, 1)
+  arrow(cx - reach, cy, -1, 0)
+  arrow(cx + reach, cy, 1, 0)
+  const blank = figure.blank === 'yes'
+  labelOrBox(doc, blank ? '' : '北', cx - 16, cy - reach - 22, 32)
+  labelOrBox(doc, blank ? '' : '南', cx - 16, cy + reach + 8, 32)
+  labelOrBox(doc, blank ? '' : '西', cx - reach - 34, cy - 9, 28)
+  labelOrBox(doc, blank ? '' : '东', cx + reach + 6, cy - 9, 28)
+  return 160
+}
+
+/** A balance scale tilting to the heavier side, with one label per pan. */
+function drawBalance(doc: Doc, figure: Extract<Figure, { kind: 'balance' }>, x: number, y: number, width: number): number {
+  const cx = x + width / 2
+  const beamY = y + 26
+  const reach = 78
+  const drop = figure.tilt === 'left' ? 17 : figure.tilt === 'right' ? -17 : 0
+  const leftEnd = { x: cx - reach, y: beamY + drop }
+  const rightEnd = { x: cx + reach, y: beamY - drop }
+  const baseY = y + 94
+  doc.moveTo(cx, beamY).lineTo(cx, baseY).strokeColor(INK).lineWidth(1.4).stroke()
+  doc.moveTo(cx - 40, baseY).lineTo(cx + 40, baseY).strokeColor(INK).lineWidth(2.4).stroke()
+  doc.moveTo(leftEnd.x, leftEnd.y).lineTo(rightEnd.x, rightEnd.y).strokeColor(INK).lineWidth(1.2).stroke()
+  for (const end of [leftEnd, rightEnd]) {
+    const panY = end.y + 26
+    doc.moveTo(end.x, end.y).lineTo(end.x, panY).strokeColor(INK).lineWidth(1).stroke()
+    doc.moveTo(end.x - 30, panY).quadraticCurveTo(end.x, panY + 14, end.x + 30, panY).strokeColor(INK).lineWidth(1.2).stroke()
+  }
+  if (figure.left !== '') labelOrBox(doc, figure.left, leftEnd.x - 34, leftEnd.y + 10, 68)
+  if (figure.right !== '') labelOrBox(doc, figure.right, rightEnd.x - 34, rightEnd.y + 10, 68)
+  return 116
+}
+
+/** Writing grids: tianzige squares with dashed guides, or a four-line letter band. */
+function drawWriting(doc: Doc, figure: Extract<Figure, { kind: 'writing' }>, x: number, y: number, width: number): number {
+  if (figure.style === 'fourline') {
+    const left = x + 16
+    const right = x + width - 16
+    for (let line = 0; line < 4; line += 1) {
+      const lineY = y + 8 + line * 9
+      doc.moveTo(left, lineY).lineTo(right, lineY).strokeColor(line === 2 ? INK : FAINT).lineWidth(line === 2 ? 1.2 : 0.8).stroke()
+    }
+    if (figure.example !== undefined && figure.example !== '') doc.fillColor(FAINT).fontSize(22).text(figure.example, left + 6, y + 6, { lineBreak: false })
+    return 44
+  }
+  const count = figure.count ?? 4
+  const size = 36
+  const gap = 8
+  const left = x + (width - (count * size + (count - 1) * gap)) / 2
+  for (let index = 0; index < count; index += 1) {
+    const cellLeft = left + index * (size + gap)
+    doc.rect(cellLeft, y + 4, size, size).strokeColor(INK).lineWidth(1).stroke()
+    doc.dash(2, { space: 2 })
+    doc.moveTo(cellLeft + size / 2, y + 4).lineTo(cellLeft + size / 2, y + 4 + size).strokeColor(FAINT).lineWidth(0.8).stroke()
+    doc.moveTo(cellLeft, y + 4 + size / 2).lineTo(cellLeft + size, y + 4 + size / 2).strokeColor(FAINT).lineWidth(0.8).stroke()
+    doc.undash()
+    if (index === 0 && figure.example !== undefined && figure.example !== '') doc.fillColor(FAINT).fontSize(26).text(figure.example, cellLeft, y + 10, { width: size, align: 'center', lineBreak: false })
+  }
+  return 52
+}
+
+/** Freehand fallback: bounded primitives drawn inside a declared canvas height. */
+function drawSketch(doc: Doc, figure: Extract<Figure, { kind: 'sketch' }>, x: number, y: number): number {
+  const px = (value: number) => x + value
+  const py = (value: number) => y + value
+  for (const element of figure.elements) {
+    if (element.draw === 'line') doc.moveTo(px(element.from.x), py(element.from.y)).lineTo(px(element.to.x), py(element.to.y)).strokeColor(INK).lineWidth(1.2).stroke()
+    else if (element.draw === 'arrow') {
+      doc.moveTo(px(element.from.x), py(element.from.y)).lineTo(px(element.to.x), py(element.to.y)).strokeColor(INK).lineWidth(1.2).stroke()
+      const angle = Math.atan2(element.to.y - element.from.y, element.to.x - element.from.x)
+      doc.polygon([px(element.to.x), py(element.to.y)],
+        [px(element.to.x) - 8 * Math.cos(angle - 0.4), py(element.to.y) - 8 * Math.sin(angle - 0.4)],
+        [px(element.to.x) - 8 * Math.cos(angle + 0.4), py(element.to.y) - 8 * Math.sin(angle + 0.4)]).fillColor(INK).fill()
+    } else if (element.draw === 'polyline') {
+      const [first, ...rest] = element.points
+      if (first === undefined) continue
+      doc.moveTo(px(first.x), py(first.y))
+      for (const point of rest) doc.lineTo(px(point.x), py(point.y))
+      if (element.closed === 'yes') doc.closePath()
+      doc.strokeColor(INK).lineWidth(1.2).stroke()
+    } else if (element.draw === 'rect') doc.rect(px(element.x), py(element.y), element.width, element.height).strokeColor(INK).lineWidth(1.2).stroke()
+    else if (element.draw === 'circle') doc.circle(px(element.x), py(element.y), element.radius).strokeColor(INK).lineWidth(1.2).stroke()
+    else if (element.align === 'center') doc.fillColor(INK).fontSize(11).text(element.label, px(element.x) - 50, py(element.y), { width: 100, align: 'center', lineBreak: false })
+    else doc.fillColor(INK).fontSize(11).text(element.label, px(element.x), py(element.y), { lineBreak: false })
+  }
+  return figure.height + 8
+}
+
 function drawFigure(doc: Doc, figure: Figure, x: number, y: number, width: number): number {
   switch (figure.kind) {
     case 'bar-model': return drawBarModel(doc, figure, x, y, width)
@@ -251,6 +605,20 @@ function drawFigure(doc: Doc, figure: Figure, x: number, y: number, width: numbe
     case 'sticks': return drawSticks(doc, figure, x, y)
     case 'vertical': return drawVertical(doc, figure, x, y)
     case 'shapes': return drawShapes(doc, figure, x, y, width)
+    case 'overlap': return drawOverlap(doc, figure, x, y, width)
+    case 'split': return drawSplit(doc, figure, x, y, width)
+    case 'sequence': return drawSequence(doc, figure, x, y)
+    case 'wall': return drawWall(doc, figure, x, y, width)
+    case 'grid': return drawGrid(doc, figure, x, y, width)
+    case 'dot-array': return drawDotArray(doc, figure, x, y, width)
+    case 'plane': return drawFigureRow(doc, figure, false, x, y, width)
+    case 'solid': return drawFigureRow(doc, figure, true, x, y, width)
+    case 'counter': return drawCounter(doc, figure, x, y, width)
+    case 'measure': return drawMeasure(doc, figure, x, y, width)
+    case 'compass': return drawCompass(doc, figure, x, y, width)
+    case 'balance': return drawBalance(doc, figure, x, y, width)
+    case 'writing': return drawWriting(doc, figure, x, y, width)
+    case 'sketch': return drawSketch(doc, figure, x, y)
     default: throw new Error('练习单包含无法绘制的图形。')
   }
 }

@@ -70,6 +70,15 @@ const relation = z.object({ id, fromId: id, toId: id, kind: z.enum(['prerequisit
 const label = z.string().trim().max(24)
 const count = (max: number) => z.number().int().min(0).max(max)
 const denomination = z.enum(['1分', '2分', '5分', '1角', '2角', '5角', '1元', '5元', '10元', '20元', '50元', '100元'])
+const sketchPoint = z.object({ x: z.number().int().min(0).max(480), y: z.number().int().min(0).max(259) }).strict()
+const sketchElement = z.discriminatedUnion('draw', [
+  z.object({ draw: z.literal('line'), from: sketchPoint, to: sketchPoint }).strict(),
+  z.object({ draw: z.literal('polyline'), points: z.array(sketchPoint).min(2).max(12), closed: z.enum(['yes', 'no']).optional() }).strict(),
+  z.object({ draw: z.literal('rect'), x: z.number().int().min(0).max(480), y: z.number().int().min(0).max(259), width: z.number().int().min(1).max(480), height: z.number().int().min(1).max(259) }).strict(),
+  z.object({ draw: z.literal('circle'), x: z.number().int().min(0).max(480), y: z.number().int().min(0).max(259), radius: z.number().int().min(2).max(80) }).strict(),
+  z.object({ draw: z.literal('text'), x: z.number().int().min(0).max(480), y: z.number().int().min(0).max(259), label, align: z.enum(['left', 'center']).optional() }).strict(),
+  z.object({ draw: z.literal('arrow'), from: sketchPoint, to: sketchPoint }).strict(),
+])
 /** Printable figures drawn by the PDF renderer; an empty label prints an answer box. */
 const figure = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('bar-model'), bars: z.array(z.object({ name: label, segments: z.array(z.object({ label, units: z.number().int().min(1).max(20), style: z.enum(['solid', 'dashed']).optional() }).strict()).min(1).max(4), total: label.optional() }).strict()).min(1).max(3) }).strict(),
@@ -77,10 +86,24 @@ const figure = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('place-value'), tens: count(9), ones: count(9), crossTens: count(9), crossOnes: count(19), regroup: z.enum(['yes', 'no']) }).strict(),
   z.object({ kind: z.literal('hundred-chart'), hidden: z.array(z.number().int().min(1).max(100)).max(20).optional(), window: z.object({ center: z.number().int().min(12).max(89) }).strict().optional() }).strict(),
   z.object({ kind: z.literal('number-line'), from: z.number().int().min(-999).max(9999), to: z.number().int().min(-999).max(9999), step: z.number().int().min(1).max(100), marks: z.array(z.object({ value: z.number().int(), label: label.optional() }).strict()).max(4).optional(), jumps: z.array(z.object({ from: z.number().int(), to: z.number().int(), label: label.optional() }).strict()).max(3).optional() }).strict(),
-  z.object({ kind: z.literal('clock'), clocks: z.array(z.object({ hour: z.number().int().min(1).max(12), minute: z.union([z.literal(0), z.literal(30)]) }).strict()).min(1).max(2) }).strict(),
+  z.object({ kind: z.literal('clock'), clocks: z.array(z.object({ hour: z.number().int().min(1).max(12), minute: z.number().int().min(0).max(59) }).strict()).min(1).max(2) }).strict(),
   z.object({ kind: z.literal('sticks'), bundles: count(9), singles: count(9), crossBundles: count(9).optional(), crossSingles: count(9).optional() }).strict(),
   z.object({ kind: z.literal('vertical'), count: z.number().int().min(1).max(3) }).strict(),
   z.object({ kind: z.literal('shapes'), rows: z.array(z.object({ name: label, shape: z.enum(['circle', 'square', 'triangle']), count: count(20), blank: count(20) }).strict()).min(1).max(3) }).strict(),
+  z.object({ kind: z.literal('overlap'), left: label, right: label, leftOnly: label, both: label, rightOnly: label, total: label.optional() }).strict(),
+  z.object({ kind: z.literal('split'), parts: z.array(z.object({ top: label, left: label, right: label }).strict()).min(1).max(3) }).strict(),
+  z.object({ kind: z.literal('sequence'), items: z.array(z.object({ shape: z.enum(['circle', 'square', 'triangle', 'star']), count: z.number().int().min(1).max(6) }).strict()).min(1).max(6), blank: count(6).optional() }).strict(),
+  z.object({ kind: z.literal('wall'), rows: z.array(z.array(label).min(1).max(5)).min(2).max(5) }).strict(),
+  z.object({ kind: z.literal('grid'), columns: z.array(label).min(1).max(8).optional(), rows: z.array(z.object({ name: label.optional(), cells: z.array(label).min(1).max(8) }).strict()).min(1).max(8) }).strict(),
+  z.object({ kind: z.literal('dot-array'), rows: z.number().int().min(1).max(9), columns: z.number().int().min(1).max(9), total: label.optional() }).strict(),
+  z.object({ kind: z.literal('plane'), items: z.array(z.object({ shape: z.enum(['circle', 'triangle', 'square', 'rectangle', 'quadrilateral', 'curved']), count: z.number().int().min(1).max(4) }).strict()).min(1).max(6), mark: z.enum(['yes', 'no']) }).strict(),
+  z.object({ kind: z.literal('solid'), items: z.array(z.object({ shape: z.enum(['cube', 'cuboid', 'cylinder', 'sphere']), count: z.number().int().min(1).max(4) }).strict()).min(1).max(6), mark: z.enum(['yes', 'no']) }).strict(),
+  z.object({ kind: z.literal('counter'), hundreds: count(9), tens: count(9), ones: count(9) }).strict(),
+  z.object({ kind: z.literal('measure'), bars: z.array(z.object({ name: label, length: z.number().int().min(1).max(15), style: z.enum(['straight', 'curved']).optional() }).strict()).min(1).max(3), ruler: z.enum(['yes', 'no']) }).strict(),
+  z.object({ kind: z.literal('compass'), blank: z.enum(['yes', 'no']) }).strict(),
+  z.object({ kind: z.literal('balance'), left: label, right: label, tilt: z.enum(['left', 'right', 'level']) }).strict(),
+  z.object({ kind: z.literal('writing'), style: z.enum(['tianzige', 'fourline']), count: z.number().int().min(1).max(8).optional(), example: label.optional() }).strict(),
+  z.object({ kind: z.literal('sketch'), height: z.number().int().min(40).max(260), elements: z.array(sketchElement).min(1).max(24) }).strict(),
 ]).superRefine((value, context) => {
   const fail = (message: string) => context.addIssue({ code: 'custom', message })
   if (value.kind === 'money') {
@@ -99,6 +122,29 @@ const figure = z.discriminatedUnion('kind', [
   }
   if (value.kind === 'sticks' && ((value.crossBundles ?? 0) > value.bundles || (value.crossSingles ?? 0) > value.singles)) {
     fail('划去的小棒不能多于画出的小棒。')
+  }
+  if (value.kind === 'overlap' && (value.left === '' || value.right === '')) fail('重叠圈必须写两个集合名。')
+  if (value.kind === 'wall') {
+    for (const [index, row] of value.rows.entries()) if (row.length !== index + 1) fail('数墙第一行一格、每往下一行多一格。')
+  }
+  if (value.kind === 'grid') {
+    const width = value.rows[0]?.cells.length ?? 0
+    if (value.rows.some(row => row.cells.length !== width)) fail('方格表每行的格子数要一致。')
+    if (value.columns !== undefined && value.columns.length !== width) fail('方格表的表头列数要和每行一致。')
+  }
+  if (value.kind === 'clock') {
+    for (const item of value.clocks) if (item.minute % 5 !== 0) fail('钟面的分钟只画到 5 分的刻度。')
+  }
+  if ((value.kind === 'plane' || value.kind === 'solid') && value.items.reduce((sum, item) => sum + item.count, 0) > 12) fail('一行图形最多 12 个。')
+  if (value.kind === 'sketch') {
+    for (const element of value.elements) {
+      const points = element.draw === 'line' || element.draw === 'arrow' ? [element.from, element.to]
+        : element.draw === 'polyline' ? element.points
+          : element.draw === 'circle' ? [{ x: element.x, y: element.y + element.radius }]
+            : element.draw === 'rect' ? [{ x: element.x, y: element.y + element.height }]
+              : [{ x: element.x, y: element.y }]
+      if (points.some(point => point.y > value.height)) fail('简笔画的笔画不能超出画布高度。')
+    }
   }
 })
 const answerSpace = z.enum(['none', 'line', 'lines', 'box'])

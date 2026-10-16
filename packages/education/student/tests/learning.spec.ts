@@ -732,12 +732,36 @@ describe('printable figures', () => {
       { kind: 'hundred-chart', hidden: [23, 37, 100] },
       { kind: 'vertical', count: 3 },
       { kind: 'shapes', rows: [{ name: '○', shape: 'circle', count: 9, blank: 0 }, { name: '△', shape: 'triangle', count: 0, blank: 6 }] },
+      { kind: 'number-line', from: 0, to: 20, step: 2, marks: [{ value: 8, label: '8' }], jumps: [{ from: 8, to: 14, label: '+6' }] },
+      { kind: 'clock', clocks: [{ hour: 7, minute: 30 }] },
+      { kind: 'sticks', bundles: 3, singles: 6, crossBundles: 1, crossSingles: 2 },
+      { kind: 'overlap', left: '跳绳', right: '踢毽子', leftOnly: '8', both: '', rightOnly: '6', total: '' },
+      { kind: 'split', parts: [{ top: '5', left: '2', right: '' }, { top: '6', left: '', right: '4' }] },
+      { kind: 'sequence', items: [{ shape: 'circle', count: 2 }, { shape: 'triangle', count: 1 }, { shape: 'circle', count: 2 }, { shape: 'triangle', count: 1 }], blank: 2 },
+      { kind: 'wall', rows: [['5'], ['2', '3'], ['1', '', '2']] },
+      { kind: 'grid', rows: [{ cells: ['2', '', '6'] }, { cells: ['', '5', ''] }, { cells: ['4', '', '8'] }] },
+      { kind: 'dot-array', rows: 3, columns: 5, total: '' },
+      { kind: 'plane', items: [{ shape: 'triangle', count: 1 }, { shape: 'curved', count: 1 }, { shape: 'quadrilateral', count: 1 }, { shape: 'rectangle', count: 1 }], mark: 'yes' },
+      { kind: 'solid', items: [{ shape: 'sphere', count: 1 }, { shape: 'cuboid', count: 1 }, { shape: 'cylinder', count: 2 }], mark: 'no' },
+      { kind: 'counter', hundreds: 3, tens: 0, ones: 5 },
+      { kind: 'measure', bars: [{ name: '铅笔', length: 9 }, { name: '', length: 5, style: 'curved' }], ruler: 'yes' },
+      { kind: 'compass', blank: 'yes' },
+      { kind: 'balance', left: '200 克', right: '1 千克', tilt: 'right' },
+      { kind: 'writing', style: 'tianzige', count: 3, example: '禾' },
+      { kind: 'writing', style: 'fourline', example: 'a' },
+      { kind: 'sketch', height: 80, elements: [{ draw: 'line', from: { x: 40, y: 60 }, to: { x: 200, y: 60 } }, { draw: 'circle', x: 120, y: 40, radius: 24 }, { draw: 'text', x: 120, y: 68, label: '？', align: 'center' }] },
     ] as const
-    const items = [...figures.map((figure, index) => ({ ...base, id: `q${index}`, prompt: `第 ${index + 1} 题`, figure })), { ...base, id: 'q6', prompt: '写出想法', space: 'box' as const }]
+    const items = figures.map((figure, index) => ({ ...base, id: `q${index}`, prompt: `第 ${index + 1} 题`, figure }))
+    const sheets = [[...items.slice(0, 7), { ...base, id: 'think', prompt: '写出想法', space: 'box' as const }], items.slice(7, 15), items.slice(15, 23), items.slice(23)]
     let state = updateStudy(undefined, setup, NOW)
-    state = updateStudy(state, { action: 'worksheet', worksheet: { id: 'fig', subject: 'math', items } }, NOW)
-    const pdf = await renderWorksheet(state, 'fig')
-    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-')
+    for (const [index, sheet] of sheets.entries()) {
+      state = updateStudy(state, { action: 'worksheet', worksheet: { id: `fig${index + 1}`, subject: 'math', items: sheet } }, NOW)
+      expect((await renderWorksheet(state, `fig${index + 1}`)).subarray(0, 5).toString()).toBe('%PDF-')
+    }
     expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '数一数', figure: { kind: 'money', items: ['3元'] } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '看图', figure: { kind: 'overlap', left: '', right: '踢毽子', leftOnly: '8', both: '4', rightOnly: '6' } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '看钟面', figure: { kind: 'clock', clocks: [{ hour: 8, minute: 7 }] } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '数墙', figure: { kind: 'wall', rows: [['3'], ['1', '2', '0']] } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '简笔画', figure: { kind: 'sketch', height: 60, elements: [{ draw: 'line', from: { x: 10, y: 80 }, to: { x: 40, y: 20 } }] } }] } }, NOW)).toThrow()
   })
 })

@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-16-student-figure-completeness.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-16-student-figure-completeness.md
+/agent-note-complete-grade-one-and-two-figure-set-with-a-sketch-fallback:
+  en: 9ef94138e19446c8
+  zh: 7da3363b2b13fcf3
+/agent-note-complete-grade-one-and-two-figure-set-with-a-sketch-fallback/problem:
+  en: 5bdf4b8029a81fc1
+  zh: bdd5bf0b21650403
+/agent-note-complete-grade-one-and-two-figure-set-with-a-sketch-fallback/decision:
+  en: 3a46aa55527b4c63
+  zh: baafc89d47515566
+/agent-note-complete-grade-one-and-two-figure-set-with-a-sketch-fallback/alternatives-considered:
+  en: cdff58601dae1d63
+  zh: 42e722411cc1743a
+/agent-note-complete-grade-one-and-two-figure-set-with-a-sketch-fallback/verification:
+  en: 4d4c36253a98d24f
+  zh: 5dc768f5a017e5ef
+/agent-note-complete-grade-one-and-two-figure-set-with-a-sketch-fallback/consequences:
+  en: 2803983eb5078b54
+  zh: c9f3412efb639f5e
