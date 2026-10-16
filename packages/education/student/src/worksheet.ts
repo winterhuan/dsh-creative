@@ -26,7 +26,7 @@ function figureHeight(figure: Figure, width: number): number {
     case 'sticks': return 42
     case 'vertical': return 108
     case 'shapes': return figure.rows.length * 30
-    case 'overlap': return 112 + (figure.total !== undefined ? 44 : 16)
+    case 'overlap': return 128 + (figure.total !== undefined ? 44 : 16)
     case 'split': return 66
     case 'sequence': return 40
     case 'wall': return figure.rows.length * 26 + 8
@@ -52,8 +52,8 @@ function spaceHeight(item: Item): number {
 /** An answer box, or the label centred in the given width. */
 function labelOrBox(doc: Doc, label: string, x: number, y: number, width: number) {
   if (label === '') {
-    const w = Math.min(44, width - 4)
-    doc.rect(x + (width - w) / 2, y, w, 18).strokeColor(INK).lineWidth(1).stroke()
+    const w = Math.min(52, width - 4)
+    doc.rect(x + (width - w) / 2, y - 3, w, 24).strokeColor(INK).lineWidth(1).stroke()
     return
   }
   doc.fillColor(INK).fontSize(10).text(label, x, y + 3, { width, align: 'center', lineBreak: false })
@@ -257,19 +257,22 @@ function drawSticks(doc: Doc, figure: Extract<Figure, { kind: 'sticks' }>, x: nu
 /** Two overlapping set circles with one number per region; an optional total sits below a bracket. */
 function drawOverlap(doc: Doc, figure: Extract<Figure, { kind: 'overlap' }>, x: number, y: number, width: number): number {
   const radius = 56
-  const span = radius * 3
+  const gap = radius * 1.25
+  const span = radius * 2 + gap
   const left = x + (width - span) / 2
   const cx1 = left + radius
-  const cx2 = left + radius * 2
-  const cy = y + 8 + radius
+  const cx2 = cx1 + gap
+  const cy = y + 24 + radius
+  const labelWidth = radius * 1.8
+  doc.fillColor(INK).fontSize(12)
+    .text(figure.left, cx1 - labelWidth / 2, y, { width: labelWidth, align: 'center', lineBreak: false })
+    .text(figure.right, cx2 - labelWidth / 2, y, { width: labelWidth, align: 'center', lineBreak: false })
   doc.circle(cx1, cy, radius).strokeColor(INK).lineWidth(1.2).stroke()
   doc.circle(cx2, cy, radius).strokeColor(INK).lineWidth(1.2).stroke()
-  doc.fillColor(INK).fontSize(11).text(figure.left, cx1 - 28, cy - radius + 8, { width: 56, align: 'center', lineBreak: false })
-  doc.fillColor(INK).fontSize(11).text(figure.right, cx2 - 28, cy - radius + 8, { width: 56, align: 'center', lineBreak: false })
-  labelOrBox(doc, figure.leftOnly, cx1 - radius, cy - 9, radius)
-  labelOrBox(doc, figure.both, cx1, cy - 9, radius)
-  labelOrBox(doc, figure.rightOnly, cx2, cy - 9, radius)
-  const bottom = y + 8 + radius * 2
+  labelOrBox(doc, figure.leftOnly, cx1 - radius + 4, cy - 9, gap - 8)
+  labelOrBox(doc, figure.both, cx2 - radius + 4, cy - 9, radius * 2 - gap - 8)
+  labelOrBox(doc, figure.rightOnly, cx1 + radius + 4, cy - 9, gap - 8)
+  const bottom = cy + radius
   if (figure.total === undefined) return bottom + 8 - y
   doc.moveTo(left, bottom + 6).lineTo(left, bottom + 12).lineTo(left + span, bottom + 12).lineTo(left + span, bottom + 6).strokeColor(INK).lineWidth(1).stroke()
   labelOrBox(doc, figure.total, left, bottom + 14, span)
