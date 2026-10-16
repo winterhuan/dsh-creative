@@ -103,10 +103,11 @@ describe('photo mistakes and spaced review', () => {
     expect(updateStudy(state, confirm, NOW + MINUTE)).toBe(state)
     expect(state.mistakes[0]).toMatchObject({ uncertainties: '', prompt: attempt.prompt, dueAt: dueDay(NOW) })
     state = updateStudy(state, { ...start, id: 'early', mode: 'review' }, NOW + 5 * MINUTE)
-    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, sessionId: 'early', mistakeId: mistake.id } }, NOW + 6 * MINUTE)).toThrow('尚未到')
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, sessionId: 'early', mistakeId: mistake.id } }, NOW + 6 * MINUTE)
+    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: dueDay(NOW, 3) })
   })
 
-  it('extends only independent reviews and returns helped answers to a short interval', () => {
+  it('extends independent reviews on any day and only shortens the next review for helped answers', () => {
     let state = updateStudy(updateStudy(updateStudy(undefined, setup, NOW), { action: 'mistake', mistake }, NOW), confirm, NOW)
     let at = NOW + DAY
     for (let i = 0; i < 3; i += 1) {
@@ -120,7 +121,7 @@ describe('photo mistakes and spaced review', () => {
     expect(studyStatus(state, at).progress[0]?.level).toBe('independent-on-three-days')
     state = updateStudy(state, { ...start, id: 'hinted', mode: 'review' }, at)
     state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'hinted', sessionId: 'hinted', mistakeId: mistake.id, assistance: 'hint' } }, at + MINUTE)
-    expect(state.mistakes[0]).toMatchObject({ stage: 0, independentDays: [], dueAt: at + DAY })
+    expect(state.mistakes[0]).toMatchObject({ stage: 3, dueAt: at + DAY })
     expect(studyStatus(state, at + MINUTE).progress[0]?.level).toBe('practising')
   })
 
@@ -171,7 +172,7 @@ describe('shared workbench tasks', () => {
 
   it('validates review source before showing a question', () => {
     const state = updateStudy(updateStudy(undefined, setup, NOW), { ...start, mode: 'review' }, NOW)
-    expect(() => updateStudy(state, { action: 'task', task }, NOW)).toThrow('到期错题')
+    expect(() => updateStudy(state, { action: 'task', task }, NOW)).toThrow('已确认的错题')
     expect(() => updateStudy(state, { action: 'task', task: { ...task, mistakeId: 'missing' } }, NOW)).toThrow()
   })
 
@@ -615,8 +616,25 @@ describe('printed review sheets and the mistake schedule', () => {
     expect(state.mistakes[0]).toMatchObject({ stage: 4, independentDays: ['2026-10-11', '2026-10-14', '2026-10-21', '2026-11-04'] })
     state = updateStudy(state, { action: 'worksheet', worksheet: reviewSheet('r5') }, at('2026-12-04T09:00:00+08:00'))
     state = updateStudy(state, mark('r5', 'incorrect'), at('2026-12-04T09:00:00+08:00'))
-    expect(state.mistakes[0]).toMatchObject({ stage: 0, independentDays: [], dueAt: at('2026-12-05T00:00:00+08:00') })
+    expect(state.mistakes[0]).toMatchObject({ stage: 4, dueAt: at('2026-12-05T00:00:00+08:00') })
     vi.restoreAllMocks()
+  })
+
+  it('credits an early independent answer and keeps the stage after a wrong answer', () => {
+    let state = linked()
+    const at = (iso: string) => Date.parse(iso)
+    state = updateStudy(state, { action: 'worksheet', worksheet: reviewSheet('e1') }, at('2026-10-11T09:00:00+08:00'))
+    state = updateStudy(state, mark('e1', 'correct'), at('2026-10-11T09:00:00+08:00'))
+    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: at('2026-10-14T00:00:00+08:00') })
+    state = updateStudy(state, { action: 'worksheet', worksheet: reviewSheet('e2') }, at('2026-10-13T09:00:00+08:00'))
+    state = updateStudy(state, mark('e2', 'correct'), at('2026-10-13T09:00:00+08:00'))
+    expect(state.mistakes[0]).toMatchObject({ stage: 2, dueAt: at('2026-10-20T00:00:00+08:00') })
+    state = updateStudy(state, { action: 'worksheet', worksheet: reviewSheet('e3') }, at('2026-10-19T09:00:00+08:00'))
+    state = updateStudy(state, mark('e3', 'incorrect'), at('2026-10-19T09:00:00+08:00'))
+    expect(state.mistakes[0]).toMatchObject({ stage: 2, dueAt: at('2026-10-20T00:00:00+08:00') })
+    state = updateStudy(state, { action: 'worksheet', worksheet: reviewSheet('e4') }, at('2026-10-20T09:00:00+08:00'))
+    state = updateStudy(state, mark('e4', 'correct'), at('2026-10-20T09:00:00+08:00'))
+    expect(state.mistakes[0]).toMatchObject({ stage: 3, dueAt: at('2026-11-03T00:00:00+08:00') })
   })
 
   it('keeps a slot on the review sheet for a weak goal without a due mistake', () => {

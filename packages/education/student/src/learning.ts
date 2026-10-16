@@ -136,8 +136,9 @@ function dayStart(day: string): number { return Date.parse(`${day}T00:00:00+08:0
 /**
  * Replay every confirmed mistake's review evidence: answers that cite it and paper results on items that cite it.
  * A mistake is due from the calendar day after confirmation or after the last wrong answer, not at a clock time.
- * Wrong, partial or helped answers reset it on any day. An independent correct answer advances it at most once per day,
- * and only on or after the due day; an earlier correct answer stays as evidence without moving the interval.
+ * Wrong, partial or helped answers keep the stage and only make it due again the next day. An independent correct
+ * answer on any day, earlier than the due day included, advances it at most once per day; the next due day counts
+ * from that answer.
  * Stage 4 (a 30-day interval) is consolidated.
  */
 export function scheduleMistakes(state: StudyState): StudyState {
@@ -159,10 +160,10 @@ export function scheduleMistakes(state: StudyState): StudyState {
       if (item.result === 'unassessed') continue
       const day = studyDay(item.at)
       if (item.result !== 'correct' || item.assistance !== 'independent') {
-        stage = 0; days = []; due = studyDay(item.at + DAY)
+        due = studyDay(item.at + DAY)
         continue
       }
-      if (day < due || days.includes(day)) continue
+      if (days.includes(day)) continue
       days = [...days, day]
       stage = Math.min(4, stage + 1)
       due = studyDay(item.at + (REVIEW_DAYS[stage] ?? 1) * DAY)
@@ -214,7 +215,7 @@ export function studyStatus(state: StudyState, now: number) {
 /**
  * Apply one validated mutation without changing the input. No wall-clock time is supplied by the model.
  * Duplicate identities with identical content are no-ops; conflicting reuse throws.
- * Throws on unconfirmed curricula, exhausted time, skipped breaks or unconfirmed/early reviews.
+ * Throws on unconfirmed curricula, exhausted time, skipped breaks or unconfirmed reviews.
  */
 export function updateStudy(previous: StudyState | undefined, input: unknown, now: number): StudyState {
   const command = commandSchema.parse(input)
@@ -250,9 +251,9 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       requireValue(!state.attempts.some(item => item.id === command.task.id && item.sessionId === command.task.sessionId), '这个学习段里的题目编号已使用。下一段学习可以再用同一个编号。')
       requireValue(!state.task || state.task.sessionId !== active.id || state.attempts.some(item => item.id === state.task?.id), '请先完成当前题目的作答和反馈。')
       const mistake = state.mistakes.find(item => item.id === command.task.mistakeId)
-      requireValue(active.mode !== 'review' || mistake, '复习题需要关联到期错题。')
+      requireValue(active.mode !== 'review' || mistake, '复习题需要关联一条已确认的错题。')
       requireValue(active.mode !== 'diagnose' || command.task.objectiveId !== undefined, '摸底题必须关联学习目标（objectiveId）。')
-      if (command.task.mistakeId) requireValue(mistake && mistake.subject === active.subject && mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.dueAt !== undefined && mistake.dueAt <= now, '请先确认错题并等待复习日期。')
+      if (command.task.mistakeId) requireValue(mistake && mistake.subject === active.subject && mistake.confirmedAt !== undefined && mistake.uncertainties === '', '请先确认这道错题，再开始复习。')
       if (command.task.objectiveId) requireValue(objectiveOf(state, command.task.objectiveId)?.subject === active.subject, '学习目标不存在或科目不符。')
       if (mistake?.objectiveId) requireValue(command.task.objectiveId === mistake.objectiveId, '复习题必须对应错题的学习目标。')
       state.task = { ...command.task, hintRequested: false }
@@ -351,12 +352,9 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       requireValue(!attempt.mistakeId || mistake, '错题不存在，请先查询错题记录。')
       if (attempt.objectiveId) requireValue(objectiveOf(state, attempt.objectiveId)?.subject === attempt.subject, '学习目标不存在或科目不符。')
       if (mistake?.objectiveId) requireValue(attempt.objectiveId === mistake.objectiveId, '作答必须对应错题的学习目标。')
-      requireValue(active.mode !== 'review' || mistake, '复习模式的作答需要关联一条已确认且到期的错题。')
+      requireValue(active.mode !== 'review' || mistake, '复习模式的作答需要关联一条已确认的错题。')
       requireValue(active.mode !== 'diagnose' || attempt.objectiveId !== undefined, '摸底作答必须关联学习目标（objectiveId）。')
-      if (mistake) {
-        requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === attempt.subject, '先确认图片转录、答案依据与科目，再进行复习。')
-        requireValue(mistake.dueAt !== undefined && mistake.dueAt <= now, '该错题尚未到复习时间。')
-      }
+      if (mistake) requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === attempt.subject, '先确认图片转录、答案依据与科目，再进行复习。')
       const materialId = mistake?.materialId ?? active.materialId
       state.attempts.push({ ...attempt, at: now, ...(materialId ? { materialId } : {}) })
       break

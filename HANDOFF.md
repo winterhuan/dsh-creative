@@ -30,6 +30,8 @@
 - 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
 
+2026-10-16 学生错题复习规则放宽：家长反馈复习规则太严格（提前做对不算数、答错一次清零），无法坚持。独立答对现在在任何一天都进入下一阶段（同一天最多一阶），下次复习日从做对那天按 1/3/7/14/30 天起算，提前于到期日做对也计入；答错、半对或依赖帮助不再清零，只把下次复习日改回第二天，复习阶段不倒退。`record` 与复习题不再要求错题已到期，可提前复习；巩固卷出题窗口（错题需在明天结束前到期）与「已巩固」判定（第 4 阶段）不变。决策见[复习放宽](.agents/notes/implemented/feature/2026-10-16-student-review-relaxation.zh.md)。根 `typecheck`、`build` 与包内 7 文件 106 项测试、文档 16 项与规范 3 项检查通过；重启 DSH 后按新规则重算历史复习进度。
+
 2026-10-16 学生学习插件增强（出题要素、错因与拍照闭环）：知识地图新增出题要素层（概念常见错法、目标错因/出题要点/变式维度、单元日常侧重，十二份全覆盖，`study_status kind=elements` 按已教范围返回）；新增分科错因词表与错题 `errorType`、`classify-mistake` 归类、变式阶梯（巩固题按复习阶段换数字→情境→说理且必须换题面）、`paperDrafts` 草稿集合与 `paper-draft`/`confirm-paper` 取代 `paper-result`（拍照先存草稿、家长在工作台核对入库）、`worksheet.kind` 与每日小卷/对话听写双入口（新参考 `daily-routine.md`）、理解提醒（派生展示，不落盘不评分）；掌握收紧为近期无依赖帮助或答错，薄弱点新增反复错因理由与按科目错因汇总，`review-sheet` 升级为 picks+薄弱目标补题并按学校进度过滤。配图联合扩到九种（数轴、钟面、小棒、百数表窗口、结构化钱币），修复图形截断并显式拒绝未知图形。路由白名单补 `school-progress`（修复家长「学校进度」表单 403）、`classify-mistake`、`confirm-paper`。工作台新增「待核对转录」、错因下拉与归类、今日学科环节卡与提醒卡。决策见[出题要素](.agents/notes/implemented/feature/2026-10-16-student-error-elements.zh.md)与[拍照闭环](.agents/notes/implemented/feature/2026-10-16-student-photo-grading.zh.md)。根 `typecheck` 零错误，`build` 通过；全量 99 文件 916 项测试（含学生包 7 文件 105 项）、文档 16 项与规范 3 项检查通过；未在真实 DSH 浏览器验证本次界面，未调用真实模型。
 
 2026-10-16 模型设置增强重试分类扩展：真实 DSH 中一次运行以「Service temporarily unavailable」失败且未重试；该文案不含状态码，被 pi-ai 适配器归入兜底 `PI_AI_ERROR`，不在默认可重试集合，也不在原三类可选项内。`packages/client/ui-settings-model-options` 现为 pi-ai 提供方增加「重试未分类错误（PI_AI_ERROR）」开关（默认关闭），开启后加入该提供方 `retryPolicy.retryableCodes` 并沿用次数上限；deepseek 不产生该码，不显示。中英文案、双语 README、i18n 记录与测试同步更新。`typecheck`、`build`、包内 3 文件 60 项测试、文档 16 项与规范 3 项通过；未在真实 DSH 浏览器验证界面，未调用真实模型。

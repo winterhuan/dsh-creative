@@ -49,7 +49,7 @@ Learning blocks, breaks and the daily limit span all three subjects and explorat
 
 Stars depend on recorded participation and reflection, with a daily cap. Repeated requests cannot mint extra stars, and stopping early incurs no penalty. Spaced reviews use independent answers on separate days; progress is reported as observed evidence rather than a permanent ability label.
 
-Paper answers need no active learning block and do not earn stars upon upload. Their receipt time is the observed review date. Paper practice before the due date retains evidence without advancing the mistake interval.
+Paper answers need no active learning block and do not earn stars upon upload. Their receipt time is the observed review date. An independent correct answer advances the interval on any day, including paper practice before the due date; a wrong or helped answer only makes the mistake due again the next day without lowering its stage.
 
 <a id="related"></a>
 ## Related contracts
