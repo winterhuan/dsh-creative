@@ -64,6 +64,9 @@ export async function handleStudyRequest(context: Context, request: IncomingMess
     const mistakeStatus = workspace ? z.enum(['all', 'due', 'reviewing', 'mastered']).parse(url.searchParams.get('mistakeStatus') ?? 'all') : 'all'
     const mapGrade = workspace && url.searchParams.has('mapGrade') ? z.coerce.number().int().min(1).max(2).parse(url.searchParams.get('mapGrade')) : undefined
     const mapTerm = workspace && url.searchParams.has('mapTerm') ? z.enum(['first', 'second']).parse(url.searchParams.get('mapTerm')) : undefined
+    const diagGrade = workspace && url.searchParams.has('diagGrade') ? z.coerce.number().int().min(1).max(2).parse(url.searchParams.get('diagGrade')) : undefined
+    const diagTerm = workspace && url.searchParams.has('diagTerm') ? z.enum(['first', 'second']).parse(url.searchParams.get('diagTerm')) : undefined
+    const diagUnit = workspace && url.searchParams.has('diagUnit') ? z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u).parse(url.searchParams.get('diagUnit')) : undefined
     const agent = await context.typert.lookups.get('agent')?.resolve(SessionId(rawId)) as Agent | undefined
     if (!agent || agent.session.header.parentSession || agent.session.header.origin === 'subagent') { send(response, 404, { error: '请在主会话中打开学习工作区' }); return }
     if (preview || print) {
@@ -91,7 +94,7 @@ export async function handleStudyRequest(context: Context, request: IncomingMess
       revision = input.revision
     }
     const state = await studyStore({ agent, signal: abort.signal }, change, revision)
-    send(response, 200, dashboard(state, Date.now(), { subject, mistakeOffset, mistakeStatus, ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}) }))
+    send(response, 200, dashboard(state, Date.now(), { subject, mistakeOffset, mistakeStatus, ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}), ...(diagGrade !== undefined ? { diagGrade } : {}), ...(diagTerm !== undefined ? { diagTerm } : {}), ...(diagUnit !== undefined ? { diagUnit } : {}) }))
   } catch (error) {
     const conflict = error instanceof StudyConflict || (error instanceof FsError && ['FS_STALE_VERSION', 'FS_NOT_OBSERVED'].includes(error.code))
     send(response, conflict ? 409 : error instanceof Error && error.message === '提交内容过长' ? 413 : 400, { error: error instanceof z.ZodError ? '请填写完整且有效的学习资料' : error instanceof Error ? error.message : '学习档案暂时无法读取' })

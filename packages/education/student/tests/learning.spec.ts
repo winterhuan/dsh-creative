@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { checkInHistory, curriculumView, studyDay, studyInsight, studyStatus, updateStudy } from '../src/learning.ts'
+import { checkInHistory, curriculumView, diagnosticFor, studyDay, studyInsight, studyStatus, updateStudy } from '../src/learning.ts'
 import { stateSchema } from '../src/schema.ts'
 import { queryStudy } from '../src/store.ts'
 import { renderWorksheet } from '../src/worksheet.ts'
@@ -296,17 +296,20 @@ describe('shipped knowledge map objectives and insight', () => {
   it('accepts shipped objective IDs without parent confirmation and rejects other subjects or scopes', () => {
     let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
     expect(() => updateStudy(state, { action: 'task', task: { ...task, objectiveId: 'c2a-o1' } }, NOW)).toThrow('科目不符')
-    expect(() => updateStudy(state, { action: 'task', task: { ...task, objectiveId: 'm1a-o-count' } }, NOW)).toThrow('学习目标不存在')
-    state = updateStudy(state, { action: 'task', task }, NOW)
-    state = updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW)
-    state = updateStudy(state, { action: 'record', attempt: { ...attempt, objectiveId: 'm2a-o-meaning' } }, NOW + MINUTE)
-    expect(studyStatus(state, NOW + MINUTE).progress[0]).toMatchObject({ objectiveId: 'm2a-o-meaning', independentDays: ['2026-10-05'] })
-    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + MINUTE)
-    state = updateStudy(state, { action: 'mistake', mistake }, NOW + MINUTE)
-    state = updateStudy(state, confirm, NOW + MINUTE)
-    expect(() => updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: 'e2a-o1' }, NOW + MINUTE)).toThrow('同一科目')
-    state = updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: 'm2a-o-tables' }, NOW + MINUTE)
-    state = updateStudy(state, { action: 'worksheet', worksheet: { id: 'sheet-map', subject: 'math', objectiveId: 'm2a-o-tables', items: [{ id: 'q1', mistakeId: mistake.id, prompt: '7 × 8 = ? 请写出用到的口诀。', answer: '56', explanation: '七八五十六', answerEvidence: '乘法口诀表。' }] } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'task', task: { ...task, id: 'cross-grade', objectiveId: 'm1a-o-count' } }, NOW)
+    expect(state.task?.objectiveId).toBe('m1a-o-count')
+    state = updateStudy(state, { action: 'answer', taskId: 'cross-grade', response: attempt.response }, NOW)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'cross-grade', objectiveId: 'm1a-o-count' } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'task', task }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, objectiveId: 'm2a-o-meaning' } }, NOW + 2 * MINUTE)
+    expect(studyStatus(state, NOW + 2 * MINUTE).progress).toEqual(expect.arrayContaining([expect.objectContaining({ objectiveId: 'm2a-o-meaning', independentDays: ['2026-10-05'] }), expect.objectContaining({ objectiveId: 'm1a-o-count', independentDays: ['2026-10-05'] })]))
+    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 2 * MINUTE)
+    state = updateStudy(state, { action: 'mistake', mistake }, NOW + 2 * MINUTE)
+    state = updateStudy(state, confirm, NOW + 2 * MINUTE)
+    expect(() => updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: 'e2a-o1' }, NOW + 2 * MINUTE)).toThrow('同一科目')
+    state = updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: 'm2a-o-tables' }, NOW + 2 * MINUTE)
+    state = updateStudy(state, { action: 'worksheet', worksheet: { id: 'sheet-map', subject: 'math', objectiveId: 'm2a-o-tables', items: [{ id: 'q1', mistakeId: mistake.id, prompt: '7 × 8 = ? 请写出用到的口诀。', answer: '56', explanation: '七八五十六', answerEvidence: '乘法口诀表。' }] } }, NOW + 2 * MINUTE)
     expect(state.worksheets[0]?.objectiveId).toBe('m2a-o-tables')
     expect(queryStudy(state, 'curriculum', 0, { subject: 'math' })).toMatchObject({ curriculum: { id: 'math-grade2-first', objectives: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-tables' })]) } })
     expect(() => queryStudy(state, 'curriculum', 0)).toThrow('科目')
@@ -348,13 +351,13 @@ describe('shipped knowledge map objectives and insight', () => {
     expect(queryStudy(state, 'status', 0)).toMatchObject({ recommendation: { kind: 'review', subject: 'math' }, weakPoints: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-tables' })]) })
   })
 
-  it('degrades to custom objectives outside grades one and two', () => {
+  it('supports cross-grade objectives while unshipped grades stay on custom goals', () => {
     const state = updateStudy(undefined, { ...setup, profile: { ...setup.profile, grade: 3 } }, NOW)
     const insight = studyInsight(state, NOW)
     expect(insight).toMatchObject({ objectives: [], weakPoints: [], recommendation: null })
     expect(insight.diagnostics.every(plan => !plan.due && plan.sample.length === 0)).toBe(true)
     expect(curriculumView(state, 'math', insight)).toBeNull()
-    expect(() => updateStudy(updateStudy(state, start, NOW), { action: 'task', task }, NOW)).toThrow('学习目标不存在')
+    expect(diagnosticFor(state, 'math', NOW, { grade: 2, term: 'first' }).coverage.total).toBe(8)
   })
 })
 
@@ -378,7 +381,9 @@ describe('choice tasks, map browsing and recurring check-ins', () => {
     expect(browsed?.objectives.every(item => item.level === 'untouched' && item.attempts === 0 && item.unitName.length > 0)).toBe(true)
     expect(queryStudy(state, 'curriculum', 0, { subject: 'chinese', grade: 1, term: 'first' })).toMatchObject({ curriculum: { id: 'chinese-grade1-first', scope: { current: false } } })
     expect(curriculumView(state, 'math', insight, { grade: 3, term: 'first' })).toBeNull()
-    expect(() => updateStudy(updateStudy(state, start, NOW), { action: 'task', task: { id: 'q', sessionId: start.id, subject: 'math', topic: '测量', prompt: '量一量', objectiveId: 'm1b-o-measure' } }, NOW)).toThrow('学习目标不存在')
+    expect(() => updateStudy(updateStudy(state, start, NOW), { action: 'task', task: { id: 'q', sessionId: start.id, subject: 'math', topic: '测量', prompt: '量一量', objectiveId: 'missing-obj' } }, NOW)).toThrow('学习目标不存在')
+    const cross = updateStudy(updateStudy(state, { ...start, id: 'cross' }, NOW), { action: 'task', task: { id: 'q', sessionId: 'cross', subject: 'math', topic: '测量', prompt: '量一量', objectiveId: 'm1b-o-measure' } }, NOW)
+    expect(cross.task?.objectiveId).toBe('m1b-o-measure')
   })
 
   it('plans a recurring check-in across units and turns wrong probes into targeted practice', () => {
@@ -499,6 +504,55 @@ describe('school progress frontier', () => {
     expect(studyInsight(catchingUp.state, catchingUp.at).recommendation).toMatchObject({ kind: 'learn', objectiveId: 'm2a-o-sub' })
     const reviewing = recentCheckIns(frontier('keep-up', 'm2a-u-mul', 'review', false), NOW + MINUTE)
     expect(studyInsight(reviewing.state, reviewing.at).recommendation).toMatchObject({ kind: 'hold', reason: { code: 'school-pace' } })
+  })
+
+  it('runs a cross-grade check-in from a session scope, outside the school frontier', () => {
+    let state = updateStudy(undefined, setup, NOW)
+    const plan = diagnosticFor(state, 'math', NOW, { grade: 1, term: 'first' })
+    expect(plan.coverage).toMatchObject({ probed: 0, total: 9 })
+    expect(plan.sample.map(item => item.id).every(id => id.startsWith('m1a-'))).toBe(true)
+    expect(plan.scope).toMatchObject({ grade: 1, term: 'first' })
+    state = updateStudy(state, { action: 'start', id: 'g1-check', subject: 'math', mode: 'diagnose', intensity: 'light', scope: { grade: 1, term: 'first' } }, NOW)
+    expect(state.sessions[0]?.scope).toMatchObject({ grade: 1, term: 'first' })
+    state = updateStudy(state, { action: 'task', task: { id: 'g1-t1', sessionId: 'g1-check', subject: 'math', topic: '10 以内加减', prompt: '3 + 4 = ?', objectiveId: 'm1a-o-meaning' } }, NOW)
+    state = updateStudy(state, { action: 'answer', taskId: 'g1-t1', response: '7' }, NOW)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'g1-t1', sessionId: 'g1-check', topic: '10 以内加减', prompt: '3 + 4 = ?', response: '7', objectiveId: 'm1a-o-meaning' } }, NOW + MINUTE)
+    expect(state.attempts[0]?.objectiveId).toBe('m1a-o-meaning')
+    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'g1-t2', sessionId: 'g1-check', objectiveId: 'm2a-o-sub' } }, NOW + MINUTE)).toThrow('不在本段学习范围内')
+    state = updateStudy(state, { action: 'stop', sessionId: 'g1-check', reflection: '' }, NOW + 2 * MINUTE)
+    const after = diagnosticFor(state, 'math', NOW + 3 * MINUTE, { grade: 1, term: 'first' })
+    expect(after.coverage).toMatchObject({ probed: 1, total: 9 })
+    expect(stateSchema.parse(JSON.parse(JSON.stringify(state))).sessions[0]?.scope).toMatchObject({ grade: 1, term: 'first' })
+  })
+
+  it('narrows a check-in to selected units or objective IDs', () => {
+    const state = updateStudy(undefined, setup, NOW)
+    const byUnit = diagnosticFor(state, 'math', NOW, { grade: 1, term: 'first', units: ['m1a-u3'] })
+    expect(byUnit.coverage.total).toBe(2)
+    expect(byUnit.sample.map(item => item.unit).every(unit => unit === 'm1a-u3')).toBe(true)
+    const byIds = diagnosticFor(state, 'math', NOW, { grade: 2, term: 'first', objectiveIds: ['m2a-o-sub', 'm2a-o-shop'] })
+    expect(byIds.coverage.total).toBe(2)
+    expect(byIds.sample.map(item => item.id).sort()).toEqual(['m2a-o-shop', 'm2a-o-sub'])
+    expect(byIds.samples.light).toHaveLength(2)
+  })
+
+  it('rejects a scope whose units or objectives are not in the named map', () => {
+    const state = updateStudy(undefined, setup, NOW)
+    expect(() => updateStudy(state, { action: 'start', id: 'bad-unit', subject: 'math', mode: 'diagnose', scope: { grade: 1, term: 'first', units: ['m2a-u-sub'] } }, NOW)).toThrow('不在该年级学期')
+    expect(() => updateStudy(state, { action: 'start', id: 'bad-obj', subject: 'math', mode: 'diagnose', scope: { grade: 1, term: 'first', objectiveIds: ['missing'] } }, NOW)).toThrow('学习目标不存在')
+    expect(() => updateStudy(state, { action: 'start', id: 'bad-grade', subject: 'math', mode: 'diagnose', scope: { grade: 5, term: 'first' } }, NOW)).toThrow('知识地图不存在')
+    expect(() => updateStudy(state, { ...start, id: 'bad-mode', mode: 'review', scope: { grade: 1, term: 'first' } }, NOW)).toThrow('自定义范围只用于摸底或学习')
+  })
+
+  it('lets a foundation block learn across grades with a scope, bypassing the frontier', () => {
+    let state = frontier('keep-up', 'm2a-u-mul', 'teaching', false)
+    expect(studyInsight(state, NOW).recommendation).not.toMatchObject({ objectiveId: 'm1a-o-carry' })
+    state = updateStudy(state, { action: 'start', id: 'g1-learn', subject: 'math', mode: 'foundation', scope: { grade: 1, term: 'first', objectiveIds: ['m1a-o-carry'] } }, NOW)
+    state = updateStudy(state, { action: 'task', task: { id: 'g1-l1', sessionId: 'g1-learn', subject: 'math', topic: '进位加法', prompt: '9 + 5 = ?', objectiveId: 'm1a-o-carry' } }, NOW)
+    state = updateStudy(state, { action: 'answer', taskId: 'g1-l1', response: '14' }, NOW)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'g1-l1', sessionId: 'g1-learn', topic: '进位加法', prompt: '9 + 5 = ?', response: '14', objectiveId: 'm1a-o-carry' } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'stop', sessionId: 'g1-learn', reflection: '' }, NOW + 2 * MINUTE)
+    expect(state.attempts.some(item => item.objectiveId === 'm1a-o-carry')).toBe(true)
   })
 
   it('does not let a later mistake or a textbook edit move the class forward', () => {

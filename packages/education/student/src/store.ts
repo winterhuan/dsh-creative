@@ -1,7 +1,7 @@
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import { stateSchema, type StudyState } from './schema.ts'
-import { checkInHistory, curriculumView, insightSummary, objectiveElements, reviewPlan, scheduleMistakes, studyInsight, studyStatus, taughtUnit, updateStudy } from './learning.ts'
+import { checkInHistory, curriculumView, diagnosticFor, insightSummary, objectiveElements, reviewPlan, scheduleMistakes, studyInsight, studyStatus, taughtUnit, updateStudy } from './learning.ts'
 import { curriculumFor } from './curriculum.ts'
 
 const MAX_BYTES = 8_388_608
@@ -46,7 +46,7 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
  * @param state - current durable learning state, or undefined before setup.
  * @param kind - record collection or projection to read.
  * @param offset - zero-based collection offset.
- * @param options - optional exact record ID, subject and unit filters, and grade/term for browsing another knowledge map.
+ * @param options - optional exact record ID, subject and unit filters, grade/term for browsing another knowledge map or a cross-grade check-in plan.
  * @returns the projection or one page of records.
  */
 export function queryStudy(state: StudyState | undefined, kind: string, offset: number, options: { id?: string; subject?: 'chinese' | 'math' | 'english'; unit?: string; grade?: number; term?: 'first' | 'second' } = {}) {
@@ -105,10 +105,14 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       more: 'Write one new question per pick, never the original wording (rejected): use pick.variantLevel (numeric, context, reasoning) to choose the distance, keep the errorType, and draw on pick.elements (misconceptions, examples, questionPoints, variationAxes). At most two sheet items per error cause; errorCoverage lists what the picks already cover. Write one numeric question per objectiveFill with only its objectiveId and no mistakeId. Save one worksheet of kind review. Grade or discard open sheets before reprinting their mistakes.' }
   }
   if (kind === 'diagnose') {
-    const insight = studyInsight(state, now)
-    return { revision: state.revision, diagnostics: subject ? insight.diagnostics.filter(plan => plan.subject === subject) : insight.diagnostics,
+    const scope = options.grade !== undefined || options.term !== undefined
+      ? { grade: options.grade ?? state.profile.grade, term: options.term ?? state.profile.term, ...(options.unit !== undefined ? { units: [options.unit] } : {}) }
+      : undefined
+    if (scope && !subject) throw new Error('跨年级摸底计划需要指定科目（subject）。')
+    const diagnostics = scope && subject ? [diagnosticFor(state, subject, now, scope)] : studyInsight(state, now).diagnostics
+    return { revision: state.revision, diagnostics: subject ? diagnostics.filter(plan => plan.subject === subject) : diagnostics,
       history: checkInHistory(state).filter(item => !subject || item.subject === subject),
-      more: 'Start a diagnose block with intensity light (3), standard (6) or deep (12) for the subject, ask one short task per sampled objective with objectiveId, record each answer, then study_status kind=weak shows what to strengthen.' }
+      more: 'Start a diagnose block with intensity light (3), standard (6) or deep (12) for the subject, ask one short task per sampled objective with objectiveId, record each answer, then study_status kind=weak shows what to strengthen. Pass grade/term (and optionally unit) for a cross-grade or single-unit check-in plan.' }
   }
   if (kind === 'weak') {
     const insight = studyInsight(state, now)

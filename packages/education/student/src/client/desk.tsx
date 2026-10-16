@@ -9,6 +9,8 @@ import { errorTypesBySubject, type ErrorTypeValue } from '../vocabulary.ts'
 import { useStudy } from './workspace.ts'
 
 type Activity = { subject: 'chinese' | 'math' | 'english'; mode: 'foundation' | 'school' | 'review' | 'explore' | 'diagnose' }
+/** A check-in or learning scope: the current term, another grade/term, or one unit of it. */
+type ScopeChoice = { grade?: number; term?: 'first' | 'second'; unit?: string }
 type Study = NonNullable<Dashboard['study']>
 type Tab = 'today' | 'map' | 'checkin' | 'mistakes' | 'growth' | 'parent'
 type Goal = { id: string; title: string }
@@ -53,7 +55,10 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   const [mapTerm, setMapTerm] = useState<'first' | 'second'>()
   const [selectedConceptId, setSelectedConceptId] = useState('')
   const [intensities, setIntensities] = useState<Partial<Record<Activity['subject'], CheckInIntensity>>>({})
-  const workspace = useStudy(sessionId, visible, t('networkError'), { offset: mistakeOffset, subject, status: mistakeStatus, ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}) })
+  const [scopeChoice, setScopeChoice] = useState<Partial<Record<Activity['subject'], ScopeChoice>>>({})
+  const scopeOf = (target: Activity['subject']): ScopeChoice => scopeChoice[target] ?? {}
+  const activeScope = scopeOf(subject)
+  const workspace = useStudy(sessionId, visible, t('networkError'), { offset: mistakeOffset, subject, status: mistakeStatus, ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}), ...(activeScope.grade !== undefined ? { diagGrade: activeScope.grade } : {}), ...(activeScope.term !== undefined ? { diagTerm: activeScope.term } : {}), ...(activeScope.unit ? { diagUnit: activeScope.unit } : {}) })
   const { data, busy, change } = workspace
   const [tab, setTab] = useState<Tab>('today')
   const [activity, setActivity] = useState<Activity>({ subject: storedSubject(), mode: 'foundation' })
@@ -124,9 +129,13 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   const homeUnit = curriculum?.scope.current ? [...curriculum.units].reverse().find(unit => curriculum.concepts.some(concept => concept.unit === unit.id && concept.level !== 'untouched')) : undefined
   function startDiagnosis(target: Activity['subject'], intensity: CheckInIntensity) {
     if (active) return Promise.resolve()
-    const ids = planOf(target)?.samples[intensity].map(item => item.id) ?? []
+    const scope = scopeOf(target)
+    const scoped = scope.grade !== undefined || scope.term !== undefined
+    const plan = scoped ? study?.scopedDiagnostic : planOf(target)
+    const ids = plan?.samples[intensity].map(item => item.id) ?? []
     selectSubject(target); setActivity({ subject: target, mode: 'diagnose' }); setSelectedObjectiveId(''); setMistakeOffset(0); setTab('today')
-    return act({ action: 'start', id: crypto.randomUUID(), subject: target, mode: 'diagnose', intensity }, true, diagnosePrompt(intensity, ids))
+    const command: Command = { action: 'start', id: crypto.randomUUID(), subject: target, mode: 'diagnose', intensity, ...(scoped ? { scope: { grade: scope.grade ?? study?.profile.grade ?? 2, term: scope.term ?? study?.profile.term ?? 'first', ...(scope.unit ? { units: [scope.unit] } : {}) } } : {}) }
+    return act(command, true, diagnosePrompt(intensity, ids))
   }
   return <main className="student-desk" aria-label={t('title')}>
     <header className="student-top">
@@ -147,7 +156,7 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
           {active ? <><p>{t(active.subject)} · {t(active.mode)}</p><p className="student-timer">{t('time')}: {time(active.deadline - now)}</p>
             {!available && <p role="status">{t('expired')}</p>}
           </> : study.phase === 'break' && study.breakRemainingMs - (now - data.serverNow) > 0 ? <p>{t('rest')} · {time(study.breakRemainingMs - (now - data.serverNow))}</p>
-            : study.phase === 'daily-complete' ? <p>{t('done')}</p> : <StartForm study={study} activity={activity} choose={setActivity} disabled={disabled || running} t={t} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} intensityLabel={`${t(intensityKeys[chosenIntensity(activity.subject)])} · ${planOf(activity.subject)?.samples[chosenIntensity(activity.subject)].length ?? 0}`} chooseIntensity={() => setTab('checkin')} start={(subject, mode) => mode === 'diagnose' ? startDiagnosis(subject, chosenIntensity(subject)) : act({ action: 'start', id: crypto.randomUUID(), subject, mode }, true, mode === 'foundation' && selectedObjectiveId ? goalPrompt(selectedObjectiveId) : mode === 'review' ? reviewPrompt : continuePrompt)} />}
+            : study.phase === 'daily-complete' ? <p>{t('done')}</p> : <StartForm study={study} activity={activity} choose={setActivity} disabled={disabled || running} t={t} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} intensityLabel={`${t(intensityKeys[chosenIntensity(activity.subject)])} · ${planOf(activity.subject)?.samples[chosenIntensity(activity.subject)].length ?? 0}`} chooseIntensity={() => setTab('checkin')} scope={activeScope} setScope={next => setScopeChoice(previous => ({ ...previous, [subject]: next }))} scopeUnits={study.scopedUnits ?? []} start={(subject, mode) => mode === 'diagnose' ? startDiagnosis(subject, chosenIntensity(subject)) : act({ action: 'start', id: crypto.randomUUID(), subject, mode, ...(activeScope.grade !== undefined || activeScope.term !== undefined ? { scope: { grade: activeScope.grade ?? study.profile.grade, term: activeScope.term ?? study.profile.term, ...(activeScope.unit ? { units: [activeScope.unit] } : {}) } } : {}) }, true, mode === 'foundation' && selectedObjectiveId ? goalPrompt(selectedObjectiveId) : mode === 'review' ? reviewPrompt : continuePrompt)} />}
         </section>
         {!active && (() => {
           const unit = progress && curriculum ? curriculum.units.find(item => item.id === progress.unitId) : undefined
@@ -276,17 +285,40 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
       {study && tab === 'checkin' && <>
         <section><h3>{t('diagnosisTitle')}</h3><p className="student-muted">{t('checkinHelp')}</p></section>
         {study.diagnostics.map(plan => {
-          const intensity = chosenIntensity(plan.subject)
-          const sample = plan.samples[intensity]
-          const history = study.checkIns.filter(item => item.subject === plan.subject)
-          return <section key={plan.subject}><h3>{t(plan.subject)} · {t(plan.due ? 'diagnosisDue' : 'diagnosisNotDue')}</h3>
-            <p>{plan.lastAt !== undefined ? `${t('diagnosisLast')}: ${date(plan.lastAt)} · ${t('nextCheck')}: ${date(plan.nextAt)}` : t('diagnosisNever')}</p>
-            <p>{t('coverage')}: {plan.coverage.probed} / {plan.coverage.total}</p>
-            <progress value={plan.coverage.probed} max={Math.max(1, plan.coverage.total)} aria-label={t('coverage')} />
-            <nav className="student-segments" aria-label={t('intensity')}>{(['light', 'standard', 'deep'] as const).map(level => <button key={level} type="button" aria-pressed={intensity === level} onClick={() => setIntensities(previous => ({ ...previous, [plan.subject]: level }))}>{t(intensityKeys[level])} · {plan.samples[level].length}{plan.recommendedIntensity === level ? ` · ${t('recommended')}` : ''}</button>)}</nav>
+          const target = plan.subject
+          const scope = scopeOf(target)
+          const scoped = scope.grade !== undefined || scope.term !== undefined
+          const scopedPlan = scoped && target === subject ? study.scopedDiagnostic : null
+          const shown = scopedPlan ?? plan
+          const intensity = chosenIntensity(target)
+          const sample = shown.samples[intensity]
+          const history = study.checkIns.filter(item => item.subject === target)
+          const setScope = (next: ScopeChoice) => setScopeChoice(previous => ({ ...previous, [target]: next }))
+          const scopeUnits = scoped && target === subject ? (study.scopedUnits ?? []) : []
+          return <section key={target}><h3>{t(target)} · {t(shown.due ? 'diagnosisDue' : 'diagnosisNotDue')}</h3>
+            <p>
+              <label>{t('scopeLabel')}<select aria-label={t('scopeLabel')} value={scoped ? `${scope.grade ?? study.profile.grade}-${scope.term ?? study.profile.term}` : 'current'} onChange={event => {
+                const value = event.target.value
+                if (value === 'current') { setScope({}); return }
+                const [grade, term] = value.split('-') as [string, 'first' | 'second']
+                setScope({ grade: Number(grade), term })
+                if (target !== subject) selectSubject(target)
+              }}>
+                <option value="current">{t('scopeCurrent')}</option>
+                {([[1, 'first'], [1, 'second'], [2, 'first'], [2, 'second']] as const).filter(([grade, term]) => !(grade === study.profile.grade && term === study.profile.term)).map(([grade, term]) => <option key={`${grade}-${term}`} value={`${grade}-${term}`}>{t(grade === 1 ? 'gradeOne' : 'gradeTwo')} · {t(term)}</option>)}
+              </select></label>
+              {scoped && target === subject && <label>{t('scopeUnit')}<select aria-label={t('scopeUnit')} value={scope.unit ?? ''} onChange={event => setScope({ ...scope, ...(event.target.value ? { unit: event.target.value } : {}) })}>
+                <option value="">{t('scopeWholeMap')}</option>
+                {scopeUnits.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+              </select></label>}
+            </p>
+            <p>{shown.lastAt !== undefined ? `${t('diagnosisLast')}: ${date(shown.lastAt)} · ${t('nextCheck')}: ${date(shown.nextAt)}` : t('diagnosisNever')}</p>
+            <p>{t('coverage')}: {shown.coverage.probed} / {shown.coverage.total}</p>
+            <progress value={shown.coverage.probed} max={Math.max(1, shown.coverage.total)} aria-label={t('coverage')} />
+            <nav className="student-segments" aria-label={t('intensity')}>{(['light', 'standard', 'deep'] as const).map(level => <button key={level} type="button" aria-pressed={intensity === level} onClick={() => setIntensities(previous => ({ ...previous, [target]: level }))}>{t(intensityKeys[level])} · {shown.samples[level].length}{shown.recommendedIntensity === level ? ` · ${t('recommended')}` : ''}</button>)}</nav>
             <p className="student-muted">{t(intensityHelpKeys[intensity])}</p>
             {sample.length > 0 ? <p className="student-muted">{t('diagnosisSample')}: {sample.map(item => `${item.title} · ${t(sampleKeys[item.reason])}`).join('；')}</p> : <p>{t('empty')}</p>}
-            <button type="button" disabled={disabled || running || study.phase !== 'ready' || !!active || sample.length === 0} onClick={() => { void startDiagnosis(plan.subject, intensity) }}>{t(plan.due ? 'startDiagnosis' : 'repeatDiagnosis')} · {t(plan.subject)}</button>
+            <button type="button" disabled={disabled || running || study.phase !== 'ready' || !!active || sample.length === 0} onClick={() => { void startDiagnosis(target, intensity) }}>{t(shown.due ? 'startDiagnosis' : 'repeatDiagnosis')} · {t(target)}</button>
             {history.length > 0 && <details><summary>{t('history')} · {history.length}</summary>
               {history.map(item => <div key={item.sessionId}><p>{date(item.startedAt)} · {t(intensityKeys[item.intensity])} · {t('assistIndependent')} {item.counts.independent} · {t('assistHint')} {item.counts.helped} · {t('wrong')} {item.counts.wrong}</p>
                 {item.results.map(result => <p key={result.id} className="student-muted">{result.title} · {t(result.result)} · {t(assistKeys[result.assistance])}</p>)}
@@ -351,14 +383,31 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   </main>
 }
 
-function StartForm({ study, activity, choose, disabled, start, goal, clearGoal, intensityLabel, chooseIntensity, t }: { study: Study; activity: Activity; choose: (activity: Activity) => void; disabled: boolean; start: (subject: Activity['subject'], mode: Activity['mode']) => Promise<void>; goal: Goal | undefined; clearGoal: () => void; intensityLabel: string; chooseIntensity: () => void; t: Translate }) {
+function StartForm({ study, activity, choose, disabled, start, goal, clearGoal, intensityLabel, chooseIntensity, scope, setScope, scopeUnits, t }: { study: Study; activity: Activity; choose: (activity: Activity) => void; disabled: boolean; start: (subject: Activity['subject'], mode: Activity['mode']) => Promise<void>; goal: Goal | undefined; clearGoal: () => void; intensityLabel: string; chooseIntensity: () => void; scope: ScopeChoice; setScope: (scope: ScopeChoice) => void; scopeUnits: { id: string; name: string }[]; t: Translate }) {
   const { subject, mode } = activity
   const confirmed = study.courses.some(item => item.subject === subject)
   const due = study.dueSubjects.includes(subject)
+  const scoped = scope.grade !== undefined || scope.term !== undefined
+  const scopedMode = mode === 'foundation' || mode === 'school' || mode === 'diagnose'
   return <form onSubmit={event => { event.preventDefault(); void start(subject, mode) }}><fieldset disabled={disabled}>
     <label>{t('mode')}<select aria-label={t('mode')} value={mode} onChange={event => { const value = event.target.value; choose({ subject, mode: value === 'school' || value === 'review' || value === 'explore' || value === 'diagnose' ? value : 'foundation' }) }}>{(['foundation', 'school', 'review', 'explore', 'diagnose'] as const).map(item => <option key={item} value={item} disabled={(item === 'school' && !confirmed) || (item === 'review' && !due)}>{t(item)}</option>)}</select></label>
     <p>{t(mode === 'foundation' ? 'foundationHelp' : mode === 'school' ? 'schoolHelp' : mode === 'review' ? 'reviewHelp' : mode === 'diagnose' ? 'diagnoseHelp' : 'exploreHelp')}</p>
     {goal && mode === 'foundation' && <p>{t('learningGoal')}: {goal.title} <button type="button" onClick={clearGoal}>{t('clearGoal')}</button></p>}
+    {scopedMode && <p>
+      <label>{t('scopeLabel')}<select aria-label={t('scopeLabel')} value={scoped ? `${scope.grade ?? study.profile.grade}-${scope.term ?? study.profile.term}` : 'current'} onChange={event => {
+        const value = event.target.value
+        if (value === 'current') { setScope({}); return }
+        const [grade, term] = value.split('-') as [string, 'first' | 'second']
+        setScope({ grade: Number(grade), term })
+      }}>
+        <option value="current">{t('scopeCurrent')}</option>
+        {([[1, 'first'], [1, 'second'], [2, 'first'], [2, 'second']] as const).filter(([grade, term]) => !(grade === study.profile.grade && term === study.profile.term)).map(([grade, term]) => <option key={`${grade}-${term}`} value={`${grade}-${term}`}>{t(grade === 1 ? 'gradeOne' : 'gradeTwo')} · {t(term)}</option>)}
+      </select></label>
+      {scoped && <label>{t('scopeUnit')}<select aria-label={t('scopeUnit')} value={scope.unit ?? ''} onChange={event => setScope({ ...scope, ...(event.target.value ? { unit: event.target.value } : {}) })}>
+        <option value="">{t('scopeWholeMap')}</option>
+        {scopeUnits.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+      </select></label>}
+    </p>}
     {mode === 'diagnose' && <p>{t('intensity')}: {intensityLabel} <button type="button" onClick={chooseIntensity}>{t('chooseIntensity')}</button></p>}
     <p className="student-muted">{t(subject === 'chinese' ? 'chineseMethod' : subject === 'math' ? 'mathMethod' : 'englishMethod')}</p>
     {!confirmed && <p>{t('unconfirmed')}</p>}

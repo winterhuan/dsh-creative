@@ -17,13 +17,13 @@ description: 引导小学生进行语文、数学、英语的短时学习，确�
 
 工作台「教材与学校进度」只让家长选择地图单元并确认，不收集书名、出版社或版次。家长另行给出实物课本时，仍核对封面、版权页、目录及学校当前进度，来源说明见 `references/materials.md`；用 `material` 登记，家长核对后用 `course` 关联教材与当前单元，`parentConfirmation` 保留实际确认。面板里已保存的「随包知识地图」只说明家长选过单元，不能当成某一印刷版已经核对过。资料的 region、grade、term、schoolYear、schoolSystem 必须与档案对应。学校进度未确认时用 `foundation`，注明通用基础练习或默认教材练习，不能说“今天学校要学这一课”。默认教材不自动成为已确认校内课程；校内同步只在 `school` 模式进行，不拿 AI 自编题冒充原题。
 
-教材确认之后，请家长在工作台标明学校教到的地图单元，或在家长自己说出单元后用 `school-progress` 保存：`unitId` 用 `kind=curriculum` 里的单元 id，`posture` 用 `keep-up`（只学当前单元）或 `catch-up`（先补已教过的缺口），`preview` 只表示可以预习紧接着的下一单元，`pace` 用 `teaching` 或 `review`（复习周不开始新目标）。不要根据日期、家里是否练熟，或作业照片自行改这个单元；照片只能用来提议“是不是教到了某一单元”，等家长确认后再保存。已保存时，今日建议和摸底停在该单元及之前的单元；`recommendation.kind` 为 `preview` 时向孩子说明这是预习，为 `hold` 时告诉孩子等学校往下教，不开始后面的单元。
+教材确认之后，请家长在工作台标明学校教到的地图单元，或在家长自己说出单元后用 `school-progress` 保存：`unitId` 用 `kind=curriculum` 里的单元 id，`posture` 用 `keep-up`（只学当前单元）或 `catch-up`（先补已教过的缺口），`preview` 只表示可以预习紧接着的下一单元，`pace` 用 `teaching` 或 `review`（复习周不开始新目标）。不要根据日期、家里是否练熟，或作业照片自行改这个单元；照片只能用来提议“是不是教到了某一单元”，等家长确认后再保存。已保存时，今日建议和摸底默认停在该单元及之前的单元——这是默认范围，不是上限；家长要求跨年级、指定单元或指定目标时，用 `start` 的 `scope` 超出它。`recommendation.kind` 为 `preview` 时向孩子说明这是预习，为 `hold` 时告诉孩子等学校往下教，不开始后面的单元。
 
 ## 每日学习
 
 1. 查询 `study_status`，读取 `recommendation` 和 `weakPoints`。处于 `break` 时给一个离屏活动建议并结束本轮；`daily-complete` 时肯定今天的努力，明天继续；`stop-required` 时调用 `stop` 记录停止，不追加题目。恢复旧对话也执行这一检查。
 2. 用一句孩子能懂的话说明今天的小目标，提供两个简短选择。按建议先安排到期错题，再补薄弱点，再摸底，最后才是新知识点；建议是 `preview` 时说明这是预习下一单元，是 `hold` 时等学校往下教，不打开还没教到的单元。对话里不一次堆出题单，也不把统计数字念给孩子听。家长要打印时按 `references/questions.md` 写一整张卷。二年级方法见 `references/teaching.md`。
-3. 没有活动学习段时才用 `start`；面板已开始或恢复的学习段直接沿用，保存 ID 和 deadline。每次新题、复述、探究活动前都查询剩余时间；没有运行的学习段就不开始教学。用 `task` 保存本题的 id、sessionId、subject、topic、prompt 和对应的 objectiveId，复习题带 mistakeId；面板与对话共用题目。出题方式见 `references/questions.md`：对话里一次只问一个；计算、听写、找依据用自由作答；识字、情境判断和摸底的轻量、常规档才用 2 到 4 个选项（`choices`），答案必须是选项之一。等学生作答，不覆盖尚未完成的题目。
+3. 没有活动学习段时才用 `start`；面板已开始或恢复的学习段直接沿用，保存 ID 和 deadline。每次新题、复述、探究活动前都查询剩余时间；没有运行的学习段就不开始教学。`foundation`、`school` 与 `diagnose` 可带 `scope`（`grade`、`term`，可再带 `units` 或 `objectiveIds`）在学校进度之外学习或摸底——例如补一年级口算、集中练某几个单元；`scope` 只约束本段可记录的目标，不改变默认建议。不带 `scope` 时新目标仍跟着学校进度。用 `task` 保存本题的 id、sessionId、subject、topic、prompt 和对应的 objectiveId，复习题带 mistakeId；面板与对话共用题目。出题方式见 `references/questions.md`：对话里一次只问一个；计算、听写、找依据用自由作答；识字、情境判断和摸底的轻量、常规档才用 2 到 4 个选项（`choices`），答案必须是选项之一。等学生作答，不覆盖尚未完成的题目。
 4. 先让学生尝试，再按需给提示、具体例子或示范。核实答案依据；不能核实就标为 `unassessed`，说明待教师或家长核对，不奖励“正确”。先查询当前 task。面板已提交的 response 直接使用；学生在对话中回答时，用 `answer` 保存原话，taskId 对应当前题目。学生请求提示时先用 `hint` 保存请求，再在对话中给提示；不要在等待反馈期间继续出题。使用 `record` 保存题目、原始回答、结果、帮助程度、反馈和可复查的答案依据；attempt 的 id、sessionId、subject、topic、prompt、response、mistakeId 必须对应当前 task。hintRequested 为 true 或实际提供过帮助时不能标为 independent；不要根据“我会了”虚构答题过程。ID 在同一题重试时保持不变，完成反馈后下一题使用新 ID。提交后的答案不可覆盖，修正需先解释并完成当前题反馈，再出新题。
 5. 在时间允许时请孩子用自己的话复述一个收获，`stop` 结束。reflection 引用学生实际复述，未复述留空。每天实际作答可得一颗参与星，复述可再得一颗；挂机、答题数量、连续天数和学习更久都不额外加星。告诉孩子具体做得好的地方。
 
@@ -37,7 +37,9 @@ description: 引导小学生进行语文、数学、英语的短时学习，确�
 
 ## 摸底与针对性增强
 
-`study_status` 的 `diagnostics` 和 `kind=diagnose` 给出每科的摸底计划：未探查、久未练习和已掌握超过 30 天的目标按单元轮流取样，每次最多六个；距上次摸底满 14 天且仍有可探查目标时为到期。摸底分三档强度，`start` 用 `intensity` 记录：轻量 3 题（全部选择题，几分钟）、常规 6 题（选择题为主，默认）、全面 12 题（每个单元至少一道说理或自由作答题，并复测练习中的目标）；`kind=diagnose` 的 `samples` 给出每档的目标列表，`recommendedIntensity` 是推荐档。到期或家长要求时用 `diagnose` 模式开始一段：按所选强度的 sample 各出一道短题，task、answer、record 都写 objectiveId；每题只给简短反馈，不展开教学，不主动提示，学生要求提示仍用 `hint` 记录。做完或到时即停止，用孩子能懂的话说哪些已经会了、哪些要再练，不报分数、不排名。
+`study_status` 的 `diagnostics` 和 `kind=diagnose` 给出每科的摸底计划：未探查、久未练习和已掌握超过 30 天的目标按单元轮流取样，每次最多六个；距上次摸底满 14 天且仍有可探查目标时为到期。默认范围是学校进度确认到的单元及之前；未确认进度时是当前学期整册。摸底分三档强度，`start` 用 `intensity` 记录：轻量 3 题（全部选择题，几分钟）、常规 6 题（选择题为主，默认）、全面 12 题（每个单元至少一道说理或自由作答题，并复测练习中的目标）；`kind=diagnose` 的 `samples` 给出每档的目标列表，`recommendedIntensity` 是推荐档。到期或家长要求时用 `diagnose` 模式开始一段：按所选强度的 sample 各出一道短题，task、answer、record 都写 objectiveId；每题只给简短反馈，不展开教学，不主动提示，学生要求提示仍用 `hint` 记录。做完或到时即停止，用孩子能懂的话说哪些已经会了、哪些要再练，不报分数、不排名。
+
+摸底不限于当前学期或学校进度。家长想跨年级查漏补缺（例如二年级前先摸一年级口算）、只摸某几个单元，或指定一组目标时，用 `study_status kind=diagnose` 带 `subject` 加 `grade`、`term`（可再加 `unit`）拿到该范围的样本，然后用 `diagnose` 模式 `start` 并带同名 `scope`（`grade`、`term`，可再带 `units` 或 `objectiveIds`）开始；作答校验只看是否落在该 scope 内。学校进度只是默认范围，不是硬限制。
 
 摸底结果直接进入掌握状态：从未独立答对的目标只要答错一次就标为需要加强，建议随即转为针对性练习；答对的进入练习中，三个不同日期独立答对才算已掌握。`recommendation` 的顺序是到期错题、薄弱点、到期摸底、新目标。摸底不是考试，题量以一段时长为限，家长可在工作台随时再做一次。
 

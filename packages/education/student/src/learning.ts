@@ -1,6 +1,6 @@
 import { commandSchema, stateSchema, type ErrorType, type StudyState, type UnitFocus, type Variant, type VariationAxis } from './schema.ts'
 import { errorTypesBySubject } from './vocabulary.ts'
-import { builtinObjective, builtinObjectives, curriculumFor, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from './curriculum.ts'
+import { builtinObjective, builtinObjectiveIn, builtinObjectives, builtinObjectivesIn, curriculumFor, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from './curriculum.ts'
 
 const MINUTE = 60_000
 const DAY = 86_400_000
@@ -34,8 +34,22 @@ function todaySpent(state: StudyState, now: number): number {
 
 function activeSession(state: StudyState) { return state.sessions.find(session => session.endedAt === undefined) }
 
+/**
+ * Resolve a learning objective, custom or shipped, across any shipped scope.
+ * @param state - current durable learning state.
+ * @param objectiveId - objective to resolve.
+ * @returns the objective, or undefined when unknown in any shipped map.
+ */
 function objectiveOf(state: StudyState, objectiveId: string) {
-  return state.objectives.find(item => item.id === objectiveId) ?? builtinObjective(state.profile, objectiveId)
+  return state.objectives.find(item => item.id === objectiveId)
+    ?? builtinObjective(state.profile, objectiveId)
+    ?? (['chinese', 'math', 'english'] as const).flatMap(subject =>
+      ([1, 2] as const).flatMap(grade =>
+        (['first', 'second'] as const).map(term =>
+          builtinObjectiveIn({ grade, term }, subject, objectiveId)
+        )
+      )
+    ).find(item => item !== undefined)
 }
 
 /**
@@ -323,6 +337,13 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       const id = command.id
       requireValue(!active, '请先结束当前学习段；到时也需要记录停止。')
       requireValue(command.mode === 'diagnose' || command.intensity === undefined, '摸底强度只用于摸底检测。')
+      requireValue(command.scope === undefined || command.mode === 'diagnose' || command.mode === 'foundation' || command.mode === 'school', '自定义范围只用于摸底或学习。')
+      if (command.scope) {
+        const file = curriculumFor({ grade: command.scope.grade, term: command.scope.term }, command.subject)
+        requireValue(file, '该年级学期的知识地图不存在。')
+        if (command.scope.units) for (const unitId of command.scope.units) requireValue(file.units.some(unit => unit.id === unitId), `单元不在该年级学期的知识地图里：${unitId}`)
+        if (command.scope.objectiveIds) for (const objectiveId of command.scope.objectiveIds) requireValue(builtinObjectiveIn({ grade: command.scope.grade, term: command.scope.term }, command.subject, objectiveId) || state.objectives.some(item => item.id === objectiveId), `学习目标不存在：${objectiveId}`)
+      }
       requireValue(now >= state.breakUntil, '还在休息时间，请离屏活动，休息结束后再开始。')
       const remaining = state.profile.limits.dailyMinutes * MINUTE - todaySpent(state, now)
       requireValue(remaining > 0, '今天的学习时长已到上限，明天再继续。')
@@ -332,6 +353,7 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       state.sessions.push({ id, subject: command.subject, mode: command.mode, startedAt: now, ...(command.mode === 'diagnose' ? { intensity: command.intensity ?? 'standard' } : {}),
         deadline: Math.min(now + state.profile.limits.blockMinutes * MINUTE, now + remaining, nextMidnight),
         ...(command.mode === 'school' && course ? { materialId: course.materialId, unit: course.unit } : {}),
+        ...(command.scope !== undefined ? { scope: command.scope } : {}),
       })
       break
     }
@@ -343,6 +365,12 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       })) return previous
       requireValue(active && active.id === attempt.sessionId && active.subject === attempt.subject, '作答必须属于当前学习段和科目。')
       requireValue(now <= active.deadline, '本段学习已到时，请停止并休息。超时答案可在对话中保留，下次学习再复核。')
+      if (attempt.objectiveId && active.scope) {
+        const objective = objectiveOf(state, attempt.objectiveId)
+        requireValue(objective?.subject === attempt.subject, '学习目标不存在或科目不符。')
+        const unit = objective !== undefined && 'unit' in objective && typeof objective.unit === 'string' ? objective.unit : ''
+        requireValue(scopeSelects(active.scope, attempt.subject, unit, attempt.objectiveId), '作答目标不在本段学习范围内。')
+      }
       if (state.task?.sessionId === active.id) {
         const task = state.task
         requireValue(task.id === attempt.id && task.topic === attempt.topic && task.prompt === attempt.prompt && task.mistakeId === attempt.mistakeId && task.objectiveId === attempt.objectiveId && task.variant === attempt.variant && task.response === attempt.response, '反馈必须对应当前题目和已保存的原始回答。')
@@ -350,7 +378,10 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       }
       const mistake = attempt.mistakeId ? state.mistakes.find(item => item.id === attempt.mistakeId) : undefined
       requireValue(!attempt.mistakeId || mistake, '错题不存在，请先查询错题记录。')
-      if (attempt.objectiveId) requireValue(objectiveOf(state, attempt.objectiveId)?.subject === attempt.subject, '学习目标不存在或科目不符。')
+      if (attempt.objectiveId) {
+        const objective = objectiveOf(state, attempt.objectiveId)
+        requireValue(objective?.subject === attempt.subject, '学习目标不存在或科目不符。')
+      }
       if (mistake?.objectiveId) requireValue(attempt.objectiveId === mistake.objectiveId, '作答必须对应错题的学习目标。')
       requireValue(active.mode !== 'review' || mistake, '复习模式的作答需要关联一条已确认的错题。')
       requireValue(active.mode !== 'diagnose' || attempt.objectiveId !== undefined, '摸底作答必须关联学习目标（objectiveId）。')
@@ -764,6 +795,7 @@ export interface DiagnosticPlan {
   recommendedIntensity: CheckInIntensity
   sample: DiagnosticSample[]
   samples: Record<CheckInIntensity, DiagnosticSample[]>
+  scope?: CurriculumScope & { units?: string[] | undefined; objectiveIds?: string[] | undefined }
 }
 
 /** One recorded check-in block with its answers and counts. */
@@ -800,14 +832,16 @@ export interface StudyInsight {
  * Confirmed mistakes, independent answers on different days and paper results are the only evidence;
  * a helped or wrong answer counts against independence, and an unassessed answer is not an error.
  * A check-in (diagnose block) is due per subject every fourteen days while untouched, stalled or long-mastered
- * objectives remain to probe; its sample rotates across units. When the parent has confirmed the map unit the
- * class has reached, check-ins, weak points and new goals stay in that unit and earlier ones; preview, if
- * enabled, offers only the next unit after the current unit has no new goal, and a review week adds no new goal.
+ * objectives remain to probe; its sample rotates across units. The confirmed school frontier is the default
+ * suggestion range, not a hard gate: a session scope (grade, term, units or objective IDs) can override it
+ * for cross-grade or custom diagnosis and learning. Without a scope, check-ins, weak points and new goals
+ * stay in the confirmed unit and earlier ones; preview, if enabled, offers only the next unit after the
+ * current unit has no new goal, and a review week adds no new goal.
  * @param state - current durable learning state.
  * @param now - host wall-clock time in milliseconds.
  * @returns objective insights, the five weakest points, per-subject check-in plans and one recommendation.
  */
-/** Parent-confirmed class frontier. Absent progress leaves the whole map in scope. */
+/** Parent-confirmed class frontier; the default suggestion range, not a hard gate. Absent progress leaves the whole map in scope. */
 function schoolGate(state: StudyState, subject: CurriculumSubject) {
   const progress = state.courses.find(item => item.subject === subject)?.progress
   if (!progress) return undefined
@@ -825,21 +859,46 @@ function schoolGate(state: StudyState, subject: CurriculumSubject) {
 }
 
 /**
- * Whether a map unit is at or before the parent-confirmed class frontier; goals without a map unit stay in scope.
+ * Whether a map unit may be suggested, sampled, or asked about.
+ * An explicit session scope overrides the confirmed school frontier; absent both, the whole map is in scope.
  * @param state - current durable learning state.
  * @param subject - subject the unit belongs to.
  * @param unit - map unit id, or '' for a custom goal.
- * @returns whether the unit may be suggested, sampled, or asked about.
+ * @param scope - optional session scope selecting a grade, term and units.
+ * @returns whether the unit is in scope.
  */
-export function taughtUnit(state: StudyState, subject: CurriculumSubject, unit: string): boolean {
+export function taughtUnit(state: StudyState, subject: CurriculumSubject, unit: string, scope?: CurriculumScope & { units?: string[] | undefined }): boolean {
+  if (unit === '') return true
+  if (scope !== undefined) {
+    if (scope.units !== undefined) return scope.units.includes(unit)
+    const file = curriculumFor({ grade: scope.grade, term: scope.term }, subject)
+    return file?.units.some(item => item.id === unit) ?? false
+  }
   const gate = schoolGate(state, subject)
-  if (!gate || unit === '') return true
+  if (!gate) return true
   return gate.taught.has(unit)
 }
 
-/** New learning stays inside the current unit, or inside every taught unit when catching up. A review week adds none. */
-function learnable(state: StudyState, item: ObjectiveInsight): boolean {
+/**
+ * Whether a session scope selects an objective: by explicit ID, by unit, or by grade/term map.
+ * @param scope - session scope from the start command.
+ * @param subject - subject the objective belongs to.
+ * @param unit - map unit id, or '' for a custom goal.
+ * @param objectiveId - objective to test.
+ * @returns whether the objective is in scope.
+ */
+function scopeSelects(scope: { grade: number; term: 'first' | 'second'; units?: string[] | undefined; objectiveIds?: string[] | undefined }, subject: CurriculumSubject, unit: string, objectiveId: string): boolean {
+  if (scope.objectiveIds !== undefined) return scope.objectiveIds.includes(objectiveId)
+  if (unit === '') return false
+  if (scope.units !== undefined) return scope.units.includes(unit)
+  const file = curriculumFor({ grade: scope.grade, term: scope.term }, subject)
+  return file?.units.some(item => item.id === unit) ?? false
+}
+
+/** New learning stays inside the current unit, or inside every taught unit when catching up, unless a session scope overrides. A review week adds none. */
+function learnable(state: StudyState, item: ObjectiveInsight, scope?: CurriculumScope & { units?: string[] | undefined; objectiveIds?: string[] | undefined }): boolean {
   if (item.level !== 'untouched') return false
+  if (scope !== undefined) return scopeSelects(scope, item.subject, item.unit, item.id)
   const gate = schoolGate(state, item.subject)
   if (!gate) return true
   if (gate.pace === 'review') return false
@@ -893,24 +952,13 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
   }
   for (const objective of builtinObjectives(state.profile)) include(objective)
   for (const objective of state.objectives) include({ ...objective, unit: '', unitName: '' })
-  const weakPoints = objectives.filter(item => (item.level === 'due' || item.level === 'weak' || item.level === 'stalled') && taughtUnit(state, item.subject, item.unit))
-    .sort((a, b) => b.priority - a.priority).slice(0, 5)
-  const dueMistake = (item: StudyState['mistakes'][number]) => {
-    if (item.confirmedAt === undefined || item.dueAt === undefined || item.dueAt > now) return false
-    if (!item.objectiveId) return true
-    const objective = objectives.find(candidate => candidate.id === item.objectiveId)
-    return taughtUnit(state, item.subject, objective?.unit ?? '')
-  }
-  const due = SUBJECT_ORDER.map(subject => ({ subject, count: state.mistakes.filter(item => item.subject === subject && dueMistake(item)).length }))
-    .filter(item => item.count > 0).sort((a, b) => b.count - a.count)
-  const diagnostics: DiagnosticPlan[] = SUBJECT_ORDER.map(subject => {
-    const own = objectives.filter(item => item.subject === subject && taughtUnit(state, subject, item.unit))
+  const diagnosticPlan = (subject: CurriculumSubject, pool: ObjectiveInsight[], scope?: CurriculumScope & { units?: string[] | undefined; objectiveIds?: string[] | undefined }): DiagnosticPlan => {
     const lastAt = state.sessions.filter(item => item.mode === 'diagnose' && item.subject === subject).reduce<number | undefined>((latest, item) => latest === undefined || item.startedAt > latest ? item.startedAt : latest, undefined)
     const pick = (item: ObjectiveInsight, reason: DiagnosticSample['reason']): DiagnosticSample => ({ id: item.id, title: item.title, unit: item.unit, unitName: item.unitName, reason })
-    const untouched = own.filter(item => item.level === 'untouched')
-    const stalled = own.filter(item => item.level === 'stalled')
-    const recheck = own.filter(item => item.level === 'mastered' && item.lastAt !== undefined && now - item.lastAt >= RECHECK_AFTER)
-    const progress = own.filter(item => item.level === 'practising')
+    const untouched = pool.filter(item => item.level === 'untouched')
+    const stalled = pool.filter(item => item.level === 'stalled')
+    const recheck = pool.filter(item => item.level === 'mastered' && item.lastAt !== undefined && now - item.lastAt >= RECHECK_AFTER)
+    const progress = pool.filter(item => item.level === 'practising')
     const rotated: DiagnosticSample[] = []
     const byUnit = new Map<string, ObjectiveInsight[]>()
     for (const item of untouched) byUnit.set(item.unit, [...(byUnit.get(item.unit) ?? []), item])
@@ -926,12 +974,23 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
       standard: candidates.slice(0, checkInSizes.standard),
       deep: [...candidates, ...progress.map(item => pick(item, 'progress'))].slice(0, checkInSizes.deep),
     }
-    const pool = untouched.length + stalled.length + recheck.length
-    const recommendedIntensity: CheckInIntensity = pool <= checkInSizes.light ? 'light' : pool >= 10 && lastAt !== undefined ? 'deep' : 'standard'
+    const count = untouched.length + stalled.length + recheck.length
+    const recommendedIntensity: CheckInIntensity = count <= checkInSizes.light ? 'light' : count >= 10 && lastAt !== undefined ? 'deep' : 'standard'
     const due = samples.standard.length > 0 && (lastAt === undefined || now - lastAt >= DIAGNOSIS_INTERVAL)
     return { subject, due, ...(lastAt !== undefined ? { lastAt, nextAt: lastAt + DIAGNOSIS_INTERVAL } : {}), untouched: untouched.length, stalled: stalled.length, recheck: recheck.length,
-      coverage: { probed: own.length - untouched.length, total: own.length }, recommendedIntensity, sample: samples.standard, samples }
-  })
+      coverage: { probed: pool.length - untouched.length, total: pool.length }, recommendedIntensity, sample: samples.standard, samples, ...(scope !== undefined ? { scope } : {}) }
+  }
+  const diagnostics: DiagnosticPlan[] = SUBJECT_ORDER.map(subject => diagnosticPlan(subject, objectives.filter(item => item.subject === subject && taughtUnit(state, subject, item.unit))))
+  const weakPoints = objectives.filter(item => (item.level === 'due' || item.level === 'weak' || item.level === 'stalled') && taughtUnit(state, item.subject, item.unit))
+    .sort((a, b) => b.priority - a.priority).slice(0, 5)
+  const dueMistake = (item: StudyState['mistakes'][number]) => {
+    if (item.confirmedAt === undefined || item.dueAt === undefined || item.dueAt > now) return false
+    if (!item.objectiveId) return true
+    const objective = objectives.find(candidate => candidate.id === item.objectiveId)
+    return taughtUnit(state, item.subject, objective?.unit ?? '')
+  }
+  const due = SUBJECT_ORDER.map(subject => ({ subject, count: state.mistakes.filter(item => item.subject === subject && dueMistake(item)).length }))
+    .filter(item => item.count > 0).sort((a, b) => b.count - a.count)
   const first = due[0]
   const checkIn = diagnostics.filter(plan => plan.due).sort((a, b) => b.sample.length - a.sample.length)[0]
   const untouched = objectives.find(item => learnable(state, item))
@@ -985,6 +1044,77 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
     if (nextTarget !== undefined && (recommendation.kind === 'preview' || practised === undefined || practised.unit !== nextTarget.unit)) remind(nextTarget, 'before-next')
   }
   return { objectives, weakPoints, diagnostics, recommendation, errorProfile, understandingReminders }
+}
+
+/**
+ * A check-in plan for an explicit scope: custom objectives, specific units, or a whole cross-grade map.
+ * The scope overrides the confirmed school frontier for this plan.
+ * @param state - current durable learning state.
+ * @param subject - subject to plan for.
+ * @param now - host wall-clock time in milliseconds.
+ * @param scope - grade and term with optional unit or objective narrowing.
+ * @returns the plan for the scoped pool.
+ */
+export function diagnosticFor(state: StudyState, subject: CurriculumSubject, now: number, scope: CurriculumScope & { units?: string[] | undefined; objectiveIds?: string[] | undefined }): DiagnosticPlan {
+  const profileScope = scope.grade === state.profile.grade && scope.term === state.profile.term
+  const insight = studyInsight(state, now)
+  let pool: ObjectiveInsight[]
+  if (profileScope) {
+    pool = insight.objectives.filter(item => item.subject === subject && (
+      scope.objectiveIds !== undefined ? scope.objectiveIds.includes(item.id)
+        : scope.units !== undefined ? item.unit !== '' && scope.units.includes(item.unit)
+          : item.unit !== '' && curriculumFor(scope, subject)?.units.some(unit => unit.id === item.unit) === true
+    ))
+  } else {
+    const map = builtinObjectivesIn(scope, subject)
+    const scoped = scope.objectiveIds !== undefined ? map.filter(item => scope.objectiveIds?.includes(item.id))
+      : scope.units !== undefined ? map.filter(item => item.unit !== '' && scope.units?.includes(item.unit))
+        : map
+    pool = scoped.map(base => {
+      const existing = insight.objectives.find(item => item.id === base.id)
+      if (existing) return existing
+      const outcomes = state.attempts.filter(item => item.objectiveId === base.id).map(item => ({ at: item.at, result: item.result, assistance: item.assistance }))
+      const independentDays = new Set(outcomes.filter(item => item.result === 'correct' && item.assistance === 'independent').map(item => studyDay(item.at)))
+      const lastAt = outcomes.reduce<number | undefined>((latest, item) => latest === undefined || item.at > latest ? item.at : latest, undefined)
+      const helpedOrWrong = outcomes.filter(item => item.at >= now - 14 * DAY && (item.result === 'incorrect' || item.result === 'partial' || (item.result === 'correct' && item.assistance !== 'independent'))).length
+      const mistakes = state.mistakes.filter(item => item.objectiveId === base.id && item.confirmedAt !== undefined)
+      const activeMistakes = mistakes.filter(item => item.stage < 4).length
+      const dueMistakes = mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= now).length
+      const weak = activeMistakes >= 2 || helpedOrWrong >= 2
+      const stalled = !weak && independentDays.size < 3 && lastAt !== undefined && now - lastAt > 10 * DAY
+      const level = dueMistakes > 0 ? 'due' as const : weak ? 'weak' as const
+        : independentDays.size >= 3 && activeMistakes === 0 && helpedOrWrong === 0 ? 'mastered' as const : stalled ? 'stalled' as const
+          : lastAt !== undefined || mistakes.length > 0 ? 'practising' as const : 'untouched' as const
+      const priority = level === 'mastered' ? 0 : dueMistakes * 40 + Math.min(36, helpedOrWrong * 12) + Math.min(24, activeMistakes * 8) + (stalled ? 10 : 0) + (level === 'untouched' ? 5 : 0)
+      return { ...base, level, independentDays: independentDays.size, attempts: outcomes.length, helpedOrWrong, ...(lastAt !== undefined ? { lastAt } : {}), activeMistakes, dueMistakes, masteredMistakes: mistakes.length - activeMistakes, errorTypes: [], priority, reasons: level === 'untouched' ? [{ code: 'not-started' as const, count: 0 }] : [] }
+    })
+  }
+  const lastAt = state.sessions.filter(item => item.mode === 'diagnose' && item.subject === subject).reduce<number | undefined>((latest, item) => latest === undefined || item.startedAt > latest ? item.startedAt : latest, undefined)
+  const pick = (item: ObjectiveInsight, reason: DiagnosticSample['reason']): DiagnosticSample => ({ id: item.id, title: item.title, unit: item.unit, unitName: item.unitName, reason })
+  const untouched = pool.filter(item => item.level === 'untouched')
+  const stalled = pool.filter(item => item.level === 'stalled')
+  const recheck = pool.filter(item => item.level === 'mastered' && item.lastAt !== undefined && now - item.lastAt >= RECHECK_AFTER)
+  const progress = pool.filter(item => item.level === 'practising')
+  const rotated: DiagnosticSample[] = []
+  const byUnit = new Map<string, ObjectiveInsight[]>()
+  for (const item of untouched) byUnit.set(item.unit, [...(byUnit.get(item.unit) ?? []), item])
+  for (let round = 0; round <= untouched.length && rotated.length < untouched.length; round += 1) {
+    for (const list of byUnit.values()) {
+      const item = list[round]
+      if (item) rotated.push(pick(item, 'untouched'))
+    }
+  }
+  const candidates = [...rotated, ...stalled.map(item => pick(item, 'stalled')), ...recheck.map(item => pick(item, 'recheck'))]
+  const samples: Record<CheckInIntensity, DiagnosticSample[]> = {
+    light: candidates.slice(0, checkInSizes.light),
+    standard: candidates.slice(0, checkInSizes.standard),
+    deep: [...candidates, ...progress.map(item => pick(item, 'progress'))].slice(0, checkInSizes.deep),
+  }
+  const count = untouched.length + stalled.length + recheck.length
+  const recommendedIntensity: CheckInIntensity = count <= checkInSizes.light ? 'light' : count >= 10 && lastAt !== undefined ? 'deep' : 'standard'
+  const due = samples.standard.length > 0 && (lastAt === undefined || now - lastAt >= DIAGNOSIS_INTERVAL)
+  return { subject, due, ...(lastAt !== undefined ? { lastAt, nextAt: lastAt + DIAGNOSIS_INTERVAL } : {}), untouched: untouched.length, stalled: stalled.length, recheck: recheck.length,
+    coverage: { probed: pool.length - untouched.length, total: pool.length }, recommendedIntensity, sample: samples.standard, samples, scope }
 }
 
 /**

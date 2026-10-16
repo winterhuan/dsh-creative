@@ -162,7 +162,8 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('limits'), limits, parentConfirmation: text }).strict(),
   z.object({ action: z.literal('material'), material }).strict(),
   z.object({ action: z.literal('course'), course: courseInput }).strict(),
-  z.object({ action: z.literal('start'), id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']), intensity: z.enum(['light', 'standard', 'deep']).optional() }).strict(),
+  z.object({ action: z.literal('start'), id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']), intensity: z.enum(['light', 'standard', 'deep']).optional(),
+    scope: z.object({ grade: z.number().int().min(1).max(6), term: z.enum(['first', 'second']), units: z.array(id).max(20).optional(), objectiveIds: z.array(id).max(60).optional() }).strict().optional() }).strict(),
   z.object({ action: z.literal('task'), task }).strict(),
   z.object({ action: z.literal('answer'), taskId: id, response: text }).strict(),
   z.object({ action: z.literal('hint'), taskId: id }).strict(),
@@ -194,6 +195,7 @@ export const stateSchema = z.object({
     id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']), intensity: z.enum(['light', 'standard', 'deep']).optional(),
     startedAt: time, deadline: time, endedAt: time.optional(), spentMs: time.optional(),
     materialId: id.optional(), unit: text.optional(), reflection: z.string().max(2000).optional(),
+    scope: z.object({ grade: z.number().int().min(1).max(6), term: z.enum(['first', 'second']), units: z.array(id).max(20).optional(), objectiveIds: z.array(id).max(60).optional() }).strict().optional(),
   }).strict()).max(5000),
   attempts: z.array(attempt.extend({ at: time, materialId: id.optional() }).strict()).max(20000),
   mistakes: z.array(mistake.extend({

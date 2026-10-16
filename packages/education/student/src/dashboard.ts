@@ -1,6 +1,6 @@
 import type { StudyState } from './schema.ts'
 import type { CurriculumSubject } from './curriculum.ts'
-import { checkInHistory, curriculumView, insightSummary, itemObjectiveId, objectiveInfo, reviewPlan, sheetOpen, studyInsight, studyStatus } from './learning.ts'
+import { checkInHistory, curriculumView, diagnosticFor, insightSummary, itemObjectiveId, objectiveInfo, reviewPlan, sheetOpen, studyInsight, studyStatus } from './learning.ts'
 
 /** Mistake-book filter for the confirmed list. */
 export type MistakeStatus = 'all' | 'due' | 'reviewing' | 'mastered'
@@ -10,10 +10,10 @@ export type MistakeStatus = 'all' | 'due' | 'reviewing' | 'mastered'
  * weak points, the next step and one page of the mistake notebook.
  * @param state - current durable learning state, or undefined before setup.
  * @param now - host wall-clock time in milliseconds.
- * @param options - selected subject, notebook offset and status filter, and an optional grade and term to browse another knowledge map.
+ * @param options - selected subject, notebook offset and status filter, an optional grade and term to browse another knowledge map, and an optional check-in scope (grade, term, unit).
  * @returns the dashboard payload served to the workbench.
  */
-export function dashboard(state: StudyState | undefined, now: number, options: { subject?: CurriculumSubject; mistakeOffset?: number; mistakeStatus?: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second' } = {}) {
+export function dashboard(state: StudyState | undefined, now: number, options: { subject?: CurriculumSubject; mistakeOffset?: number; mistakeStatus?: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second'; diagGrade?: number; diagTerm?: 'first' | 'second'; diagUnit?: string } = {}) {
   if (!state) return { serverNow: now, revision: 0, study: null }
   const subject = options.subject ?? 'math'
   const mistakeOffset = options.mistakeOffset ?? 0
@@ -74,6 +74,12 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
     },
     curriculum: curriculumView(state, subject, insight, scope),
     diagnostic: insight.diagnostics.find(plan => plan.subject === subject) ?? null,
+    scopedDiagnostic: options.diagGrade !== undefined || options.diagTerm !== undefined
+      ? diagnosticFor(state, subject, now, { grade: options.diagGrade ?? state.profile.grade, term: options.diagTerm ?? state.profile.term, ...(options.diagUnit !== undefined && options.diagUnit !== '' ? { units: [options.diagUnit] } : {}) })
+      : null,
+    scopedUnits: options.diagGrade !== undefined || options.diagTerm !== undefined
+      ? (curriculumView(state, subject, insight, { grade: options.diagGrade ?? state.profile.grade, term: options.diagTerm ?? state.profile.term })?.units.map(unit => ({ id: unit.id, name: unit.name })) ?? [])
+      : [],
     checkIns: checkInHistory(state),
     ...insightSummary(insight),
     diagnostics: insight.diagnostics,

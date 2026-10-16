@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dashboard, MistakeStatus } from '../dashboard.ts'
 import type { Command } from '../schema.ts'
 
-/** Query identity for one visible workbench: notebook page, subject, notebook filter and an optional knowledge-map scope. */
-export interface StudyQuery { offset: number; subject: 'chinese' | 'math' | 'english'; status: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second' }
+/** Query identity for one visible workbench: notebook page, subject, notebook filter, an optional knowledge-map scope and an optional check-in scope. */
+export interface StudyQuery { offset: number; subject: 'chinese' | 'math' | 'english'; status: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second'; diagGrade?: number; diagTerm?: 'first' | 'second'; diagUnit?: string }
 
 /** Poll visible workbenches; preserve data on failure and discard obsolete responses. */
 export function useStudy(sessionId: string, visible: boolean, networkError: string, query: StudyQuery) {
@@ -20,7 +20,7 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
     const controller = new AbortController()
     controllers.current.add(controller)
     try {
-      const scope = `${query.mapGrade !== undefined ? `&mapGrade=${query.mapGrade}` : ''}${query.mapTerm !== undefined ? `&mapTerm=${query.mapTerm}` : ''}`
+      const scope = `${query.mapGrade !== undefined ? `&mapGrade=${query.mapGrade}` : ''}${query.mapTerm !== undefined ? `&mapTerm=${query.mapTerm}` : ''}${query.diagGrade !== undefined ? `&diagGrade=${query.diagGrade}` : ''}${query.diagTerm !== undefined ? `&diagTerm=${query.diagTerm}` : ''}${query.diagUnit !== undefined && query.diagUnit !== '' ? `&diagUnit=${encodeURIComponent(query.diagUnit)}` : ''}`
       const response = await fetch(`/student/workspace?sessionId=${encodeURIComponent(sessionId)}&mistakeOffset=${query.offset}&subject=${query.subject}&mistakeStatus=${query.status}${scope}`, {
         signal: controller.signal, ...(change ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ revision, change }) } : {}),
       })
@@ -36,7 +36,7 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
       if (alive.current && !controller.signal.aborted && sequence === latest.current) setError(reason instanceof Error ? reason.message : networkError)
       throw reason
     } finally { controllers.current.delete(controller) }
-  }, [sessionId, networkError, query.offset, query.subject, query.status, query.mapGrade, query.mapTerm])
+  }, [sessionId, networkError, query.offset, query.subject, query.status, query.mapGrade, query.mapTerm, query.diagGrade, query.diagTerm, query.diagUnit])
   const reload = useCallback(async () => { if (!writing.current) await request().catch(() => {}) }, [request])
   useEffect(() => {
     alive.current = true

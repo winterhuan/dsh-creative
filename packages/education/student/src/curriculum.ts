@@ -134,17 +134,40 @@ export function curriculumFiles(scope: CurriculumScope): Curriculum[] {
 }
 
 /**
+ * All shipped learning objectives for one subject within an arbitrary scope, with unit names resolved.
+ * @param scope - grade and term to read; may differ from the learner profile.
+ * @param subject - requested subject.
+ * @returns resolved objectives; empty outside grades one and two.
+ */
+export function builtinObjectivesIn(scope: CurriculumScope, subject: CurriculumSubject): BuiltinObjective[] {
+  const file = load(subject, scope.grade, scope.term)
+  if (!file) return []
+  return file.objectives.map(objective => ({
+    ...objective,
+    subject: file.subject,
+    unitName: file.units.find(unit => unit.id === file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit)?.name ?? '',
+    unit: file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit ?? '',
+  }))
+}
+
+/**
+ * Resolve one shipped objective by ID within an arbitrary scope.
+ * @param scope - grade and term to read; may differ from the learner profile.
+ * @param subject - requested subject.
+ * @param objectiveId - objective to resolve.
+ * @returns the resolved objective, or undefined when it is not shipped for this scope.
+ */
+export function builtinObjectiveIn(scope: CurriculumScope, subject: CurriculumSubject, objectiveId: string): BuiltinObjective | undefined {
+  return builtinObjectivesIn(scope, subject).find(objective => objective.id === objectiveId)
+}
+
+/**
  * All shipped learning objectives for the profile, in subject and map order.
  * @param scope - learner grade and term.
  * @returns resolved objectives; empty outside grades one and two.
  */
 export function builtinObjectives(scope: CurriculumScope): BuiltinObjective[] {
-  return curriculumFiles(scope).flatMap(file => file.objectives.map(objective => ({
-    ...objective,
-    subject: file.subject,
-    unitName: file.units.find(unit => unit.id === file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit)?.name ?? '',
-    unit: file.concepts.find(concept => concept.id === objective.conceptIds[0])?.unit ?? '',
-  })))
+  return curriculumFiles(scope).flatMap(file => builtinObjectivesIn(scope, file.subject))
 }
 
 /**
@@ -155,6 +178,17 @@ export function builtinObjectives(scope: CurriculumScope): BuiltinObjective[] {
  */
 export function builtinObjective(scope: CurriculumScope, objectiveId: string): BuiltinObjective | undefined {
   return builtinObjectives(scope).find(objective => objective.id === objectiveId)
+}
+
+/**
+ * The unit a shipped objective belongs to, within an arbitrary scope.
+ * @param scope - grade and term to read; may differ from the learner profile.
+ * @param subject - requested subject.
+ * @param objectiveId - objective to locate.
+ * @returns the unit id, or undefined when the objective is not shipped for this scope.
+ */
+export function builtinUnitOf(scope: CurriculumScope, subject: CurriculumSubject, objectiveId: string): string | undefined {
+  return builtinObjectiveIn(scope, subject, objectiveId)?.unit
 }
 
 /**
