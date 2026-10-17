@@ -62,6 +62,7 @@ function specFor(family: string, action: string): Options | undefined {
         ...WORKSPACE, ...BOOK, revision: { kind: 'value', type: 'int' }, kind: { kind: 'value', choices: QUERY_KINDS, required: true },
         search: { kind: 'value', default: '' }, filter: { kind: 'value', choices: QUERY_FILTERS, default: 'all' },
         chapter: { kind: 'value', type: 'int' }, offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: 20 },
+        'stale-planted': { kind: 'value', type: 'int' }, 'stale-character': { kind: 'value', type: 'int' }, 'stale-thread': { kind: 'value', type: 'int' },
       },
       check: { ...WORKSPACE, ...BOOK },
       context: { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' }, text: { kind: 'value' } },
@@ -377,9 +378,15 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     }
     const expectedRevision = integer(values, 'revision') ?? null
     if (action === 'status') return [projectQuery(book, { expectedRevision }), 0]
+    const stalePlanted = integer(values, 'stale-planted')
+    const staleCharacter = integer(values, 'stale-character')
+    const staleThread = integer(values, 'stale-thread')
     return [projectQuery(book, {
       kind: values.kind as QueryKind, search: text(values, 'search'), selection: values.filter as QueryFilter,
       chapter: integer(values, 'chapter') ?? null, offset: integer(values, 'offset') ?? 0, limit: integer(values, 'limit') ?? 20, expectedRevision,
+      ...(stalePlanted === undefined ? {} : { stalePlanted }),
+      ...(staleCharacter === undefined ? {} : { staleCharacter }),
+      ...(staleThread === undefined ? {} : { staleThread }),
     }), 0]
   }
   if (family === 'outline' || family === 'chapter') {

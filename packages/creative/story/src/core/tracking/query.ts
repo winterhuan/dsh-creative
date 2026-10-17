@@ -3,11 +3,16 @@
  *
  * Port of `tests/reference/project_query.py`: one state revision per call, a 16 KiB
  * result budget, and pagination that never rewrites state or silently drops an
- * oversized item.
+ * oversized item. `kind: 'health'` is a TypeScript risk list; the Python reference
+ * does not implement it.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { basename, dirname, join, sep } from 'node:path'
+import {
+  assessHealth, DEFAULT_STALE_CHARACTER_CHAPTERS, DEFAULT_STALE_PLANTED_CHAPTERS, DEFAULT_STALE_THREAD_CHAPTERS,
+  HEALTH_THRESHOLD_MAX, type HealthReport,
+} from './health.ts'
 import { DELTA_MAX_BYTES, normalizeState, require, type ForeshadowRow, type TrackingState } from './schema.ts'
 import { deltaPath, projectCommitInProgress } from './store.ts'
 
@@ -15,7 +20,7 @@ import { deltaPath, projectCommitInProgress } from './store.ts'
 export const QUERY_MAX_BYTES = 16_384
 const STATE_SOURCE = '追踪/_tracking-state.json'
 /** Query kinds. */
-export const QUERY_KINDS = ['characters', 'foreshadow', 'author-timeline', 'reader-timeline', 'chapter'] as const
+export const QUERY_KINDS = ['characters', 'foreshadow', 'author-timeline', 'reader-timeline', 'chapter', 'health'] as const
 /** Foreshadow selections. */
 export const QUERY_FILTERS = ['all', 'open', 'due', 'overdue', 'unscheduled', 'resolved'] as const
 
@@ -24,7 +29,7 @@ export type QueryKind = typeof QUERY_KINDS[number]
 /** One foreshadow selection. */
 export type QueryFilter = typeof QUERY_FILTERS[number]
 
-/** Query options; `kind` omitted returns the status overview. */
+/** Query options; `kind` omitted returns the status overview. Health thresholds apply only to `kind: 'health'`. */
 export interface QueryOptions {
   readonly kind?: QueryKind
   readonly search?: string
@@ -33,10 +38,22 @@ export interface QueryOptions {
   readonly offset?: number
   readonly limit?: number
   readonly expectedRevision?: number | null
+  /** Chapters since planting before an unscheduled foreshadow is stale. Health only. */
+  readonly stalePlanted?: number
+  /** Chapters since a character's last timeline touch before that character is stale. Health only. */
+  readonly staleCharacter?: number
+  /** Chapters before an unrevealed fact or open thread is stale. Health only. */
+  readonly staleThread?: number
 }
 
 function encoded(value: unknown): number {
   return Buffer.byteLength(`${JSON.stringify(value)}\n`, 'utf8')
+}
+
+function boundedThreshold(value: number | undefined, label: string, fallback: number): number {
+  if (value === undefined) return fallback
+  require(Number.isInteger(value) && value >= 1 && value <= HEALTH_THRESHOLD_MAX, `${label} must be an integer from 1 to ${String(HEALTH_THRESHOLD_MAX)}`)
+  return value
 }
 
 /** Resolve symlinks as far as the path exists, like Python's non-strict `Path.resolve()`. */
@@ -92,6 +109,18 @@ export function projectQuery(project: string, options: QueryOptions = {}): Recor
   require(kind === undefined || (QUERY_KINDS as readonly string[]).includes(kind), 'unsupported query kind')
   require((QUERY_FILTERS as readonly string[]).includes(selection), 'unsupported foreshadow filter')
   require(kind === 'foreshadow' || selection === 'all', '--filter requires --kind foreshadow')
+  const thresholdArguments = [
+    ['--stale-planted', options.stalePlanted],
+    ['--stale-character', options.staleCharacter],
+    ['--stale-thread', options.staleThread],
+  ] as const
+  if (kind !== 'health') {
+    const unexpected = thresholdArguments.filter(([, value]) => value !== undefined).map(([name]) => name)
+    require(unexpected.length === 0, `${unexpected.join(', ')} requires --kind health`)
+  }
+  const stalePlanted = kind === 'health' ? boundedThreshold(options.stalePlanted, '--stale-planted', DEFAULT_STALE_PLANTED_CHAPTERS) : undefined
+  const staleCharacter = kind === 'health' ? boundedThreshold(options.staleCharacter, '--stale-character', DEFAULT_STALE_CHARACTER_CHAPTERS) : undefined
+  const staleThread = kind === 'health' ? boundedThreshold(options.staleThread, '--stale-thread', DEFAULT_STALE_THREAD_CHAPTERS) : undefined
   require(offset >= 0 && limit >= 1 && limit <= 50, 'offset must be nonnegative and limit must be 1..50')
   require(chapter === null || chapter > 0, 'chapter must be positive')
   require(kind !== 'chapter' || chapter !== null, '--kind chapter requires --chapter')
@@ -129,7 +158,20 @@ export function projectQuery(project: string, options: QueryOptions = {}): Recor
   } else {
     let rows: Record<string, unknown>[] = []
     let missing: string[] = []
-    if (kind === 'characters') {
+    let healthReport: HealthReport | undefined
+    if (kind === 'health') {
+      healthReport = assessHealth(state, {
+        chapter: atChapter,
+        ...(stalePlanted === undefined ? {} : { stalePlanted }),
+        ...(staleCharacter === undefined ? {} : { staleCharacter }),
+        ...(staleThread === undefined ? {} : { staleThread }),
+      })
+      rows = healthReport.items.map(item => ({
+        risk: item.risk, id: item.id, summary: item.summary, age: item.age,
+        anchor_chapter: item.anchor_chapter, source: item.source,
+        ...(item.active === undefined ? {} : { active: item.active }),
+      }))
+    } else if (kind === 'characters') {
       rows = Object.keys(state.characters).sort().map(name => ({ name, ...state.characters[name], source: `追踪/角色状态/${name}.md` }))
     } else if (kind === 'foreshadow') {
       const importance = { 高: 0, 中: 1, 低: 2 } as const
@@ -162,10 +204,23 @@ export function projectQuery(project: string, options: QueryOptions = {}): Recor
     }
     const needle = search.toLowerCase().trim()
     if (needle !== '') rows = rows.filter(row => JSON.stringify(row).toLowerCase().includes(needle))
+    if (healthReport !== undefined) {
+      const countRisk = (risk: string): number => rows.filter(row => row.risk === risk).length
+      healthReport = {
+        ...healthReport,
+        counts: {
+          overdue_foreshadow: countRisk('overdue-foreshadow'),
+          unscheduled_foreshadow: countRisk('unscheduled-foreshadow'),
+          stale_character: countRisk('stale-character'),
+          stale_thread: countRisk('stale-thread'),
+        },
+      }
+    }
     result = {
       ...base, kind, at_chapter: atChapter, filter: selection, search,
       total: rows.length, offset, items: [] as Record<string, unknown>[], omitted: rows.length,
       next_offset: null as number | null, missing_sources: missing,
+      ...(healthReport === undefined ? {} : { thresholds: healthReport.thresholds, counts: healthReport.counts }),
     }
     const items = result.items as Record<string, unknown>[]
     for (const row of rows.slice(offset, offset + limit)) {
