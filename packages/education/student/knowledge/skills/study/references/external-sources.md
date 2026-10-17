@@ -1,6 +1,6 @@
 # 外部资料
 
-2026-10-17 检索。这里记下已经看到的目录、课时名，以及已经写进地图的句子。电子课本和试卷文件没有保存。二年级上册语文按随包课页核对。下面「已经读到的句子」一节里的原句已经写进对应知识点；其余目录页还没有用来改写事实。
+2026-10-17 检索。这里记下已经看到的目录、课时名，以及已经写进地图的句子和数学事实。电子课本和试卷文件没有保存。二年级上册语文按随包课页核对。下面「已经读到的句子」和「已经读到的数学课页」里记下的内容，已经写进对应知识点。只看到目录、没有打开正文的页面，没有用来改写事实。
 
 出版社和册次可以不同。对得上的概念可以接着打开正文；对不上的概念不收进那一课。
 
@@ -18,11 +18,23 @@
 
 英语一年级下册 Unit 1：How are you today? I'm fine. I'm happy. I'm tired. I'm busy. This is your new classmate, Xiaojiang. Minmin is my friend. You can sit here. Unit 2：It's lunch time. Let's have lunch together. I have meatballs and vegetables. Where is my apple? This is a lunch box for Dad. Unit 3 到 Unit 10 的句子来自电子课本公开预览（<https://www.scribd.com/document/1027494954/>）：Yellow, yellow. What is yellow? The butterfly is yellow. The flower is red. The hill is green. I'm a magical animal. I can change my colour. Look at me. I'm yellow. Can you find me? This is my park. The sky is blue. Come and play on the slide. Come and play on the swing. Hold on tight! Be careful. Up and down. It's fun! How's the weather in Sydney? I like sunny days. In …, it's … today. Put on my shirt. Put on my trousers. I'm ready! Go! One, two, three, four. Hide-and-seek. Are you ready? I like to play freeze. Red light, red light. Stop, stop, stop! The light is red. Let's walk across the zebra crossing. What do you see? I see a panda looking at me. Which toy do you like? I like them all.
 
+## 已经读到的数学课页
+
+这些页面的正文已经读过，写进地图的是对得上的算法、口诀和图形特征。练习题的题干没有抄进地图。搜索摘要、打不开的课件和算式对不上的页面没有使用。
+
+一年级上册。沪教版（2024）第三单元《10以内的数》大单元教学设计：<https://www.huajiangbk.com/newsview720421.html>。写入 `m1a-count`、`m1a-zero`、`m1a-compose`、`m1a-moreless`、`m1a-compare`、`m1a-ordinal`。页上没有写“开口对着大数”，也没有写“从哪一边数起”，这两句没有写入。沪教版一年级上册全册教案：<https://www.renrendoc.com/paper/523761987.html>。这一份没有标明 2024，单元顺序也和地图不同；只把概念对得上的内容写入 `m1a-zero`、`m1a-compose`、`m1a-solids`、`m1a-add-meaning`、`m1a-sub-meaning`、`m1a-teen`、`m1a-place`、`m1a-carry`。平面图形这一课页上没有写到，`m1a-planes` 保持原样。
+
+一年级下册，均为沪教版（2024）已读教案。第一单元《20以内数的加减法（二）》：<https://zy.21cnjy.com/22604800>，写入 `m1b-borrow`、`m1b-picture`。页上说明这一阶段不教“逆运算”，地图里没有写这个词，投篮题干也没有抄。第二单元《100以内的数》：<https://zy.21cnjy.com/22604782>，写入 `m1b-count100`、`m1b-read100`、`m1b-tensones`、`m1b-compare100`、`m1b-neighbor`。36 的读法页上写了“三十六”；100 的读法只说要会读会写，没有把“一百”写进地图。与 34 相邻的填空是练习，没有抄。第三单元《时间的初步认识》：<https://zy.21cnjy.com/22604763>，写入 `m1b-clock`、`m1b-half`。第四单元《100以内数的加减法（一）》：<https://zy.21cnjy.com/22604777>，写入 `m1b-add-nocarry`、`m1b-add-carry`、`m1b-add-chain`。页上没有 28+5=33 这样的例题，连加也没有写明“从左到右”，这两处没有补。第五单元《长度的比较与测量》：<https://zy.21cnjy.com/22604766>，写入 `m1b-lengthcompare`、`m1b-segment`、`m1b-measure`。同一份教案里有米和 1米=100厘米；地图这个点只讲厘米，没有单独的“米”知识点，所以米没有写入。身高、食指、拃量桌面是练习，没有抄。第七单元《数学广场》：<https://zy.21cnjy.com/22604793>，写入 `m1b-pattern`、`m1b-wall`。找规律在第 72–73 页，数墙在第 74 页。“横线上是四边形”是练习，没有抄。
+
+二年级上册。沪教版（2024）1.3《小练习（1）》课件：<https://zy.21cnjy.com/24319762>，写入 `m2a-sub-plain`、`m2a-sub-borrow`。后面的 36−19 等是练习，没有抄。退位减法第一课时教案：<https://www.renrendoc.com/paper/530069620.html>，写入 `m2a-sub-borrow`、`m2a-sub-check`。43−17、60−25、81−36、65−28 是练习，没有抄。认识人民币教案，教材《欢乐购物街》第 25–27 页：<https://www.renrendoc.com/paper/491464525.html>，写入 `m2a-rmb`、`m2a-pay`。限定金额购物和页上一处书包价格前后不一致的题，没有抄。HJ《5的乘法》课件：<https://www.renrendoc.com/paper/522283656.html>；《5的乘法口诀》教案：<https://www.renrendoc.com/paper/524405231.html>；HJ《2、4、8的乘法①》课件：<https://www.renrendoc.com/paper/522283641.html>。写入 `m2a-mulmeaning`、`m2a-table510`、`m2a-table248`、`m2a-tableuse`。2、4、8 的课件写了按顺序类推，没有写“4 的口诀是 2 的两倍”，地图里的这组口诀也不写加倍。口诀教案把相乘的数称为乘数；地图上 `m2a-mulparts` 仍用因数，这一处没有改。
+
+这次没有写入的页面：学科网相关页打开失败；教习网目录页遇到验证，没有读到正文；有余数的除法不在二年级上册地图里；身体上的尺子没有读到沪教课页，`m1b-body`、`m1b-bodyuse` 保持原样；幻方页上的填数对不上幻方规则，`m2a-magic` 保持原样。数学二年级下册这次没有改。
+
 ## 概念对得上的目录
 
-数学一年级上册的地图概念是数一数、比多少、立体图形和平面图形、10 以内的数与分与合、10 以内加减、20 以内的数、进位加法。好多电子课本网列出的一份一年级上册目录含：我是小学生，认识立体图形，认识平面图形，1–5、0、分与合、6–9、10、比一比、小于等于大于、第几，连加连减，加减混合，11–20，十几就是十和几，进位加法，复习。这些课时和地图是同一组概念。目录页：<https://www.haoduoyun.cc/book/hjb/shuxue/eu1s.shtml>。该站的 PDF 没有保存。
+数学一年级上册的地图概念是数一数、比多少、立体图形和平面图形、10 以内的数与分与合、10 以内加减、20 以内的数、进位加法。好多电子课本网列出的一份一年级上册目录含：我是小学生，认识立体图形，认识平面图形，1–5、0、分与合、6–9、10、比一比、小于等于大于、第几，连加连减，加减混合，11–20，十几就是十和几，进位加法，复习。这些课时和地图是同一组概念。目录页：<https://www.haoduoyun.cc/book/hjb/shuxue/eu1s.shtml>。该站的课页是图片，PDF 没有保存，没有用来改写 facts。改写依据见上一节已经读到的教案。
 
-数学二年级上册的地图概念是 100 以内不退位和退位减法、人民币与购物、表内乘法、方位和分类。教习网列出的一份二年级上册课时含：不退位减法，退位减法，认识人民币，一起来购物，乘法引入，5 的乘法，2、4、8 的乘法，7 的乘法，3、6、9 的乘法。这些和地图是同一个概念。目录页：<http://www.51jiaoxi.com/sx/tb_b3003159/>。同页提到的单元测试卷需要付费，没有打开。
+数学二年级上册的地图概念是 100 以内不退位和退位减法、人民币与购物、表内乘法、方位和分类。教习网列出的一份二年级上册课时含：不退位减法，退位减法，认识人民币，一起来购物，乘法引入，5 的乘法，2、4、8 的乘法，7 的乘法，3、6、9 的乘法。这些和地图是同一个概念。目录页：<http://www.51jiaoxi.com/sx/tb_b3003159/>。同页提到的单元测试卷需要付费，没有打开。这一页只用来核对课时名，没有用来改写 facts。
 
 语文一年级上册的地图课名包括我上学了、天地人、金木水火土、口耳目手足、日月山川、秋天、对韵歌、小小的船、比尾巴。电子课本网列出的一份 2024 秋目录使用同样的课名。目录页：<http://www.dzkbw.com/books/rjb/yuwen/xs1s_2024/>。课本文件没有保存。
 
