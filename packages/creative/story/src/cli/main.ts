@@ -18,6 +18,7 @@ import { checkOutlineCopy } from '../core/checks/outline-copy.ts'
 import { normalizePunctuation, readProjectPunctuationPolicy, type PunctuationPolicy, type QuoteMode } from '../core/checks/punctuation.ts'
 import { verifyDelivery, verifyPhase2 } from '../core/checks/short-contracts.ts'
 import { buildContext } from '../core/context.ts'
+import { LOOKUP_DEFAULT_LIMIT, lookupSettings } from '../core/settings-lookup.ts'
 import { exportNovel } from '../core/export.ts'
 import { LEDGER_NAME, recordEdge } from '../core/lineage.ts'
 import { MEMORY_KINDS, memoryCheck, memoryCommit, memoryInit, memoryQuery, memoryRecord, memoryRoot } from '../core/memory.ts'
@@ -66,6 +67,10 @@ function specFor(family: string, action: string): Options | undefined {
       },
       check: { ...WORKSPACE, ...BOOK },
       context: { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' }, text: { kind: 'value' } },
+      lookup: {
+        ...WORKSPACE, ...BOOK, text: { kind: 'value' }, file: { kind: 'value' }, revision: { kind: 'value' },
+        offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: LOOKUP_DEFAULT_LIMIT },
+      },
     },
     outline: { check: { ...WORKSPACE, ...BOOK, ...CHAPTER } },
     chapter: {
@@ -376,6 +381,18 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       const source = typeof values.text === 'string' ? readFileSync(filePath(values.text, book), 'utf8') : undefined
       return [buildContext(book, { ...(integer(values, 'chapter') === undefined ? {} : { chapter: integer(values, 'chapter') as number }), ...(source === undefined ? {} : { text: source }) }), 0]
     }
+    if (action === 'lookup') {
+      const hasText = typeof values.text === 'string'
+      const hasFile = typeof values.file === 'string'
+      if (hasText === hasFile) throw new CliError('project lookup requires exactly one of --text or --file')
+      const queryText = hasFile ? readFileSync(filePath(text(values, 'file'), book), 'utf8') : text(values, 'text')
+      const revision = typeof values.revision === 'string' ? values.revision : undefined
+      return [lookupSettings(book, queryText, {
+        offset: integer(values, 'offset') ?? 0,
+        limit: integer(values, 'limit') ?? LOOKUP_DEFAULT_LIMIT,
+        ...(revision === undefined ? {} : { expectedIndex: revision }),
+      }), 0]
+    }
     const expectedRevision = integer(values, 'revision') ?? null
     if (action === 'status') return [projectQuery(book, { expectedRevision }), 0]
     const stalePlanted = integer(values, 'stale-planted')
@@ -485,7 +502,7 @@ function emit(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value)}\n`)
 }
 
-const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'SyntaxError'])
+const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'SyntaxError'])
 
 /**
  * Run one command and report its result or structured error on stdout.

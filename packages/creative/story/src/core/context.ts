@@ -1,7 +1,8 @@
 /**
  * Code-selected writing context for one chapter: the hot continuity card,
  * every due foreshadow, the characters a draft or outline actually mentions,
- * and the timeline facts those characters are part of.
+ * the timeline facts those characters are part of, and short setting excerpts
+ * for names that draft mentions.
  *
  * This is the fast inner loop: the context is assembled deterministically from
  * the committed tracking state, so one generation call can follow without a
@@ -9,6 +10,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { CONTEXT_SETTINGS_EXCERPT_CHARS, CONTEXT_SETTINGS_LIMIT, lookupSettings, type LookupHit } from './settings-lookup.ts'
 import { assessHealth, HEALTH_SUMMARY_LIMIT, type HealthReport } from './tracking/health.ts'
 import { matchesForeshadow } from './tracking/query.ts'
 import type { CharacterSnapshot, ForeshadowRow, TimelineRow } from './tracking/schema.ts'
@@ -52,7 +54,9 @@ export interface ContextBundle {
   readonly timeline: readonly TimelineRow[]
   /** Compact risk summary. `counts` stay when `items` are omitted. */
   readonly health: HealthReport
-  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number; readonly health: number }
+  /** Setting excerpts for `text`. Empty when no text was scanned. */
+  readonly settings: readonly LookupHit[]
+  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number; readonly health: number; readonly settings: number }
 }
 
 /**
@@ -114,6 +118,10 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     .sort((a, b) => a.first_recorded_chapter - b.first_recorded_chapter || (a.id < b.id ? -1 : 1))
   const report = assessHealth(state, { chapter })
   const healthItems = report.items.slice(0, HEALTH_SUMMARY_LIMIT)
+  const settingsResult = options.text === undefined || options.text.trim() === '' ? undefined : lookupSettings(project, options.text, {
+    limit: CONTEXT_SETTINGS_LIMIT, excerptChars: CONTEXT_SETTINGS_EXCERPT_CHARS,
+  })
+  const settingItems = settingsResult === undefined ? [] : [...settingsResult.items]
   const bundle = {
     schema: CONTEXT_SCHEMA,
     book_title: state.book_title,
@@ -130,18 +138,24 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     due_foreshadow: dueForeshadow,
     timeline,
     health: { ...report, items: healthItems },
-    omitted: { characters: 0, due_foreshadow: 0, timeline: 0, health: report.items.length - healthItems.length },
+    settings: settingItems,
+    omitted: {
+      characters: 0, due_foreshadow: 0, timeline: 0, health: report.items.length - healthItems.length,
+      settings: settingsResult?.omitted ?? 0,
+    },
   }
-  // Health rows leave first. Due foreshadow is the writer's obligation list and goes last.
+  // Setting excerpts leave first: they are reference, and due foreshadow is the obligation list.
   const trimmed = {
     ...bundle,
     characters: [...characters],
     due_foreshadow: [...dueForeshadow],
     timeline: [...timeline],
     health: { ...bundle.health, items: [...healthItems] },
+    settings: [...settingItems],
     omitted: { ...bundle.omitted },
   }
   while (encodedBytes(trimmed) > CONTEXT_BUNDLE_MAX_BYTES) {
+    if (trimmed.settings.length > 0) { trimmed.settings.pop(); trimmed.omitted.settings += 1; continue }
     if (trimmed.health.items.length > 0) { trimmed.health.items.pop(); trimmed.omitted.health += 1; continue }
     if (trimmed.timeline.length > 0) { trimmed.timeline.pop(); trimmed.omitted.timeline += 1; continue }
     if (trimmed.characters.length > 0) { trimmed.characters.pop(); trimmed.omitted.characters += 1; continue }
