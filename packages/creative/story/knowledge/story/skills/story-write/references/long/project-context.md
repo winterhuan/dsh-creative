@@ -18,7 +18,7 @@
 
 ## 当前状态
 
-先用 `node {CLI} project check --workspace {工作区} --book {作品名} --json` 取得 `last_committed_chapter` 与 `state_revision`，不将完整 state 塞入正文 prompt。续写状态卡固定七栏，最多 12288 字节；优先读取它、本章细纲、当前剧情单元和上一章正文。写前另按 [写前事实](continuity-context.md) 读取 `project context` 的健康摘要。
+先用 `node {CLI} project check --workspace {工作区} --book {作品名} --json` 取得 `last_committed_chapter` 与 `state_revision`，不将完整 state 塞入正文 prompt。续写状态卡固定七栏，最多 12288 字节；优先读取它、本章细纲、当前剧情单元和上一章正文。写前另按 [写前事实](continuity-context.md) 读取 `project context` 的健康摘要，以及细纲或草稿命中的设定摘录。摘录放不下时用 `project lookup` 按同一份文本补页。
 
 本章涉及而状态卡缺失的信息，按角色名读一个动态快照、按伏笔 ID 检索当前行、按需要选择作者真相或读者已知视图。只有追溯原因时查相关逐章记录或原文章节。静态人设不能替代当前动态状态，未来揭示计划不能替代已发生事实。
 

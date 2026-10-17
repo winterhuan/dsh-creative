@@ -33,7 +33,7 @@ description: |
 
 不硬编码任何题材术语。先扫描项目自身的设定文件，动态构建检查词表：
 
-1. 列出 `设定/角色/` 下所有角色文件，提取角色名、别名、称号
+1. 列出 `设定/角色/` 下所有角色文件，提取角色名、别名、称号。别名以文件头声明为准，格式见 [设定文件别名](../../../story-write/references/long/artifact-protocols.md)
 2. 列出 `设定/世界观/` 下所有文件，提取力量体系名称、关键术语、地名
 3. 用调用方随 prompt 传入的 `last_committed_chapter` / `state_revision`（主会话已跑过 `node {CLI} project check --workspace {工作区} --book {作品名} --json`）；prompt 里没有这两个值时不自行读取 `_tracking-state.json`（完整 state 不进 prompt，读取量不随章数增长），只读 `追踪/上下文.md` 头部的 `状态修订：{N}` 作参考；对不上时先把派生视图不可信列为 S1，不继续用它们作一致性结论
 4. 读取 `追踪/伏笔.md` 的已埋当前行，以及本次涉及角色的 `追踪/角色状态/{角色名}.md`

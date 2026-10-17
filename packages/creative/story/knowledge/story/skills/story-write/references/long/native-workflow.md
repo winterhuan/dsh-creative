@@ -34,7 +34,7 @@
 
 | 阶段 | 工作与交接 |
 |---|---|
-| Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，读取 `project context` 的健康摘要，`omitted.health` 非零时补查 `--kind health`，并按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲。健康摘要不代替全部到期伏笔。交回场景计划、细纲哈希、修订号，以及本次读到的文件清单。准备者用原生进度反馈展示清单与修订号；模板继续下一阶段，不依赖父会话插入回合。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
+| Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，读取 `project context` 的健康摘要和设定摘录。`omitted.settings` 非零时补查 `project lookup`，`omitted.health` 非零时补查 `--kind health`，并按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲。设定摘录和健康摘要都不代替全部到期伏笔。交回场景计划、细纲哈希、修订号，以及本次读到的文件清单。准备者用原生进度反馈展示清单与修订号；模板继续下一阶段，不依赖父会话插入回合。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
 | Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`，交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
 | Review | 读取实际材料，前后运行 `chapter snapshot` 核对原始字节哈希、文件版本和追踪修订号；返回 `ready / revise / needs_input` 及有来源的可读意见。 |
 | Submit / Verify | 按[追踪事务](tracking-transaction.md)提交与审稿版本一致的正文，再核对实际状态和持久记录。已提交章直接验证，不重写或重复提交。 |
