@@ -27,7 +27,7 @@ kind: "package-bundle"
 
 ### 安装
 
-构建本仓库后，将本地组合包安装到已有的 DSH web profile。将 `model-options` 替换为你的 profile 名称。DSH 依赖固定为 `0.2.1-alpha.2`；本包可独立安装，Creative 不包含本包。
+构建本仓库后，将本地组合包安装到已有的 DSH web profile。将 `model-options` 替换为你的 profile 名称。DSH 依赖固定为 `0.2.1-rc.2`；本包可独立安装，Creative 不包含本包。
 
 ```sh
 dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/client/ui-settings-model-options

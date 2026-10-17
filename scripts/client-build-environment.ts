@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-rc.2; re-sync when the DSH dependency version changes.
 import { createHash } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
 import {
@@ -265,7 +265,19 @@ export function assertClientBuildEnvironment(
 export function clientBuildEnvironmentDefines(
   environment: NodeJS.ProcessEnv,
 ): Record<string, string> {
-  const defines: Record<string, string> = { 'process.env': '{}' }
+  return { 'process.env': '{}', ...clientBuildValueDefines(environment) }
+}
+
+/**
+ * Create Node-face substitutions that fix each public client build value into the artifact.
+ * `process.env` itself stays untouched, so Host code keeps reading its other variables at runtime.
+ * @param environment - environment inherited by the build process.
+ * @returns one deterministic tsdown `define` expression per public value the build sets.
+ */
+export function clientBuildValueDefines(
+  environment: NodeJS.ProcessEnv,
+): Record<string, string> {
+  const defines: Record<string, string> = {}
   for (const [name, value] of Object.entries(clientBuildEnvironment(environment))) {
     defines[`process.env.${name}`] = JSON.stringify(value)
   }
@@ -331,7 +343,7 @@ export function readClientBuildRecord(
 function clientArtifactDigest(root: string): ClientArtifactDigest {
   const paths = globSync([...CLIENT_ARTIFACT_PATTERNS], { cwd: root })
     .map(path => path.replaceAll('\\', '/'))
-    .filter(path => statSync(resolve(root, path)).isFile())
+    .filter(path => !/\/lib\/client\.node(?:\.|$)/.test(path) && statSync(resolve(root, path)).isFile())
     .sort()
   if (paths.length === 0) throw new Error('complete client build produced no Vite or dynamic client artifacts')
 

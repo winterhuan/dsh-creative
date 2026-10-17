@@ -1,8 +1,9 @@
-// Copied from deepseek-harness dsh-v0.2.1-alpha.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-rc.2; re-sync when the DSH dependency version changes.
 /** Experimental package identities, publication policy, and retained npm names. */
 
 /** Existing npm names retained by capabilities now housed under experimental/. */
 export const EXPERIMENTAL_PACKAGE_NAME_EXCEPTIONS: Readonly<Record<string, string>> = {
+  'packages/experimental/cua': '@deepseek-ai/dsh-cua',
   'packages/experimental/tool-session-query': '@deepseek-ai/dsh-tool-session-query',
   'packages/experimental/session-title-all-prompts-llm': '@deepseek-ai/dsh-session-title-all-prompts-llm',
   'packages/experimental/tool-terminal': '@deepseek-ai/dsh-tool-terminal',
