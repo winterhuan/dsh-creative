@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-17-student-figure-textbook-alignment.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-10-17-student-figure-textbook-alignment.md
+/agent-note-figure-alignment-with-the-textbooks:
+  en: f33a87a075962da6
+  zh: c6c14492f2c891fa
+/agent-note-figure-alignment-with-the-textbooks/problem:
+  en: 9fc64f052d8612e0
+  zh: c883075b849c435e
+/agent-note-figure-alignment-with-the-textbooks/decision:
+  en: 061d8e1b11d0b75f
+  zh: 8c9e3baa27bfd382
+/agent-note-figure-alignment-with-the-textbooks/alternatives-considered:
+  en: bf1fd4f5a9dfae76
+  zh: 503567ccbba08596
+/agent-note-figure-alignment-with-the-textbooks/verification:
+  en: c1788016745fa073
+  zh: 2c866b334bc8b181
+/agent-note-figure-alignment-with-the-textbooks/consequences:
+  en: 8baf5cc297e48b87
+  zh: 744b241ac05a3d81

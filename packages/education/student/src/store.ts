@@ -2,9 +2,32 @@ import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import { stateSchema, type StudyState } from './schema.ts'
 import { checkInHistory, curriculumView, diagnosticFor, insightSummary, objectiveElements, reviewPlan, scheduleMistakes, studyInsight, studyStatus, taughtUnit, updateStudy } from './learning.ts'
-import { curriculumFor } from './curriculum.ts'
+import { curriculumFor, subjectIdeas } from './curriculum.ts'
 
 const MAX_BYTES = 8_388_608
+
+/**
+ * One-time fix for worksheets saved before the place-value rule split borrowing from crossing.
+ * A figure that mixed `regroup: 'yes'` with crossed dots had its crosses dropped; the subtraction
+ * the author intended stays answerable because the prompt and answer are unchanged.
+ */
+function migrateLegacyFigures(parsed: unknown): unknown {
+  if (typeof parsed !== 'object' || parsed === null) return parsed
+  const worksheets = (parsed as { worksheets?: unknown }).worksheets
+  if (!Array.isArray(worksheets)) return parsed
+  for (const worksheet of worksheets) {
+    const items = (worksheet as { items?: unknown }).items
+    if (!Array.isArray(items)) continue
+    for (const item of items) {
+      const figure = (item as { figure?: { kind?: string; regroup?: string; crossTens?: number; crossOnes?: number } }).figure
+      if (figure?.kind === 'place-value' && figure.regroup === 'yes' && ((figure.crossTens ?? 0) > 0 || (figure.crossOnes ?? 0) > 0)) {
+        figure.crossTens = 0
+        figure.crossOnes = 0
+      }
+    }
+  }
+  return parsed
+}
 
 /**
  * Read or update .study/state.json in the calling Session's filesystem.
@@ -29,7 +52,7 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
     const bytes = await fs.readBytes(target, exec.signal, MAX_BYTES)
     const after = await fs.stat(target, exec.signal)
     if (after?.version !== before.version) throw new Error('学习档案已更新，请查询最新状态后重试。')
-    state = scheduleMistakes(stateSchema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))))
+    state = scheduleMistakes(stateSchema.parse(migrateLegacyFigures(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))))
   }
   if (command === undefined) return state
   if (expectedRevision !== undefined && expectedRevision !== (state?.revision ?? 0)) throw new StudyConflict()
@@ -88,6 +111,8 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
           misconceptions: elements?.misconceptions ?? [], examples: elements?.examples ?? [],
           knowledgePoints: file.concepts.filter(concept => objective.conceptIds.includes(concept.id)).map(concept => ({
             id: concept.id, name: concept.name, definition: concept.definition, example: concept.example,
+            ...((concept.ideaIds?.length ?? 0) > 0 ? { ideas: subjectIdeas(subject).filter(idea => concept.ideaIds?.includes(idea.id)).map(idea => ({ id: idea.id, name: idea.name, definition: idea.definition, example: idea.example })) } : {}),
+            ...(concept.facts !== undefined ? { facts: concept.facts } : {}),
             ...(concept.misconceptions !== undefined ? { misconceptions: concept.misconceptions } : {}),
             ...(concept.examples !== undefined ? { examples: concept.examples } : {}),
           })),
@@ -96,7 +121,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     return {
       revision: state.revision, subject, objectives: page.slice(offset, offset + 20),
       nextOffset: offset + 20 < page.length ? offset + 20 : null,
-      more: 'Write each question from the knowledge points, the common mistakes and the question points; vary one axis at a time. Goals without elements fall back to their definition and example; custom goals read kind=objectives with kind=concepts.',
+      more: 'Write each question from the knowledge points. When a point lists ideas, use each idea definition as the meaning of that concept. Ideas belong to the subject and are shared across grades and units. When a point lists facts, the answer must be checkable against those facts; do not add plot, readings, garden exercises or verse that the facts do not state. A point without facts uses only its definition and example. Also use the common mistakes and question points, and vary one axis at a time. An on-screen task may include the same figure as a worksheet item; copy that figure onto the matching record. The first hint names a condition or a drawing and does not give the operation or the answer. Custom goals read kind=objectives with kind=concepts.',
     }
   }
   if (kind === 'review-sheet') {

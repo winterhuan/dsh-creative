@@ -362,6 +362,18 @@ describe('shipped knowledge map objectives and insight', () => {
 })
 
 describe('choice tasks, map browsing and recurring check-ins', () => {
+  it('rejects a record whose figure differs from the saved task', () => {
+    const figure = { kind: 'clock' as const, clocks: [{ hour: 3, minute: 0 }] }
+    let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
+    const task = { id: 'fig', sessionId: start.id, subject: 'math' as const, topic: '钟面', prompt: '现在是几时？', figure }
+    state = updateStudy(state, { action: 'task', task }, NOW)
+    expect(state.task?.figure).toEqual(figure)
+    state = updateStudy(state, { action: 'answer', taskId: 'fig', response: '3时' }, NOW)
+    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时' } }, NOW)).toThrow('对应当前')
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时', figure } }, NOW)
+    expect(state.attempts.at(-1)?.figure).toEqual(figure)
+  })
+
   it('restricts answers to the published choices', () => {
     let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
     const task = { id: 'c1', sessionId: start.id, subject: 'math' as const, topic: '乘法', prompt: '3 + 3 + 3 + 3 写成乘法是？', choices: ['3 × 4', '3 + 4', '4 × 4'], objectiveId: 'm2a-o-meaning' }
@@ -378,6 +390,9 @@ describe('choice tasks, map browsing and recurring check-ins', () => {
     expect(curriculumView(state, 'math', insight)?.scope).toEqual({ grade: 2, term: 'first', current: true })
     const browsed = curriculumView(state, 'math', insight, { grade: 1, term: 'second' })
     expect(browsed).toMatchObject({ id: 'math-grade1-second', scope: { grade: 1, term: 'second', current: false } })
+    expect(browsed?.ideas.map(idea => idea.id)).toEqual(curriculumView(state, 'math', insight)?.ideas.map(idea => idea.id))
+    expect(browsed?.ideas.some(idea => idea.name === '身体尺')).toBe(true)
+    expect(browsed?.ideas.some(idea => idea.name === '千以内的数')).toBe(true)
     expect(browsed?.objectives.every(item => item.level === 'untouched' && item.attempts === 0 && item.unitName.length > 0)).toBe(true)
     expect(queryStudy(state, 'curriculum', 0, { subject: 'chinese', grade: 1, term: 'first' })).toMatchObject({ curriculum: { id: 'chinese-grade1-first', scope: { current: false } } })
     expect(curriculumView(state, 'math', insight, { grade: 3, term: 'first' })).toBeNull()
@@ -773,6 +788,7 @@ describe('error causes, understanding reminders and photo drafts', () => {
     expect(queryStudy(state, 'elements', 0, { subject: 'math' })).toMatchObject({ objectives: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-sub', unit: 'm2a-u-sub', knowledgePoints: expect.arrayContaining([expect.objectContaining({ name: expect.any(String) })]) })]) })
     expect(queryStudy(state, 'elements', 0, { subject: 'math', unit: 'm2a-u-mul' })).toMatchObject({ objectives: expect.arrayContaining([expect.objectContaining({ unit: 'm2a-u-mul' })]) })
     expect(queryStudy(state, 'elements', 0, { subject: 'math', id: 'm2a-o-sub' })).toMatchObject({ objectives: [expect.objectContaining({ id: 'm2a-o-sub' })] })
+    expect(queryStudy(state, 'elements', 0, { subject: 'chinese', id: 'c2a-o2' })).toMatchObject({ objectives: [expect.objectContaining({ knowledgePoints: expect.arrayContaining([expect.objectContaining({ id: 'c2a-u2-1', facts: expect.arrayContaining([expect.stringContaining('一条帆船')]) })]) })] })
   })
 })
 
@@ -782,7 +798,8 @@ describe('printable figures', () => {
     const figures = [
       { kind: 'bar-model', bars: [{ name: '小明', segments: [{ label: '', units: 8 }, { label: '多 8 颗', units: 3, style: 'dashed' }], total: '35 颗' }, { name: '小红', segments: [{ label: '?', units: 8 }] }] },
       { kind: 'money', items: ['10元', '5元', '1元', '5角', '1角'] },
-      { kind: 'place-value', tens: 4, ones: 2, crossTens: 1, crossOnes: 7, regroup: 'yes' },
+      { kind: 'place-value', tens: 6, ones: 3, crossTens: 2, crossOnes: 0, regroup: 'no' },
+      { kind: 'place-value', tens: 5, ones: 2, crossTens: 0, crossOnes: 0, regroup: 'yes' },
       { kind: 'hundred-chart', hidden: [23, 37, 100] },
       { kind: 'vertical', count: 3 },
       { kind: 'shapes', rows: [{ name: '○', shape: 'circle', count: 9, blank: 0 }, { name: '△', shape: 'triangle', count: 0, blank: 6 }] },
@@ -790,6 +807,7 @@ describe('printable figures', () => {
       { kind: 'clock', clocks: [{ hour: 7, minute: 30 }] },
       { kind: 'sticks', bundles: 3, singles: 6, crossBundles: 1, crossSingles: 2 },
       { kind: 'overlap', left: '跳绳', right: '踢毽子', leftOnly: '8', both: '', rightOnly: '6', total: '' },
+      { kind: 'overlap', left: '63', right: '82', leftOnly: '', both: '', rightOnly: '29' },
       { kind: 'split', parts: [{ top: '5', left: '2', right: '' }, { top: '6', left: '', right: '4' }] },
       { kind: 'sequence', items: [{ shape: 'circle', count: 2 }, { shape: 'triangle', count: 1 }, { shape: 'circle', count: 2 }, { shape: 'triangle', count: 1 }], blank: 2 },
       { kind: 'wall', rows: [['5'], ['2', '3'], ['1', '', '2']] },
@@ -813,7 +831,9 @@ describe('printable figures', () => {
       expect((await renderWorksheet(state, `fig${index + 1}`)).subarray(0, 5).toString()).toBe('%PDF-')
     }
     expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '数一数', figure: { kind: 'money', items: ['3元'] } }] } }, NOW)).toThrow()
-    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '看图', figure: { kind: 'overlap', left: '', right: '踢毽子', leftOnly: '8', both: '4', rightOnly: '6' } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '看图', figure: { kind: 'place-value', tens: 6, ones: 3, crossTens: 2, crossOnes: 8, regroup: 'yes' } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '看图', figure: { kind: 'place-value', tens: 5, ones: 3, crossTens: 2, crossOnes: 4, regroup: 'no' } }] } }, NOW)).toThrow()
+    expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'ok-overlap', subject: 'math', items: [{ ...base, id: 'q1', prompt: '在□内填数，使每个圈里的两个数相加等于圈上的数。', figure: { kind: 'overlap', left: '', right: '82', leftOnly: '', both: '53', rightOnly: '29' } }] } }, NOW)).not.toThrow()
     expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '看钟面', figure: { kind: 'clock', clocks: [{ hour: 8, minute: 7 }] } }] } }, NOW)).toThrow()
     expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '数墙', figure: { kind: 'wall', rows: [['3'], ['1', '2', '0']] } }] } }, NOW)).toThrow()
     expect(() => updateStudy(state, { action: 'worksheet', worksheet: { id: 'bad', subject: 'math', items: [{ ...base, id: 'q1', prompt: '简笔画', figure: { kind: 'sketch', height: 60, elements: [{ draw: 'line', from: { x: 10, y: 80 }, to: { x: 40, y: 20 } }] } }] } }, NOW)).toThrow()

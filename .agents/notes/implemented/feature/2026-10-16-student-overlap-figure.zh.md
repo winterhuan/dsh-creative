@@ -6,11 +6,11 @@ Status: implemented
 
 ## 问题
 
-重叠问题（两个集合有交集，教材里画成两个相交的圆）没有可打印的图形：封闭的 `figure` 词汇表有九种，没有一种能表达“两边都有”，带这种题的练习单存不下、印不出。真正的限制是这份词汇表，不是 PDF 管线——渲染走 pdfkit 矢量绘制，词汇表里有的形状都画得出；自由 HTML 卷也在[出题要素](2026-10-16-student-error-elements.zh.md)那一批被否决，因为那样的卷不进打印、批改和复习回路。
+重叠问题（两个圈相交，圈上各有一个数或集合名，圈里三个区域各填一个数）没有可打印的图形：封闭的 `figure` 词汇表有九种，没有一种能表达“两边都有”，带这种题的练习单存不下、印不出。真正的限制是这份词汇表，不是 PDF 管线——渲染走 pdfkit 矢量绘制，词汇表里有的形状都画得出；自由 HTML 卷也在[出题要素](2026-10-16-student-error-elements.zh.md)那一批被否决，因为那样的卷不进打印、批改和复习回路。
 
 ## 决策
 
-`overlap` 是第十种 `figure`：`left`、`right` 是两个集合名，`leftOnly`、`both`、`rightOnly` 各写对应区域的一个标签（空标签印答案框，与其他图形一致），可选 `total` 画在两圈下方的括号处；集合名留空会被拒绝。渲染器画两个圆心距等于半径的圆、在可用宽度里居中，`figureHeight` 报 128 点（带 total 时 156 点），题目不会被分页拆开。[出题参考](../../../../packages/education/student/knowledge/skills/study/references/questions.md)、`worksheet` 工具描述、练习卷提示词和两份 README 都列出这种图形；printable-figures 测试现在画满十种——此前只列了九种里的六种，数轴、钟面、小棒随这一次一起补上。
+`overlap` 是第十种 `figure`：两个相交的圈，`left`、`right` 写在各自圈的正上方，`leftOnly`、`both`、`rightOnly` 各写左圈独有、两圈重叠、右圈独有区域的一个标签（空标签印答案框，与其他图形一致），可选 `total` 画在两圈下方的括号处。它同时覆盖教材里的两种用法：和圈（`left`、`right` 是目标数，圈里两个数相加等于它，重叠区的数同时计入两个和，常见于二年级 100 以内加减；`left`、`right` 留空印答案框，用于求圈上的数本身）和集合图（`left`、`right` 是集合名，三个区域各写数量，`total` 求一共）。渲染器画两个圆心距等于 1.25 倍半径的圆、在可用宽度里居中，`figureHeight` 报 144 点（带 total 时 172 点），题目不会被分页拆开。[出题参考](../../../../packages/education/student/knowledge/skills/study/references/questions.md)、`worksheet` 工具描述、练习卷提示词和两份 README 都列出这种图形；printable-figures 测试现在画满十种——此前只列了九种里的六种，数轴、钟面、小棒随这一次一起补上。
 
 ## 考虑过的替代方案
 
@@ -18,11 +18,13 @@ Status: implemented
 
 **一个带 N 个圆的通用集合图 kind。** 教材里的图就是两个圆；固定形状让校验、布局和高度计算都最简单，真需要三圈时按同样方式加一种即可。
 
-**复用 `bar-model` 或 `shapes`。** 两者都表达不了“同时在两个集合里”，用文字补描述就失去了配图的意义。
+**把和圈与集合图拆成两种 kind。** 两者的几何、三个区域标签和留空印框规则完全相同，只是圈上方标签的语义（目标数 vs 集合名）；拆成两种只扩大词汇表和测试面，没有渲染收益。语义由出题参考说明，模型按题意填标签即可。
+
+**复用 `bar-model` 或 `shapes`。**** 两者都表达不了“同时在两个集合里”，用文字补描述就失去了配图的意义。
 
 ## 验证
 
-宿主测试把全部十种（含 overlap）经 `renderWorksheet` 渲染进 PDF（两张卷、每张最多 8 题）；带 total 的两种和不带的共三种形态与教材版式做了目视核对。根 `typecheck`、`build`、学生包测试、`doc-sync` 与 `hygiene` 通过；未在真实 DSH 浏览器验证，未调用真实模型。
+宿主测试把全部十种（含 overlap 的和圈与集合图两种形态）经 `renderWorksheet` 渲染进 PDF（两张卷、每张最多 8 题）；和圈、求圈上数、带 total 的集合图三种形态与教材版式做了目视核对。根 `typecheck`、`build`、学生包测试、`doc-sync` 与 `hygiene` 通过；未在真实 DSH 浏览器验证，未调用真实模型。
 
 ## 后果
 

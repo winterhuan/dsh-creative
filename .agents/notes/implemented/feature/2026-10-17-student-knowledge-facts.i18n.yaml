@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-17-student-knowledge-facts.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-17-student-knowledge-facts.md
+/agent-note-checkable-facts-on-knowledge-points:
+  en: d027a1ce3799be1a
+  zh: 12001394fef20cfa
+/agent-note-checkable-facts-on-knowledge-points/problem:
+  en: a704d8d54b85559c
+  zh: 901a7826b7f4de0f
+/agent-note-checkable-facts-on-knowledge-points/decision:
+  en: 821e98baf9157ae4
+  zh: 90142704533660a6
+/agent-note-checkable-facts-on-knowledge-points/alternatives-considered:
+  en: 1abe52fc74f5adba
+  zh: 776fbd7b3e988766
+/agent-note-checkable-facts-on-knowledge-points/consequences:
+  en: 6e6de300f703039a
+  zh: 40eafb406822c5ab

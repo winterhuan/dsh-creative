@@ -1,6 +1,6 @@
 import { commandSchema, stateSchema, type ErrorType, type StudyState, type UnitFocus, type Variant, type VariationAxis } from './schema.ts'
 import { errorTypesBySubject } from './vocabulary.ts'
-import { builtinObjective, builtinObjectiveIn, builtinObjectives, builtinObjectivesIn, curriculumFor, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from './curriculum.ts'
+import { builtinObjective, builtinObjectiveIn, builtinObjectives, builtinObjectivesIn, curriculumFor, subjectIdeas, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from './curriculum.ts'
 
 const MINUTE = 60_000
 const DAY = 86_400_000
@@ -373,7 +373,7 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       }
       if (state.task?.sessionId === active.id) {
         const task = state.task
-        requireValue(task.id === attempt.id && task.topic === attempt.topic && task.prompt === attempt.prompt && task.mistakeId === attempt.mistakeId && task.objectiveId === attempt.objectiveId && task.variant === attempt.variant && task.response === attempt.response, '反馈必须对应当前题目和已保存的原始回答。')
+        requireValue(task.id === attempt.id && task.topic === attempt.topic && task.prompt === attempt.prompt && task.mistakeId === attempt.mistakeId && task.objectiveId === attempt.objectiveId && task.variant === attempt.variant && canonical(task.figure ?? null) === canonical(attempt.figure ?? null) && task.response === attempt.response, '反馈必须对应当前题目和已保存的原始回答。')
         requireValue(!task.hintRequested || attempt.assistance !== 'independent', '学生请求过提示，不能记录为独立作答。')
       }
       const mistake = attempt.mistakeId ? state.mistakes.find(item => item.id === attempt.mistakeId) : undefined
@@ -609,6 +609,7 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
 
 /** The elements a review or daily question can draw on for one objective, shipped or custom. */
 export interface ObjectiveElements {
+  facts: string[]
   misconceptions: string[]
   examples: string[]
   errorTypes: ErrorType[]
@@ -629,6 +630,7 @@ export function objectiveElements(state: StudyState, objectiveId: string): Objec
   if (builtin) {
     const concepts = curriculumFor(state.profile, builtin.subject)?.concepts.filter(concept => builtin.conceptIds.includes(concept.id)) ?? []
     return {
+      facts: [...new Set(concepts.flatMap(concept => concept.facts ?? []))].slice(0, 24),
       misconceptions: [...new Set(concepts.flatMap(concept => concept.misconceptions ?? []))].slice(0, 6),
       examples: [...new Set(concepts.flatMap(concept => concept.examples ?? []))].slice(0, 6),
       errorTypes: [...(builtin.errorTypes ?? [])],
@@ -640,6 +642,7 @@ export function objectiveElements(state: StudyState, objectiveId: string): Objec
   if (!custom) return undefined
   const concepts = state.concepts.filter(concept => custom.conceptIds.includes(concept.id))
   return {
+    facts: [...new Set(concepts.flatMap(concept => concept.facts ?? []))].slice(0, 24),
     misconceptions: [...new Set(concepts.flatMap(concept => concept.misconceptions ?? []))].slice(0, 6),
     examples: [...new Set(concepts.map(concept => concept.example))].slice(0, 6),
     errorTypes: [...(custom.errorTypes ?? [])],
@@ -1141,6 +1144,8 @@ export interface ConceptView {
   definition: string
   example: string
   source: string
+  ideaIds?: string[]
+  facts?: string[]
   level: ObjectiveInsight['level']
   objectiveIds: string[]
   independentDays: number
@@ -1164,12 +1169,21 @@ export interface UnitView {
   untouched: number
 }
 
+/** One concept: what a mathematical or language idea means, apart from the lesson that teaches it. */
+export interface IdeaView {
+  id: string
+  name: string
+  definition: string
+  example: string
+}
+
 /** The shipped knowledge map for one subject with mastery overlaid. */
 export interface CurriculumView {
   id: string
   title: string
   basis: string
   units: UnitView[]
+  ideas: IdeaView[]
   concepts: ConceptView[]
   objectives: ObjectiveInsight[]
   relations: { id: string; fromId: string; toId: string; kind: CurriculumRelationKind; explanation: string }[]
@@ -1208,7 +1222,7 @@ export function curriculumView(state: StudyState, subject: CurriculumSubject, in
   const concepts: ConceptView[] = file.concepts.map(concept => {
     const linked = objectives.filter(objective => objective.conceptIds.includes(concept.id))
     const lastAt = linked.reduce<number | undefined>((latest, item) => item.lastAt !== undefined && (latest === undefined || item.lastAt > latest) ? item.lastAt : latest, undefined)
-    return { id: concept.id, name: concept.name, unit: concept.unit, definition: concept.definition, example: concept.example, source: concept.source,
+    return { id: concept.id, name: concept.name, unit: concept.unit, definition: concept.definition, example: concept.example, source: concept.source, ...(concept.ideaIds !== undefined ? { ideaIds: concept.ideaIds } : {}), ...(concept.facts !== undefined ? { facts: concept.facts } : {}),
       level: levelOf(linked.map(item => item.level)), objectiveIds: linked.map(item => item.id), ...(lastAt !== undefined ? { lastAt } : {}),
       independentDays: Math.max(0, ...linked.map(item => item.independentDays)),
       attempts: linked.reduce((sum, item) => sum + item.attempts, 0),
@@ -1240,7 +1254,7 @@ export function curriculumView(state: StudyState, subject: CurriculumSubject, in
     order.push(ready)
     remaining.splice(remaining.indexOf(ready), 1)
   }
-  return { id: file.id, title: file.title, basis: file.basis, units, concepts, objectives, summary, scope: { grade: target.grade, term: target.term, current }, order,
+  return { id: file.id, title: file.title, basis: file.basis, units, ideas: subjectIdeas(file.subject), concepts, objectives, summary, scope: { grade: target.grade, term: target.term, current }, order,
     relations: file.relations.map(relation => ({ id: relation.id, fromId: relation.fromId, toId: relation.toId, kind: relation.kind, explanation: relation.explanation })) }
 }
 

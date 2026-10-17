@@ -4,7 +4,7 @@
   "grade": 2,
   "term": "first",
   "title": "英语二年级上册知识地图",
-  "basis": "单元和栏目对齐家长确认的二年级上册英语教材目录，包含各单元的小任务、话题词、歌谣、故事和小项目。定义依据《义务教育英语课程标准（2022年版）》一级准备要求。它是学习框架，不代替学校课本、教师进度和校内评价。",
+  "basis": "单元和栏目对齐家长确认的二年级上册英语教材目录，包含各单元的小任务、话题词、歌谣、故事和小项目。定义依据《义务教育英语课程标准（2022年版）》一级准备要求。它是学习框架，不代替学校课本、教师进度和校内评价。每个知识点的 facts 是这一知识点可以核对的事实，出题不得超出这些事实。Unit 1 到 Unit 4 的事实对照家长提供的朗读纸《2A Unit1–Unit4》。Unit 5 到 Unit 10 的句子对照 2024 沪教五四制知识清单里已经读到的原句。",
   "units": [
     {
       "id": "e2a-u0",
@@ -15,25 +15,25 @@
     {
       "id": "e2a-u1",
       "name": "Unit 1 My morning",
-      "summary": "Making a morning checklist；get up, brush my teeth, wash my face, have breakfast",
+      "summary": "Making a morning checklist；get up, brush my teeth, wash my face, have breakfast, up and down",
       "focus": "words"
     },
     {
       "id": "e2a-u2",
       "name": "Unit 2 My room",
-      "summary": "Tidying my room；on the desk, in the box, under the bed",
+      "summary": "Tidying my room；on the desk, in the box, under the bed, on the shelf",
       "focus": "words"
     },
     {
       "id": "e2a-u3",
       "name": "Unit 3 On the way",
-      "summary": "Making a bookmark；by car, on foot, by bus",
+      "summary": "Making a bookmark；by car, on foot, by bus, underground, metro",
       "focus": "words"
     },
     {
       "id": "e2a-u4",
       "name": "Unit 4 Playing sports",
-      "summary": "Playing a sports board game；run, jump, play ping-pong, play basketball, play football",
+      "summary": "Playing a sports board game；run, jump, play ping-pong, play basketball, play football, warm-up",
       "focus": "words"
     },
     {
@@ -87,534 +87,908 @@
   ],
   "concepts": [
     {
-      "id": "e2a-u0-1",
+      "id": "e2a-u0-1", "ideaIds": ["en-family","en-introduce"],
       "name": "Our families and friends",
       "unit": "e2a-u0",
       "definition": "复习家人和朋友的说法，为后面的单元做准备。会指着照片说这是谁。",
       "example": "This is my family. This is my friend.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "family 是家人，friend 是朋友。",
+        "This is my family. 用来介绍家人。",
+        "This is my friend. 用来介绍朋友。",
+        "要能指着照片说这是谁。"
+      ],
       "misconceptions": ["介绍时只说 This is my family，说不出照片里每个人是谁。", "he 和 she 用混，指着妈妈说他。"]
     },
     {
-      "id": "e2a-u1-1",
+      "id": "e2a-u1-1", "ideaIds": ["en-morning"],
       "name": "Small task: Making a morning checklist",
       "unit": "e2a-u1",
-      "definition": "完成本单元小任务“Making a morning checklist”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Making a morning checklist",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "做一张早晨清单 morning checklist，用 get up、brush my teeth、wash my face、have breakfast 说出早上做的事。",
+      "example": "Look! This is my morning. I get up, and then brush my teeth.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是做一张 morning checklist，早晨清单。",
+        "清单上用 get up、brush my teeth、wash my face、have breakfast。",
+        "说自己的早晨：Look! This is my morning. I get up, and then brush my teeth.",
+        "I'm ready for school 表示准备好去上学。"
+      ],
       "misconceptions": ["只认识了任务名称，清单上的英语短语换个位置就认不出。", "做清单只画图，用英语说早上做的事时说不出来。"]
     },
     {
-      "id": "e2a-u1-2",
-      "name": "Topic words: get up, brush my teeth, wash my face, have breakfast",
+      "id": "e2a-u1-2", "ideaIds": ["en-morning"],
+      "name": "Topic words: get up, brush my teeth, wash my face, have breakfast, up and down",
       "unit": "e2a-u1",
-      "definition": "认读本单元话题词：get up, brush my teeth, wash my face, have breakfast。听到或看到时能说出意思。",
-      "example": "get up, brush my teeth, wash my face",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 get up、wash my face、brush my teeth、have breakfast、up and down、morning checklist，并会说准备上学的句子。",
+      "example": "I'm ready for school, Dad! I'm coming. Let's go!",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "get up 是起床，wash my face 是洗脸，brush my teeth 是刷牙，have breakfast 是吃早饭。",
+        "up and down 是上上下下，morning checklist 是早晨清单。",
+        "have breakfast 和 eat breakfast 都是吃早饭。",
+        "be ready for 后面接名词，表示为某事做好准备。I'm ready for school 是我准备好去上学了。",
+        "Up, up, get up. Up and down, brush my teeth. Splish, splash, wash my face. Ready, ready, I'm ready.",
+        "Brush your teeth. 可以回答 OK, Mum. I brush my teeth and then wash my face.",
+        "I'm ready for school, Dad! I'm coming. Let's go!",
+        "Look! This is my morning. I get up, and then brush my teeth."
+      ],
       "misconceptions": ["把 brush my teeth 说成 brush teeth，漏掉 my。", "动作和意思配错，wash my face 认成洗手。"]
     },
     {
-      "id": "e2a-u1-3",
+      "id": "e2a-u1-3", "ideaIds": ["en-morning"],
       "name": "Song/Rhyme/Chant time: Get up",
       "unit": "e2a-u1",
-      "definition": "听唱《Get up》，跟读里面的本单元词语。",
-      "example": "Listen and chant: Get up.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《Get up》里起床、刷牙、洗脸和准备好的句子。",
+      "example": "Up, up, get up. Ready, ready, I'm ready.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣要跟读：Up, up, get up. 起来，起来，起床啦。",
+        "Up and down, brush my teeth. 上上下下，刷牙啦。",
+        "Splish, splash, wash my face. 哗啦哗啦，洗脸啦。",
+        "Ready, ready, I'm ready. 准备，准备，我准备好了。"
+      ],
       "misconceptions": ["只跟旋律哼唱，不跟读单词，唱完说不出一个词。", "唱快拍子时吞音，get up 唱成一个音。"]
     },
     {
-      "id": "e2a-u1-4",
+      "id": "e2a-u1-4", "ideaIds": ["en-morning"],
       "name": "Talking/Story time: Shenshen's morning",
       "unit": "e2a-u1",
-      "definition": "听读故事《Shenshen's morning》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Shenshen's morning.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Shenshen's morning》，会跟妈妈说刷牙洗脸，并告诉爸爸准备好去上学。",
+      "example": "OK, Mum. I brush my teeth and then wash my face.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事《Shenshen's morning》要会读这些句子。",
+        "Brush your teeth. OK, Mum. I brush my teeth and then wash my face.",
+        "I'm ready for school, Dad! I'm coming. Let's go!",
+        "Look! This is my morning. I get up, and then brush my teeth."
+      ],
       "misconceptions": ["只听不指，听完说不出故事里谁在说话。", "模仿句子时把人名和句子张冠李戴。"]
     },
     {
-      "id": "e2a-u1-5",
+      "id": "e2a-u1-5", "ideaIds": ["en-morning"],
       "name": "Mini-project: My morning checklist",
       "unit": "e2a-u1",
-      "definition": "完成小项目“My morning checklist”，用本单元的词向别人介绍自己的作品。",
-      "example": "My morning checklist",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 My morning checklist，用本单元的句子向别人介绍自己的早晨。",
+      "example": "Look! This is my morning. I get up, and then brush my teeth.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 My morning checklist。",
+        "介绍时说：Look! This is my morning. I get up, and then brush my teeth.",
+        "还可以说 I'm ready for school.",
+        "用到 get up、brush my teeth、wash my face、have breakfast。"
+      ],
       "misconceptions": ["作品做得漂亮，介绍时只会说作品名，说不出里面的内容。", "介绍时全用中文，学过的短语一句也用不上。"]
     },
     {
-      "id": "e2a-u2-1",
+      "id": "e2a-u2-1", "ideaIds": ["en-place"],
       "name": "Small task: Tidying my room",
       "unit": "e2a-u2",
-      "definition": "完成本单元小任务“Tidying my room”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Tidying my room",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "整理房间 Tidying my room，用 put … in/on/under … 说出东西放在哪里。",
+      "example": "I put my books on the desk. I put my toys in the box.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是整理房间 Tidying my room。",
+        "用 put … in/on/under … 说把东西放在里面、上面或下面。",
+        "I put my books on the desk. I put my toys in the box.",
+        "My room is tidy. I like my room."
+      ],
       "misconceptions": ["只会把房间摆整齐，用英语说整理步骤的短语说不出。", "把任务名读一遍就过，Tidying 只认字形不懂意思。"]
     },
     {
-      "id": "e2a-u2-2",
-      "name": "Topic words: on the desk, in the box, under the bed",
+      "id": "e2a-u2-2", "ideaIds": ["en-place"],
+      "name": "Topic words: on the desk, in the box, under the bed, on the shelf",
       "unit": "e2a-u2",
-      "definition": "认读本单元话题词：on the desk, in the box, under the bed。听到或看到时能说出意思。",
-      "example": "on the desk, in the box, under the bed",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 on the desk、in the box、under the bed、on the shelf，以及 room、tidy、mess，会用 put 和 Where is/are 说位置。",
+      "example": "Please put it under the bed.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "on the desk 是在书桌上，in the box 是在盒子里，under the bed 是在床底下，on the shelf 是在架子上。",
+        "room 是房间。tidy 是整洁的，也可以表示使整洁。mess 是一团糟。",
+        "put 后面接 in、on 或 under，表示把东西放在里面、上面或下面。",
+        "Where is 或 Where are 用来问人或东西在哪里。What about …? 是“那……呢？”。",
+        "I put my books on the desk. I put my toys in the box. Put the books on the shelf.",
+        "What a mess! My room is tidy. Let's tidy the room together.",
+        "What about the toys? In the box? Yes, that's right.",
+        "I can put the box on the desk. Oh, no. Please put it under the bed."
+      ],
       "misconceptions": ["on、in、under 用混，把在盒子里说成 on the box。", "短语说一半，in box 漏掉 the。"]
     },
     {
-      "id": "e2a-u2-3",
+      "id": "e2a-u2-3", "ideaIds": ["en-place"],
       "name": "Song/Rhyme/Chant time: I like my room",
       "unit": "e2a-u2",
-      "definition": "听唱《I like my room》，跟读里面的本单元词语。",
-      "example": "Listen and chant: I like my room.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《I like my room》，会说房间整洁、一起整理。",
+      "example": "I like my room. My room is tidy.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "要会说 I like my room. 我喜欢我的房间。",
+        "I can tidy my room. 我能整理我的房间。",
+        "My room is tidy. 我的房间很整洁。",
+        "Let's tidy the room together. 我们一起整理房间吧。"
+      ],
       "misconceptions": ["只跟唱不指词，my 和 your 唱混。", "会跟着一起唱，单独问哪一句就答不上。"]
     },
     {
-      "id": "e2a-u2-4",
+      "id": "e2a-u2-4", "ideaIds": ["en-place"],
       "name": "Talking/Story time: Where's my ball?",
       "unit": "e2a-u2",
-      "definition": "听读故事《Where's my ball?》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Where's my ball?.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Where's my ball?》，用 Where is/are 问位置，并读出书、玩具和盒子各放在哪里。",
+      "example": "Please put it under the bed.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "用 Where is 或 Where are 问东西在哪里。",
+        "I put my books on the desk. I put my toys in the box.",
+        "Put the books on the shelf. 玩具放进盒子：In the box? Yes, that's right.",
+        "盒子不要放在书桌上，要放在床底下：Please put it under the bed."
+      ],
       "misconceptions": ["听故事只找球，没听到球在桌子下面就说在桌子上。", "模仿 Where’s my ball? 时丢了 ’s。"]
     },
     {
-      "id": "e2a-u2-5",
+      "id": "e2a-u2-5", "ideaIds": ["en-place"],
       "name": "Mini-project: My tidy room",
       "unit": "e2a-u2",
-      "definition": "完成小项目“My tidy room”，用本单元的词向别人介绍自己的作品。",
-      "example": "My tidy room",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 My tidy room，用 put 的句子介绍自己的房间。",
+      "example": "I can tidy my room. I like my room.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 My tidy room。",
+        "介绍时说 I can tidy my room.",
+        "I put my books on the desk. I put my toys in the box.",
+        "说完可以加上 I like my room."
+      ],
       "misconceptions": ["介绍房间作品时只用手比划，位置短语一个也说不出。"]
     },
     {
-      "id": "e2a-u3-1",
+      "id": "e2a-u3-1", "ideaIds": ["en-transport","en-introduce"],
       "name": "Small task: Making a bookmark",
       "unit": "e2a-u3",
-      "definition": "完成本单元小任务“Making a bookmark”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Making a bookmark",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "做书签 bookmark，用 by car、by bus、on foot 说出自己怎么去。",
+      "example": "This is a bookmark. I go to school on foot.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是做书签，bookmark 是书签。",
+        "介绍时可以说 This is a bookmark. I love this bookmark.",
+        "I go to school on foot. 是我步行去学校。I go to school by bus. 是我乘公共汽车去学校。",
+        "by car、by bus、on foot 用来说明怎么去。"
+      ],
       "misconceptions": ["做书签只顾涂色，不会用英语说出自己做了什么。"]
     },
     {
-      "id": "e2a-u3-2",
-      "name": "Topic words: by car, on foot, by bus",
+      "id": "e2a-u3-2", "ideaIds": ["en-transport","en-introduce"],
+      "name": "Topic words: by car, on foot, by bus, underground, metro",
       "unit": "e2a-u3",
-      "definition": "认读本单元话题词：by car, on foot, by bus。听到或看到时能说出意思。",
-      "example": "by car, on foot, by bus",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 by car、by bus、on foot、on the way、postcard、bookmark、underground、metro，会问怎么去、这是什么。",
+      "example": "I go to school on foot. It's the London Underground.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "by car 是乘小汽车，by bus 是乘公共汽车，on foot 是步行，on the way 是在路上。",
+        "postcard 是明信片，bookmark 是书签。underground 和 metro 都是地铁。",
+        "说出行用 I go … by …。I go to school on foot. I go to school by bus.",
+        "What's this? 或 What's that? 问这是什么、那是什么，用 It's … 回答。",
+        "在城市前面用 in，例如 in London、in Shanghai。",
+        "How do you go? Go by car? Go on foot? OK. Let's go!",
+        "Look, your postcard! Yes, you can see them in London.",
+        "伦敦地铁是 the London Underground。在上海，地铁说 metro。"
+      ],
       "misconceptions": ["by car 和 on foot 用混，把步行说成 by foot。", "by bus 说成 on bus 或 in bus。"]
     },
     {
-      "id": "e2a-u3-3",
+      "id": "e2a-u3-3", "ideaIds": ["en-transport","en-introduce"],
       "name": "Song/Rhyme/Chant time: Going to school",
       "unit": "e2a-u3",
-      "definition": "听唱《Going to school》，跟读里面的本单元词语。",
-      "example": "Listen and chant: Going to school.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《Going to school》，会问怎么去，并说出步行或乘车上学。",
+      "example": "In the morning, I go to school on foot.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "How do you go? Go by car? 你怎么去？乘小汽车去？",
+        "Go on foot? OK. Let's go! 步行去？好的。我们走吧！",
+        "In the morning, I go to school on foot. 早上，我步行去学校。",
+        "I go to school by bus. 我乘公共汽车去学校。"
+      ],
       "misconceptions": ["歌词里的 by car、on foot 唱过就忘，换个顺序认不出。"]
     },
     {
-      "id": "e2a-u3-4",
+      "id": "e2a-u3-4", "ideaIds": ["en-transport","en-introduce"],
       "name": "Talking/Story time: A postcard from London",
       "unit": "e2a-u3",
-      "definition": "听读故事《A postcard from London》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: A postcard from London.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《A postcard from London》，会读明信片和伦敦地铁、上海 metro 这几句。",
+      "example": "Oh, it's the London Underground.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事要会读明信片和地铁这几句。",
+        "Hi, Lily, how are you? Look, your postcard!",
+        "Yes, you can see them in London. I love them, too.",
+        "But what's this? Oh, it's the London Underground.",
+        "在上海，地铁说 metro：you use metro in Shanghai."
+      ],
       "misconceptions": ["听故事说不出明信片从哪里寄来。", "London 读不出来，直接跳过不读。"]
     },
     {
-      "id": "e2a-u3-5",
+      "id": "e2a-u3-5", "ideaIds": ["en-transport","en-introduce"],
       "name": "Mini-project: My bookmark",
       "unit": "e2a-u3",
-      "definition": "完成小项目“My bookmark”，用本单元的词向别人介绍自己的作品。",
-      "example": "My bookmark",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 My bookmark，用 bookmark 和出行的句子介绍自己的书签。",
+      "example": "This is a bookmark. I love this bookmark.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 My bookmark。",
+        "This is a bookmark. I love this bookmark.",
+        "接着说自己怎么去：I go to school by bus. 或 I go to school on foot.",
+        "bookmark 是书签，postcard 是明信片。"
+      ],
       "misconceptions": ["介绍书签时只会读单词卡，连不成一句话。"]
     },
     {
-      "id": "e2a-u4-1",
+      "id": "e2a-u4-1", "ideaIds": ["en-sport"],
       "name": "Small task: Playing a sports board game",
       "unit": "e2a-u4",
-      "definition": "完成本单元小任务“Playing a sports board game”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Playing a sports board game",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "玩运动棋盘游戏，用 run、jump 和球类短语说动作，并会说先热身。",
+      "example": "Let's play sports. We should do a warm-up.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是玩运动棋盘游戏，board game 是棋盘游戏。",
+        "用 run、jump、play football、play basketball、play ping-pong 说动作。",
+        "Let's play sports. We should do a warm-up.",
+        "I can play ping-pong."
+      ],
       "misconceptions": ["桌游规则听漏，轮到自己时动作词认不出。"]
     },
     {
-      "id": "e2a-u4-2",
-      "name": "Topic words: run, jump, play ping-pong, play basketball, play football",
+      "id": "e2a-u4-2", "ideaIds": ["en-sport"],
+      "name": "Topic words: run, jump, play ping-pong, play basketball, play football, warm-up",
       "unit": "e2a-u4",
-      "definition": "认读本单元话题词：run, jump, play ping-pong, play basketball, play football。听到或看到时能说出意思。",
-      "example": "run, jump, play ping-pong",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 run、jump、三种球类、sports、best、very well、should、warm-up、board game。球类前面不加 the。",
+      "example": "You can play ping-pong very well. You should do a warm-up.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "run 是跑，jump 是跳，sports 是运动，board game 是棋盘游戏。",
+        "play football 是踢足球，play basketball 是打篮球，play ping-pong 是打乒乓球。",
+        "play ping-pong 也叫 play table tennis。球类运动前面不加 the。",
+        "best 是最好的，very well 是非常好，should 是应该，warm-up 是热身。",
+        "Let's 就是 Let us，用来提议一起做。We should … 表示我们应该做某事。",
+        "Let's play sports. Here we go. Do our best. We are the best.",
+        "You can play ping-pong very well. Can I have a go? Yes, of course. But you should do a warm-up.",
+        "The ball's out. 是球出界了。Try again! 是再试一次。"
+      ],
       "misconceptions": ["球类前面漏 play，说成 I basketball。", "ping-pong、basketball、football 看图配错。"]
     },
     {
-      "id": "e2a-u4-3",
+      "id": "e2a-u4-3", "ideaIds": ["en-sport"],
       "name": "Song/Rhyme/Chant time: Let's play sports",
       "unit": "e2a-u4",
-      "definition": "听唱《Let's play sports》，跟读里面的本单元词语。",
-      "example": "Listen and chant: Let's play sports.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《Let's play sports》，会说一起运动、开始、尽力和最棒。",
+      "example": "Let's play sports. We are the best.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "Let's play sports. 我们一起做运动。",
+        "Here we go. 我们开始吧。",
+        "Do our best. 尽我们最大的努力。",
+        "We are the best. 我们是最棒的。"
+      ],
       "misconceptions": ["跟唱时 play 后面的球类词读串，唱到一半接不上。"]
     },
     {
-      "id": "e2a-u4-4",
+      "id": "e2a-u4-4", "ideaIds": ["en-sport"],
       "name": "Talking/Story time: Playing ping-pong",
       "unit": "e2a-u4",
-      "definition": "听读故事《Playing ping-pong》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Playing ping-pong.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Playing ping-pong》，会读打得好、先热身、球出界和再试一次。",
+      "example": "But you should do a warm-up.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "Wow, you can play ping-pong very well. Can I have a go?",
+        "Yes, of course. But you should do a warm-up.",
+        "Oh, no! The ball's out. 球出界了。",
+        "Try again! 再试一次。"
+      ],
       "misconceptions": ["听故事分不清是谁在打球，动作词和人对不上。"]
     },
     {
-      "id": "e2a-u4-5",
+      "id": "e2a-u4-5", "ideaIds": ["en-sport"],
       "name": "Mini-project: A sports board game",
       "unit": "e2a-u4",
-      "definition": "完成小项目“A sports board game”，用本单元的词向别人介绍自己的作品。",
-      "example": "A sports board game",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 A sports board game，用运动短语和 should 介绍自己的棋盘。",
+      "example": "Let's play sports. I can play football.",
+      "source": "二年级上册英语朗读纸 2A Unit 1–4；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 A sports board game。",
+        "board game 是棋盘游戏，sports 是运动。",
+        "介绍时说 Let's play sports. I can play ping-pong.",
+        "We should do a warm-up. warm-up 是热身。"
+      ],
       "misconceptions": ["做棋盘只顾画格子，格子上的英语词读不出。"]
     },
     {
-      "id": "e2a-u5-1",
+      "id": "e2a-u5-1", "ideaIds": ["en-sky"],
       "name": "Small task: Making a sky log",
       "unit": "e2a-u5",
-      "definition": "完成本单元小任务“Making a sky log”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Making a sky log",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "做一张天空记录 sky log，说出天空里看到的星星、太阳、云和月亮。",
+      "example": "Look, Shenshen, what do you see in the sky?",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是 Making a sky log，记下天空里看到的东西。",
+        "Look, Shenshen, what do you see in the sky?",
+        "Wow! So many stars! They're so high in the sky.",
+        "天空里的词是 sky、star、sun、cloud、moon。"
+      ],
       "misconceptions": ["画 sky log 很积极，天上的东西用英语说不出。"]
     },
     {
-      "id": "e2a-u5-2",
+      "id": "e2a-u5-2", "ideaIds": ["en-sky"],
       "name": "Topic words: in the sky, star, sun, cloud, moon",
       "unit": "e2a-u5",
-      "definition": "认读本单元话题词：in the sky, star, sun, cloud, moon。听到或看到时能说出意思。",
-      "example": "in the sky, star, sun",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 sky、star、sun、cloud、moon，并会说太阳、星星和月亮的位置。",
+      "example": "The sun is high in the sky.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "sky 是天空，star 是星星，sun 是太阳，cloud 是云，moon 是月亮。",
+        "Twinkle, twinkle, little star. 一闪一闪小星星。",
+        "Where's Mr Sun? He's behind me. 太阳先生在我后面。",
+        "The sun is high in the sky. 太阳高高地在天空中。",
+        "The moon is bright. The moon is behind the clouds. 月亮明亮，月亮在云后面。",
+        "Look, Shenshen, what do you see in the sky? Wow! So many stars! They're so high in the sky."
+      ],
       "misconceptions": ["sun 和 moon 认混，白天晚上说反。", "star 和 cloud 图词配对错。"]
     },
     {
-      "id": "e2a-u5-3",
+      "id": "e2a-u5-3", "ideaIds": ["en-sky"],
       "name": "Song/Rhyme/Chant time: Twinkle, twinkle, little star",
       "unit": "e2a-u5",
-      "definition": "听唱《Twinkle, twinkle, little star》，跟读里面的本单元词语。",
-      "example": "Listen and chant: Twinkle, twinkle, little star.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《Twinkle, twinkle, little star》，会唱星星在天上很高。",
+      "example": "Twinkle, twinkle, little star. Up above the world so high.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "Twinkle, twinkle, little star.",
+        "Up above the world so high. 高高地在世界上空。",
+        "Like a diamond in the sky. 像天上的一颗钻石。",
+        "There are so many stars in the sky. They're very high."
+      ],
       "misconceptions": ["歌会唱，star 等单词单独拿出来认不出。"]
     },
     {
-      "id": "e2a-u5-4",
+      "id": "e2a-u5-4", "ideaIds": ["en-sky"],
       "name": "Talking/Story time: Rita and Mr Sun",
       "unit": "e2a-u5",
-      "definition": "听读故事《Rita and Mr Sun》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Rita and Mr Sun.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Rita and Mr Sun》，会问太阳在哪里，并说出月亮和云的位置。",
+      "example": "Where's Mr Sun? He's behind me.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "Where's Mr Sun? He's behind me.",
+        "The sun is high in the sky.",
+        "The moon is bright.",
+        "The moon is behind the clouds."
+      ],
       "misconceptions": ["把故事里太阳的话当成 Rita 说的，人物搞混。"]
     },
     {
-      "id": "e2a-u5-5",
+      "id": "e2a-u5-5", "ideaIds": ["en-sky"],
       "name": "Mini-project: My sky log",
       "unit": "e2a-u5",
-      "definition": "完成小项目“My sky log”，用本单元的词向别人介绍自己的作品。",
-      "example": "My sky log",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 My sky log，用看到的天空句子介绍自己的记录。",
+      "example": "What do you see in the sky? So many stars!",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 My sky log。",
+        "介绍时问 What do you see in the sky?",
+        "可以说 So many stars! They're so high in the sky.",
+        "也可以说 The sun is high in the sky. The moon is behind the clouds."
+      ],
       "misconceptions": ["介绍 sky log 只会说 It is nice，star、moon 都用不上。"]
     },
     {
-      "id": "e2a-u6-1",
+      "id": "e2a-u6-1", "ideaIds": ["en-sea"],
       "name": "Small task: Making a sea-animal hat",
       "unit": "e2a-u6",
-      "definition": "完成本单元小任务“Making a sea-animal hat”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Making a sea-animal hat",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "做一顶海里动物的帽子，说出海马、小丑鱼在海里做什么。",
+      "example": "They are in the sea. Let's play together.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是 Making a sea-animal hat，做海里动物的帽子。",
+        "Swim in the sea. 在海里游泳。",
+        "Little seahorses are in the sea.",
+        "I like playing hide-and-seek in the sea. Let's play together."
+      ],
       "misconceptions": ["做帽子只会照着剪，听不懂步骤里的英语指令。"]
     },
     {
-      "id": "e2a-u6-2",
+      "id": "e2a-u6-2", "ideaIds": ["en-sea"],
       "name": "Topic words: in the sea, seahorse, dolphin, clownfish",
       "unit": "e2a-u6",
-      "definition": "认读本单元话题词：in the sea, seahorse, dolphin, clownfish。听到或看到时能说出意思。",
-      "example": "in the sea, seahorse, dolphin",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 in the sea、seahorse、dolphin、clownfish，并会读海马和小丑鱼的句子。",
+      "example": "Hello, Clownfish. Nice to meet you.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "in the sea 是在海里，seahorse 是海马，dolphin 是海豚，clownfish 是小丑鱼。",
+        "Swim in the sea.",
+        "Little seahorses are in the sea. They live with Papa Seahorse.",
+        "This is Papa Seahorse. This is Mama Seahorse.",
+        "Mama Seahorse lays eggs. Papa Seahorse hatches the babies and takes care of the babies.",
+        "Hello, Little Seahorses. Hello, Clownfish. Nice to meet you.",
+        "I like playing hide-and-seek in the sea. I like moving up and down in the sea."
+      ],
       "misconceptions": ["三个海动物认混，海马、海豚、小丑鱼配错图。", "clownfish 太长不敢读，一律说 fish。"]
     },
     {
-      "id": "e2a-u6-3",
+      "id": "e2a-u6-3", "ideaIds": ["en-sea"],
       "name": "Song/Rhyme/Chant time: The blue sea",
       "unit": "e2a-u6",
-      "definition": "听唱《The blue sea》，跟读里面的本单元词语。",
-      "example": "Listen and chant: The blue sea.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《The blue sea》，会说在海里游泳。",
+      "example": "Swim in the sea.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣里有 The blue sea. 蓝色的海。",
+        "Swim in the sea. 在海里游泳。",
+        "They are in the sea.",
+        "I like moving up and down in the sea."
+      ],
       "misconceptions": ["跟唱 The blue sea 时颜色词含糊带过。"]
     },
     {
-      "id": "e2a-u6-4",
+      "id": "e2a-u6-4", "ideaIds": ["en-sea"],
       "name": "Talking/Story time: Little seahorses",
       "unit": "e2a-u6",
-      "definition": "听读故事《Little seahorses》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Little seahorses.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Little seahorses》，会说海马爸爸妈妈和小丑鱼在海里玩。",
+      "example": "Papa Seahorse takes care of the babies.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "Little seahorses live with Papa Seahorse.",
+        "Mama Seahorse lays eggs. Papa Seahorse hatches the babies.",
+        "Papa Seahorse takes care of the babies.",
+        "Hello, Clownfish. Nice to meet you. I like playing hide-and-seek in the sea.",
+        "Great! Let's play together."
+      ],
       "misconceptions": ["听故事说不清小海马和谁在说话。"]
     },
     {
-      "id": "e2a-u6-5",
+      "id": "e2a-u6-5", "ideaIds": ["en-sea"],
       "name": "Mini-project: My sea-animal hat",
       "unit": "e2a-u6",
-      "definition": "完成小项目“My sea-animal hat”，用本单元的词向别人介绍自己的作品。",
-      "example": "My sea-animal hat",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 My sea-animal hat，用海里的句子介绍自己的帽子。",
+      "example": "They are in the sea.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 My sea-animal hat。",
+        "介绍时说 They are in the sea.",
+        "可以说 This is Papa Seahorse. Hello, Clownfish.",
+        "I like playing hide-and-seek in the sea."
+      ],
       "misconceptions": ["戴上头饰只会做动作，不会用英语说自己演的是什么动物。"]
     },
     {
-      "id": "e2a-u7-1",
+      "id": "e2a-u7-1", "ideaIds": ["en-season"],
       "name": "Small task: Playing a seasons bingo game",
       "unit": "e2a-u7",
-      "definition": "完成本单元小任务“Playing a seasons bingo game”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Playing a seasons bingo game",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "玩四季宾果，说出春天温暖、冬天寒冷，以及喜欢哪个季节。",
+      "example": "It's warm in spring. I like autumn.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是 Playing a seasons bingo game。",
+        "It's warm in spring. 春天很温暖。",
+        "It's cold in winter. 冬天很冷。",
+        "I like autumn. I love to see pretty flowers in spring."
+      ],
       "misconceptions": ["bingo 游戏只看图，听到 winter 反应不过来。"]
     },
     {
-      "id": "e2a-u7-2",
+      "id": "e2a-u7-2", "ideaIds": ["en-season"],
       "name": "Topic words: spring, summer, autumn, winter",
       "unit": "e2a-u7",
-      "definition": "认读本单元话题词：spring, summer, autumn, winter。听到或看到时能说出意思。",
-      "example": "spring, summer, autumn",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 spring、summer、autumn、winter，并用 in 说出在某个季节。",
+      "example": "I love to see pretty flowers in spring.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "spring 是春天，summer 是夏天，autumn 是秋天，winter 是冬天。",
+        "in spring、in summer、in autumn、in winter 表示在这个季节。",
+        "I love to see pretty flowers in spring. 我喜欢在春天看美丽的花。",
+        "I like autumn. 我喜欢秋天。",
+        "It's warm in spring.",
+        "It's cold in winter."
+      ],
       "misconceptions": ["autumn 和 spring 认混，季节顺序排错。", "winter 读音吞音，读成 winner。"]
     },
     {
-      "id": "e2a-u7-3",
+      "id": "e2a-u7-3", "ideaIds": ["en-season"],
       "name": "Song/Rhyme/Chant time: The four seasons",
       "unit": "e2a-u7",
-      "definition": "听唱《The four seasons》，跟读里面的本单元词语。",
-      "example": "Listen and chant: The four seasons.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《The four seasons》，会说春天温暖、冬天寒冷。",
+      "example": "It's warm in spring. It's cold in winter.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣说四个季节：spring、summer、autumn、winter。",
+        "It's warm in spring.",
+        "It's cold in winter.",
+        "I love to see pretty flowers in spring."
+      ],
       "misconceptions": ["四季歌会唱，四个季节词单独认不出。"]
     },
     {
-      "id": "e2a-u7-4",
+      "id": "e2a-u7-4", "ideaIds": ["en-season"],
       "name": "Talking/Story time: The little apple tree",
       "unit": "e2a-u7",
-      "definition": "听读故事《The little apple tree》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: The little apple tree.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《The little apple tree》，会说喜欢秋天、春天看花。",
+      "example": "I like autumn.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "I like autumn.",
+        "I love to see pretty flowers in spring.",
+        "It's warm in spring.",
+        "It's cold in winter."
+      ],
       "misconceptions": ["听故事把苹果树的四季变化顺序说乱。"]
     },
     {
-      "id": "e2a-u7-5",
+      "id": "e2a-u7-5", "ideaIds": ["en-season"],
       "name": "Mini-project: A seasons bingo game",
       "unit": "e2a-u7",
-      "definition": "完成小项目“A seasons bingo game”，用本单元的词向别人介绍自己的作品。",
-      "example": "A seasons bingo game",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成四季宾果，用季节句子介绍自己抽到的季节。",
+      "example": "It's warm in spring. I like autumn.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 A seasons bingo game。",
+        "抽到春天说 It's warm in spring.",
+        "抽到冬天说 It's cold in winter.",
+        "可以说 I like autumn. I love to see pretty flowers in spring."
+      ],
       "misconceptions": ["做 bingo 卡只在格子里写数字，不敢写英语季节词。"]
     },
     {
-      "id": "e2a-u8-1",
+      "id": "e2a-u8-1", "ideaIds": ["en-fruit"],
       "name": "Small task: Making a fruit plate",
       "unit": "e2a-u8",
-      "definition": "完成本单元小任务“Making a fruit plate”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Making a fruit plate",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "做水果拼盘，说出需要香蕉和苹果。",
+      "example": "I need the banana and the apple.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是 Making a fruit plate，做水果拼盘。",
+        "What do you need for the fruit plate?",
+        "I need the banana and the apple.",
+        "I love fruit."
+      ],
       "misconceptions": ["摆盘很起劲，介绍拼盘时水果词一个也说不出。"]
     },
     {
-      "id": "e2a-u8-2",
+      "id": "e2a-u8-2", "ideaIds": ["en-fruit"],
       "name": "Topic words: fruit, apple, pear, banana, grape, orange",
       "unit": "e2a-u8",
-      "definition": "认读本单元话题词：fruit, apple, pear, banana, grape, orange。听到或看到时能说出意思。",
-      "example": "fruit, apple, pear",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 fruit、apple、pear、banana、grape、orange，并会说红苹果、黄梨。",
+      "example": "I need the banana and the apple.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "fruit 是水果，apple 是苹果，pear 是梨，banana 是香蕉，grape 是葡萄，orange 是橙子。",
+        "yummy fruit 是美味的水果。red apples 是红苹果，yellow pears 是黄梨。",
+        "Apples red. Apples red.",
+        "I love fruit. 我喜欢水果。",
+        "What do you need for the fruit plate? I need the banana and the apple."
+      ],
       "misconceptions": ["apple、pear、grape 认混，图和词配错。", "banana 拼写写成 bananna。"]
     },
     {
-      "id": "e2a-u8-3",
+      "id": "e2a-u8-3", "ideaIds": ["en-fruit"],
       "name": "Song/Rhyme/Chant time: I love fruit",
       "unit": "e2a-u8",
-      "definition": "听唱《I love fruit》，跟读里面的本单元词语。",
-      "example": "Listen and chant: I love fruit.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《I love fruit》，会说苹果红、我喜欢水果。",
+      "example": "I love fruit.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "Apples red. Apples red. 苹果红。",
+        "I love fruit.",
+        "red apples 是红苹果，yellow pears 是黄梨。",
+        "yummy fruit 是美味的水果。"
+      ],
       "misconceptions": ["跟唱 I love fruit 时把 love 和 like 唱混。"]
     },
     {
-      "id": "e2a-u8-4",
+      "id": "e2a-u8-4", "ideaIds": ["en-fruit"],
       "name": "Talking/Story time: Shenshen's fruit plate",
       "unit": "e2a-u8",
-      "definition": "听读故事《Shenshen's fruit plate》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Shenshen's fruit plate.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Shenshen's fruit plate》，会问拼盘需要什么并回答香蕉和苹果。",
+      "example": "What do you need for the fruit plate?",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "What do you need for the fruit plate?",
+        "I need the banana and the apple.",
+        "I love fruit.",
+        "red apples、yellow pears 可以放进拼盘。"
+      ],
       "misconceptions": ["说不清拼盘里有哪几种水果，总漏一两种。"]
     },
     {
-      "id": "e2a-u8-5",
+      "id": "e2a-u8-5", "ideaIds": ["en-fruit"],
       "name": "Mini-project: My fruit plate",
       "unit": "e2a-u8",
-      "definition": "完成小项目“My fruit plate”，用本单元的词向别人介绍自己的作品。",
-      "example": "My fruit plate",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 My fruit plate，用需要的水果句子介绍自己的拼盘。",
+      "example": "I need the banana and the apple. I love fruit.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 My fruit plate。",
+        "介绍时说 I love fruit.",
+        "What do you need for the fruit plate? I need the banana and the apple.",
+        "可以说 red apples 和 yellow pears。"
+      ],
       "misconceptions": ["介绍作品只会说 It is a fruit plate，上面的水果说不出。"]
     },
     {
-      "id": "e2a-u9-1",
+      "id": "e2a-u9-1", "ideaIds": ["en-sense"],
       "name": "Small task: Using my five senses",
       "unit": "e2a-u9",
-      "definition": "完成本单元小任务“Using my five senses”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Using my five senses",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "用五种感官说出闻到花、尝到水果、摸到草、看见湖、听见鸟。",
+      "example": "I smell the flowers. I hear the birds.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是 Using my five senses。",
+        "I smell the flowers. 我闻花。",
+        "I taste the fruit. 我尝水果。",
+        "I touch the grass. I see the lake. I hear the birds."
+      ],
       "misconceptions": ["五个感官词和动作对不上，smell 认成摸一摸。"]
     },
     {
-      "id": "e2a-u9-2",
+      "id": "e2a-u9-2", "ideaIds": ["en-sense"],
       "name": "Topic words: smell, taste, touch, see, hear",
       "unit": "e2a-u9",
-      "definition": "认读本单元话题词：smell, taste, touch, see, hear。听到或看到时能说出意思。",
-      "example": "smell, taste, touch",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 smell、taste、touch、see、hear，并会说五种感官各感知什么。",
+      "example": "I smell the flowers. I hear the birds.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "smell 是闻，taste 是尝，touch 是摸，see 是看见，hear 是听见。",
+        "I smell the flowers.",
+        "I taste the fruit.",
+        "I touch the grass.",
+        "I see the lake.",
+        "I hear the birds."
+      ],
       "misconceptions": ["taste 和 touch 认混，尝和摸配错。", "smell 读音读成 smile。"]
     },
     {
-      "id": "e2a-u9-3",
+      "id": "e2a-u9-3", "ideaIds": ["en-sense"],
       "name": "Song/Rhyme/Chant time: In the park",
       "unit": "e2a-u9",
-      "definition": "听唱《In the park》，跟读里面的本单元词语。",
-      "example": "Listen and chant: In the park.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《In the park》，会说闻花、听见鸟。",
+      "example": "I smell the flowers. I hear the birds.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "I smell the flowers.",
+        "I taste the fruit.",
+        "I touch the grass.",
+        "I see the lake. I hear the birds."
+      ],
       "misconceptions": ["In the park 歌会唱，里面的感官词认不出。"]
     },
     {
-      "id": "e2a-u9-4",
+      "id": "e2a-u9-4", "ideaIds": ["en-sense"],
       "name": "Talking/Story time: Fun in the rain",
       "unit": "e2a-u9",
-      "definition": "听读故事《Fun in the rain》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Fun in the rain.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Fun in the rain》，用五种感官说出感知到的东西。",
+      "example": "I smell the flowers. I hear the birds.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "I smell the flowers.",
+        "I taste the fruit.",
+        "I touch the grass.",
+        "I see the lake. I hear the birds."
+      ],
       "misconceptions": ["听故事说不出下雨天里大家做了什么。"]
     },
     {
-      "id": "e2a-u9-5",
+      "id": "e2a-u9-5", "ideaIds": ["en-sense"],
       "name": "Mini-project: Talking about the five senses",
       "unit": "e2a-u9",
-      "definition": "完成小项目“Talking about the five senses”，用本单元的词向别人介绍自己的作品。",
-      "example": "Talking about the five senses",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成五感介绍，把闻到、尝到、摸到、看见、听见的句子说出来。",
+      "example": "I smell the flowers. I hear the birds.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目是 Talking about the five senses。",
+        "I smell the flowers. I taste the fruit.",
+        "I touch the grass. I see the lake.",
+        "I hear the birds."
+      ],
       "misconceptions": ["介绍五感时只会数数字，五个动作词说不上来。"]
     },
     {
-      "id": "e2a-u10-1",
+      "id": "e2a-u10-1", "ideaIds": ["en-can"],
       "name": "Small task: Talking about myself",
       "unit": "e2a-u10",
-      "definition": "完成本单元小任务“Talking about myself”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Talking about myself",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "介绍自己会做的事：画画、看书、做早饭。",
+      "example": "Look at me. I can draw a picture.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小任务是 Talking about myself。",
+        "Look at me. 看我。",
+        "I can draw a picture. I can read a book.",
+        "I can make breakfast."
+      ],
       "misconceptions": ["自我介绍只报名字，本单元的活动词用不上。"]
     },
     {
-      "id": "e2a-u10-2",
+      "id": "e2a-u10-2", "ideaIds": ["en-can"],
       "name": "Topic words: draw a picture, read a book, make breakfast",
       "unit": "e2a-u10",
-      "definition": "认读本单元话题词：draw a picture, read a book, make breakfast。听到或看到时能说出意思。",
-      "example": "draw a picture, read a book, make breakfast",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 draw a picture、read a book、make breakfast，并用 I can 说出自己会做的事。",
+      "example": "I can draw a picture. I can make breakfast.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "draw a picture 是画画，read a book 是看书，make breakfast 是做早饭。",
+        "special 是特别的。take care of 是照顾，do kung fu 是练功夫。",
+        "Look at me.",
+        "I can 后面接动词原形，表示我会做这件事。",
+        "I can draw a picture. I can read a book. I can make breakfast."
+      ],
       "misconceptions": ["draw a picture 说成 draw picture，漏 a。", "read a book 和 make breakfast 意思配错。"]
     },
     {
-      "id": "e2a-u10-3",
+      "id": "e2a-u10-3", "ideaIds": ["en-can"],
       "name": "Song/Rhyme/Chant time: Look at me",
       "unit": "e2a-u10",
-      "definition": "听唱《Look at me》，跟读里面的本单元词语。",
-      "example": "Listen and chant: Look at me.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《Look at me》，会说看我、我会画画。",
+      "example": "Look at me. I can draw a picture.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "Look at me.",
+        "I can draw a picture.",
+        "I can read a book.",
+        "I can make breakfast."
+      ],
       "misconceptions": ["Look at me 会唱，me 和 my 唱混。"]
     },
     {
-      "id": "e2a-u10-4",
+      "id": "e2a-u10-4", "ideaIds": ["en-can"],
       "name": "Talking/Story time: I'm special",
       "unit": "e2a-u10",
-      "definition": "听读故事《I'm special》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: I'm special.",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《I'm special》，用 I can 说出自己特别会做的事。",
+      "example": "Look at me. I can draw a picture.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "Look at me.",
+        "I can draw a picture. I can read a book. I can make breakfast.",
+        "take care of 是照顾，do kung fu 是练功夫。",
+        "I can 后面接动词原形。"
+      ],
       "misconceptions": ["听故事说不出“我”特别在哪里。"]
     },
     {
-      "id": "e2a-u10-5",
+      "id": "e2a-u10-5", "ideaIds": ["en-can"],
       "name": "Mini-project: A mini-book about me",
       "unit": "e2a-u10",
-      "definition": "完成小项目“A mini-book about me”，用本单元的词向别人介绍自己的作品。",
-      "example": "A mini-book about me",
-      "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "definition": "做一本关于自己的小书，用 I can 介绍里面的事。",
+      "example": "Look at me. I can draw a picture.",
+      "source": "沪教版（五四制）（2024）二年级上册知识清单；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 A mini-book about me。",
+        "Look at me.",
+        "I can draw a picture. I can read a book.",
+        "I can make breakfast."
+      ],
       "misconceptions": ["小书只贴照片，介绍时说不出照片里的活动。"]
     },
     {
-      "id": "e2a-ua-1",
+      "id": "e2a-ua-1", "ideaIds": ["en-word-bank"],
       "name": "Word bank",
       "unit": "e2a-ua",
       "definition": "用单词表按单元复习本册单词，看到单词能读出来并说出意思。",
       "example": "Read a word from the word bank.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "单词表按单元列出本册要认读的单词。",
+        "看到单词要能读出来。",
+        "还要能说出单词的中文意思。"
+      ],
       "misconceptions": ["单词表只从头顺读，不熟的词一直跳过。", "看到单词读得出，遮住中文说不出意思。"]
     },
     {
-      "id": "e2a-ua-2",
+      "id": "e2a-ua-2", "ideaIds": ["en-project-sheet"],
       "name": "Mini-project sheets",
       "unit": "e2a-ua",
       "definition": "使用小项目练习纸，按步骤完成本册的制作活动。",
       "example": "Follow a mini-project sheet.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Mini-project sheets”。",
+        "听懂要做什么，并用本单元的词说一说。"
+      ],
       "misconceptions": ["练习纸只做手工部分，朗读和说话步骤跳过。"]
     },
     {
-      "id": "e2a-ua-3",
+      "id": "e2a-ua-3", "ideaIds": ["en-role-play"],
       "name": "Cut, make and role-play",
       "unit": "e2a-ua",
       "definition": "剪下图卡，做一做、演一演本册的对话。",
       "example": "Cut the card and act out a line.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "剪下图卡，做一做、演一演本册的对话。",
+        "演出的句子用学过的词。",
+        "能说出自己演的是哪一句。"
+      ],
       "misconceptions": ["剪贴完就收起来，不演对话。", "演对话只会自己那句，接不上别人的话。"]
     },
     {
-      "id": "e2a-ua-4",
+      "id": "e2a-ua-4", "ideaIds": ["en-stick"],
       "name": "Cut and stick",
       "unit": "e2a-ua",
       "definition": "剪贴图卡，把单词和图配对。",
       "example": "Stick the word next to its picture.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "剪贴图卡，把单词和图配对。",
+        "单词贴在对应的图旁边。",
+        "配完要能读出那个单词。"
+      ],
       "misconceptions": ["图词配对靠图标猜，不看单词本身。"]
     },
     {
-      "id": "e2a-ua-5",
+      "id": "e2a-ua-5", "ideaIds": ["en-audio"],
       "name": "Audio",
       "unit": "e2a-ua",
       "definition": "听本册音频，跟读单词、歌谣和对话。",
       "example": "Listen and repeat the audio.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "听本册音频，跟读单词、歌谣和对话。",
+        "跟读的是本册学过的内容。",
+        "听完要能自己再说一遍。"
+      ],
       "misconceptions": ["听音频只当背景音，不跟读。", "听不懂就关掉，不愿再听第二遍。"]
     },
     {
-      "id": "e2a-uz-1",
+      "id": "e2a-uz-1", "ideaIds": ["en-colour"],
       "name": "Colours",
       "unit": "e2a-uz",
       "definition": "认读颜色词，能说出物品是什么颜色。",
       "example": "It is red. It is blue.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "red 是红色，blue 是蓝色。",
+        "用 It is red. 或 It is blue. 说物品的颜色。",
+        "看到物品要能说出它是什么颜色。"
+      ],
       "misconceptions": ["颜色词认混，red、green 分不清。", "说物品颜色时只蹦一个词，忘了 It is… 。"]
     },
     {
-      "id": "e2a-uz-2",
+      "id": "e2a-uz-2", "ideaIds": ["en-number"],
       "name": "Numbers",
       "unit": "e2a-uz",
       "definition": "认读数字词，能按顺序数一数。",
       "example": "One, two, three.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "one 是一，two 是二，three 是三。",
+        "数字词要按顺序数。",
+        "例如：One, two, three."
+      ],
       "misconceptions": ["数字词会背不会用，看到数量反应不出英语。", "three 和 tree 听混，数数接龙到十几就卡。"]
     },
     {
-      "id": "e2a-uz-3",
+      "id": "e2a-uz-3", "ideaIds": ["en-letter"],
       "name": "Letters",
       "unit": "e2a-uz",
       "definition": "认读字母，能按顺序把字母读出来。",
       "example": "A, B, C.",
       "source": "家长确认的教材目录（二年级上册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "字母要按顺序认读。",
+        "开头是 A、B、C。",
+        "看到字母能读出来。"
+      ],
       "misconceptions": ["字母歌会唱，单个字母拿出来认不出。", "b 和 d、p 和 q 认混。"]
     }
   ],
@@ -634,7 +1008,7 @@
     {
       "id": "e2a-o1",
       "title": "Unit 1 My morning",
-      "goal": "能认读 get up, brush my teeth, wash my face, have breakfast，并完成“Making a morning checklist”和“My morning checklist”。",
+      "goal": "能认读 get up、brush my teeth、wash my face、have breakfast，并说 I'm ready for school 和自己的早晨。",
       "conceptIds": [
         "e2a-u1-1",
         "e2a-u1-2",
@@ -644,13 +1018,13 @@
       ],
       "method": "speak",
       "errorTypes": ["word-form", "spoken-response", "spelling"],
-      "questionPoints": ["早上活动的短语按动作顺序出，配动作图", "brush my teeth 里的 my 不能丢", "先说词，再说 I get up. 这样的短句"],
+      "questionPoints": ["早上活动的短语按动作顺序出，配动作图", "brush my teeth 里的 my 不能丢", "have breakfast 和 eat breakfast 都算吃早饭", "说早晨用 Look! This is my morning. I get up, and then brush my teeth."],
       "variationAxes": ["context", "representation"]
     },
     {
       "id": "e2a-o2",
       "title": "Unit 2 My room",
-      "goal": "能认读 on the desk, in the box, under the bed，并完成“Tidying my room”和“My tidy room”。",
+      "goal": "能认读 on the desk、in the box、under the bed、on the shelf，并用 put 说出东西放在哪里。",
       "conceptIds": [
         "e2a-u2-1",
         "e2a-u2-2",
@@ -660,13 +1034,13 @@
       ],
       "method": "speak",
       "errorTypes": ["word-form", "usage-context", "listening"],
-      "questionPoints": ["on、in、under 配图考，先不靠中文翻译", "听指令把东西放到正确位置", "答句说完整：It is on the desk."],
+      "questionPoints": ["on、in、under 配图考，先不靠中文翻译", "听指令把东西放到正确位置", "答句用朗读纸里的句子，如 I put my books on the desk.", "架子上是 on the shelf，床底下是 under the bed"],
       "variationAxes": ["context", "representation", "reverse"]
     },
     {
       "id": "e2a-o3",
       "title": "Unit 3 On the way",
-      "goal": "能认读 by car, on foot, by bus，并完成“Making a bookmark”和“My bookmark”。",
+      "goal": "能认读 by car、on foot、by bus，并说出伦敦地铁 underground 和上海的 metro。",
       "conceptIds": [
         "e2a-u3-1",
         "e2a-u3-2",
@@ -676,13 +1050,13 @@
       ],
       "method": "speak",
       "errorTypes": ["word-meaning", "word-form"],
-      "questionPoints": ["by car、on foot、by bus 配交通图认读", "on foot 不能说成 by foot", "能接上 I go to school 说一整句"],
+      "questionPoints": ["by car、on foot、by bus 配交通图认读", "on foot 不能说成 by foot", "能接上 I go to school 说一整句", "伦敦地铁是 underground，上海说 metro"],
       "variationAxes": ["context", "representation"]
     },
     {
       "id": "e2a-o4",
       "title": "Unit 4 Playing sports",
-      "goal": "能认读 run, jump, play ping-pong, play basketball, play football，并完成“Playing a sports board game”和“A sports board game”。",
+      "goal": "能认读 run、jump 和三种球类，并说出打球前要 do a warm-up。",
       "conceptIds": [
         "e2a-u4-1",
         "e2a-u4-2",
@@ -692,7 +1066,7 @@
       ],
       "method": "speak",
       "errorTypes": ["word-form", "usage-context"],
-      "questionPoints": ["看图说动作、听词做动作两个方向都练", "play 和球类词成组记", "不出没学过的球类词"],
+      "questionPoints": ["看图说动作、听词做动作两个方向都练", "play 和球类词成组记，球类前面不加 the", "play ping-pong 也叫 play table tennis", "建议先热身：You should do a warm-up."],
       "variationAxes": ["context", "representation", "reverse"]
     },
     {

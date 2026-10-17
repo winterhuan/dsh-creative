@@ -1,0 +1,317 @@
+{
+  "subject": "chinese",
+  "ideas": [
+    {
+      "id": "zh-tone",
+      "name": "四声",
+      "definition": "一个音节有四个声调：一声、二声、三声、四声。读拼音时要读准声调。",
+      "example": "指着一个音节，按一声、二声、三声、四声读出来。"
+    },
+    {
+      "id": "zh-single-final",
+      "name": "单韵母",
+      "definition": "a、o、e、i、u、ü 是单韵母。ü 单独写时，上面的两点要保留。",
+      "example": "读出 a、o、e、i、u、ü。"
+    },
+    {
+      "id": "zh-initial",
+      "name": "声母",
+      "definition": "声母是音节开头的字母。b、p、m、f，d、t、n、l，g、k、h，j、q、x，z、c、s，zh、ch、sh、r，y、w 都是声母。",
+      "example": "读出 b、p、m、f。"
+    },
+    {
+      "id": "zh-flat-retroflex",
+      "name": "平舌音和翘舌音",
+      "definition": "z、c、s 是平舌声母。zh、ch、sh、r 是翘舌声母。",
+      "example": "z、c、s 是平舌音，zh、ch、sh、r 是翘舌音。"
+    },
+    {
+      "id": "zh-jqx",
+      "name": "j q x 与 ü",
+      "definition": "j、q、x 和 ü 相拼时，ü 上的两点省略，写成 ju、qu、xu。",
+      "example": "ju、qu、xu 里的 u 不写两点。"
+    },
+    {
+      "id": "zh-compound",
+      "name": "复韵母",
+      "definition": "ai、ei、ui、ao、ou、iu、ie、üe 由两个元音组成，是复韵母。",
+      "example": "读出 ai、ei、ui。"
+    },
+    {
+      "id": "zh-er",
+      "name": "er",
+      "definition": "er 是特殊韵母。",
+      "example": "读出 er。"
+    },
+    {
+      "id": "zh-front-nasal",
+      "name": "前鼻韵母",
+      "definition": "an、en、in、un、ün 是前鼻韵母，韵尾是 n。",
+      "example": "读出 an、en、in、un、ün。"
+    },
+    {
+      "id": "zh-back-nasal",
+      "name": "后鼻韵母",
+      "definition": "ang、eng、ing、ong 是后鼻韵母，韵尾是 ng。",
+      "example": "读出 ang、eng、ing、ong。"
+    },
+    {
+      "id": "zh-whole",
+      "name": "整体认读",
+      "definition": "yi、wu、yu 要整个认读，不拆开拼。",
+      "example": "读出 yi、wu、yu。"
+    },
+    {
+      "id": "zh-read-sentence",
+      "name": "读句子",
+      "definition": "把字连成句子读出来。",
+      "example": "读出“我是中国人”。"
+    },
+    {
+      "id": "zh-recognize",
+      "name": "认字",
+      "definition": "看见字要能读出字音，并说出它指什么。这一项不要求默写。",
+      "example": "看到“山”，读出山，并说出是山。"
+    },
+    {
+      "id": "zh-recognize-list",
+      "name": "识字表",
+      "definition": "识字表按课文列出要求会认的字。会认是看见字能读出来，不要求默写。蓝色标出的字是以前认过的多音字，不计入生字总数。",
+      "example": "找到今天课文的生字，指着读出来。"
+    },
+    {
+      "id": "zh-write-list",
+      "name": "写字表",
+      "definition": "写字表按课文列出要求会写的字。会写的字要能自己写端正。会认的字不在这张表里。",
+      "example": "先看字形，再一笔一笔写端正。"
+    },
+    {
+      "id": "zh-stroke",
+      "name": "笔画",
+      "definition": "横、竖、撇、捺、点是基本笔画。写字时要能说出这一笔的名称。",
+      "example": "指出横、竖、撇、捺、点，说出名称。"
+    },
+    {
+      "id": "zh-radical",
+      "name": "常用偏旁",
+      "definition": "看到常用偏旁要能叫出名称。三点水、木字旁、口字旁、虫字旁各是一种偏旁。每个偏旁要能说出一个例字。",
+      "example": "指出三点水，再说出一个带三点水的字。"
+    },
+    {
+      "id": "zh-unit-review",
+      "name": "语文园地",
+      "definition": "语文园地用来复习本单元已经学过的课。练习停在这些课里，不另考没有写出的字和句子。",
+      "example": "打开本单元的语文园地，只复习这一单元学过的课。"
+    },
+    {
+      "id": "zh-ideograph",
+      "name": "会意字",
+      "definition": "两个字合在一起，意思也合在一起。",
+      "example": "日和月合起来是明。小和大合起来是尖。"
+    },
+    {
+      "id": "zh-phonetic",
+      "name": "形声字",
+      "definition": "形声字的一部分表示意思，一部分表示读音。",
+      "example": "清的三点水表示和水有关，青表示读音。"
+    },
+    {
+      "id": "c2b-i-bianxi",
+      "name": "形近字",
+      "definition": "读音相同或相近、字形相近的字，要看偏旁想意思，再决定用哪一个。",
+      "example": "峰是山字旁，蜂是虫字旁，锋是金字旁。"
+    },
+    {
+      "id": "zh-pair",
+      "name": "对子",
+      "definition": "把相关的词语一对一对地说出来。",
+      "example": "云对雨，古对今。"
+    },
+    {
+      "id": "zh-read-book",
+      "name": "读书",
+      "definition": "拿到书先看封面，找出书名和作者。读完要说出故事里有谁。",
+      "example": "先找出书名和作者，再说故事里有谁。"
+    },
+    {
+      "id": "zh-measure",
+      "name": "量词",
+      "definition": "量词要和后面的事物相配。",
+      "example": "一只海鸥，一条帆船，一艘军舰。"
+    },
+    {
+      "id": "zh-notice",
+      "name": "通知",
+      "definition": "通知要写清什么时候、在哪里、做什么。缺一项，事情就定不下来。",
+      "example": "明天上午在操场开会。时间、地点、事情都有。"
+    },
+    {
+      "id": "zh-word-list",
+      "name": "词语表",
+      "definition": "词语表按课文列出词语。读词语时要能说出意思。多音字放在词语里，按这个词的读音读。词语表、识字表和写字表各看各的。",
+      "example": "在词语表里读出今天课文里的词语。"
+    },
+    {
+      "id": "zh-weather",
+      "name": "天气词语",
+      "definition": "表示天气状况的词。看见这个词要能读出来，并说出是什么样的天气。",
+      "example": "晴朗、雾霾、雷阵雨、冰雹。"
+    },
+    {
+      "id": "zh-near-verb",
+      "name": "近义动作",
+      "definition": "意思接近的两个动作，差别在方向或方式。比较时要说出这个差别。",
+      "example": "迎上去是对着走过去，追上去是在后面赶。"
+    },
+    {
+      "id": "zh-tell-animal",
+      "name": "介绍一种动物",
+      "definition": "讲一种动物时先想好再讲。听的人可以提问。",
+      "example": "先说动物的名字和样子，再回答别人的问题。"
+    },
+    {
+      "id": "zh-antonym",
+      "name": "反义词",
+      "definition": "意思相反的两个词是反义词。说出一个词，要能说出和它相反的词。",
+      "example": "美对丑，爱对恨。慌张和镇定相反。"
+    },
+    {
+      "id": "zh-synonym",
+      "name": "近义词",
+      "definition": "意思相近的词是近义词。",
+      "example": "换一个意思相近的词，句子的意思不变。"
+    },
+    {
+      "id": "zh-radical-lookup",
+      "name": "部首查字法",
+      "definition": "不认识的字，先定部首，再数除去部首还剩几画，用这两项去查。",
+      "example": "先找部首，再数除去部首还剩几画。"
+    },
+    {
+      "id": "zh-alpha-lookup",
+      "name": "音序查字法",
+      "definition": "知道读音时，按字母音序去查这个字。",
+      "example": "知道读音，就按音序查。"
+    },
+    {
+      "id": "zh-homophone",
+      "name": "同音字",
+      "definition": "读音相同、意思不同的字，要按意思选哪一个。",
+      "example": "花园用园，圆形用圆；一只用只，一支用支。"
+    },
+    {
+      "id": "zh-color-shade",
+      "name": "事物的颜色",
+      "definition": "在颜色词前面加上事物，说明是这种事物的那种颜色。",
+      "example": "雪白、米白、西瓜红、天蓝。"
+    },
+    {
+      "id": "zh-polyphone",
+      "name": "多音字",
+      "definition": "同一个字在不同的词里读音不同。读的时候按这个词的意思选定读音。",
+      "example": "种子和种地读音不同，好人和好客读音不同。"
+    },
+    {
+      "id": "zh-what-like",
+      "name": "什么样的什么",
+      "definition": "用“什么样的什么”说出一种景物。前面是样子，后面是事物。",
+      "example": "细长的葫芦藤，雪白的小花。"
+    },
+    {
+      "id": "zh-negotiate",
+      "name": "商量",
+      "definition": "提出想法时用商量的语气，把事情说清楚。",
+      "example": "和同学商量调换值日时间。"
+    },
+    {
+      "id": "zh-message",
+      "name": "留言条",
+      "definition": "留言条先写标题，再写留给谁、什么事，最后写自己的名字和时间。",
+      "example": "写给谁、什么事、自己的名字和时间，四项都要有。"
+    },
+    {
+      "id": "zh-picture-write",
+      "name": "看图写话",
+      "definition": "看图先说出图里有什么、接下来会怎样，再把这两句写下来。",
+      "example": "先说图里有什么，再说接下来会怎样，然后写下来。"
+    },
+    {
+      "id": "zh-sound-word",
+      "name": "象声词",
+      "definition": "模仿声音的词要和发出这个声音的事物对上。",
+      "example": "叽叽喳喳是鸟叫，哗啦哗啦是雨声。"
+    },
+    {
+      "id": "zh-animal-idiom",
+      "name": "带动物的成语",
+      "definition": "成语里的动物用来打比方。要能指出成语里是哪种动物。",
+      "example": "狼吞虎咽里有狼和虎，惊弓之鸟里有鸟，胆小如鼠里有鼠。"
+    },
+    {
+      "id": "zh-picture-order",
+      "name": "按顺序讲图",
+      "definition": "看几幅图时，按图的先后把意思讲清楚。",
+      "example": "先讲第一幅发生了什么，再讲后面一幅。"
+    },
+    {
+      "id": "zh-fable",
+      "name": "寓言",
+      "definition": "寓言用一个短故事讲一个道理。读完要说出这个道理。",
+      "example": "羊丢了以后把羊圈补好，还不晚。"
+    },
+    {
+      "id": "zh-silent",
+      "name": "默读",
+      "definition": "默读不出声，也不用手指着读。边读边想意思。",
+      "example": "不出声读完一段，再说说写了什么。"
+    },
+    {
+      "id": "zh-retell",
+      "name": "复述",
+      "definition": "复述按事情发生的先后讲，不打乱顺序。",
+      "example": "先讲为什么要做，再讲遇到谁，最后讲结果。"
+    },
+    {
+      "id": "zh-predict",
+      "name": "预测",
+      "definition": "读之前先猜会发生什么。读的时候提出问题，再往下找答案。",
+      "example": "先猜一猜，再读下去核对。"
+    },
+    {
+      "id": "zh-conjunction",
+      "name": "关联词",
+      "definition": "“因为……所以……”说原因和结果。“一边……一边……”说两件事同时做。",
+      "example": "因为今天下雨，所以运动会推迟了。他一边唱歌，一边走路。"
+    },
+    {
+      "id": "zh-sentence-tone",
+      "name": "问句和感叹句",
+      "definition": "问句表示疑问，句末用问号。感叹句表示强烈的语气，句末用感叹号。",
+      "example": "你见过这样的花吗？这朵花真美啊！"
+    },
+    {
+      "id": "zh-describe",
+      "name": "介绍",
+      "definition": "介绍一个人或一种美食，先写是谁或是什么，再写样子或味道，最后写自己的感受。",
+      "example": "写出名字、样子、喜欢做什么。"
+    },
+    {
+      "id": "zh-continue",
+      "name": "续编",
+      "definition": "续编顺着已经有的开头往下写。后面发生的事要和前面接得上。",
+      "example": "顺着故事的开头，接着写后来发生的事。"
+    },
+    {
+      "id": "zh-festival",
+      "name": "传统节日",
+      "definition": "春节要贴春联。端午节要吃粽子。饺子的“饺”是食字旁，和食物有关。",
+      "example": "春节贴春联，端午节吃粽子。"
+    },
+    {
+      "id": "zh-recite",
+      "name": "背诵原文",
+      "definition": "要求背诵的诗，要按原文背出诗句。",
+      "example": "背出“草长莺飞二月天”。"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# Agent Note: Checkable facts on knowledge points
+
+Status: implemented
+
+English | [中文](2026-10-17-student-knowledge-facts.zh.md)
+
+## Problem
+
+A knowledge point was one definition and one example. The tutor then invented the rest of the lesson while writing a check-in or a worksheet. For Chinese, grade two, first term, that produced claims the bundled textbook does not make: 《场景歌》 was given “一片沙滩”, grape raisins were dried in a “阴房”, and 《植物妈妈有办法》 dropped the pomegranate. Short definitions cannot keep a generated question inside the lesson.
+
+## Decision
+
+A knowledge point may carry `facts`: two to eight checkable sentences, each at most 240 characters. `study_status kind=curriculum` and `kind=elements` return them on the knowledge point, and the workbench lists them under the point. Question instructions treat `facts` as the whole set of lesson claims a question may use. A point without `facts` still uses only its definition and example; the tutor does not fill in plot, readings, garden exercises or verse that the map does not state.
+
+Chinese, grade two, first term, is the book whose pages ship with the package. Every knowledge point in that map has `facts` taken from those pages, and a few definitions and examples that contradicted the pages were corrected. Every knowledge point on the other eleven maps also has `facts`. Mathematics states the method and the worked example. Chinese states the characters, lines and events that lesson can be checked against. English, grade two, first term, Units 1 to 4 follow a parent-provided reading sheet. Units 5 to 10 of that book, grade one first term Units 1 and 3, and grade one second term Units 1 and 2 now use sentences taken from 2024 Shanghai five-four excerpts that were actually read. The remaining English units still state what the topic words mean until a matching page is read. Publisher, edition and volume may differ. A later page or paper that is the same concept can replace a fact; a concept that does not match is left out. A new question is written from the facts; the original stem is not copied into the map. A search snippet does not count as reading, and an unknown scan is not used. Workspace concepts accept the same optional field. Existing objective IDs stay, so saved answers and worksheets keep their goals.
+
+## Alternatives considered
+
+**Save exam papers found on the web as a reference bank.** Questions on a paper corroborate the course. Publisher may differ, and a material that has been read can supply checkable facts when the concept is the same one on the map. Keeping the whole paper as a stem bank, attaching a concept the map point does not contain, or copying items into a new exercise, still loses. An unknown scan is not authority, and a new question is written from the facts.
+
+**Ask the parent to upload every school paper before any question can be written.** A paper the parent has is useful as a mistake photo, but it is not required to state what 《小蝌蚪找妈妈》 already says on the bundled page. The closed set belongs on the knowledge point.
+
+**Replace unit objectives with one new objective per lesson.** Check-ins would sample lessons instead of units, and saved `objectiveId` values such as `c2a-o1` would stop resolving. Facts sit on the lessons those objectives already cite.
+
+## Consequences
+
+Chinese, grade two, first term, is checked page by page against the bundled textbook. The English units named above are checked against the reading sheet or the excerpts that were read. The other maps state the concept itself, so a later reading of the same concept can replace a fact. Facts are short claims, not a copy of a paper's original items. The model can still misread a fact; parents still watch question quality. This change was not exercised with a real model or in a real DSH browser.

@@ -1,0 +1,245 @@
+{
+  "subject": "english",
+  "ideas": [
+    {
+      "id": "en-greet",
+      "name": "问候",
+      "definition": "Good morning. 是早上好，Good afternoon. 是下午好，Good evening. 是晚上好。How are you? 问你好吗。I'm fine, thank you. 回答我很好。Goodbye. 用来道别。Hello. Hi. 用来打招呼。",
+      "example": "Good afternoon. How are you? I'm fine, thank you."
+    },
+    {
+      "id": "en-introduce",
+      "name": "介绍",
+      "definition": "This is … 用来介绍人或物。",
+      "example": "This is our teacher. This is my family. This is my friend."
+    },
+    {
+      "id": "en-school-things",
+      "name": "学习用品",
+      "definition": "schoolbag 是书包，book 是书，pencil 是铅笔，ruler 是尺子，eraser 是橡皮，pencil case 是铅笔盒。Pack my schoolbag. 是收拾我的书包。Don't worry. 是别担心。",
+      "example": "Pack my pencils. Don't worry."
+    },
+    {
+      "id": "en-classroom",
+      "name": "教室",
+      "definition": "classroom 是教室，desk 是书桌，door 是门，chair 是椅子，blackboard 是黑板，floor 是地板。clean 是打扫，on duty 是值日。",
+      "example": "clean the classroom."
+    },
+    {
+      "id": "en-face",
+      "name": "五官",
+      "definition": "face 是脸，eye 是眼睛，ear 是耳朵，nose 是鼻子，mouth 是嘴巴。",
+      "example": "face, eye, ear, nose, mouth."
+    },
+    {
+      "id": "en-family",
+      "name": "家人",
+      "definition": "family 是家人，mum 是妈妈，dad 是爸爸，brother 是哥哥或弟弟，sister 是姐姐或妹妹，me 是我。This is my family. 用来介绍家人。",
+      "example": "This is my family."
+    },
+    {
+      "id": "en-animal",
+      "name": "动物",
+      "definition": "animal 是动物。dog 是狗，cat 是猫，horse 是马，hen 是母鸡，bee 是蜜蜂，panda 是熊猫，tiger 是老虎，elephant 是大象，monkey 是猴子。",
+      "example": "panda, tiger, monkey."
+    },
+    {
+      "id": "en-can",
+      "name": "能做的事",
+      "definition": "I can … 表示我能做某事。Yes, I can. 表示我能。",
+      "example": "I can draw a picture. Yes, I can."
+    },
+    {
+      "id": "en-number",
+      "name": "数字",
+      "definition": "one 是一，two 是二，three 是三，four 是四，five 是五，six 是六。数字词按顺序数。",
+      "example": "One, two, three."
+    },
+    {
+      "id": "en-colour",
+      "name": "颜色",
+      "definition": "red 是红色，yellow 是黄色，blue 是蓝色，green 是绿色。It is red. 用来说明物品的颜色。",
+      "example": "It is red. It is blue."
+    },
+    {
+      "id": "en-food",
+      "name": "食物",
+      "definition": "lunch 是午餐，meatball 是肉丸，rice 是米饭，vegetable 是蔬菜，soup 是汤，apple 是苹果。It's lunch time. 是午餐时间到了。",
+      "example": "I have meatballs and vegetables."
+    },
+    {
+      "id": "en-playground",
+      "name": "操场",
+      "definition": "playground 是操场，slide 是滑梯，swing 是秋千，seesaw 是跷跷板。hold on tight 是抓紧，be careful 是小心。",
+      "example": "Hold on tight. Be careful."
+    },
+    {
+      "id": "en-weather",
+      "name": "天气",
+      "definition": "weather 是天气。sunny 是晴天，rainy 是雨天，windy 是有风，cloudy 是多云，snowy 是下雪。",
+      "example": "It is sunny. It is rainy."
+    },
+    {
+      "id": "en-clothes",
+      "name": "衣服",
+      "definition": "clothes 是衣服，shirt 是衬衫，trousers 是裤子，sock 是袜子，shoe 是鞋，hat 是帽子，dress 是连衣裙，skirt 是短裙，coat 是外套。put on 是穿上，wear 是穿着。",
+      "example": "I put on my coat. She wears a red dress."
+    },
+    {
+      "id": "en-play",
+      "name": "游戏",
+      "definition": "game 是游戏。hide-and-seek 是捉迷藏，skip rope 是跳绳，throw sandbags 是扔沙包。",
+      "example": "play hide-and-seek."
+    },
+    {
+      "id": "en-traffic",
+      "name": "交通",
+      "definition": "traffic light 是红绿灯。stop 是停，go 是走，wait 是等。zebra crossing 是斑马线。",
+      "example": "Stop. Wait. Go."
+    },
+    {
+      "id": "en-see",
+      "name": "看见",
+      "definition": "see 是看见，look at 是看。",
+      "example": "I see a panda. Look at the panda."
+    },
+    {
+      "id": "en-toy",
+      "name": "玩具",
+      "definition": "kite 是风筝，toy car 是玩具汽车，toy boat 是玩具船，ball 是球，toy train 是玩具火车。gift 是礼物，cute 是可爱。",
+      "example": "a kite, a toy car, a ball."
+    },
+    {
+      "id": "en-morning",
+      "name": "早晨要做的事",
+      "definition": "get up 是起床，brush my teeth 是刷牙，wash my face 是洗脸，have breakfast 是吃早饭。I get up, and then brush my teeth. 先起床，然后刷牙。",
+      "example": "I get up, and then brush my teeth."
+    },
+    {
+      "id": "en-place",
+      "name": "位置",
+      "definition": "in 是里面，on 是上面，under 是下面。put … in/on/under … 表示把东西放在那里。",
+      "example": "I put my books on the desk. Please put it under the bed."
+    },
+    {
+      "id": "en-transport",
+      "name": "出行方式",
+      "definition": "on foot 是步行，by bus 是乘公共汽车，by car 是乘汽车。",
+      "example": "I go to school on foot. I go to school by bus."
+    },
+    {
+      "id": "en-sport",
+      "name": "运动",
+      "definition": "run 是跑，jump 是跳。play football 是踢足球，play basketball 是打篮球，play ping-pong 是打乒乓球。warm-up 是热身。球类名称前面不加 the。",
+      "example": "Let's play sports. I can play ping-pong. You should do a warm-up."
+    },
+    {
+      "id": "en-sky",
+      "name": "天空",
+      "definition": "sky 是天空，star 是星星，sun 是太阳，cloud 是云，moon 是月亮。in the sky 是在天空里。",
+      "example": "The sun is high in the sky."
+    },
+    {
+      "id": "en-sea",
+      "name": "海洋",
+      "definition": "sea 是海。seahorse 是海马，dolphin 是海豚，clownfish 是小丑鱼。in the sea 是在海里。",
+      "example": "Little seahorses are in the sea."
+    },
+    {
+      "id": "en-season",
+      "name": "季节",
+      "definition": "spring 是春天，summer 是夏天，autumn 是秋天，winter 是冬天。It's warm in spring. 春天很温暖。It's cold in winter. 冬天很冷。",
+      "example": "It's warm in spring. It's cold in winter."
+    },
+    {
+      "id": "en-fruit",
+      "name": "水果",
+      "definition": "fruit 是水果，apple 是苹果，pear 是梨，banana 是香蕉，grape 是葡萄，orange 是橙子。",
+      "example": "I need the banana and the apple."
+    },
+    {
+      "id": "en-sense",
+      "name": "五感",
+      "definition": "smell 是闻，taste 是尝，touch 是摸，see 是看见，hear 是听见。What can you see? 问能看见什么，回答用 I can see …。What can you hear? 问能听见什么。",
+      "example": "I smell the flowers. I hear the birds. I can see a bird."
+    },
+    {
+      "id": "en-touch",
+      "name": "触摸的感觉",
+      "definition": "soft 是柔软，hard 是坚硬，rough 是粗糙，smooth 是光滑。",
+      "example": "The toy is soft. The desk is hard."
+    },
+    {
+      "id": "en-like",
+      "name": "喜欢",
+      "definition": "I like … 表示我喜欢做的事。Do you like …? 问别人喜不喜欢。喜欢回答 Yes, I do. 不喜欢回答 No, I don't.",
+      "example": "I like swimming. Do you like monkeys? Yes, I do."
+    },
+    {
+      "id": "en-favourite",
+      "name": "最喜欢",
+      "definition": "My favourite … is … 用来说明最喜欢的东西。favourite 是最喜欢的。",
+      "example": "My favourite food is noodles."
+    },
+    {
+      "id": "en-rule",
+      "name": "规则",
+      "definition": "Don't … 表示不要做某事。Keep quiet. 是保持安静。Wait for the green light. 是等绿灯。",
+      "example": "Don't run in the classroom. Wait for the green light."
+    },
+    {
+      "id": "en-mother",
+      "name": "母亲节",
+      "definition": "Happy Mother's Day! 用来祝贺母亲节。别人祝贺时回答 Thank you.",
+      "example": "Happy Mother's Day! Thank you."
+    },
+    {
+      "id": "en-story",
+      "name": "读故事",
+      "definition": "读短故事要说出主要人物，还要说出发生了什么。",
+      "example": "The story is about a duck."
+    },
+    {
+      "id": "en-letter",
+      "name": "字母",
+      "definition": "字母按顺序认读。开头是 A、B、C。看到字母能读出来。",
+      "example": "A, B, C."
+    },
+    {
+      "id": "en-phonics",
+      "name": "字母在单词里的读音",
+      "definition": "字母在单词里有常见读音，可以帮助认读新词。b 在 bag 里读 /b/，d 在 dog 里读 /d/。",
+      "example": "b—/b/—bag；d—/d/—dog。"
+    },
+    {
+      "id": "en-word-bank",
+      "name": "Word bank",
+      "definition": "单词表按单元列出要认读的单词。看到单词要能读出来，并说出中文意思。",
+      "example": "Read a word from the word bank."
+    },
+    {
+      "id": "en-project-sheet",
+      "name": "Mini-project sheets",
+      "definition": "小项目页写明要做的一件事。做的时候用本单元学过的词和句子。",
+      "example": "按页上的步骤做完，再说一说用了哪个词。"
+    },
+    {
+      "id": "en-role-play",
+      "name": "Cut, make and role-play",
+      "definition": "剪下图卡，用学过的句子演一演。演完要能说出自己演的是哪一句。",
+      "example": "Cut the card and act out a line."
+    },
+    {
+      "id": "en-stick",
+      "name": "Cut and stick",
+      "definition": "剪贴图卡，把单词和图配对。单词贴在对应的图旁边。配完要能读出那个单词。",
+      "example": "Stick the word next to its picture."
+    },
+    {
+      "id": "en-audio",
+      "name": "Audio",
+      "definition": "听本册音频，跟读单词、歌谣和对话。跟读的是本册学过的内容。听完要能自己再说一遍。",
+      "example": "Listen and repeat the audio."
+    }
+  ]
+}

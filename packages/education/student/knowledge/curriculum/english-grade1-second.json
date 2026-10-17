@@ -4,7 +4,7 @@
   "grade": 1,
   "term": "second",
   "title": "英语一年级下册知识地图",
-  "basis": "单元和栏目对齐家长确认的一年级下册英语教材目录，包含各单元的小任务、话题词、歌谣、故事和小项目。定义依据《义务教育英语课程标准（2022年版）》一级准备要求。它是学习框架，不代替学校课本、教师进度和校内评价。",
+  "basis": "单元和栏目对齐家长确认的一年级下册英语教材目录，包含各单元的小任务、话题词、歌谣、故事和小项目。定义依据《义务教育英语课程标准（2022年版）》一级准备要求。它是学习框架，不代替学校课本、教师进度和校内评价。每个知识点的 facts 是这一知识点可以核对的事实，出题不得超出这些事实。",
   "units": [
     {
       "id": "e1b-u1",
@@ -75,498 +75,784 @@
   ],
   "concepts": [
     {
-      "id": "e1b-u1-1",
+      "id": "e1b-u1-1", "ideaIds": ["en-greet"],
       "name": "Small task: Greeting old friends",
       "unit": "e1b-u1",
-      "definition": "完成本单元小任务“Greeting old friends”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Greeting old friends",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "回学校向同学问好，用 I'm fine、I'm happy、I'm busy、I'm tired 说出自己的感觉。",
+      "example": "How are you today? I'm fine.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "How are you? How are you today?",
+        "I'm fine. I'm good. I'm great.",
+        "How about you? 你呢？",
+        "I'm so happy. I'm tired. I'm busy."
+      ],
       "misconceptions": ["只认任务名，真见面时只会说 Hello，不会说长一点的问候。", "别人问 How are you? 时答不上来，只会笑。"]
     },
     {
-      "id": "e1b-u1-2",
+      "id": "e1b-u1-2", "ideaIds": ["en-greet"],
       "name": "Topic words: fine, busy, tired, happy, great",
       "unit": "e1b-u1",
-      "definition": "认读本单元话题词：fine, busy, tired, happy, great。听到或看到时能说出意思。",
-      "example": "fine, busy, tired",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 fine、busy、tired、happy、great，并用 I'm 说出自己的感觉。",
+      "example": "I'm happy. I'm tired. I'm busy.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "fine 是很好，busy 是忙，tired 是累，happy 是高兴，great 是很棒。",
+        "How are you today? I'm fine. I'm good. I'm great.",
+        "How about you?",
+        "I'm so happy. I'm tired. I'm busy."
+      ],
       "misconceptions": ["fine 和 happy 用混，心情好坏分不清。", "busy 和 tired 认混，忙和累配错。"]
     },
     {
-      "id": "e1b-u1-3",
+      "id": "e1b-u1-3", "ideaIds": ["en-greet"],
       "name": "Song/Rhyme/Chant time: How are you?",
       "unit": "e1b-u1",
-      "definition": "听唱《How are you?》，跟读里面的本单元词语。",
-      "example": "Listen and chant: How are you?.",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《How are you?》，会问今天好吗并回答自己的感觉。",
+      "example": "How are you? I'm fine. How about you?",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "How are you? How are you today?",
+        "I'm fine. I'm good. How about you?",
+        "I'm happy. I'm tired. I'm busy.",
+        "I'm so happy."
+      ],
       "misconceptions": ["会唱 How are you? 歌，单独问哪一句答不上来。", "跟唱时 fine 和 great 换着唱混。"]
     },
     {
-      "id": "e1b-u1-4",
+      "id": "e1b-u1-4", "ideaIds": ["en-greet"],
       "name": "Talking/Story time: A new classmate",
       "unit": "e1b-u1",
-      "definition": "听读故事《A new classmate》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: A new classmate.",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《A new classmate》，会介绍新同学并说他是我的朋友。",
+      "example": "This is your new classmate. Minmin is my friend.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "This is your new classmate, Xiaojiang. 这是你的新同学小江。",
+        "Minmin is my friend.",
+        "You can sit here. Thanks.",
+        "How are you? I'm fine."
+      ],
       "misconceptions": ["听完说不出新同学是谁，人物搞混。"]
     },
     {
-      "id": "e1b-u1-5",
+      "id": "e1b-u1-5", "ideaIds": ["en-greet"],
       "name": "Mini-project: Greeting my old friends",
       "unit": "e1b-u1",
-      "definition": "完成小项目“Greeting my old friends”，用本单元的词向别人介绍自己的作品。",
-      "example": "Greeting my old friends",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 Greeting my old friends，向老朋友问好并说说自己的感觉。",
+      "example": "How are you today? I'm great. How about you?",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目是 Greeting my old friends。",
+        "How are you today? I'm fine.",
+        "I'm happy. I'm great.",
+        "How about you?"
+      ],
       "misconceptions": ["介绍作品时只会读名字，不会向人问候一句。"]
     },
     {
-      "id": "e1b-u2-1",
+      "id": "e1b-u2-1", "ideaIds": ["en-food"],
       "name": "Small task: Packing a lunch box",
       "unit": "e1b-u2",
-      "definition": "完成本单元小任务“Packing a lunch box”。听懂要做什么，并用本单元的词说一说。",
-      "example": "Packing a lunch box",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "收拾午餐盒，说出里面有肉丸、米饭、蔬菜、汤和苹果。",
+      "example": "It's lunch time. I have meatballs and vegetables.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "It's lunch time. 午餐时间到了。",
+        "Let's have lunch together.",
+        "I have meatballs and vegetables.",
+        "This is a lunch box for Dad."
+      ],
       "misconceptions": ["会收拾饭盒，说不出 lunch box 是什么。"]
     },
     {
-      "id": "e1b-u2-2",
+      "id": "e1b-u2-2", "ideaIds": ["en-food"],
       "name": "Topic words: lunch, time, meatball, rice, vegetable, soup, apple",
       "unit": "e1b-u2",
-      "definition": "认读本单元话题词：lunch, time, meatball, rice, vegetable, soup, apple。听到或看到时能说出意思。",
-      "example": "lunch, time, meatball",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "认读 lunch、meatball、rice、vegetable、soup、apple，并会说午餐吃什么、喜欢什么。",
+      "example": "I have meatballs and vegetables. I like vegetables.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "lunch 是午餐，meatball 是肉丸，rice 是米饭，vegetable 是蔬菜，soup 是汤，apple 是苹果。",
+        "It's lunch time. Let's have lunch together.",
+        "I have meatballs and vegetables. I like vegetables. I love them all.",
+        "Where is my apple?",
+        "This is a lunch box for Dad.",
+        "What do you have for lunch? What do you like?"
+      ],
       "misconceptions": ["rice 和 soup 配错，米饭和汤说反。", "meatball、vegetable 太长，读不全就跳过。"]
     },
     {
-      "id": "e1b-u2-3",
+      "id": "e1b-u2-3", "ideaIds": ["en-food"],
       "name": "Song/Rhyme/Chant time: Lunch time",
       "unit": "e1b-u2",
-      "definition": "听唱《Lunch time》，跟读里面的本单元词语。",
-      "example": "Listen and chant: Lunch time.",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "跟读《Lunch time》，会说午餐时间到了、一起吃午餐。",
+      "example": "It's lunch time. Let's have lunch together.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "It's lunch time.",
+        "Let's have lunch together.",
+        "I have meatballs and vegetables.",
+        "I like vegetables. I love them all."
+      ],
       "misconceptions": ["唱到食物词就含糊带过。"]
     },
     {
-      "id": "e1b-u2-4",
+      "id": "e1b-u2-4", "ideaIds": ["en-food"],
       "name": "Talking/Story time: Where is my apple?",
       "unit": "e1b-u2",
-      "definition": "听读故事《Where is my apple?》，能指出谁在说话，并模仿其中一句。",
-      "example": "Story: Where is my apple?.",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "听读《Where is my apple?》，会问苹果在哪里，并说出午餐里有什么。",
+      "example": "Where is my apple?",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "Where is my apple?",
+        "I have meatballs and vegetables.",
+        "I like vegetables. I love them all.",
+        "It's lunch time."
+      ],
       "misconceptions": ["听完说不出苹果在哪里。"]
     },
     {
-      "id": "e1b-u2-5",
+      "id": "e1b-u2-5", "ideaIds": ["en-food"],
       "name": "Mini-project: A lunch box",
       "unit": "e1b-u2",
-      "definition": "完成小项目“A lunch box”，用本单元的词向别人介绍自己的作品。",
-      "example": "A lunch box",
-      "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "definition": "完成 A lunch box，说出这是给爸爸的午餐盒，里面有什么。",
+      "example": "This is a lunch box for Dad.",
+      "source": "沪教版（五四制）（2024）一年级下册已读句型；英语课标（2022年版）一级准备",
+      "facts": [
+        "小项目的名称是 A lunch box。",
+        "This is a lunch box for Dad.",
+        "I have meatballs and vegetables.",
+        "Where is my apple?"
+      ],
       "misconceptions": ["饭盒画好了，介绍时食物词说不上来。"]
     },
     {
-      "id": "e1b-u3-1",
+      "id": "e1b-u3-1", "ideaIds": ["en-colour"],
       "name": "Small task: Colouring a dream park",
       "unit": "e1b-u3",
       "definition": "完成本单元小任务“Colouring a dream park”。听懂要做什么，并用本单元的词说一说。",
       "example": "Colouring a dream park",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Colouring a dream park”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：colour, yellow, red, blue, green。"
+      ],
       "misconceptions": ["只顾涂色，说不出自己用了什么颜色。"]
     },
     {
-      "id": "e1b-u3-2",
+      "id": "e1b-u3-2", "ideaIds": ["en-colour"],
       "name": "Topic words: colour, yellow, red, blue, green",
       "unit": "e1b-u3",
       "definition": "认读本单元话题词：colour, yellow, red, blue, green。听到或看到时能说出意思。",
       "example": "colour, yellow, red",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：colour 是颜色，yellow 是黄色，red 是红色，blue 是蓝色，green 是绿色。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["yellow 和 green 读音混，颜色配错。", "说颜色时只蹦一个词，忘了 It is…。"]
     },
     {
-      "id": "e1b-u3-3",
+      "id": "e1b-u3-3", "ideaIds": ["en-colour"],
       "name": "Song/Rhyme/Chant time: Colours in the park",
       "unit": "e1b-u3",
       "definition": "听唱《Colours in the park》，跟读里面的本单元词语。",
       "example": "Listen and chant: Colours in the park.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Colours in the park》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：colour, yellow, red, blue, green。"
+      ],
       "misconceptions": ["跟唱时颜色词读串。"]
     },
     {
-      "id": "e1b-u3-4",
+      "id": "e1b-u3-4", "ideaIds": ["en-colour"],
       "name": "Talking/Story time: A magical animal",
       "unit": "e1b-u3",
       "definition": "听读故事《A magical animal》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: A magical animal.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《A magical animal》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：colour, yellow, red, blue, green。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["说不出魔法动物变出了什么颜色。"]
     },
     {
-      "id": "e1b-u3-5",
+      "id": "e1b-u3-5", "ideaIds": ["en-colour"],
       "name": "Mini-project: My dream park",
       "unit": "e1b-u3",
       "definition": "完成小项目“My dream park”，用本单元的词向别人介绍自己的作品。",
       "example": "My dream park",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“My dream park”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：colour, yellow, red, blue, green。"
+      ],
       "misconceptions": ["介绍梦想公园时只说好看，颜色词用不上。"]
     },
     {
-      "id": "e1b-u4-1",
+      "id": "e1b-u4-1", "ideaIds": ["en-playground"],
       "name": "Small task: Giving safety tips",
       "unit": "e1b-u4",
       "definition": "完成本单元小任务“Giving safety tips”。听懂要做什么，并用本单元的词说一说。",
       "example": "Giving safety tips",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Giving safety tips”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：playground, slide, swing, seesaw, hold on tight, be careful。"
+      ],
       "misconceptions": ["只认识任务名，说不出安全提示。", "会背任务名，玩滑梯时想不起 be careful。"]
     },
     {
-      "id": "e1b-u4-2",
+      "id": "e1b-u4-2", "ideaIds": ["en-playground"],
       "name": "Topic words: playground, slide, swing, seesaw, hold on tight, be careful",
       "unit": "e1b-u4",
       "definition": "认读本单元话题词：playground, slide, swing, seesaw, hold on tight, be careful。听到或看到时能说出意思。",
       "example": "playground, slide, swing",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：playground 是操场，slide 是滑梯，swing 是秋千，seesaw 是跷跷板，hold on tight 是抓紧，be careful 是小心。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["slide 和 swing 认混，滑梯和秋千配错。", "hold on tight 说不全，只会说 hold。"]
     },
     {
-      "id": "e1b-u4-3",
+      "id": "e1b-u4-3", "ideaIds": ["en-playground"],
       "name": "Song/Rhyme/Chant time: Playground song",
       "unit": "e1b-u4",
       "definition": "听唱《Playground song》，跟读里面的本单元词语。",
       "example": "Listen and chant: Playground song.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Playground song》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：playground, slide, swing, seesaw, hold on tight, be careful。"
+      ],
       "misconceptions": ["唱 Playground song 时把器械词唱串。"]
     },
     {
-      "id": "e1b-u4-4",
+      "id": "e1b-u4-4", "ideaIds": ["en-playground"],
       "name": "Talking/Story time: Let's play together",
       "unit": "e1b-u4",
       "definition": "听读故事《Let's play together》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Let's play together.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《Let's play together》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：playground, slide, swing, seesaw, hold on tight, be careful。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["听不懂 Let's play together 的意思，以为是让人走开。"]
     },
     {
-      "id": "e1b-u4-5",
+      "id": "e1b-u4-5", "ideaIds": ["en-playground"],
       "name": "Mini-project: Giving safety tips",
       "unit": "e1b-u4",
       "definition": "完成小项目“Giving safety tips”，用本单元的词向别人介绍自己的作品。",
       "example": "Giving safety tips",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Giving safety tips”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：playground, slide, swing, seesaw, hold on tight, be careful。"
+      ],
       "misconceptions": ["提示卡片做得好，说不出 be careful 的意思。"]
     },
     {
-      "id": "e1b-u5-1",
+      "id": "e1b-u5-1", "ideaIds": ["en-weather"],
       "name": "Small task: Talking about the weather",
       "unit": "e1b-u5",
       "definition": "完成本单元小任务“Talking about the weather”。听懂要做什么，并用本单元的词说一说。",
       "example": "Talking about the weather",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Talking about the weather”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：weather, sunny, rainy, windy, cloudy, snowy。"
+      ],
       "misconceptions": ["只认识任务名，看图说不出天气。"]
     },
     {
-      "id": "e1b-u5-2",
+      "id": "e1b-u5-2", "ideaIds": ["en-weather"],
       "name": "Topic words: weather, sunny, rainy, windy, cloudy, snowy",
       "unit": "e1b-u5",
       "definition": "认读本单元话题词：weather, sunny, rainy, windy, cloudy, snowy。听到或看到时能说出意思。",
       "example": "weather, sunny, rainy",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：weather 是天气，sunny 是晴天，rainy 是雨天，windy 是有风，cloudy 是多云，snowy 是下雪。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["sunny 和 snowy 认混，晴和雪说反。", "windy、cloudy 的尾音读不出来。"]
     },
     {
-      "id": "e1b-u5-3",
+      "id": "e1b-u5-3", "ideaIds": ["en-weather"],
       "name": "Song/Rhyme/Chant time: Weather",
       "unit": "e1b-u5",
       "definition": "听唱《Weather》，跟读里面的本单元词语。",
       "example": "Listen and chant: Weather.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Weather》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：weather, sunny, rainy, windy, cloudy, snowy。"
+      ],
       "misconceptions": ["天气歌会唱，五个天气词认不全。"]
     },
     {
-      "id": "e1b-u5-4",
+      "id": "e1b-u5-4", "ideaIds": ["en-weather"],
       "name": "Talking/Story time: How's the weather?",
       "unit": "e1b-u5",
       "definition": "听读故事《How's the weather?》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: How's the weather?.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《How's the weather?》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：weather, sunny, rainy, windy, cloudy, snowy。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["听完说不出故事里是什么天气。"]
     },
     {
-      "id": "e1b-u5-5",
+      "id": "e1b-u5-5", "ideaIds": ["en-weather"],
       "name": "Mini-project: Talking about the weather",
       "unit": "e1b-u5",
       "definition": "完成小项目“Talking about the weather”，用本单元的词向别人介绍自己的作品。",
       "example": "Talking about the weather",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Talking about the weather”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：weather, sunny, rainy, windy, cloudy, snowy。"
+      ],
       "misconceptions": ["介绍天气记录时只说天好不好，天气词不会用。"]
     },
     {
-      "id": "e1b-u6-1",
+      "id": "e1b-u6-1", "ideaIds": ["en-clothes"],
       "name": "Small task: Choosing clothes for Grandma",
       "unit": "e1b-u6",
       "definition": "完成本单元小任务“Choosing clothes for Grandma”。听懂要做什么，并用本单元的词说一说。",
       "example": "Choosing clothes for Grandma",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Choosing clothes for Grandma”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：clothes, shirt, trousers, sock, shoe, hat, dress, skirt。"
+      ],
       "misconceptions": ["只会给娃娃穿衣服，不会用英语说为什么选这件。", "说不出给奶奶选了什么衣服。"]
     },
     {
-      "id": "e1b-u6-2",
+      "id": "e1b-u6-2", "ideaIds": ["en-clothes"],
       "name": "Topic words: clothes, shirt, trousers, sock, shoe, hat, dress, skirt",
       "unit": "e1b-u6",
       "definition": "认读本单元话题词：clothes, shirt, trousers, sock, shoe, hat, dress, skirt。听到或看到时能说出意思。",
       "example": "clothes, shirt, trousers",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：clothes 是衣服，shirt 是衬衫，trousers 是裤子，sock 是袜子，shoe 是鞋，hat 是帽子，dress 是连衣裙，skirt 是短裙。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["shirt 和 skirt 听混，衬衫和裙子配错。", "sock 和 shoe 认混，袜子和鞋子配错。"]
     },
     {
-      "id": "e1b-u6-3",
+      "id": "e1b-u6-3", "ideaIds": ["en-clothes"],
       "name": "Song/Rhyme/Chant time: Put on my clothes",
       "unit": "e1b-u6",
       "definition": "听唱《Put on my clothes》，跟读里面的本单元词语。",
       "example": "Listen and chant: Put on my clothes.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Put on my clothes》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：clothes, shirt, trousers, sock, shoe, hat, dress, skirt。"
+      ],
       "misconceptions": ["跟唱 Put on my clothes 时衣服词丢词。"]
     },
     {
-      "id": "e1b-u6-4",
+      "id": "e1b-u6-4", "ideaIds": ["en-clothes"],
       "name": "Talking/Story time: From old to new",
       "unit": "e1b-u6",
       "definition": "听读故事《From old to new》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: From old to new.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《From old to new》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：clothes, shirt, trousers, sock, shoe, hat, dress, skirt。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["说不出旧衣服后来变成了什么。"]
     },
     {
-      "id": "e1b-u6-5",
+      "id": "e1b-u6-5", "ideaIds": ["en-clothes"],
       "name": "Mini-project: Choosing clothes for Grandma",
       "unit": "e1b-u6",
       "definition": "完成小项目“Choosing clothes for Grandma”，用本单元的词向别人介绍自己的作品。",
       "example": "Choosing clothes for Grandma",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Choosing clothes for Grandma”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：clothes, shirt, trousers, sock, shoe, hat, dress, skirt。"
+      ],
       "misconceptions": ["搭配好的衣服很漂亮，介绍时衣物词一个也说不出。"]
     },
     {
-      "id": "e1b-u7-1",
+      "id": "e1b-u7-1", "ideaIds": ["en-play"],
       "name": "Small task: Playing fun games",
       "unit": "e1b-u7",
       "definition": "完成本单元小任务“Playing fun games”。听懂要做什么，并用本单元的词说一说。",
       "example": "Playing fun games",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Playing fun games”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：game, hide-and-seek, ready, play, move-and-freeze, skip rope, throw sandbags。"
+      ],
       "misconceptions": ["只会玩，说不出游戏名的英语。"]
     },
     {
-      "id": "e1b-u7-2",
+      "id": "e1b-u7-2", "ideaIds": ["en-play"],
       "name": "Topic words: game, hide-and-seek, ready, play, move-and-freeze, skip rope, throw sandbags",
       "unit": "e1b-u7",
       "definition": "认读本单元话题词：game, hide-and-seek, ready, play, move-and-freeze, skip rope, throw sandbags。听到或看到时能说出意思。",
       "example": "game, hide-and-seek, ready",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：game 是游戏，hide-and-seek 是捉迷藏，ready 是准备好，play 是玩，move-and-freeze 是动一动再定住，skip rope 是跳绳，throw sandbags 是扔沙包。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["hide-and-seek 太长说不全，只会说 game。", "skip rope 和 throw sandbags 的动作配错图。"]
     },
     {
-      "id": "e1b-u7-3",
+      "id": "e1b-u7-3", "ideaIds": ["en-play"],
       "name": "Song/Rhyme/Chant time: Fun games",
       "unit": "e1b-u7",
       "definition": "听唱《Fun games》，跟读里面的本单元词语。",
       "example": "Listen and chant: Fun games.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Fun games》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：game, hide-and-seek, ready, play, move-and-freeze, skip rope, throw sandbags。"
+      ],
       "misconceptions": ["歌名会唱，游戏词说不全。"]
     },
     {
-      "id": "e1b-u7-4",
+      "id": "e1b-u7-4", "ideaIds": ["en-play"],
       "name": "Talking/Story time: Games after school",
       "unit": "e1b-u7",
       "definition": "听读故事《Games after school》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Games after school.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《Games after school》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：game, hide-and-seek, ready, play, move-and-freeze, skip rope, throw sandbags。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["听完说不出他们先玩了什么、后玩了什么。"]
     },
     {
-      "id": "e1b-u7-5",
+      "id": "e1b-u7-5", "ideaIds": ["en-play"],
       "name": "Mini-project: Playing fun games",
       "unit": "e1b-u7",
       "definition": "完成小项目“Playing fun games”，用本单元的词向别人介绍自己的作品。",
       "example": "Playing fun games",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Playing fun games”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：game, hide-and-seek, ready, play, move-and-freeze, skip rope, throw sandbags。"
+      ],
       "misconceptions": ["介绍游戏玩法时只做动作不说词。"]
     },
     {
-      "id": "e1b-u8-1",
+      "id": "e1b-u8-1", "ideaIds": ["en-traffic"],
       "name": "Small task: Helping the police officer",
       "unit": "e1b-u8",
       "definition": "完成本单元小任务“Helping the police officer”。听懂要做什么，并用本单元的词说一说。",
       "example": "Helping the police officer",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Helping the police officer”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：traffic light, stop, go, wait, zebra crossing。"
+      ],
       "misconceptions": ["只认识任务名，说不出交通安全的词。"]
     },
     {
-      "id": "e1b-u8-2",
+      "id": "e1b-u8-2", "ideaIds": ["en-traffic"],
       "name": "Topic words: traffic light, stop, go, wait, zebra crossing",
       "unit": "e1b-u8",
       "definition": "认读本单元话题词：traffic light, stop, go, wait, zebra crossing。听到或看到时能说出意思。",
       "example": "traffic light, stop, go",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：traffic light 是红绿灯，stop 是停，go 是走，wait 是等，zebra crossing 是斑马线。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["stop 和 go 用反，红灯说 go。", "zebra crossing 说不全，只说 crossing。"]
     },
     {
-      "id": "e1b-u8-3",
+      "id": "e1b-u8-3", "ideaIds": ["en-traffic"],
       "name": "Song/Rhyme/Chant time: Traffic lights",
       "unit": "e1b-u8",
       "definition": "听唱《Traffic lights》，跟读里面的本单元词语。",
       "example": "Listen and chant: Traffic lights.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Traffic lights》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：traffic light, stop, go, wait, zebra crossing。"
+      ],
       "misconceptions": ["唱 Traffic lights 时 stop、go 唱反。"]
     },
     {
-      "id": "e1b-u8-4",
+      "id": "e1b-u8-4", "ideaIds": ["en-traffic"],
       "name": "Talking/Story time: Crossing the road",
       "unit": "e1b-u8",
       "definition": "听读故事《Crossing the road》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Crossing the road.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《Crossing the road》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：traffic light, stop, go, wait, zebra crossing。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["听完说不清该什么时候过马路。"]
     },
     {
-      "id": "e1b-u8-5",
+      "id": "e1b-u8-5", "ideaIds": ["en-traffic"],
       "name": "Mini-project: Helping the police officer",
       "unit": "e1b-u8",
       "definition": "完成小项目“Helping the police officer”，用本单元的词向别人介绍自己的作品。",
       "example": "Helping the police officer",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Helping the police officer”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：traffic light, stop, go, wait, zebra crossing。"
+      ],
       "misconceptions": ["安全提示海报做了，介绍时说不出 stop、wait。"]
     },
     {
-      "id": "e1b-u9-1",
+      "id": "e1b-u9-1", "ideaIds": ["en-animal","en-see"],
       "name": "Small task: Making an animal bookmark",
       "unit": "e1b-u9",
       "definition": "完成本单元小任务“Making an animal bookmark”。听懂要做什么，并用本单元的词说一说。",
       "example": "Making an animal bookmark",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Making an animal bookmark”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：panda, see, look at, tiger, elephant, monkey, climb a tree, swim。"
+      ],
       "misconceptions": ["书签做好了，说不出上面画的是什么动物。"]
     },
     {
-      "id": "e1b-u9-2",
+      "id": "e1b-u9-2", "ideaIds": ["en-animal","en-see"],
       "name": "Topic words: panda, see, look at, tiger, elephant, monkey, climb a tree, swim",
       "unit": "e1b-u9",
       "definition": "认读本单元话题词：panda, see, look at, tiger, elephant, monkey, climb a tree, swim。听到或看到时能说出意思。",
       "example": "panda, see, look at",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：panda 是熊猫，see 是看见，look at 是看，tiger 是老虎，elephant 是大象，monkey 是猴子，climb a tree 是爬树，swim 是游泳。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["panda 和 tiger 配错图。", "elephant 太长读不全。"]
     },
     {
-      "id": "e1b-u9-3",
+      "id": "e1b-u9-3", "ideaIds": ["en-animal","en-see"],
       "name": "Song/Rhyme/Chant time: I see animals",
       "unit": "e1b-u9",
       "definition": "听唱《I see animals》，跟读里面的本单元词语。",
       "example": "Listen and chant: I see animals.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《I see animals》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：panda, see, look at, tiger, elephant, monkey, climb a tree, swim。"
+      ],
       "misconceptions": ["歌会唱，see 和 look at 分不清。"]
     },
     {
-      "id": "e1b-u9-4",
+      "id": "e1b-u9-4", "ideaIds": ["en-animal","en-see"],
       "name": "Talking/Story time: Hey, Panda!",
       "unit": "e1b-u9",
       "definition": "听读故事《Hey, Panda!》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Hey, Panda!.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《Hey, Panda!》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：panda, see, look at, tiger, elephant, monkey, climb a tree, swim。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["听完说不出 Panda 会做什么。"]
     },
     {
-      "id": "e1b-u9-5",
+      "id": "e1b-u9-5", "ideaIds": ["en-animal","en-see"],
       "name": "Mini-project: My animal bookmark",
       "unit": "e1b-u9",
       "definition": "完成小项目“My animal bookmark”，用本单元的词向别人介绍自己的作品。",
       "example": "My animal bookmark",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“My animal bookmark”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：panda, see, look at, tiger, elephant, monkey, climb a tree, swim。"
+      ],
       "misconceptions": ["介绍书签时只会说 It is a panda，别的动物说不上来。"]
     },
     {
-      "id": "e1b-u10-1",
+      "id": "e1b-u10-1", "ideaIds": ["en-toy"],
       "name": "Small task: Choosing a gift",
       "unit": "e1b-u10",
       "definition": "完成本单元小任务“Choosing a gift”。听懂要做什么，并用本单元的词说一说。",
       "example": "Choosing a gift",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Choosing a gift”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：kite, toy car, toy boat, ball, cute, gift, toy train。"
+      ],
       "misconceptions": ["只认识任务名，说不出想送什么礼物、为什么。"]
     },
     {
-      "id": "e1b-u10-2",
+      "id": "e1b-u10-2", "ideaIds": ["en-toy"],
       "name": "Topic words: kite, toy car, toy boat, ball, cute, gift, toy train",
       "unit": "e1b-u10",
       "definition": "认读本单元话题词：kite, toy car, toy boat, ball, cute, gift, toy train。听到或看到时能说出意思。",
       "example": "kite, toy car, toy boat",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "要认读：kite 是风筝，toy car 是玩具汽车，toy boat 是玩具船，ball 是球，cute 是可爱，gift 是礼物，toy train 是玩具火车。",
+        "听到或看到这些词，要能说出中文意思。"
+      ],
       "misconceptions": ["toy car 和 toy train 配错。", "kite 读成“凯特”。"]
     },
     {
-      "id": "e1b-u10-3",
+      "id": "e1b-u10-3", "ideaIds": ["en-toy"],
       "name": "Song/Rhyme/Chant time: Toys I like",
       "unit": "e1b-u10",
       "definition": "听唱《Toys I like》，跟读里面的本单元词语。",
       "example": "Listen and chant: Toys I like.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "歌谣的名字是《Toys I like》。",
+        "跟读歌谣里的本单元词语。",
+        "本单元词语是：kite, toy car, toy boat, ball, cute, gift, toy train。"
+      ],
       "misconceptions": ["会唱 Toys I like，说喜欢什么玩具时说不出来。"]
     },
     {
-      "id": "e1b-u10-4",
+      "id": "e1b-u10-4", "ideaIds": ["en-toy"],
       "name": "Talking/Story time: Shenshen's gift",
       "unit": "e1b-u10",
       "definition": "听读故事《Shenshen's gift》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Shenshen's gift.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "故事的名字是《Shenshen's gift》。",
+        "听读时指出谁在说话，并模仿其中一句。",
+        "模仿时用本单元这些词：kite, toy car, toy boat, ball, cute, gift, toy train。",
+        "不另考故事里没有列出的情节。"
+      ],
       "misconceptions": ["听完说不清礼物是什么。"]
     },
     {
-      "id": "e1b-u10-5",
+      "id": "e1b-u10-5", "ideaIds": ["en-toy"],
       "name": "Mini-project: Choosing a gift",
       "unit": "e1b-u10",
       "definition": "完成小项目“Choosing a gift”，用本单元的词向别人介绍自己的作品。",
       "example": "Choosing a gift",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Choosing a gift”。",
+        "听懂要做什么，并用本单元的词说一说。",
+        "要用到这些词：kite, toy car, toy boat, ball, cute, gift, toy train。"
+      ],
       "misconceptions": ["选好礼物，介绍时玩具词说不上来。"]
     },
     {
-      "id": "e1b-ua-1",
+      "id": "e1b-ua-1", "ideaIds": ["en-word-bank"],
       "name": "Word bank",
       "unit": "e1b-ua",
       "definition": "用单词表按单元复习本册单词，看到单词能读出来并说出意思。",
       "example": "Read a word from the word bank.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "单词表按单元列出本册要认读的单词。",
+        "看到单词要能读出来。",
+        "还要能说出单词的中文意思。"
+      ],
       "misconceptions": ["单词表只顺读，不熟的词一直跳过。", "看到单词能读出来，遮住中文就不知道意思。"]
     },
     {
-      "id": "e1b-ua-2",
+      "id": "e1b-ua-2", "ideaIds": ["en-project-sheet"],
       "name": "Mini-project sheets",
       "unit": "e1b-ua",
       "definition": "使用小项目练习纸，按步骤完成本册的制作活动。",
       "example": "Follow a mini-project sheet.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "这一项的名称是“Mini-project sheets”。",
+        "听懂要做什么，并用本单元的词说一说。"
+      ],
       "misconceptions": ["练习纸只做手工部分，朗读步骤跳过。"]
     },
     {
-      "id": "e1b-ua-3",
+      "id": "e1b-ua-3", "ideaIds": ["en-role-play"],
       "name": "Cut, make and role-play",
       "unit": "e1b-ua",
       "definition": "剪下图卡，做一做、演一演本册的对话。",
       "example": "Cut the card and act out a line.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "剪下图卡，做一做、演一演本册的对话。",
+        "演出的句子用学过的词。",
+        "能说出自己演的是哪一句。"
+      ],
       "misconceptions": ["剪贴完就收起来，不演对话。", "演对话只会自己那一句，接不上别人的话。"]
     },
     {
-      "id": "e1b-ua-4",
+      "id": "e1b-ua-4", "ideaIds": ["en-stick"],
       "name": "Cut and stick",
       "unit": "e1b-ua",
       "definition": "剪贴图卡，把单词和图配对。",
       "example": "Stick the word next to its picture.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "剪贴图卡，把单词和图配对。",
+        "单词贴在对应的图旁边。",
+        "配完要能读出那个单词。"
+      ],
       "misconceptions": ["图词配对靠图标猜，不看单词本身。"]
     },
     {
-      "id": "e1b-ua-5",
+      "id": "e1b-ua-5", "ideaIds": ["en-audio"],
       "name": "Audio",
       "unit": "e1b-ua",
       "definition": "听本册音频，跟读单词、歌谣和对话。",
       "example": "Listen and repeat the audio.",
       "source": "家长确认的教材目录（一年级下册英语）；英语课标（2022年版）一级准备",
+      "facts": [
+        "听本册音频，跟读单词、歌谣和对话。",
+        "跟读的是本册学过的内容。",
+        "听完要能自己再说一遍。"
+      ],
       "misconceptions": ["听音频只当背景音，不跟读。", "听不懂就关掉，不愿再听第二遍。"]
     }
   ],

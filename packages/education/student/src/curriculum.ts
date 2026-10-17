@@ -5,6 +5,7 @@ import { errorTypesBySubject, focusBySubject } from './vocabulary.ts'
 
 const recordId = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u)
 const text = z.string().trim().min(1).max(2000)
+const fact = z.string().trim().min(1).max(240)
 const subjectSchema = z.enum(['chinese', 'math', 'english'])
 const termSchema = z.enum(['first', 'second'])
 const methodSchema = z.enum(['recognize', 'read-evidence', 'express', 'represent', 'reason', 'verify', 'context', 'listen', 'speak'])
@@ -25,12 +26,21 @@ export const curriculumMethods: Record<CurriculumSubject, readonly string[]> = {
   english: ['context', 'listen', 'speak'],
 }
 
+const ideaSchema = z.object({ id: recordId, name: text, definition: text, example: text }).strict()
+/** One subject's concepts. A concept is shared by the subject and is not divided by grade or unit. Its definition states only what is required to identify it, and admits one reading. */
+export const ideaCatalogSchema = z.object({
+  subject: subjectSchema,
+  ideas: z.array(ideaSchema).min(1).max(240),
+}).strict()
+/** One shipped concept: the meaning a subject uses, independent of grade and unit. */
+export type SubjectIdea = z.infer<typeof ideaSchema>
+
 /** One shipped knowledge map: units, knowledge points, objectives and relations for one subject, grade and term. */
 export const curriculumSchema = z.object({
   id: recordId, subject: subjectSchema, grade: z.number().int().min(1).max(2), term: termSchema,
   title: text, basis: text,
   units: z.array(z.object({ id: recordId, name: text, summary: text, focus: unitFocusSchema.optional() }).strict()).min(1).max(20),
-  concepts: z.array(z.object({ id: recordId, name: text, unit: recordId, definition: text, example: text, source: text, misconceptions: z.array(text).max(3).optional(), examples: z.array(text).max(3).optional() }).strict()).min(1).max(80),
+  concepts: z.array(z.object({ id: recordId, name: text, unit: recordId, definition: text, example: text, source: text, ideaIds: z.array(recordId).max(6).optional(), facts: z.array(fact).min(2).max(8).optional(), misconceptions: z.array(text).max(3).optional(), examples: z.array(text).max(3).optional() }).strict()).min(1).max(80),
   objectives: z.array(z.object({ id: recordId, title: text, goal: text, conceptIds: z.array(recordId).min(1).max(5), method: methodSchema, errorTypes: z.array(errorTypeSchema).max(4).optional(), questionPoints: z.array(text).max(4).optional(), variationAxes: z.array(variationAxisSchema).max(4).optional() }).strict()).min(1).max(60),
   relations: z.array(z.object({ id: recordId, fromId: recordId, toId: recordId, kind: relationKindSchema, explanation: text, source: text }).strict()).max(120),
 }).strict().superRefine((file, context) => {
@@ -44,8 +54,13 @@ export const curriculumSchema = z.object({
   }
   const units = new Set(file.units.map(unit => unit.id))
   const concepts = new Set(file.concepts.map(concept => concept.id))
+  const ideas = new Set(subjectIdeas(file.subject).map(idea => idea.id))
   for (const [index, concept] of file.concepts.entries()) {
     if (!units.has(concept.unit)) fail(['concepts', index, 'unit'], `知识点的单元不存在：${concept.unit}`)
+    if (concept.ideaIds !== undefined && new Set(concept.ideaIds).size !== concept.ideaIds.length) fail(['concepts', index, 'ideaIds'], '概念不能重复')
+    for (const [position, ideaId] of (concept.ideaIds ?? []).entries()) {
+      if (!ideas.has(ideaId)) fail(['concepts', index, 'ideaIds', position], `知识点引用的概念不存在：${ideaId}`)
+    }
   }
   for (const [index, unit] of file.units.entries()) {
     if (!file.concepts.some(concept => concept.unit === unit.id)) fail(['units', index], `单元没有知识点：${unit.id}`)
@@ -94,14 +109,37 @@ export interface BuiltinConcept {
   definition: string
   example: string
   source: string
+  ideaIds?: string[] | undefined
+  facts?: string[] | undefined
   misconceptions?: string[] | undefined
   examples?: string[] | undefined
 }
 
 const SUBJECTS = ['chinese', 'math', 'english'] as const
 const cache = new Map<string, Curriculum>()
+const ideaCache = new Map<CurriculumSubject, SubjectIdea[]>()
 /** Read through a variable so bundler asset rewriting of `new URL(…, import.meta.url)` does not apply to data files. */
 const moduleUrl = import.meta.url
+
+/**
+ * The concepts of one subject. The same concept is shared by every grade and unit of that subject.
+ * @param subject - requested subject.
+ * @returns the validated concept list.
+ */
+export function subjectIdeas(subject: CurriculumSubject): SubjectIdea[] {
+  const cached = ideaCache.get(subject)
+  if (cached !== undefined) return cached
+  const url = new URL(`../knowledge/curriculum/ideas/${subject}.json`, moduleUrl)
+  const file = ideaCatalogSchema.parse(JSON.parse(readFileSync(url, 'utf8')))
+  if (file.subject !== subject) throw new Error(`概念目录的科目不符：${file.subject}`)
+  const seen = new Set<string>()
+  for (const idea of file.ideas) {
+    if (seen.has(idea.id)) throw new Error(`概念目录有重复 ID：${idea.id}`)
+    seen.add(idea.id)
+  }
+  ideaCache.set(subject, file.ideas)
+  return file.ideas
+}
 
 function load(subject: CurriculumSubject, grade: number, term: 'first' | 'second'): Curriculum | undefined {
   if (grade < 1 || grade > 2) return undefined

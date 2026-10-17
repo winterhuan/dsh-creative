@@ -234,16 +234,16 @@ function drawClock(doc: Doc, figure: Extract<Figure, { kind: 'clock' }>, x: numb
   return radius * 2 + 14
 }
 
-/** Bundled and loose counting sticks, with crossed-out ones struck through. */
+/** Bundled and loose counting sticks, with crossed-out ones struck through. A bundle holds ten sticks, matching the tens-and-ones teaching in the textbooks. */
 function drawSticks(doc: Doc, figure: Extract<Figure, { kind: 'sticks' }>, x: number, y: number): number {
   let cursor = x
   figure.bundles > 0 || figure.singles > 0 ? undefined : doc.fillColor(FAINT).fontSize(10).text('（没有小棒）', x, y + 12, { lineBreak: false })
   for (let index = 0; index < figure.bundles; index += 1) {
     const crossed = (figure.crossBundles ?? 0) > figure.bundles - 1 - index
-    for (let stick = 0; stick < 5; stick += 1) doc.moveTo(cursor + 3 + stick * 4, y + 4).lineTo(cursor + 3 + stick * 4, y + 34).strokeColor(INK).lineWidth(1.1).stroke()
-    doc.rect(cursor, y + 15, 22, 8).fillColor('#ffffff').fill().strokeColor(INK).lineWidth(1.1).stroke()
-    if (crossed) doc.moveTo(cursor - 2, y + 36).lineTo(cursor + 24, y + 2).strokeColor(INK).lineWidth(1.6).stroke()
-    cursor += 32
+    for (let stick = 0; stick < 10; stick += 1) doc.moveTo(cursor + 1.5 + stick * 3.5, y + 4).lineTo(cursor + 1.5 + stick * 3.5, y + 34).strokeColor(INK).lineWidth(1.1).stroke()
+    doc.rect(cursor, y + 15, 37, 8).fillColor('#ffffff').fill().strokeColor(INK).lineWidth(1.1).stroke()
+    if (crossed) doc.moveTo(cursor - 2, y + 36).lineTo(cursor + 39, y + 2).strokeColor(INK).lineWidth(1.6).stroke()
+    cursor += 44
   }
   for (let index = 0; index < figure.singles; index += 1) {
     const crossed = (figure.crossSingles ?? 0) > figure.singles - 1 - index
@@ -254,7 +254,7 @@ function drawSticks(doc: Doc, figure: Extract<Figure, { kind: 'sticks' }>, x: nu
   return 42
 }
 
-/** Two overlapping set circles with one number per region; an optional total sits below a bracket. */
+/** Two overlapping circles. Sum mode: each circle carries its target sum above it and the two numbers inside each circle must add up to it. Set mode: `leftOnly`/`both`/`rightOnly` label the three regions and an optional total sits below a bracket. */
 function drawOverlap(doc: Doc, figure: Extract<Figure, { kind: 'overlap' }>, x: number, y: number, width: number): number {
   const radius = 56
   const gap = radius * 1.25
@@ -263,15 +263,14 @@ function drawOverlap(doc: Doc, figure: Extract<Figure, { kind: 'overlap' }>, x: 
   const cx1 = left + radius
   const cx2 = cx1 + gap
   const cy = y + 24 + radius
-  const labelWidth = radius * 1.8
-  doc.fillColor(INK).fontSize(12)
-    .text(figure.left, cx1 - labelWidth / 2, y, { width: labelWidth, align: 'center', lineBreak: false })
-    .text(figure.right, cx2 - labelWidth / 2, y, { width: labelWidth, align: 'center', lineBreak: false })
+  const labelWidth = gap - 8
   doc.circle(cx1, cy, radius).strokeColor(INK).lineWidth(1.2).stroke()
   doc.circle(cx2, cy, radius).strokeColor(INK).lineWidth(1.2).stroke()
+  labelOrBox(doc, figure.left, cx1 - labelWidth / 2, y, labelWidth)
+  labelOrBox(doc, figure.right, cx2 - labelWidth / 2, y, labelWidth)
   labelOrBox(doc, figure.leftOnly, cx1 - radius + 4, cy - 9, gap - 8)
-  labelOrBox(doc, figure.both, cx2 - radius + 4, cy - 9, radius * 2 - gap - 8)
-  labelOrBox(doc, figure.rightOnly, cx1 + radius + 4, cy - 9, gap - 8)
+  labelOrBox(doc, figure.both, (cx1 + cx2) / 2 - (radius * 2 - gap - 8) / 2, cy - 9, radius * 2 - gap - 8)
+  labelOrBox(doc, figure.rightOnly, cx2 + radius - gap + 4, cy - 9, gap - 8)
   const bottom = cy + radius
   if (figure.total === undefined) return bottom + 8 - y
   doc.moveTo(left, bottom + 6).lineTo(left, bottom + 12).lineTo(left + span, bottom + 12).lineTo(left + span, bottom + 6).strokeColor(INK).lineWidth(1).stroke()

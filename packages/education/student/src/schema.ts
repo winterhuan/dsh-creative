@@ -55,16 +55,7 @@ const mistake = z.object({
   uncertainties: z.string().max(2000), materialId: id.optional(), objectiveId: id.optional(),
   errorType: errorTypeSchema.optional(),
 }).strict()
-const attempt = z.object({
-  id, sessionId: id, subject, topic: text, prompt: text, response: text,
-  result: z.enum(['correct', 'partial', 'incorrect', 'unassessed']),
-  assistance: z.enum(['independent', 'hint', 'worked-example']),
-  feedback: text, answerEvidence: text, mistakeId: id.optional(), objectiveId: id.optional(),
-  variant: variantSchema.optional(),
-}).strict()
-
-const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), variant: variantSchema.optional(), mistakeId: id.optional(), objectiveId: id.optional() }).strict()
-const concept = z.object({ id, subject, name: text, definition: text, example: text, source: text, misconceptions: z.array(text).max(3).optional() }).strict()
+const concept = z.object({ id, subject, name: text, definition: text, example: text, source: text, facts: z.array(z.string().trim().min(1).max(240)).min(2).max(8).optional(), misconceptions: z.array(text).max(3).optional() }).strict()
 const objective = z.object({ id, subject, title: text, goal: text, conceptIds: z.array(id).min(1).max(5), method: z.enum(['recognize', 'read-evidence', 'express', 'represent', 'reason', 'verify', 'context', 'listen', 'speak']), errorTypes: z.array(errorTypeSchema).max(4).optional(), questionPoints: z.array(text).max(4).optional(), variationAxes: z.array(variationAxisSchema).max(4).optional() }).strict()
 const relation = z.object({ id, fromId: id, toId: id, kind: z.enum(['prerequisite', 'part-of', 'contrast', 'explains', 'cause-effect']), explanation: text, source: text }).strict()
 const label = z.string().trim().max(24)
@@ -123,7 +114,11 @@ const figure = z.discriminatedUnion('kind', [
   if (value.kind === 'sticks' && ((value.crossBundles ?? 0) > value.bundles || (value.crossSingles ?? 0) > value.singles)) {
     fail('划去的小棒不能多于画出的小棒。')
   }
-  if (value.kind === 'overlap' && (value.left === '' || value.right === '')) fail('重叠圈必须写两个集合名。')
+  if (value.kind === 'place-value') {
+    // The borrowed ten stays in the tens row as a dashed dot and is never crossed; crossing runs left to right over the remaining dots.
+    if (value.regroup === 'yes' && (value.crossTens > 0 || value.crossOnes > 0)) fail('退位点子图不划线：退位过程配计数器或竖式，划线数数用 regroup "no"。')
+    if (value.regroup === 'no' && (value.crossTens > value.tens || value.crossOnes > value.ones)) fail('划掉的点不能多于画出的点。')
+  }
   if (value.kind === 'wall') {
     for (const [index, row] of value.rows.entries()) if (row.length !== index + 1) fail('数墙第一行一格、每往下一行多一格。')
   }
@@ -147,6 +142,17 @@ const figure = z.discriminatedUnion('kind', [
     }
   }
 })
+/** A figure shared by an on-screen task and a printed worksheet item. */
+export type Figure = z.infer<typeof figure>
+const attempt = z.object({
+  id, sessionId: id, subject, topic: text, prompt: text, response: text,
+  result: z.enum(['correct', 'partial', 'incorrect', 'unassessed']),
+  assistance: z.enum(['independent', 'hint', 'worked-example']),
+  feedback: text, answerEvidence: text, mistakeId: id.optional(), objectiveId: id.optional(),
+  variant: variantSchema.optional(),
+  figure: figure.optional(),
+}).strict()
+const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), variant: variantSchema.optional(), mistakeId: id.optional(), objectiveId: id.optional(), figure: figure.optional() }).strict()
 const answerSpace = z.enum(['none', 'line', 'lines', 'box'])
 const worksheetItem = z.object({ id, objectiveId: id.optional(), mistakeId: id.optional(), variant: variantSchema.optional(), prompt: text, figure: figure.optional(), space: answerSpace.optional(), answer: text, explanation: text, answerEvidence: text }).strict()
 const worksheet = z.object({ id, subject, kind: sheetKindSchema.optional(), objectiveId: id.optional(), items: z.array(worksheetItem).min(1).max(8) }).strict()
