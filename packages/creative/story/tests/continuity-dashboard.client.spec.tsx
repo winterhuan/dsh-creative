@@ -221,6 +221,76 @@ describe('read-only continuity dashboard', () => {
     await act(async () => pending.resolve(response()))
   })
 
+  it.each([t, tEn])('shows health risks on the overview and opens their sources', async translate => {
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => response()))
+    const view = harness({ translate })
+    await view.findByRole('heading', { name: translate('dashboard.health.title') })
+    expect(view.getByText(translate('dashboard.health.overdueForeshadow'))).toBeTruthy()
+    expect(view.getByText(translate('dashboard.health.unscheduledForeshadow'))).toBeTruthy()
+    expect(view.getByText(translate('dashboard.health.item', { id: 'F002', summary: '线索2：旧港钥匙' }))).toBeTruthy()
+    expect(view.getByText(translate('dashboard.health.item', { id: 'F011', summary: '未定回收线索' }))).toBeTruthy()
+    expect(view.getByText(translate('dashboard.health.legend', { planted: 30, character: 20, thread: 40, chapter: 501 }))).toBeTruthy()
+    fireEvent.click(view.getAllByRole('button', { name: translate('dashboard.source', { path: '追踪/伏笔.md' }) })[0]!)
+    expect(view.onSource).toHaveBeenCalledWith('神机诸天录/追踪/伏笔.md')
+  })
+
+  it('opens a stale character and an unrevealed timeline fact from the risk card', async () => {
+    const state = JSON.parse(source)
+    state.timeline.E001.updated_chapter = 400
+    state.timeline.E001.first_recorded_chapter = 400
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => response(JSON.stringify(state))))
+    const view = harness()
+    await view.findByRole('heading', { name: '风险' })
+    expect(view.getByText('角色状态久未更新')).toBeTruthy()
+    expect(view.getByText('林舟 · 调查员｜手臂受伤')).toBeTruthy()
+    expect(view.getAllByText('长期未收的线索').length).toBeGreaterThan(0)
+    expect(view.getByText('E001 · SECRET：证人藏在北塔')).toBeTruthy()
+    expect(view.getByText('林舟 · 证人失踪')).toBeTruthy()
+    fireEvent.click(view.getAllByRole('button', { name: '查看来源：追踪/角色状态/林舟.md' })[0]!)
+    fireEvent.click(view.getByRole('button', { name: '查看来源：追踪/时间线/作者真相.md' }))
+    expect(view.onSource).toHaveBeenCalledWith('神机诸天录/追踪/角色状态/林舟.md')
+    expect(view.onSource).toHaveBeenCalledWith('神机诸天录/追踪/时间线/作者真相.md')
+  })
+
+  it('shows an empty risk card when nothing is past the thresholds', async () => {
+    const state = JSON.parse(source)
+    for (const row of Object.values(state.foreshadow) as { planned_resolution_chapter: number | null; planted_chapter: number; status: string }[]) {
+      if (row.planned_resolution_chapter === null) row.planted_chapter = 490
+      else if (row.planned_resolution_chapter < 501) row.planned_resolution_chapter = 600
+    }
+    state.timeline.E001.reveal_status = '已揭示'
+    state.timeline.E001.reveal_chapter = 500
+    state.characters['林舟'].open_threads = []
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => response(JSON.stringify(state))))
+    const view = harness()
+    await view.findByText('暂无超阈值风险')
+    expect(view.queryByText('逾期未回收')).toBeNull()
+  })
+
+  it('pages a long risk list without dropping later rows', async () => {
+    const state = JSON.parse(source)
+    state.foreshadow = {}
+    state.characters['林舟'].open_threads = []
+    state.timeline.E001.reveal_status = '已揭示'
+    state.timeline.E001.reveal_chapter = 500
+    state.timeline.E001.updated_chapter = 500
+    for (let index = 1; index <= 25; index += 1) {
+      const id = `F${String(index).padStart(3, '0')}`
+      state.foreshadow[id] = {
+        id, summary: `逾期线索${String(index)}`, planted_chapter: 1, planned_resolution_chapter: 2,
+        status: '已埋', importance: '低', updated_chapter: 500,
+      }
+    }
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => response(JSON.stringify(state))))
+    const view = harness()
+    await view.findByText('1–20 / 共 25 条')
+    expect(view.getByText('F001 · 逾期线索1')).toBeTruthy()
+    expect(view.queryByText('F021 · 逾期线索21')).toBeNull()
+    fireEvent.click(view.getByRole('button', { name: '下一页' }))
+    expect(view.getByText('21–25 / 共 25 条')).toBeTruthy()
+    expect(view.getByText('F025 · 逾期线索25')).toBeTruthy()
+  })
+
   it('preserves source project paths and explains incomplete discovery', async () => {
     vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => response()))
     const view = harness({ listing: { ...workspace, truncated: true } })

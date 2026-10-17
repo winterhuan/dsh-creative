@@ -5,6 +5,10 @@ import { isStoryWorkbenchPath, parseCreativePath, projectPath } from '../project
 import type { CreativeTranslate } from './locales/index.ts'
 import type { WorkspacePayload } from './workspace-client.ts'
 import { useTracking } from './tracking-reader.ts'
+import {
+  assessHealth, DEFAULT_STALE_CHARACTER_CHAPTERS, DEFAULT_STALE_PLANTED_CHAPTERS, DEFAULT_STALE_THREAD_CHAPTERS,
+  type HealthItem, type HealthRisk,
+} from '../core/tracking/health.ts'
 import { selectForeshadow, type TrackingView, type ForeshadowFilter } from './tracking-view.ts'
 
 const sections = ['summary', 'characters', 'foreshadow', 'timeline', 'sources'] as const
@@ -14,6 +18,12 @@ const hookStatus = { 已埋: 'open', 已回收: 'resolved', 已过期: 'expired'
 const importance = { 高: 'high', 中: 'medium', 低: 'low' } as const
 const revealStatus = { 未揭示: 'hidden', 部分揭示: 'partial', 已揭示: 'revealed' } as const
 const PAGE_SIZE = 20
+const healthRiskKey: Readonly<Record<HealthRisk, 'dashboard.health.overdueForeshadow' | 'dashboard.health.unscheduledForeshadow' | 'dashboard.health.staleCharacter' | 'dashboard.health.staleThread'>> = {
+  'overdue-foreshadow': 'dashboard.health.overdueForeshadow',
+  'unscheduled-foreshadow': 'dashboard.health.unscheduledForeshadow',
+  'stale-character': 'dashboard.health.staleCharacter',
+  'stale-thread': 'dashboard.health.staleThread',
+}
 
 interface Props {
   readonly sessionId: string
@@ -82,20 +92,50 @@ function DashboardContent({ state, section, root, workspace, onSource, t }: {
     const path = projectPath(root, relative)
     return <button className="story-dashboard-source" disabled={!workspace?.files.some(file => file.path === path)} onClick={() => onSource(path)}>{t('dashboard.source', { path: relative })}</button>
   }
-  if (section === 'summary') return <>
+  if (section === 'summary') {
+    const nextChapter = state.last_committed_chapter + 1
+    const health = assessHealth(state, { chapter: nextChapter })
+    const healthTotal = health.items.length
+    const healthStart = Math.min(offset, Math.max(0, Math.ceil(healthTotal / PAGE_SIZE) - 1) * PAGE_SIZE)
+    const healthPage = health.items.slice(healthStart, healthStart + PAGE_SIZE)
+    const ageKey = (item: HealthItem) => item.risk === 'stale-character'
+      ? (item.active === true ? 'dashboard.health.ageActive' : 'dashboard.health.ageCore')
+      : 'dashboard.health.age'
+    return <>
     <div className="story-dashboard-metrics">
       <div><span>{t('dashboard.committed')}</span><strong>{state.last_committed_chapter}</strong></div>
-      <div><span>{t('dashboard.nextChapter')}</span><strong>{state.last_committed_chapter + 1}</strong></div>
+      <div><span>{t('dashboard.nextChapter')}</span><strong>{nextChapter}</strong></div>
       <div><span>{t('dashboard.filter.due')}</span><strong>{selectForeshadow(state, 'due').length}</strong></div>
       <div><span>{t('dashboard.risks')}</span><strong>{state.context.continuity_risks.length}</strong></div>
     </div>
     <p className="story-dashboard-muted">{t('dashboard.commitMeaning')}</p>
+    <section className="story-dashboard-card" aria-label={t('dashboard.health.title')}>
+      <h3>{t('dashboard.health.title')}</h3>
+      <p className="story-dashboard-muted">{t('dashboard.health.legend', {
+        planted: DEFAULT_STALE_PLANTED_CHAPTERS, character: DEFAULT_STALE_CHARACTER_CHAPTERS,
+        thread: DEFAULT_STALE_THREAD_CHAPTERS, chapter: nextChapter,
+      })}</p>
+      {healthPage.length === 0 ? <p className="story-dashboard-muted">{t('dashboard.health.none')}</p> : <ul className="story-dashboard-health">
+        {healthPage.map((item, index) => <li key={`${item.risk}\0${item.id}\0${item.summary}\0${String(healthStart + index)}`}>
+          <p>{t(healthRiskKey[item.risk])}</p>
+          <p>{t('dashboard.health.item', { id: item.id, summary: item.summary })}</p>
+          <p className="story-dashboard-muted">{t(ageKey(item), { age: item.age })}</p>
+          {source(item.source)}
+        </li>)}
+      </ul>}
+      {healthTotal > PAGE_SIZE && <nav className="story-dashboard-pagination" aria-label={t('dashboard.pagination')}>
+        <button disabled={healthStart === 0} onClick={() => setOffset(Math.max(0, healthStart - PAGE_SIZE))}>{t('dashboard.previous')}</button>
+        <span>{t('dashboard.range', { start: healthStart + 1, end: Math.min(healthStart + PAGE_SIZE, healthTotal), total: healthTotal })}</span>
+        <button disabled={healthStart + PAGE_SIZE >= healthTotal} onClick={() => setOffset(healthStart + PAGE_SIZE)}>{t('dashboard.next')}</button>
+      </nav>}
+    </section>
     <section className="story-dashboard-card"><h3>{t('dashboard.position')}</h3><p>{state.context.position.volume} · {state.context.position.story_time} · {state.context.position.scene}</p></section>
     <section className="story-dashboard-card"><h3>{t('dashboard.commitments')}</h3><Lines values={state.context.next_chapter_commitments} t={t} /></section>
     <section className="story-dashboard-card"><h3>{t('dashboard.risks')}</h3><Lines values={state.context.continuity_risks} t={t} /></section>
     <section className="story-dashboard-card"><h3>{t('dashboard.constraints')}</h3><Lines values={state.context.long_term_constraints} t={t} /></section>
     <section className="story-dashboard-card"><h3>{t('dashboard.recent')}</h3><Lines values={state.context.recent_chapters.map(row => `${chapterLabel(row.chapter)} · ${row.summary}`)} t={t} />{source('追踪/上下文.md')}</section>
-  </>
+    </>
+  }
   const characters = Object.entries(state.characters).filter(row => matches(row)).sort(([a], [b]) => a.localeCompare(b))
   const hooks = selectForeshadow(state, filter).filter(row => matches(row))
   const events = Object.values(state.timeline).map(row => ({

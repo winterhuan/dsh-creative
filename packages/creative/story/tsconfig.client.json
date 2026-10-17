@@ -16,6 +16,7 @@
   },
   "include": [
     "src/client/**/*",
-    "src/project-path.ts"
+    "src/project-path.ts",
+    "src/core/tracking/health.ts"
   ]
 }

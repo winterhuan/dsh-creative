@@ -9,6 +9,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { assessHealth, HEALTH_SUMMARY_LIMIT, type HealthReport } from './tracking/health.ts'
 import { matchesForeshadow } from './tracking/query.ts'
 import type { CharacterSnapshot, ForeshadowRow, TimelineRow } from './tracking/schema.ts'
 import { loadState, trackingRoot } from './tracking/store.ts'
@@ -49,7 +50,9 @@ export interface ContextBundle {
   readonly characters: readonly { readonly name: string; readonly selected_by: 'active' | 'mention'; readonly snapshot: CharacterSnapshot }[]
   readonly due_foreshadow: readonly ForeshadowRow[]
   readonly timeline: readonly TimelineRow[]
-  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number }
+  /** Compact risk summary. `counts` stay when `items` are omitted. */
+  readonly health: HealthReport
+  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number; readonly health: number }
 }
 
 /**
@@ -109,6 +112,8 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
   const timeline = Object.values(state.timeline)
     .filter(row => row.characters.some(name => active.has(name) || mentioned.has(name)))
     .sort((a, b) => a.first_recorded_chapter - b.first_recorded_chapter || (a.id < b.id ? -1 : 1))
+  const report = assessHealth(state, { chapter })
+  const healthItems = report.items.slice(0, HEALTH_SUMMARY_LIMIT)
   const bundle = {
     schema: CONTEXT_SCHEMA,
     book_title: state.book_title,
@@ -124,11 +129,20 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     characters,
     due_foreshadow: dueForeshadow,
     timeline,
-    omitted: { characters: 0, due_foreshadow: 0, timeline: 0 },
+    health: { ...report, items: healthItems },
+    omitted: { characters: 0, due_foreshadow: 0, timeline: 0, health: report.items.length - healthItems.length },
   }
-  // Trim the least decision-relevant section first; due foreshadow is the writer's obligation list and goes last.
-  const trimmed = { ...bundle, characters: [...characters], due_foreshadow: [...dueForeshadow], timeline: [...timeline], omitted: { ...bundle.omitted } }
+  // Health rows leave first. Due foreshadow is the writer's obligation list and goes last.
+  const trimmed = {
+    ...bundle,
+    characters: [...characters],
+    due_foreshadow: [...dueForeshadow],
+    timeline: [...timeline],
+    health: { ...bundle.health, items: [...healthItems] },
+    omitted: { ...bundle.omitted },
+  }
   while (encodedBytes(trimmed) > CONTEXT_BUNDLE_MAX_BYTES) {
+    if (trimmed.health.items.length > 0) { trimmed.health.items.pop(); trimmed.omitted.health += 1; continue }
     if (trimmed.timeline.length > 0) { trimmed.timeline.pop(); trimmed.omitted.timeline += 1; continue }
     if (trimmed.characters.length > 0) { trimmed.characters.pop(); trimmed.omitted.characters += 1; continue }
     if (trimmed.due_foreshadow.length > 0) { trimmed.due_foreshadow.pop(); trimmed.omitted.due_foreshadow += 1; continue }
