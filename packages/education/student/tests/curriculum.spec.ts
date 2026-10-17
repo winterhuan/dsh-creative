@@ -95,9 +95,32 @@ describe('shipped knowledge maps', () => {
           expect(file.concepts.find(concept => concept.id === 'c1a-u8-2')?.facts?.join('')).toContain('石子')
         }
         expect(file.concepts.some(concept => (concept.ideaIds?.length ?? 0) > 0)).toBe(true)
-        if (file.id === 'math-grade2-first') {
-          expect(file.concepts.every(concept => !(concept.facts ?? []).some(fact => fact.includes('除法')))).toBe(true)
-          expect(file.concepts.find(concept => concept.id === 'm2a-sub-borrow')?.facts?.join('')).toContain('退')
+        if (file.id === 'math-grade1-first' || file.id === 'math-grade1-second' || file.id === 'math-grade2-first') {
+          const checked = file.concepts.filter(concept => concept.source.includes('已读'))
+          expect(checked.length).toBeGreaterThan(0)
+          for (const concept of checked) {
+            const copied = (concept.facts ?? []).every(fact => fact === concept.definition || fact === concept.example)
+            expect(copied).toBe(false)
+          }
+          const joined = (id: string) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
+          if (file.id === 'math-grade1-first') {
+            expect(joined('m1a-carry')).toContain('9+4')
+            expect(joined('m1a-carry')).toContain('凑十')
+            expect(joined('m1a-compare')).not.toContain('开口对着大数')
+          }
+          if (file.id === 'math-grade1-second') {
+            expect(joined('m1b-clock')).toContain('10:00')
+            expect(joined('m1b-half')).toContain('11:30')
+            expect(joined('m1b-wall')).toContain('品')
+            expect(joined('m1b-measure')).not.toContain('1米')
+          }
+          if (file.id === 'math-grade2-first') {
+            expect(file.concepts.every(concept => !(concept.facts ?? []).some(fact => fact.includes('除法')))).toBe(true)
+            expect(joined('m2a-sub-borrow')).toContain('退')
+            expect(joined('m2a-sub-borrow')).toContain('43')
+            expect(joined('m2a-rmb')).toContain('1元=10角')
+            expect(joined('m2a-table248')).not.toContain('两倍')
+          }
         }
         if (file.id === 'english-grade1-first') {
           const joined = (id: string) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
