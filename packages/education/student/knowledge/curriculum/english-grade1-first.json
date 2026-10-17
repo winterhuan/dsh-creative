@@ -189,11 +189,12 @@
       "unit": "e1a-u2",
       "definition": "完成本单元小任务“Making new friends”。听懂要做什么，并用本单元的词说一说。",
       "example": "Making new friends",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Making new friends”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：hello, friend, welcome, name, hi。"
+        "小任务是 Making new friends，交新朋友。",
+        "Welcome to China. 欢迎来到中国。",
+        "I'm called Shenshen. You can call me Minmin.",
+        "Nice to meet you."
       ],
       "misconceptions": ["只认识任务名称，真去认识新朋友时说不出英语。"]
     },
@@ -203,10 +204,14 @@
       "unit": "e1a-u2",
       "definition": "认读本单元话题词：hello, friend, welcome, name, hi。听到或看到时能说出意思。",
       "example": "hello, friend, welcome",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：hello 是你好，friend 是朋友，welcome 是欢迎，name 是名字，hi 是嗨。",
-        "听到或看到这些词，要能说出中文意思。"
+        "hello 是你好，friend 是朋友，welcome 是欢迎，name 是名字，hi 是嗨。",
+        "Hello. Hi.",
+        "Welcome to China.",
+        "I'm called Shenshen. You can call me Minmin.",
+        "My name is Lily White.",
+        "Nice to meet you. Good to meet you."
       ],
       "misconceptions": ["问名字时说 What your name?，漏掉 ’s。", "friend 读音不准，读成“弗兰德”。"]
     },
@@ -216,11 +221,10 @@
       "unit": "e1a-u2",
       "definition": "听唱《Hello》，跟读里面的本单元词语。",
       "example": "Listen and chant: Hello.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Hello》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：hello, friend, welcome, name, hi。"
+        "Hello. Hi.",
+        "Nice to meet you."
       ],
       "misconceptions": ["会唱 Hello 歌，hello 和 hi 的意思分不清。"]
     },
@@ -230,12 +234,12 @@
       "unit": "e1a-u2",
       "definition": "听读故事《Meeting Lily》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Meeting Lily.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《Meeting Lily》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：hello, friend, welcome, name, hi。",
-        "不另考故事里没有列出的情节。"
+        "My name is Lily White.",
+        "I'm called Shenshen.",
+        "You can call me Minmin.",
+        "Nice to meet you."
       ],
       "misconceptions": ["指出谁在说话时把 Lily 认成别人。", "模仿台词时 hello 和 welcome 张冠李戴。"]
     },
@@ -245,11 +249,12 @@
       "unit": "e1a-u2",
       "definition": "完成小项目“Making new friends”，用本单元的词向别人介绍自己的作品。",
       "example": "Making new friends",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Making new friends”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：hello, friend, welcome, name, hi。"
+        "小项目的名称是 Making new friends。",
+        "Welcome to China.",
+        "I'm called Shenshen. You can call me Minmin.",
+        "Nice to meet you."
       ],
       "misconceptions": ["介绍新朋友作品时只会说名字，不会说 welcome。"]
     },
@@ -336,11 +341,13 @@
       "unit": "e1a-u4",
       "definition": "完成本单元小任务“Cleaning our classroom”。听懂要做什么，并用本单元的词说一说。",
       "example": "Cleaning our classroom",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Cleaning our classroom”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：clean, classroom, desk, door, chair, on duty, blackboard, floor。"
+        "小任务是 Cleaning our classroom，打扫教室。",
+        "Clean our classroom.",
+        "Clean, clean. Clean my desk. Clean my chair.",
+        "Who's on duty today?",
+        "Let me help you."
       ],
       "misconceptions": ["会做值日，说不出 on duty 的意思。"]
     },
@@ -350,10 +357,13 @@
       "unit": "e1a-u4",
       "definition": "认读本单元话题词：clean, classroom, desk, door, chair, on duty, blackboard, floor。听到或看到时能说出意思。",
       "example": "clean, classroom, desk",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：clean 是打扫，classroom 是教室，desk 是书桌，door 是门，chair 是椅子，on duty 是值日，blackboard 是黑板，floor 是地板。",
-        "听到或看到这些词，要能说出中文意思。"
+        "clean 是打扫，classroom 是教室，desk 是书桌，door 是门，chair 是椅子，on duty 是值日，blackboard 是黑板，floor 是地板。",
+        "Clean our classroom.",
+        "Clean my desk. Clean my chair.",
+        "Who's on duty today?",
+        "Let me help you. Let me put the books back."
       ],
       "misconceptions": ["desk 和 chair 配错，桌子和椅子说反。", "door 和 floor 听混，读音分不清。"]
     },
@@ -363,11 +373,11 @@
       "unit": "e1a-u4",
       "definition": "听唱《Clean our classroom》，跟读里面的本单元词语。",
       "example": "Listen and chant: Clean our classroom.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Clean our classroom》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：clean, classroom, desk, door, chair, on duty, blackboard, floor。"
+        "Clean our classroom.",
+        "Clean, clean. Clean my desk.",
+        "Clean, clean. Clean my chair."
       ],
       "misconceptions": ["跟唱时省略 clean，只唱出 classroom。"]
     },
@@ -377,12 +387,12 @@
       "unit": "e1a-u4",
       "definition": "听读故事《Who's on duty?》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Who's on duty?.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《Who's on duty?》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：clean, classroom, desk, door, chair, on duty, blackboard, floor。",
-        "不另考故事里没有列出的情节。"
+        "Who's on duty today?",
+        "That's good.",
+        "Let me help you.",
+        "Let me put the books back."
       ],
       "misconceptions": ["听不懂 Who's on duty? 是问今天谁值日。", "指出谁在说话时把人认错。"]
     },
@@ -392,11 +402,12 @@
       "unit": "e1a-u4",
       "definition": "完成小项目“Cleaning our classroom”，用本单元的词向别人介绍自己的作品。",
       "example": "Cleaning our classroom",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Cleaning our classroom”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：clean, classroom, desk, door, chair, on duty, blackboard, floor。"
+        "小项目的名称是 Cleaning our classroom。",
+        "Clean our classroom. Clean my desk.",
+        "Let me help you.",
+        "Let me put the books back."
       ],
       "misconceptions": ["值日做得好，介绍时不会说 on duty。"]
     },
@@ -406,11 +417,12 @@
       "unit": "e1a-u5",
       "definition": "完成本单元小任务“Making a lovely face”。听懂要做什么，并用本单元的词说一说。",
       "example": "Making a lovely face",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Making a lovely face”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：face, eye, ear, nose, mouth。"
+        "小任务是 Making a lovely face，做一张可爱的脸。",
+        "I see a happy face.",
+        "Make a lovely face.",
+        "Draw two eyes."
       ],
       "misconceptions": ["会画脸，说不出脸和五官的英语。"]
     },
@@ -420,10 +432,13 @@
       "unit": "e1a-u5",
       "definition": "认读本单元话题词：face, eye, ear, nose, mouth。听到或看到时能说出意思。",
       "example": "face, eye, ear",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：face 是脸，eye 是眼睛，ear 是耳朵，nose 是鼻子，mouth 是嘴巴。",
-        "听到或看到这些词，要能说出中文意思。"
+        "face 是脸，eye 是眼睛，ear 是耳朵，nose 是鼻子，mouth 是嘴巴。",
+        "I see a happy face.",
+        "Look, a red nose.",
+        "Draw two eyes.",
+        "Make a lovely face."
       ],
       "misconceptions": ["eye 和 ear 读音听混，眼睛、耳朵配错。", "mouth 的尾音读不清。"]
     },
@@ -433,11 +448,11 @@
       "unit": "e1a-u5",
       "definition": "听唱《Draw a face》，跟读里面的本单元词语。",
       "example": "Listen and chant: Draw a face.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Draw a face》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：face, eye, ear, nose, mouth。"
+        "Draw a face.",
+        "Draw two eyes.",
+        "Look, a red nose."
       ],
       "misconceptions": ["跟着唱 Draw a face，五官词认不全。"]
     },
@@ -447,12 +462,12 @@
       "unit": "e1a-u5",
       "definition": "听读故事《Finding faces》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Finding faces.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《Finding faces》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：face, eye, ear, nose, mouth。",
-        "不另考故事里没有列出的情节。"
+        "I see a happy face.",
+        "Look, a red nose.",
+        "Make a lovely face.",
+        "Draw two eyes."
       ],
       "misconceptions": ["听完说不出在哪里找到了脸。"]
     },
@@ -462,11 +477,12 @@
       "unit": "e1a-u5",
       "definition": "完成小项目“A lovely face”，用本单元的词向别人介绍自己的作品。",
       "example": "A lovely face",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“A lovely face”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：face, eye, ear, nose, mouth。"
+        "小项目的名称是 A lovely face。",
+        "Make a lovely face.",
+        "I see a happy face.",
+        "Draw two eyes. Look, a red nose."
       ],
       "misconceptions": ["做好娃娃脸，介绍时只会说 face，说不全五官。"]
     },
@@ -476,11 +492,12 @@
       "unit": "e1a-u6",
       "definition": "完成本单元小任务“Showing my family photo”。听懂要做什么，并用本单元的词说一说。",
       "example": "Showing my family photo",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Showing my family photo”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：family, mum, dad, brother, sister, me, love, warm, happy。"
+        "小任务是 Showing my family photo，展示全家福。",
+        "This is my family.",
+        "I love my dad.",
+        "I love you, Mum."
       ],
       "misconceptions": ["拿着照片不敢开口，只会指指点点。", "介绍时把 me 漏掉，说不清哪一个是自己。"]
     },
@@ -490,10 +507,12 @@
       "unit": "e1a-u6",
       "definition": "认读本单元话题词：family, mum, dad, brother, sister, me, love, warm, happy。听到或看到时能说出意思。",
       "example": "family, mum, dad",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：family 是家人，mum 是妈妈，dad 是爸爸，brother 是哥哥或弟弟，sister 是姐姐或妹妹，me 是我，love 是爱，warm 是温暖，happy 是高兴。",
-        "听到或看到这些词，要能说出中文意思。"
+        "family 是家人，mum 是妈妈，dad 是爸爸，brother 是哥哥或弟弟，sister 是姐姐或妹妹，me 是我，love 是爱，warm 是温暖，happy 是高兴。",
+        "This is my family.",
+        "I love my dad.",
+        "I love you, Mum."
       ],
       "misconceptions": ["mum 和 me 读音混。", "warm 和 happy 意思配错，把温暖说成开心。"]
     },
@@ -503,11 +522,11 @@
       "unit": "e1a-u6",
       "definition": "听唱《Family》，跟读里面的本单元词语。",
       "example": "Listen and chant: Family.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Family》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：family, mum, dad, brother, sister, me, love, warm, happy。"
+        "This is my family.",
+        "I love my dad.",
+        "I love you, Mum."
       ],
       "misconceptions": ["会唱 Family 歌，family 和 friends 唱混。"]
     },
@@ -517,12 +536,12 @@
       "unit": "e1a-u6",
       "definition": "听读故事《Love》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Love.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《Love》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：family, mum, dad, brother, sister, me, love, warm, happy。",
-        "不另考故事里没有列出的情节。"
+        "I love my dad.",
+        "I love you, Mum.",
+        "I am in your eyes.",
+        "This is my family."
       ],
       "misconceptions": ["说不出故事里谁爱谁。", "模仿句子时 love 前面的人名说错。"]
     },
@@ -532,11 +551,11 @@
       "unit": "e1a-u6",
       "definition": "完成小项目“Showing my family photo”，用本单元的词向别人介绍自己的作品。",
       "example": "Showing my family photo",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Showing my family photo”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：family, mum, dad, brother, sister, me, love, warm, happy。"
+        "小项目的名称是 Showing my family photo。",
+        "This is my family.",
+        "I love my dad. I love you, Mum."
       ],
       "misconceptions": ["介绍全家福只会指人，不会用英语说称呼。"]
     },
@@ -560,10 +579,10 @@
       "unit": "e1a-u7",
       "definition": "认读本单元话题词：helpful, animal, horse, dog, hen, bee, cat。听到或看到时能说出意思。",
       "example": "helpful, animal, horse",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：helpful 是有帮助的，animal 是动物，horse 是马，dog 是狗，hen 是母鸡，bee 是蜜蜂，cat 是猫。",
-        "听到或看到这些词，要能说出中文意思。"
+        "helpful 是有帮助的，animal 是动物，horse 是马，dog 是狗，hen 是母鸡，bee 是蜜蜂，cat 是猫。",
+        "Horses give us rides. 马可以让人骑。"
       ],
       "misconceptions": ["horse 和 hen 听混，马和母鸡配错图。", "animal 太长读不全。"]
     },
@@ -573,11 +592,10 @@
       "unit": "e1a-u7",
       "definition": "听唱《Helpful animals》，跟读里面的本单元词语。",
       "example": "Listen and chant: Helpful animals.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Helpful animals》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：helpful, animal, horse, dog, hen, bee, cat。"
+        "Horses give us rides.",
+        "马可以让人骑。"
       ],
       "misconceptions": ["唱 Helpful animals 时动物词漏掉。"]
     },
@@ -587,12 +605,10 @@
       "unit": "e1a-u7",
       "definition": "听读故事《Helping Mira》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Helping Mira.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《Helping Mira》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：helpful, animal, horse, dog, hen, bee, cat。",
-        "不另考故事里没有列出的情节。"
+        "I have a ball for Mira.",
+        "我有一个球给 Mira。"
       ],
       "misconceptions": ["说不清是哪个动物帮了 Mira。"]
     },
@@ -616,11 +632,12 @@
       "unit": "e1a-u8",
       "definition": "完成本单元小任务“Acting out a story”。听懂要做什么，并用本单元的词说一说。",
       "example": "Acting out a story",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Acting out a story”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：bird, hill, fly away, come back, flap wings。"
+        "小任务是 Acting out a story，把故事演出来。",
+        "It's time to fly.",
+        "You can do it!",
+        "Have a go! Let me try."
       ],
       "misconceptions": ["只做动作不出声，故事里的词一句也说不出。"]
     },
@@ -630,10 +647,12 @@
       "unit": "e1a-u8",
       "definition": "认读本单元话题词：bird, hill, fly away, come back, flap wings。听到或看到时能说出意思。",
       "example": "bird, hill, fly away",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：bird 是鸟，hill 是小山，fly away 是飞走，come back 是回来，flap wings 是拍翅膀。",
-        "听到或看到这些词，要能说出中文意思。"
+        "bird 是鸟，hill 是小山，fly away 是飞走，come back 是回来，flap wings 是拍翅膀。",
+        "It's time to fly.",
+        "You can do it!",
+        "Have a go! Let me try."
       ],
       "misconceptions": ["fly away 和 come back 用反，飞走和飞回说反。", "flap wings 连读不出来，只会说 bird。"]
     },
@@ -643,11 +662,10 @@
       "unit": "e1a-u8",
       "definition": "听唱《Two little blackbirds》，跟读里面的本单元词语。",
       "example": "Listen and chant: Two little blackbirds.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Two little blackbirds》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：bird, hill, fly away, come back, flap wings。"
+        "It's time to fly.",
+        "飞的时候到了。"
       ],
       "misconceptions": ["歌会唱，bird 和 hill 的意思分不清。"]
     },
@@ -657,12 +675,12 @@
       "unit": "e1a-u8",
       "definition": "听读故事《You can do it!》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: You can do it!.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《You can do it!》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：bird, hill, fly away, come back, flap wings。",
-        "不另考故事里没有列出的情节。"
+        "You can do it!",
+        "Have a go!",
+        "Let me try.",
+        "It's time to fly."
       ],
       "misconceptions": ["听不懂 You can do it! 是在鼓励别人。", "模仿台词时把鼓励的话说得凶巴巴。"]
     },
@@ -672,11 +690,12 @@
       "unit": "e1a-u8",
       "definition": "完成小项目“Acting out a story”，用本单元的词向别人介绍自己的作品。",
       "example": "Acting out a story",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Acting out a story”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：bird, hill, fly away, come back, flap wings。"
+        "小项目的名称是 Acting out a story。",
+        "You can do it!",
+        "Have a go! Let me try.",
+        "It's time to fly."
       ],
       "misconceptions": ["表演时动作齐全，台词只会说一两句。"]
     },
@@ -686,11 +705,12 @@
       "unit": "e1a-u9",
       "definition": "完成本单元小任务“Doing a survey”。听懂要做什么，并用本单元的词说一说。",
       "example": "Doing a survey",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Doing a survey”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：wash, tie shoelaces, take a photo。"
+        "小任务是 Doing a survey，做一项小调查。",
+        "Can you wash your lunch box?",
+        "Yes, I can. No, I can't.",
+        "I can do it by myself."
       ],
       "misconceptions": ["调查只完成表格，问答句子不会说。"]
     },
@@ -700,10 +720,13 @@
       "unit": "e1a-u9",
       "definition": "认读本单元话题词：wash, tie shoelaces, take a photo。听到或看到时能说出意思。",
       "example": "wash, tie shoelaces, take a photo",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：wash 是洗，tie shoelaces 是系鞋带，take a photo 是拍照。",
-        "听到或看到这些词，要能说出中文意思。"
+        "wash 是洗，tie shoelaces 是系鞋带，take a photo 是拍照。",
+        "Can you wash your lunch box?",
+        "I can wash my lunch box.",
+        "Yes, I can. No, I can't.",
+        "I can do it by myself."
       ],
       "misconceptions": ["tie shoelaces 太长说不全，只会说 tie。", "wash 和 watch 听混。"]
     },
@@ -713,11 +736,10 @@
       "unit": "e1a-u9",
       "definition": "听唱《Do it by myself》，跟读里面的本单元词语。",
       "example": "Listen and chant: Do it by myself.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Do it by myself》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：wash, tie shoelaces, take a photo。"
+        "I can do it by myself.",
+        "Yes, I can."
       ],
       "misconceptions": ["跟唱时 by myself 含糊带过。"]
     },
@@ -727,12 +749,12 @@
       "unit": "e1a-u9",
       "definition": "听读故事《Yes, I can!》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: Yes, I can!.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《Yes, I can!》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：wash, tie shoelaces, take a photo。",
-        "不另考故事里没有列出的情节。"
+        "Can you wash your lunch box?",
+        "Yes, I can. No, I can't.",
+        "Can you find my bag, please?",
+        "I can do it by myself."
       ],
       "misconceptions": ["把 Yes, I can! 和 No, I can't 用反，会也说不会。"]
     },
@@ -742,11 +764,12 @@
       "unit": "e1a-u9",
       "definition": "完成小项目“Doing a survey”，用本单元的词向别人介绍自己的作品。",
       "example": "Doing a survey",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Doing a survey”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：wash, tie shoelaces, take a photo。"
+        "小项目的名称是 Doing a survey。",
+        "Can you wash your lunch box? Yes, I can.",
+        "No, I can't.",
+        "I can do it by myself."
       ],
       "misconceptions": ["介绍调查结果时只会报名字，说不出 can、can't。"]
     },
@@ -756,11 +779,12 @@
       "unit": "e1a-u10",
       "definition": "完成本单元小任务“Finding fun numbers”。听懂要做什么，并用本单元的词说一说。",
       "example": "Finding fun numbers",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Finding fun numbers”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：one, two, three, four, five, six。"
+        "小任务是 Finding fun numbers，找有趣的数字。",
+        "One is a pencil.",
+        "I can see one.",
+        "Come and play."
       ],
       "misconceptions": ["会找数字，数字词的英语说不全。"]
     },
@@ -770,10 +794,13 @@
       "unit": "e1a-u10",
       "definition": "认读本单元话题词：one, two, three, four, five, six。听到或看到时能说出意思。",
       "example": "one, two, three",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "要认读：one 是一，two 是二，three 是三，four 是四，five 是五，six 是六。",
-        "听到或看到这些词，要能说出中文意思。"
+        "one 是一，two 是二，three 是三，four 是四，five 是五，six 是六。",
+        "One is a pencil.",
+        "Look! One and two.",
+        "I can see one.",
+        "Come and play. Watch me play the hula hoop."
       ],
       "misconceptions": ["three 和 tree 听混。", "four 和 five 认混，数字配对错。"]
     },
@@ -783,11 +810,11 @@
       "unit": "e1a-u10",
       "definition": "听唱《Fun numbers》，跟读里面的本单元词语。",
       "example": "Listen and chant: Fun numbers.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "歌谣的名字是《Fun numbers》。",
-        "跟读歌谣里的本单元词语。",
-        "本单元词语是：one, two, three, four, five, six。"
+        "One is a pencil.",
+        "Look! One and two.",
+        "I can see one."
       ],
       "misconceptions": ["唱到 three、five 就含糊，数字词不跟读。"]
     },
@@ -797,12 +824,12 @@
       "unit": "e1a-u10",
       "definition": "听读故事《On the sports field》，能指出谁在说话，并模仿其中一句。",
       "example": "Story: On the sports field.",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "故事的名字是《On the sports field》。",
-        "听读时指出谁在说话，并模仿其中一句。",
-        "模仿时用本单元这些词：one, two, three, four, five, six。",
-        "不另考故事里没有列出的情节。"
+        "Come and play.",
+        "We can skip.",
+        "Watch me play the hula hoop.",
+        "I can see one."
       ],
       "misconceptions": ["听完说不出操场上数的是什么。"]
     },
@@ -812,11 +839,12 @@
       "unit": "e1a-u10",
       "definition": "完成小项目“Finding fun numbers”，用本单元的词向别人介绍自己的作品。",
       "example": "Finding fun numbers",
-      "source": "家长确认的教材目录（一年级上册英语）；英语课标（2022年版）一级准备",
+      "source": "沪教版（五四制）（2024）一年级上册知识点梳理已读句型；英语课标（2022年版）一级准备",
       "facts": [
-        "这一项的名称是“Finding fun numbers”。",
-        "听懂要做什么，并用本单元的词说一说。",
-        "要用到这些词：one, two, three, four, five, six。"
+        "小项目的名称是 Finding fun numbers。",
+        "One is a pencil. I can see one.",
+        "Come and play.",
+        "Watch me play the hula hoop."
       ],
       "misconceptions": ["介绍找到的数字时只指不说。"]
     },

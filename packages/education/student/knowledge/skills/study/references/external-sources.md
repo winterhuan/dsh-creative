@@ -14,9 +14,9 @@
 
 英语二年级上册 Unit 5 到 Unit 10：Twinkle, twinkle, little star. Where's Mr Sun? He's behind me. The sun is high in the sky. The moon is behind the clouds. Little seahorses live with Papa Seahorse. Mama Seahorse lays eggs. Papa Seahorse takes care of the babies. Hello, Clownfish. It's warm in spring. It's cold in winter. I like autumn. What do you need for the fruit plate? I need the banana and the apple. I smell the flowers. I hear the birds. Look at me. I can draw a picture. 清单页：<http://www.51jiaoxi.com/doc-17262026.html>。页面有验证，只读到检索摘录。
 
-英语一年级上册 Unit 1：Good morning. Good afternoon. Good evening. How are you? I'm fine, thank you. It's the first day of school. Unit 3：Pack my schoolbag. Pack my pencils. Don't worry. Use my pencil. Oh, no! My pencil case!
+英语一年级上册 Unit 1：Good morning. Good afternoon. Good evening. How are you? I'm fine, thank you. It's the first day of school. Unit 3：Pack my schoolbag. Pack my pencils. Don't worry. Use my pencil. Oh, no! My pencil case! Unit 2、Unit 4 到 Unit 6、Unit 8 到 Unit 10 的句型来自知识点梳理公开预览（<https://www.yeyulingfeng.com/wendang/104641.html>）：Welcome to China. I'm called Shenshen. You can call me Minmin. Nice to meet you. Clean our classroom. Who's on duty today? Let me help you. Let me put the books back. Clean, clean. Clean my desk. Clean my chair. I see a happy face. Look, a red nose. Draw two eyes. This is my family. I love my dad. I love you, Mum. It's time to fly. You can do it! Have a go! Let me try. I can do it by myself. Can you wash your lunch box? Yes, I can. No, I can't. One is a pencil. Come and play. I can see one. Watch me play the hula hoop. Unit 7 只收 Horses give us rides. 和 I have a ball for Mira.；The horse is warm 与中文对不上，没有写入。
 
-英语一年级下册 Unit 1：How are you today? I'm fine. I'm happy. I'm tired. I'm busy. This is your new classmate, Xiaojiang. Minmin is my friend. You can sit here. Unit 2：It's lunch time. Let's have lunch together. I have meatballs and vegetables. Where is my apple? This is a lunch box for Dad.
+英语一年级下册 Unit 1：How are you today? I'm fine. I'm happy. I'm tired. I'm busy. This is your new classmate, Xiaojiang. Minmin is my friend. You can sit here. Unit 2：It's lunch time. Let's have lunch together. I have meatballs and vegetables. Where is my apple? This is a lunch box for Dad. Unit 3 到 Unit 10 的句子来自电子课本公开预览（<https://www.scribd.com/document/1027494954/>）：Yellow, yellow. What is yellow? The butterfly is yellow. The flower is red. The hill is green. I'm a magical animal. I can change my colour. Look at me. I'm yellow. Can you find me? This is my park. The sky is blue. Come and play on the slide. Come and play on the swing. Hold on tight! Be careful. Up and down. It's fun! How's the weather in Sydney? I like sunny days. In …, it's … today. Put on my shirt. Put on my trousers. I'm ready! Go! One, two, three, four. Hide-and-seek. Are you ready? I like to play freeze. Red light, red light. Stop, stop, stop! The light is red. Let's walk across the zebra crossing. What do you see? I see a panda looking at me. Which toy do you like? I like them all.
 
 ## 概念对得上的目录
 
@@ -54,6 +54,6 @@
 
 ## 还没有看到目录的册次
 
-语文二年级下册、数学二年级下册、英语二年级下册。英语二年级上册 Unit 5 到 Unit 10 的动画课名还没有打开；这六个单元的句子已按知识清单摘录写入。英语一年级上册 Unit 2、Unit 4 到 Unit 10，以及一年级下册 Unit 3 到 Unit 10，还只有单元名和话题词。继续找时只收和该知识点同一个概念的条目。
+语文二年级下册、数学二年级下册、英语二年级下册。英语二年级上册 Unit 5 到 Unit 10 的动画课名还没有打开；这六个单元的句子已按知识清单摘录写入。英语一年级上册 Starter、Unit 7 的小任务和宠物家、两册附录，以及二年级下册，还没有对得上的原句。继续找时只收和该知识点同一个概念的条目。
 
 国家中小学智慧教育平台、人教社电子教材和上海教育出版社仍是打开正文时的入口。这次没有登录，没有下载电子课本或试卷。

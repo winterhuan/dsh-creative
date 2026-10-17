@@ -100,8 +100,19 @@ describe('shipped knowledge maps', () => {
           expect(file.concepts.find(concept => concept.id === 'm2a-sub-borrow')?.facts?.join('')).toContain('退')
         }
         if (file.id === 'english-grade1-first') {
-          expect(file.concepts.find(concept => concept.id === 'e1a-u1-2')?.facts?.join('')).toContain('Good morning')
-          expect(file.concepts.find(concept => concept.id === 'e1a-u3-2')?.facts?.join('')).toContain('Pack my schoolbag')
+          const joined = (id: string) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
+          expect(joined('e1a-u1-2')).toContain('Good morning')
+          expect(joined('e1a-u3-2')).toContain('Pack my schoolbag')
+          expect(joined('e1a-u2-2')).toContain('Welcome to China')
+          expect(joined('e1a-u4-4')).toContain('Who\'s on duty today?')
+          expect(joined('e1a-u5-3')).toContain('Draw two eyes')
+          expect(joined('e1a-u6-1')).toContain('This is my family')
+          expect(joined('e1a-u7-3')).toContain('Horses give us rides')
+          expect(joined('e1a-u7-1')).not.toContain('The horse is warm')
+          expect(joined('e1a-u7-2')).not.toContain('The horse is warm')
+          expect(joined('e1a-u8-4')).toContain('Have a go!')
+          expect(joined('e1a-u9-2')).toContain('wash your lunch box')
+          expect(joined('e1a-u10-4')).toContain('hula hoop')
         }
         if (file.id === 'english-grade2-first') {
           const joined = (id) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
@@ -118,9 +129,18 @@ describe('shipped knowledge maps', () => {
           expect(joined('e2a-u10-2')).toContain('I can draw a picture')
         }
         if (file.id === 'english-grade1-second') {
-          const joined = (id) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
+          const joined = (id: string) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
           expect(joined('e1b-u1-4')).toContain('Xiaojiang')
           expect(joined('e1b-u2-2')).toContain('meatballs')
+          expect(joined('e1b-u3-2')).toContain('The butterfly is yellow')
+          expect(joined('e1b-u4-2')).toContain('Hold on tight')
+          expect(joined('e1b-u5-4')).toContain('I like sunny days')
+          expect(joined('e1b-u6-3')).toContain('Put on my shirt')
+          expect(joined('e1b-u7-3')).toContain('Hide-and-seek')
+          expect(joined('e1b-u8-4')).toContain('zebra crossing')
+          expect(joined('e1b-u9-3')).toContain('looking at me')
+          expect(joined('e1b-u10-3')).toContain('I like them all')
+          expect(file.concepts.every(concept => !(concept.facts ?? []).some(fact => fact.includes('The horse is warm')))).toBe(true)
         }
       }
     }
