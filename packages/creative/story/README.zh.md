@@ -48,11 +48,11 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 ### 连续性概览与查询
 
-工作台的“概览”显示已提交章节、当前位置、下一章承诺、风险与近三章速记。角色可展开查看状态和已知信息；伏笔可按到期、逾期、未定回收章或已回收筛选；时间线分别展示作者真相与读者已知。分类支持搜索与分页，来源入口切换到“文件”视图。概览不会写入小说文件，切换视图保留编辑草稿。
+工作台的“概览”显示已提交章节、当前位置、下一章承诺、风险与近三章速记。「风险」卡片列出逾期未回收的伏笔、埋设已久且未定回收章的伏笔、时间线久未触及的核心角色，以及长期未收的线索；每条使用既有的来源按钮。角色可展开查看状态和已知信息；伏笔可按到期、逾期、未定回收章或已回收筛选；时间线分别展示作者真相与读者已知。分类支持搜索与分页，来源入口切换到“文件”视图。概览不会写入小说文件，切换视图保留编辑草稿。
 
 首次打开显示概览，已有编辑会话保留文件视图。没有作品时显示创建／打开工作区的提示，不用工作区名代替作品。多本书通过小说选择框切换；刷新、窗口重新获得焦点和可识别的章节提交会重读状态。读取失败保留同一本书的上次内容并提示陈旧，状态缺失显示接入提示，格式损坏显示错误。进度来自已提交追踪，不把未提交稿、文件检查或旧审稿记录当成当前文学质量批准。
 
-在对话中通过 `story` 查询状态、角色、伏笔或历史记录；CLI 入口是 `dsh-story project status`、`project query` 与一次取齐写前上下文的 `project context`。查询带来源与修订号，每次最多 50 条且不超过 16 KiB，分页可用 `--revision` 拒绝混合版本。写前准备用 `project context` 一次取得状态卡、到期伏笔与草稿提及的角色，需要时再单独查询全部到期伏笔，覆盖续写状态卡最多 8 条之外的项；日期提醒由作者和写作流程结合卷纲处理，不自动延期或回收。具体命令见[连续性查询](knowledge/story/skills/story/references/project/continuity-query.md)。
+在对话中通过 `story` 查询状态、角色、伏笔或历史记录；CLI 入口是 `dsh-story project status`、`project query` 与一次取齐写前上下文的 `project context`。查询带来源与修订号，每次最多 50 条且不超过 16 KiB，分页可用 `--revision` 拒绝混合版本。`project query --kind health` 用同一套分页列出「风险」卡片的四类条目。默认阈值是未定回收伏笔埋设 30 章、角色自最近一次时间线接触起 20 章、未揭示事实或未收线索 40 章；`--stale-planted`、`--stale-character`、`--stale-thread` 可改。`project context` 在同一 16 KiB 内最多保留 8 条，省略条目时仍保留计数。写前准备先看这份摘要，再单独查询全部到期伏笔，覆盖续写状态卡最多 8 条之外的项；日期提醒由作者和写作流程结合卷纲处理，不自动延期或回收。具体命令见[连续性查询](knowledge/story/skills/story/references/project/continuity-query.md)。
 
 “记住本书的写法”使用既有 book 范围作者记忆与确认回执；角色、伏笔和事件经章节事务保存。记忆的候选确认、替换、撤回与优先级见[作者记忆](knowledge/story/skills/story/references/project/author-memory.md)。
 
@@ -102,7 +102,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 #### Token 影响
 
-Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。连续性查询每次最多 16 KiB，超过条数或字节预算会返回下一页位置；写前到期伏笔较多时需要额外分页，不能静默省略。读取再提交 workflow 模板会保留两份源码，独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；查询容量不等于提供商 token 计费或端到端效率承诺。
+Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。连续性查询每次最多 16 KiB，超过条数或字节预算会返回下一页位置；健康摘要共用这一预算。写前到期伏笔较多时需要额外分页，不能静默省略。读取再提交 workflow 模板会保留两份源码，独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；查询容量不等于提供商 token 计费或端到端效率承诺。
 
 #### KV Cache 影响
 
@@ -117,6 +117,7 @@ Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工�
 - CLI 只需要 Node。付费服务需要创作者授权和已配置凭据。独立侧边栏各自保存状态；旧聚合草稿不迁移。
 - 小说预设为原生单章模板提供 `workflow` 和子 Agent 结构化输出。它处理长篇新章及其未提交稿；已提交章修改沿用现有修订路径。模板复用与审稿只读依靠指令，不是 Host 强制机制或单独审稿权限策略。取消保留产物，恢复核对真实文件和追踪，不恢复旧脚本栈。文件校验不隔离任意外部写入者。
 - 概览通过现有文件 API 读取状态，受 `editorMaxBytes` 限制；大列表在界面分页，不新增数据库或服务器。它校验展示字段，完整追踪体检仍使用 `dsh-story project check`。历史查询提供已有逐章记录，不重建任意章的完整世界状态；原文和缺失记录需定点核查。
+- 角色快照没有更新章。健康查询和「风险」卡片用点名该角色的时间线事件里最新的 `updated_chapter`，没有这类事件的角色不列入。健康检查只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。
 - 运行时已完成从 Python/JavaScript 到 TypeScript 的迁移：CLI 与全部确定性操作都是 TypeScript，包内不再分发 `runtime/`；原实现保留在 `tests/reference/` 仅作差分测试基准，`tests/ts-port-parity*.spec.ts` 在相同输入上比对两者输出，parity 仍是兼容性依据。
 
 <a id="dev-note"></a>

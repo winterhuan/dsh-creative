@@ -1,9 +1,9 @@
 /** The code-selected writing context: mention scanning and bundle assembly from committed tracking. */
-import { mkdir, mkdtemp, realpath, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, type TestContext } from 'vitest'
-import { buildContext, scanMentions } from '../src/core/context.ts'
+import { buildContext, CONTEXT_BUNDLE_MAX_BYTES, scanMentions } from '../src/core/context.ts'
 import { initialize } from '../src/core/tracking/store.ts'
 
 async function book(context: TestContext): Promise<string> {
@@ -54,10 +54,49 @@ describe('writing context', () => {
     expect(bundle.characters.map(item => [item.name, item.selected_by])).toEqual([['阿澜', 'active'], ['管事', 'mention']])
     expect(bundle.due_foreshadow.map(row => row.id)).toEqual(['F001'])
     expect(bundle.timeline.map(row => row.id)).toEqual(['E001'])
-    expect(bundle.omitted).toEqual({ characters: 0, due_foreshadow: 0, timeline: 0 })
+    expect(bundle.omitted).toEqual({ characters: 0, due_foreshadow: 0, timeline: 0, health: 0 })
+    expect(bundle.health.counts).toEqual({ overdue_foreshadow: 0, unscheduled_foreshadow: 0, stale_character: 0, stale_thread: 0 })
+    expect(bundle.health.items).toEqual([])
     const later = buildContext(directory, { chapter: 9 })
     expect(later.due_foreshadow.map(row => row.id)).toEqual(['F001', 'F002'])
     expect(later.characters.map(item => item.name)).toEqual(['阿澜'])
     expect(later.timeline).toEqual([])
+    expect(later.health.items).toEqual([expect.objectContaining({ risk: 'overdue-foreshadow', id: 'F001', age: 6, anchor_chapter: 3 })])
+    expect(later.omitted.health).toBe(0)
+  })
+
+  it('keeps health counts when the summary is capped or the byte budget drops its rows', async (context) => {
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'dsh-story-context-health-')))
+    context.onTestFinished(async () => { await rm(root, { recursive: true, force: true }) })
+    const directory = join(root, '雾港来信')
+    await mkdir(directory, { recursive: true })
+    const foreshadow = Array.from({ length: 10 }, (_, index) => {
+      const id = `F${String(index + 1).padStart(3, '0')}`
+      return { id, summary: `线索${id}`, planted_chapter: 1, planned_resolution_chapter: 2, status: '已埋', importance: '低' }
+    })
+    initialize(directory, {
+      schema_version: 1, book_title: '雾港来信', last_chapter: 5,
+      context: {
+        position: { volume: '第一卷', volume_start_chapter: 1, story_time: '清晨', scene: '库房外' },
+        long_term_constraints: [], active_character_names: [], continuity_risks: [],
+        recent_chapters: [], next_chapter_commitments: [],
+      },
+      character_snapshots: {},
+      foreshadow,
+      timeline_events: [],
+    })
+    const capped = buildContext(directory, { chapter: 6 })
+    expect(capped.health.counts.overdue_foreshadow).toBe(10)
+    expect(capped.health.items.map(item => item.id)).toEqual(['F001', 'F002', 'F003', 'F004', 'F005', 'F006', 'F007', 'F008'])
+    expect(capped.omitted).toEqual({ characters: 0, due_foreshadow: 0, timeline: 0, health: 2 })
+    const hotPath = join(directory, '追踪/上下文.md')
+    const slack = CONTEXT_BUNDLE_MAX_BYTES - Buffer.byteLength(JSON.stringify(capped), 'utf8')
+    expect(slack).toBeGreaterThan(0)
+    await writeFile(hotPath, `${await readFile(hotPath, 'utf8')}${'x'.repeat(slack + 1)}`)
+    const tight = buildContext(directory, { chapter: 6 })
+    expect(tight.health.counts.overdue_foreshadow).toBe(10)
+    expect(tight.health.items.length).toBeLessThan(capped.health.items.length)
+    expect(tight.omitted.health).toBe(10 - tight.health.items.length)
+    expect(Buffer.byteLength(JSON.stringify(tight), 'utf8')).toBeLessThanOrEqual(CONTEXT_BUNDLE_MAX_BYTES)
   })
 })
