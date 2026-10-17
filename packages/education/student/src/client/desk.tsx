@@ -98,7 +98,7 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     const plan = scoped ? study.scopedDiagnostic : planOf(target)
     const ids = plan?.samples[intensity].map(item => item.id) ?? []
     selectSubject(target); setActivity({ subject: target, mode: 'diagnose' }); setSelectedObjectiveId(''); setMistakeOffset(0); setView('student')
-    return act({ action: 'start', id: crypto.randomUUID(), subject: target, mode: 'diagnose', intensity, ...(scoped ? scopeCommand(target) : {}) }, true, diagnosePrompt(intensity, ids))
+    return act({ action: 'start', id: crypto.randomUUID(), subject: target, mode: 'diagnose', intensity, ...(scoped ? scopeCommand(target) : {}) }, true, diagnosePrompt(intensity, ids, t))
   }
   function start(target: Subject, mode: Mode) {
     if (mode === 'diagnose') return startDiagnosis(target, chosenIntensity(target))

@@ -512,7 +512,7 @@ it('lists every subject on the check-in tab and starts a light check-in', async 
   fireEvent.click(screen.getAllByRole('button', { name: 'Light · 3' })[1]!)
   expect(screen.getByText('3 choice questions, a few minutes')).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'Start check-in · Math' }))
-  await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('轻量'), undefined))
+  await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining(en.intensityLight), undefined))
   expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'diagnose', intensity: 'light' })
   expect(ask.mock.calls[0]?.[0]).toContain('m2a-o-meaning')
 })
@@ -561,7 +561,7 @@ it('draws a saved task figure beside the question', async () => {
   const task = { ...answerTask, figure: { kind: 'clock' as const, clocks: [{ hour: 3, minute: 0 }] } }
   installFetch(updateStudy(updateStudy(updateStudy(undefined, setup, Date.now()), start, Date.now()), { action: 'task', task }, Date.now()))
   render(<StudyDesk sessionId="figure" visible running={false} ask={vi.fn()} t={t} />)
-  expect(await screen.findByRole('img', { name: 'clock' })).toBeTruthy()
+  expect(await screen.findByRole('img', { name: en.figureClock })).toBeTruthy()
   expect(screen.getByText(task.prompt)).toBeTruthy()
 })
 

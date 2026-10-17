@@ -1,4 +1,6 @@
 import type { CheckInIntensity } from '../learning.ts'
+import { intensityKeys } from './display.ts'
+import type { Translate } from './locales.ts'
 
 /** Natural-language tutor requests. The study skill owns the teaching rules. */
 export const continuePrompt = '请加载 study 技能，查询 study_status，继续当前学习段。先处理未反馈的答案或提示，再出下一题。一次一题。到时先停止并建议休息。'
@@ -17,9 +19,9 @@ export function previewPrompt(objectiveId: string): string {
 }
 
 /** One short question per sampled check-in goal. */
-export function diagnosePrompt(intensity: CheckInIntensity, ids: string[]): string {
-  const label = intensity === 'light' ? '轻量' : intensity === 'deep' ? '全面' : '常规'
-  return `请加载 study 技能，查询 study_status kind=diagnose。本段是${label}摸底，按这些学习目标各出一道短题：${ids.join('，')}。task 和 record 都写 objectiveId。每题只给简短反馈，不展开教学。`
+export function diagnosePrompt(intensity: CheckInIntensity, ids: string[], t: Translate): string {
+  const intensityName = t(intensityKeys[intensity])
+  return `请加载 study 技能，查询 study_status kind=diagnose。本段是${intensityName}摸底，按这些学习目标各出一道短题：${ids.join('，')}。task 和 record 都写 objectiveId。每题只给简短反馈，不展开教学。`
 }
 
 /** A 4–6 question daily mini sheet for one subject. */

@@ -1,47 +1,48 @@
 import type { ReactNode } from 'react'
 import type { Figure } from '../schema.ts'
+import type { Translate } from './locales.ts'
 
 /** On-screen teaching figure for the current task. The prompt stays the question; the drawing is the given information. */
-export function FigureView({ figure }: { figure: Figure }) {
-  return <div className="student-figure">{draw(figure)}</div>
+export function FigureView({ figure, t }: { figure: Figure; t: Translate }) {
+  return <div className="student-figure">{draw(figure, t)}</div>
 }
 
 function Frame({ width, height, label, children }: { width: number; height: number; label: string; children: ReactNode }) {
   return <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label}>{children}</svg>
 }
 
-function draw(figure: Figure): ReactNode {
+function draw(figure: Figure, t: Translate): ReactNode {
   switch (figure.kind) {
-    case 'counter': return <Counter figure={figure} />
-    case 'sticks': return <Sticks figure={figure} />
-    case 'place-value': return <PlaceValue figure={figure} />
+    case 'counter': return <Counter figure={figure} t={t} />
+    case 'sticks': return <Sticks figure={figure} t={t} />
+    case 'place-value': return <PlaceValue figure={figure} t={t} />
     case 'dot-array': return <DotArray figure={figure} />
-    case 'clock': return <Clocks figure={figure} />
+    case 'clock': return <Clocks figure={figure} t={t} />
     case 'number-line': return <NumberLine figure={figure} />
-    case 'split': return <Split figure={figure} />
+    case 'split': return <Split figure={figure} t={t} />
     case 'bar-model': return <BarModel figure={figure} />
-    case 'writing': return <Writing figure={figure} />
-    case 'money': return <Money figure={figure} />
+    case 'writing': return <Writing figure={figure} t={t} />
+    case 'money': return <Money figure={figure} t={t} />
     case 'hundred-chart': return <HundredChart figure={figure} />
-    case 'vertical': return <Vertical figure={figure} />
-    case 'shapes': return <ShapeRows figure={figure} />
-    case 'sequence': return <Sequence figure={figure} />
+    case 'vertical': return <Vertical figure={figure} t={t} />
+    case 'shapes': return <ShapeRows figure={figure} t={t} />
+    case 'sequence': return <Sequence figure={figure} t={t} />
     case 'plane':
     case 'solid': return <FigureRow figure={figure} />
-    case 'overlap': return <Overlap figure={figure} />
-    case 'wall': return <Wall figure={figure} />
-    case 'grid': return <Grid figure={figure} />
-    case 'measure': return <Measure figure={figure} />
-    case 'compass': return <Compass figure={figure} />
-    case 'balance': return <Balance figure={figure} />
-    case 'sketch': return <Sketch figure={figure} />
+    case 'overlap': return <Overlap figure={figure} t={t} />
+    case 'wall': return <Wall figure={figure} t={t} />
+    case 'grid': return <Grid figure={figure} t={t} />
+    case 'measure': return <Measure figure={figure} t={t} />
+    case 'compass': return <Compass figure={figure} t={t} />
+    case 'balance': return <Balance figure={figure} t={t} />
+    case 'sketch': return <Sketch figure={figure} t={t} />
     default: return null
   }
 }
 
-function Counter({ figure }: { figure: Extract<Figure, { kind: 'counter' }> }) {
+function Counter({ figure, t }: { figure: Extract<Figure, { kind: 'counter' }>; t: Translate }) {
   const rods = [['百', figure.hundreds], ['十', figure.tens], ['个', figure.ones]] as const
-  return <Frame width={240} height={150} label="counter">{rods.map(([name, beads], index) => {
+  return <Frame width={240} height={150} label={t('figureCounter')}>{rods.map(([name, beads], index) => {
     const x = 40 + index * 70
     return <g key={name}>
       <line x1={x} y1={20} x2={x} y2={110} />
@@ -51,9 +52,9 @@ function Counter({ figure }: { figure: Extract<Figure, { kind: 'counter' }> }) {
   })}<line x1={24} y1={110} x2={216} y2={110} /></Frame>
 }
 
-function Sticks({ figure }: { figure: Extract<Figure, { kind: 'sticks' }> }) {
+function Sticks({ figure, t }: { figure: Extract<Figure, { kind: 'sticks' }>; t: Translate }) {
   const width = Math.max(160, figure.bundles * 36 + figure.singles * 12 + 16)
-  return <Frame width={width} height={48} label="sticks">{Array.from({ length: figure.bundles }, (_, bundle) => {
+  return <Frame width={width} height={48} label={t('figureSticks')}>{Array.from({ length: figure.bundles }, (_, bundle) => {
     const x = 8 + bundle * 36
     const crossed = (figure.crossBundles ?? 0) > figure.bundles - 1 - bundle
     return <g key={`b${bundle}`}>{Array.from({ length: 10 }, (_, stick) => <line key={stick} x1={x + stick * 2.4} y1={6} x2={x + stick * 2.4} y2={34} />)}<rect x={x} y={16} width={24} height={8} />{crossed && <line x1={x} y1={36} x2={x + 26} y2={4} />}</g>
@@ -64,12 +65,12 @@ function Sticks({ figure }: { figure: Extract<Figure, { kind: 'sticks' }> }) {
   })}</Frame>
 }
 
-function PlaceValue({ figure }: { figure: Extract<Figure, { kind: 'place-value' }> }) {
+function PlaceValue({ figure, t }: { figure: Extract<Figure, { kind: 'place-value' }>; t: Translate }) {
   const ones = figure.ones + (figure.regroup === 'yes' ? 10 : 0)
   const height = 36 + Math.ceil(ones / 10) * 18
   const dot = (cx: number, cy: number, crossed: boolean, dashed: boolean) => <g key={`${cx}-${cy}`}><circle cx={cx} cy={cy} r={6} strokeDasharray={dashed ? '2 2' : undefined} />{crossed && <line x1={cx - 6} y1={cy + 6} x2={cx + 6} y2={cy - 6} />}</g>
   return <Frame width={280} height={height} label="place-value">
-    <text x={16} y={16}>十位</text><text x={150} y={16}>个位</text>
+    <text x={16} y={16}>{t('figureTensPlace')}</text><text x={150} y={16}>{t('figureOnesPlace')}</text>
     {Array.from({ length: figure.tens }, (_, index) => dot(24 + index * 16, 32, figure.regroup === 'no' && index < figure.crossTens, figure.regroup === 'yes' && index === figure.tens - 1))}
     {Array.from({ length: ones }, (_, index) => dot(158 + (index % 10) * 16, 32 + Math.floor(index / 10) * 18, index < figure.crossOnes, figure.regroup === 'yes' && index >= figure.ones))}
   </Frame>
@@ -82,8 +83,8 @@ function DotArray({ figure }: { figure: Extract<Figure, { kind: 'dot-array' }> }
   </Frame>
 }
 
-function Clocks({ figure }: { figure: Extract<Figure, { kind: 'clock' }> }) {
-  return <Frame width={figure.clocks.length * 120} height={120} label="clock">{figure.clocks.map((clock, index) => {
+function Clocks({ figure, t }: { figure: Extract<Figure, { kind: 'clock' }>; t: Translate }) {
+  return <Frame width={figure.clocks.length * 120} height={120} label={t('figureClock')}>{figure.clocks.map((clock, index) => {
     const cx = 60 + index * 120
     const cy = 58
     const hand = (angle: number, length: number) => <line x1={cx} y1={cy} x2={cx + Math.sin(angle) * length} y2={cy - Math.cos(angle) * length} />
@@ -117,9 +118,9 @@ function NumberLine({ figure }: { figure: Extract<Figure, { kind: 'number-line' 
   </Frame>
 }
 
-function Split({ figure }: { figure: Extract<Figure, { kind: 'split' }> }) {
+function Split({ figure, t }: { figure: Extract<Figure, { kind: 'split' }>; t: Translate }) {
   const part = 90
-  return <Frame width={figure.parts.length * (part + 12)} height={78} label="split">{figure.parts.map((item, index) => {
+  return <Frame width={figure.parts.length * (part + 12)} height={78} label={t('figureSplit')}>{figure.parts.map((item, index) => {
     const x = 8 + index * (part + 12)
     return <g key={index}>
       <Box x={x + 20} y={4} text={item.top} />
@@ -157,21 +158,21 @@ function BarModel({ figure }: { figure: Extract<Figure, { kind: 'bar-model' }> }
   })}</Frame>
 }
 
-function Writing({ figure }: { figure: Extract<Figure, { kind: 'writing' }> }) {
+function Writing({ figure, t }: { figure: Extract<Figure, { kind: 'writing' }>; t: Translate }) {
   if (figure.style === 'fourline') {
-    return <Frame width={280} height={48} label="writing">{[8, 18, 28, 38].map(y => <line key={y} x1={12} y1={y} x2={268} y2={y} />)}{figure.example && <text x={20} y={32}>{figure.example}</text>}</Frame>
+    return <Frame width={280} height={48} label={t('figureFourline')}>{[8, 18, 28, 38].map(y => <line key={y} x1={12} y1={y} x2={268} y2={y} />)}{figure.example && <text x={20} y={32}>{figure.example}</text>}</Frame>
   }
   const count = figure.count ?? 4
-  return <Frame width={count * 44 + 8} height={52} label="writing">{Array.from({ length: count }, (_, index) => {
+  return <Frame width={count * 44 + 8} height={52} label={t('figureTianzige')}>{Array.from({ length: count }, (_, index) => {
     const x = 8 + index * 44
     return <g key={index}><rect x={x} y={6} width={36} height={36} /><line x1={x + 18} y1={6} x2={x + 18} y2={42} strokeDasharray="2 2" /><line x1={x} y1={24} x2={x + 36} y2={24} strokeDasharray="2 2" />{index === 0 && figure.example && <text x={x + 18} y={30} textAnchor="middle">{figure.example}</text>}</g>
   })}</Frame>
 }
 
-function Money({ figure }: { figure: Extract<Figure, { kind: 'money' }> }) {
+function Money({ figure, t }: { figure: Extract<Figure, { kind: 'money' }>; t: Translate }) {
   const items = figure.items.flatMap(item => typeof item === 'string' ? [item] : Array.from({ length: item.count }, () => item.denomination))
   const perRow = 4
-  return <Frame width={280} height={Math.ceil(items.length / perRow) * 48 + 8} label="money">{items.map((value, index) => {
+  return <Frame width={280} height={Math.ceil(items.length / perRow) * 48 + 8} label={t('figureMoney')}>{items.map((value, index) => {
     const x = 12 + (index % perRow) * 68
     const y = 8 + Math.floor(index / perRow) * 48
     const note = value.endsWith('元') && value !== '1元'
@@ -198,15 +199,15 @@ function HundredChart({ figure }: { figure: Extract<Figure, { kind: 'hundred-cha
   })}</Frame>
 }
 
-function Vertical({ figure }: { figure: Extract<Figure, { kind: 'vertical' }> }) {
-  return <Frame width={figure.count * 110} height={100} label="vertical">{Array.from({ length: figure.count }, (_, frame) => {
+function Vertical({ figure, t }: { figure: Extract<Figure, { kind: 'vertical' }>; t: Translate }) {
+  return <Frame width={figure.count * 110} height={100} label={t('figureVertical')}>{Array.from({ length: figure.count }, (_, frame) => {
     const x = 16 + frame * 110
     return <g key={frame}>{[0, 1, 3].flatMap(row => [0, 1, 2].map(column => <rect key={`${row}-${column}`} x={x + column * 22} y={row * 22} width={20} height={20} />))}<line x1={x} y1={54} x2={x + 66} y2={54} /></g>
   })}</Frame>
 }
 
-function ShapeRows({ figure }: { figure: Extract<Figure, { kind: 'shapes' }> }) {
-  return <Frame width={280} height={figure.rows.length * 32 + 8} label="shapes">{figure.rows.map((row, index) => <g key={row.name}>
+function ShapeRows({ figure, t }: { figure: Extract<Figure, { kind: 'shapes' }>; t: Translate }) {
+  return <Frame width={280} height={figure.rows.length * 32 + 8} label={t('figureShapes')}>{figure.rows.map((row, index) => <g key={row.name}>
     <text x={48} y={index * 32 + 22} textAnchor="end">{row.name}</text>
     {Array.from({ length: row.count }, (_, item) => <Small key={item} shape={row.shape} x={64 + item * 18} y={index * 32 + 16} />)}
   </g>)}</Frame>
@@ -219,10 +220,10 @@ function Small({ shape, x, y }: { shape: 'circle' | 'square' | 'triangle' | 'sta
   return <polygon points={`${x},${y - 7} ${x + 2},${y - 2} ${x + 7},${y - 2} ${x + 3},${y + 1} ${x + 5},${y + 7} ${x},${y + 3} ${x - 5},${y + 7} ${x - 3},${y + 1} ${x - 7},${y - 2} ${x - 2},${y - 2}`} />
 }
 
-function Sequence({ figure }: { figure: Extract<Figure, { kind: 'sequence' }> }) {
+function Sequence({ figure, t }: { figure: Extract<Figure, { kind: 'sequence' }>; t: Translate }) {
   const count = figure.items.reduce((sum, item) => sum + item.count, 0) + (figure.blank ?? 0)
   let cursor = 16
-  return <Frame width={Math.max(80, count * 22 + 16)} height={40} label="sequence">
+  return <Frame width={Math.max(80, count * 22 + 16)} height={40} label={t('figureSequence')}>
     {figure.items.flatMap(item => Array.from({ length: item.count }, () => {
       const shape = <Small key={cursor} shape={item.shape} x={cursor} y={18} />
       cursor += 22
@@ -251,8 +252,8 @@ function FigureRow({ figure }: { figure: Extract<Figure, { kind: 'plane' | 'soli
   })}</Frame>
 }
 
-function Overlap({ figure }: { figure: Extract<Figure, { kind: 'overlap' }> }) {
-  return <Frame width={220} height={figure.total !== undefined ? 150 : 120} label="overlap">
+function Overlap({ figure, t }: { figure: Extract<Figure, { kind: 'overlap' }>; t: Translate }) {
+  return <Frame width={220} height={figure.total !== undefined ? 150 : 120} label={t('figureOverlap')}>
     <circle cx={78} cy={68} r={46} /><circle cx={142} cy={68} r={46} />
     <text x={78} y={16} textAnchor="middle">{figure.left}</text>
     <text x={142} y={16} textAnchor="middle">{figure.right}</text>
@@ -263,18 +264,18 @@ function Overlap({ figure }: { figure: Extract<Figure, { kind: 'overlap' }> }) {
   </Frame>
 }
 
-function Wall({ figure }: { figure: Extract<Figure, { kind: 'wall' }> }) {
+function Wall({ figure, t }: { figure: Extract<Figure, { kind: 'wall' }>; t: Translate }) {
   const widest = figure.rows.reduce((max, row) => Math.max(max, row.length), 0)
-  return <Frame width={widest * 48 + 16} height={figure.rows.length * 28 + 8} label="wall">{figure.rows.map((row, rowIndex) => {
+  return <Frame width={widest * 48 + 16} height={figure.rows.length * 28 + 8} label={t('figureWall')}>{figure.rows.map((row, rowIndex) => {
     const left = (widest - row.length) * 24 + 8
     return row.map((cell, column) => <g key={`${rowIndex}-${column}`}><rect x={left + column * 48} y={rowIndex * 28 + 4} width={46} height={24} />{cell !== '' && <text x={left + column * 48 + 23} y={rowIndex * 28 + 20} textAnchor="middle">{cell}</text>}</g>)
   })}</Frame>
 }
 
-function Grid({ figure }: { figure: Extract<Figure, { kind: 'grid' }> }) {
+function Grid({ figure, t }: { figure: Extract<Figure, { kind: 'grid' }>; t: Translate }) {
   const columns = figure.rows.reduce((max, row) => Math.max(max, row.cells.length), 0)
   const header = figure.columns !== undefined ? 1 : 0
-  return <Frame width={columns * 40 + 48} height={(figure.rows.length + header) * 28 + 8} label="grid">
+  return <Frame width={columns * 40 + 48} height={(figure.rows.length + header) * 28 + 8} label={t('figureGrid')}>
     {figure.columns?.map((head, index) => <g key={head}><rect x={40 + index * 40} y={4} width={38} height={24} /><text x={59 + index * 40} y={20} textAnchor="middle">{head}</text></g>)}
     {figure.rows.map((row, rowIndex) => <g key={rowIndex}>
       {row.name && <text x={36} y={header * 28 + rowIndex * 28 + 20} textAnchor="end">{row.name}</text>}
@@ -283,27 +284,28 @@ function Grid({ figure }: { figure: Extract<Figure, { kind: 'grid' }> }) {
   </Frame>
 }
 
-function Measure({ figure }: { figure: Extract<Figure, { kind: 'measure' }> }) {
-  return <Frame width={280} height={figure.bars.length * 24 + (figure.ruler === 'yes' ? 36 : 12)} label="measure">
+function Measure({ figure, t }: { figure: Extract<Figure, { kind: 'measure' }>; t: Translate }) {
+  return <Frame width={280} height={figure.bars.length * 24 + (figure.ruler === 'yes' ? 36 : 12)} label={t('figureMeasure')}>
     {figure.bars.map((bar, index) => <line key={bar.name} x1={16} y1={16 + index * 24} x2={16 + Math.min(bar.length, 15) * 16} y2={16 + index * 24} />)}
     {figure.ruler === 'yes' && Array.from({ length: 16 }, (_, cm) => <g key={cm}><line x1={16 + cm * 16} y1={figure.bars.length * 24 + 8} x2={16 + cm * 16} y2={figure.bars.length * 24 + 16} /><text x={16 + cm * 16} y={figure.bars.length * 24 + 30} textAnchor="middle">{cm}</text></g>)}
   </Frame>
 }
 
-function Compass({ figure }: { figure: Extract<Figure, { kind: 'compass' }> }) {
+function Compass({ figure, t }: { figure: Extract<Figure, { kind: 'compass' }>; t: Translate }) {
   const blank = figure.blank === 'yes'
-  return <Frame width={180} height={160} label="compass">
+  const direction = (name: 'compassNorth' | 'compassSouth' | 'compassWest' | 'compassEast') => blank ? '' : t(name)
+  return <Frame width={180} height={160} label={t('figureCompass')}>
     <line x1={90} y1={24} x2={90} y2={136} /><line x1={24} y1={80} x2={156} y2={80} />
-    <text x={90} y={18} textAnchor="middle">{blank ? '' : '北'}</text>
-    <text x={90} y={154} textAnchor="middle">{blank ? '' : '南'}</text>
-    <text x={12} y={84}>{blank ? '' : '西'}</text>
-    <text x={160} y={84}>{blank ? '' : '东'}</text>
+    <text x={90} y={18} textAnchor="middle">{direction('compassNorth')}</text>
+    <text x={90} y={154} textAnchor="middle">{direction('compassSouth')}</text>
+    <text x={12} y={84}>{direction('compassWest')}</text>
+    <text x={176} y={84} textAnchor="end">{direction('compassEast')}</text>
   </Frame>
 }
 
-function Balance({ figure }: { figure: Extract<Figure, { kind: 'balance' }> }) {
+function Balance({ figure, t }: { figure: Extract<Figure, { kind: 'balance' }>; t: Translate }) {
   const drop = figure.tilt === 'left' ? 16 : figure.tilt === 'right' ? -16 : 0
-  return <Frame width={220} height={110} label="balance">
+  return <Frame width={220} height={110} label={t('figureBalance')}>
     <line x1={110} y1={28} x2={110} y2={90} /><line x1={70} y1={90} x2={150} y2={90} />
     <line x1={40} y1={28 + drop} x2={180} y2={28 - drop} />
     <text x={40} y={24 + drop} textAnchor="middle">{figure.left}</text>
@@ -311,8 +313,8 @@ function Balance({ figure }: { figure: Extract<Figure, { kind: 'balance' }> }) {
   </Frame>
 }
 
-function Sketch({ figure }: { figure: Extract<Figure, { kind: 'sketch' }> }) {
-  return <Frame width={480} height={figure.height} label="sketch">{figure.elements.map((element, index) => {
+function Sketch({ figure, t }: { figure: Extract<Figure, { kind: 'sketch' }>; t: Translate }) {
+  return <Frame width={480} height={figure.height} label={t('figureSketch')}>{figure.elements.map((element, index) => {
     if (element.draw === 'line' || element.draw === 'arrow') return <line key={index} x1={element.from.x} y1={element.from.y} x2={element.to.x} y2={element.to.y} />
     if (element.draw === 'polyline') return <polyline key={index} points={element.points.map(point => `${point.x},${point.y}`).join(' ')} fill={element.closed === 'yes' ? 'none' : 'none'} />
     if (element.draw === 'rect') return <rect key={index} x={element.x} y={element.y} width={element.width} height={element.height} />

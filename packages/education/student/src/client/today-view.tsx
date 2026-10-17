@@ -194,7 +194,7 @@ function Task({ study, goalTitle: title, days, available, disabled, t, act }: { 
   return <><h3>{task.topic}</h3>{title && <p className="student-muted">{t('learningGoal')}: {title}</p>}
     {days !== undefined && <p className="student-mastery" aria-label={`${t('masteryProgress')} ${lit}/3`}>{[0, 1, 2].map(index => <span key={index} className={index < lit ? 'student-level-mastered' : 'student-level-untouched'} />)}</p>}
     <p className="student-question">{task.prompt}</p>
-    {task.figure && <FigureView figure={task.figure} />}
+    {task.figure && <FigureView figure={task.figure} t={t} />}
     {task.response !== undefined && <p>{t('answer')}: {task.response}</p>}
     {study.feedback ? <><p className="student-result">{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : task.choices ? <fieldset disabled={!available || disabled}>
       <p>{t('chooseAnswer')}</p>

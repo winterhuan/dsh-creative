@@ -10,7 +10,12 @@ description: Use when reviewing a change in the dsh-creative repository — orie
 ## Sources of truth
 
 - [AGENTS.md](../../../AGENTS.md): this repository's standing rules. [packages/AGENTS.md](../../../upstream/packages/AGENTS.md): upstream package authoring rules, which this repository's packages follow apart from its monorepo gates, snapshots, and release flow.
-- [docs/defensive-patterns.md](../../../upstream/docs/defensive-patterns.md): subprocess, callback, async-state, and disposal bug classes.
+- [docs/defensive-patterns/](../../../upstream/docs/defensive-patterns/README.md): the architecture requirements a change must satisfy and the habits behind them. Each page owns one artifact; read every page the diff touches:
+  - [general.md](../../../upstream/docs/defensive-patterns/general.md) — timing, async state, value representation, shared ownership, decentralization, refactors, migrations, performance evidence, disposal, callbacks, subprocesses.
+  - [package-surface.md](../../../upstream/docs/defensive-patterns/package-surface.md) — exports, package shape, build faces, dependency declarations, resolve hooks.
+  - [remote-and-api.md](../../../upstream/docs/defensive-patterns/remote-and-api.md) — remote services, `@Remote` methods, API dispatch, business ownership in `packages/api`.
+  - [client-components.md](../../../upstream/docs/defensive-patterns/client-components.md) — client components, slots, stores, hooks, effects, shared base packages.
+  - [conversation-and-session.md](../../../upstream/docs/defensive-patterns/conversation-and-session.md) — projection reads, Session retention, conversation nodes, renderers.
 - [docs/AGENTS.md](../../../docs/AGENTS.md): documentation placement and prose discipline.
 - [dsh-prose-standard](../dsh-prose-standard/SKILL.md): required coverage and editorial judgment for comments, docs, prompts, and visible strings.
 - [dsh-ci-test-reliability](../dsh-ci-test-reliability/SKILL.md): isolation and regression-proof rules for resource-owning, asynchronous, or flaky tests and fixtures.
@@ -32,7 +37,7 @@ description: Use when reviewing a change in the dsh-creative repository — orie
 ## Manual checks
 
 - **Intent and interface contracts:** trace both sides of every changed interface. Confirm the implementation matches the PR and any Agent Note, including errors, cancellation, ownership, and disposal.
-- **Lifecycle and concurrency:** for async setup, callbacks, processes, or teardown, apply [defensive-patterns.md](../../../upstream/docs/defensive-patterns.md). Check races before publication, cancellation during awaits, independent error reporting, callback containment, ownership before reentry, complete detach cleanup, and quiescent disposal.
+- **Lifecycle and concurrency:** for async setup, callbacks, processes, or teardown, apply [defensive-patterns/general.md](../../../upstream/docs/defensive-patterns/general.md). Check races before publication, cancellation during awaits, independent error reporting, callback containment, ownership before reentry, complete detach cleanup, and quiescent disposal.
 - **Capability and consumer fit:** trace every current consumer, then flag consumer-specific behavior leaking into the interface under [the package rules](../../../upstream/packages/AGENTS.md). Flag the inverse too: a new public method on a generic service (registry, session, agent) whose only caller is one internal consumer is an unnecessary API expansion — require a private capability closure handed to that consumer at construction instead.
 - **Scope, ownership, and necessity:** map each abstraction, state machine, option, defensive copy, and compatibility path to its current contract, production consumer, and owning plugin or service. Challenge unrelated features and speculative generality, then test the change against [the root rules](../../../AGENTS.md).
 - **Configuration and public choices:** ask what current-consumer evidence or prior art supports each default, public operation set, format, or imported external concept. Require an explicit choice or deferral when that evidence is absent.
