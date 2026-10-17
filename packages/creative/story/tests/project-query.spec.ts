@@ -31,6 +31,7 @@ it('exposes structured status, filters and argument failures through the shipped
   for (const [args, code, expected] of [
     [['status'], 0, { initialized: true, through_chapter: 500 }],
     [['query', '--kind', 'foreshadow', '--filter', 'due'], 0, { total: 2 }],
+    [['query', '--kind', 'health'], 0, { total: 2, counts: { overdue_foreshadow: 1, unscheduled_foreshadow: 1, stale_character: 0, stale_thread: 0 } }],
     [['query', '--kind', 'foreshadow', '--revision', '6'], 2, { error_code: 'INVALID_INPUT' }],
     [['query', '--kind', 'invalid'], 2, { error_code: 'INVALID_ARGUMENT' }],
   ] as const) {
