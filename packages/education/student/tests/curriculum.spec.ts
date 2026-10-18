@@ -90,9 +90,54 @@ describe('shipped knowledge maps', () => {
           expect(file.concepts.find(concept => concept.id === 'c2a-u1-3')?.facts?.join('')).toContain('石榴')
           expect(file.concepts.find(concept => concept.id === 'c2a-u4-4')?.facts?.join('')).toContain('晾房')
         }
-        if (file.id === 'chinese-grade1-first') {
-          expect(file.concepts.find(concept => concept.id === 'c1a-u7-3')?.facts?.join('')).toContain('双手和大脑')
-          expect(file.concepts.find(concept => concept.id === 'c1a-u8-2')?.facts?.join('')).toContain('石子')
+        if (file.id === 'chinese-grade1-first' || file.id === 'chinese-grade1-second') {
+          const joined = (id: string) => file.concepts.find(concept => concept.id === id)?.facts?.join('') ?? ''
+          const checked = file.concepts.filter(concept => concept.source.includes('已读'))
+          expect(checked.length).toBeGreaterThan(0)
+          for (const concept of checked) {
+            expect(concept.source).toContain('统编版（2024）')
+            expect(concept.source).toContain('已读课页')
+            const text = (concept.facts ?? []).join('')
+            expect(text.length).toBeGreaterThan(concept.definition.length)
+            expect(text).not.toContain('用来复习本单元已经学过的课')
+          }
+          if (file.id === 'chinese-grade1-first') {
+            expect(checked).toHaveLength(47)
+            expect(file.concepts.find(concept => concept.id === 'c1a-u2-1')?.source).not.toContain('已读')
+            expect(file.concepts.find(concept => concept.id === 'c1a-u2-2')?.source).not.toContain('已读')
+            expect(joined('c1a-u0-1')).toContain('我们都是中国人')
+            expect(joined('c1a-u1-2')).toContain('日月照今古')
+            expect(joined('c1a-u2-3')).toContain('爸爸')
+            expect(joined('c1a-u5-1')).toContain('大雁')
+            expect(joined('c1a-u5-2')).toContain('鱼戏莲叶')
+            expect(joined('c1a-u5-3')).toContain('竹叶')
+            expect(joined('c1a-u7-1')).toContain('弯弯的月儿')
+            expect(joined('c1a-u7-3')).toContain('双手和大脑')
+            expect(joined('c1a-u8-1')).toContain('孔雀')
+            expect(joined('c1a-u8-2')).toContain('石子')
+            expect(joined('c1a-u1-5')).toContain('曲项向天歌')
+            expect(joined('c1a-ua-1')).toContain('280')
+            expect(joined('c1a-u3-1')).not.toContain('声母是 g、h')
+          }
+          if (file.id === 'chinese-grade1-second') {
+            expect(checked).toHaveLength(40)
+            expect(joined('c1b-u1-1')).toContain('春风吹')
+            expect(joined('c1b-u1-4')).toContain('左边绿，右边红')
+            expect(joined('c1b-u1-4')).not.toContain('谜底')
+            expect(joined('c1b-u2-1')).toContain('花儿喜欢太阳')
+            expect(joined('c1b-u2-2')).toContain('沙洲坝')
+            expect(joined('c1b-u4-1')).toContain('床前明月光')
+            expect(joined('c1b-u4-3')).toContain('屈原')
+            expect(joined('c1b-u5-4')).toContain('人之初')
+            expect(joined('c1b-u6-1')).toContain('小荷才露尖尖角')
+            expect(joined('c1b-u6-1')).toContain('树阴')
+            expect(joined('c1b-u6-2')).toContain('贝壳')
+            expect(joined('c1b-u8-1')).toContain('七星瓢虫')
+            expect(joined('c1b-u8-2')).toContain('木瓜')
+            expect(joined('c1b-u8-3')).toContain('拨水')
+            expect(joined('c1b-ua-1')).toContain('410')
+            expect(joined('c1b-ua-2')).toContain('200')
+          }
         }
         expect(file.concepts.some(concept => (concept.ideaIds?.length ?? 0) > 0)).toBe(true)
         if (file.id === 'math-grade1-first' || file.id === 'math-grade1-second' || file.id === 'math-grade2-first') {
