@@ -53,7 +53,7 @@ aliases:
 
 ## 写作检查配置
 
-`设定/写作检查.json` 必须包含 `punctuation`，取值为 `preserve` 或 `normalize-narration`。文件不存在时标点按默认保留。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。未知键使文件无效，报错仍要求标点取值合法。`tests/reference/normalize-punctuation.js` 只接受 `punctuation`，带其余键的文件不进入那份对照。
+`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`。未知键会报错，指出那个键，并列出这些支持的键。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
 
 `chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json` 在正文出现之前提取本章规则。结果模式是 `story-chapter-rules/v1`，含 `rules`、`scan`、`warnings`、`rules_sha256`、`omitted`，以及 `chapter` 和 `state_revision`。每条规则有 `id`、`text` 和 `source.path`、`source.line`。含末尾换行的一次结果不超过 16 KiB；放不下时从末尾依次丢掉规则、扫描行和 warning，丢掉的条数记入 `omitted`。`rules_sha256` 覆盖截断前的完整规则列表。同一输入的规则 ID 不变。来源文件或标题缺失时写入 `warnings`，命令仍成功。正文还不存在时只做提取，以及追踪里的作废词扫描。
 
@@ -77,9 +77,11 @@ aliases:
 
 `forbidden` 是数组，每项 `{ "id", "pattern", "severity", "rule"? }`。`severity` 为 `blocking` 或 `hint`。`pattern` 是最长 200 字的正则，按 `u` 标志编译。非法、空白或超长的模式写入 warning 并跳过。`blocking` 只用于没有第二种读法的固定句子。`hint` 只报告。
 
-`era` 是 `{ "deny": [], "allow": [] }`。`deny` 按子串扫描正文，命中为 blocking；这段文字落在某条 `allow` 里时跳过。`void_terms` 是字符串数组，命中 `long_term_constraints` 或 `continuity_risks` 时给 hint，表示作废条目仍在追踪里。
+`era` 是 `{ "deny": [], "allow": [] }`。`deny` 是纯子串匹配，命中为 blocking，例如「枪伤」会命中「持枪伤人」；误伤用 `allow` 列表缓解，这段文字落在某条 `allow` 里时跳过。`void_terms` 是字符串数组，命中 `long_term_constraints` 或 `continuity_risks` 时给 hint，表示作废条目仍在追踪里。ID 带上该数组里的序号，如 `void:continuity_risks[1]:省港`，提示含该条目开头的一段原文。
 
-`chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名：正文出现、且该人的任一名字不在出场名单的分词里，就报一条 hint。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次扫描里。
+同一句话出现在多个来源时，按去掉空白和句末标点后的文本合并。保留先出现的 ID，原文后面写 ` also: ` 和其余 ID。编号不重排，两次运行结果一致。写手拿到的 `id: text` 是合并后的结果。
+
+`chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名。名字在名单原文里出现就算已列，分词仍作补充；分隔符包括顿号、分号、`→`、`->`、`与` 和 `和`。中文引号「」“”『』里的名字不算出场。未列的提示是「正文提到但细纲出场名单未列」。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次扫描里。
 
 ---
 

@@ -83,7 +83,7 @@ export interface RuleScanHit {
   readonly rule?: string
 }
 
-/** The bounded `chapter rules` payload. `rules_sha256` covers every extracted rule, including ones left in `omitted`. */
+/** The bounded `chapter rules` payload. `rules_sha256` covers the deduped rule list, including rules left in `omitted`. */
 export interface ChapterRules {
   readonly schema: string
   readonly chapter: number
@@ -715,7 +715,70 @@ function existingKey(groups: ReadonlyMap<string, Set<string>>, name: string): st
 
 function castTokens(text: string): Set<string> {
   const stripped = text.replace(/（[^）]*）/gu, ' ').replace(/\([^)]*\)/gu, ' ')
-  return new Set(stripped.split(/[、，,；;／/|·]+/u).flatMap(part => part.split(/\s+/u)).map(part => part.trim()).filter(part => part.length >= 2))
+  return new Set(stripped.split(/->|[、，,；;／/|·→与和\s]+/u).map(part => part.trim()).filter(part => part.length >= 2))
+}
+
+/** A name is listed when it is a token or a substring of the cast line itself. */
+function nameListed(name: string, castText: string, tokens: ReadonlySet<string>): boolean {
+  return tokens.has(name) || castText.includes(name)
+}
+
+const QUOTE_PAIRS: Readonly<Record<string, string>> = { '「': '」', '“': '”', '『': '』' }
+
+/** Spans of Chinese quotation marks, each `[start, end)` including the marks. */
+function quotedSpans(text: string): [number, number][] {
+  const spans: [number, number][] = []
+  const stack: { closer: string; start: number }[] = []
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index] ?? ''
+    const closer = QUOTE_PAIRS[character]
+    if (closer !== undefined) {
+      stack.push({ closer, start: index })
+      continue
+    }
+    if (stack.length > 0 && character === stack[stack.length - 1]?.closer) {
+      const open = stack.pop()
+      if (open !== undefined) spans.push([open.start, index + 1])
+    }
+  }
+  return spans
+}
+
+function insideQuote(spans: readonly [number, number][], start: number, end: number): boolean {
+  return spans.some(([from, to]) => start >= from && end <= to)
+}
+
+function normalizeRuleText(text: string): string {
+  return stripMarks(text).replace(/\s+/gu, '').replace(/[。．.！!？?；;，,、]+$/u, '')
+}
+
+/** Keep the first rule for each normalized sentence and name the later ids. */
+function dedupeRules(rules: readonly ExtractedRule[]): ExtractedRule[] {
+  const kept: ExtractedRule[] = []
+  const indexByText = new Map<string, number>()
+  const also = new Map<number, string[]>()
+  for (const rule of rules) {
+    const key = normalizeRuleText(rule.text)
+    const prior = key === '' ? undefined : indexByText.get(key)
+    if (prior === undefined) {
+      if (key !== '') indexByText.set(key, kept.length)
+      kept.push(rule)
+      continue
+    }
+    const ids = also.get(prior) ?? []
+    ids.push(rule.id)
+    also.set(prior, ids)
+  }
+  return kept.map((rule, index) => {
+    const extra = also.get(index)
+    if (extra === undefined || extra.length === 0) return rule
+    return { ...rule, text: `${rule.text} also: ${extra.join(', ')}` }
+  })
+}
+
+function entryPreview(entry: string): string {
+  const limit = 24
+  return entry.length <= limit ? entry : `${entry.slice(0, limit)}…`
 }
 
 function lineNumberAt(text: string, index: number): number {
@@ -791,10 +854,11 @@ function scanManuscript(
     }
     if (cast !== undefined) {
       const tokens = castTokens(cast.text)
+      const quotes = quotedSpans(bodyText)
       const occupied: [number, number][] = []
       const reported = new Set<Person>()
       const candidates = peopleIn(project, state)
-        .flatMap(person => person.names.map(name => ({ person, name, listed: person.names.some(item => tokens.has(item)) })))
+        .flatMap(person => person.names.map(name => ({ person, name, listed: person.names.some(item => nameListed(item, cast.text, tokens)) })))
         .sort((left, right) => right.name.length - left.name.length || left.name.localeCompare(right.name, 'zh'))
       for (const candidate of candidates) {
         let from = 0
@@ -804,13 +868,13 @@ function scanManuscript(
           const end = at + candidate.name.length
           if (!occupied.some(([start, stop]) => at < stop && end > start)) {
             occupied.push([at, end])
-            if (!candidate.listed && !reported.has(candidate.person)) {
+            if (!candidate.listed && !reported.has(candidate.person) && !insideQuote(quotes, at, end)) {
               reported.add(candidate.person)
               hits.push({
                 id: `cast:${candidate.name}`,
                 severity: 'hint',
                 kind: 'cast',
-                message: `出场顺序未列「${candidate.name}」，正文已出现`,
+                message: `正文提到但细纲出场名单未列「${candidate.name}」`,
                 path: relativeBody,
                 line: lineNumberAt(bodyText, at),
                 rule: cast.id,
@@ -829,16 +893,16 @@ function scanManuscript(
     ] as const
     for (const term of config.voidTerms) {
       for (const [field, entries] of fields) {
-        for (const entry of entries) {
-          if (!entry.includes(term)) continue
+        entries.forEach((entry, index) => {
+          if (!entry.includes(term)) return
           hits.push({
-            id: `void:${field}:${term}`,
+            id: `void:${field}[${String(index)}]:${term}`,
             severity: 'hint',
             kind: 'void-term',
-            message: `作废条目仍在：「${term}」命中 ${field}「${entry}」`,
+            message: `作废条目仍在：「${term}」命中 ${field}[${String(index)}]「${entryPreview(entry)}」`,
             path: '追踪/_tracking-state.json',
           })
-        }
+        })
       }
     }
   }
@@ -939,6 +1003,7 @@ function collect(project: string, chapter: number, file: WritingCheckFile | unde
 export function extractChapterRules(project: string, chapter: number): ChapterRules {
   const file = readWritingCheck(project)
   const collected = collect(project, chapter, file)
+  const rules = dedupeRules(collected.rules)
   const bodyText = collected.bodyPath === undefined ? undefined : readSource(collected.bodyPath)?.text
   const castRule = collected.rules.find(rule => rule.id.endsWith('-CAST'))
   const scan = scanManuscript(
@@ -958,7 +1023,7 @@ export function extractChapterRules(project: string, chapter: number): ChapterRu
     }
   })
   for (const id of invalidPatterns) warn(collected.warnings, `forbidden ${id} 的 pattern 不是合法正则，已跳过`)
-  return fit(chapter, collected.rules, scan, collected.warnings, rulesSha256(collected.rules), collected.state?.state_revision ?? null)
+  return fit(chapter, rules, scan, collected.warnings, rulesSha256(rules), collected.state?.state_revision ?? null)
 }
 
 /**

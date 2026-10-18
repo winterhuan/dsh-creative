@@ -70,8 +70,10 @@ describe('chapter rules', () => {
     expect(quality.status).toBe('fail')
     const report = extractChapterRules(book, 3)
     expect(report.scan.map(hit => hit.id)).toEqual([
-      'empty-hook', 'soft', 'era:手机', 'cast:守门', 'cast:闲汉', 'cast:账差', 'void:long_term_constraints:旧钥匙', 'void:continuity_risks:班次',
+      'empty-hook', 'soft', 'era:手机', 'cast:守门', 'cast:闲汉', 'cast:账差',
+      'void:long_term_constraints[0]:旧钥匙', 'void:continuity_risks[0]:班次',
     ])
+    expect(report.scan.find(hit => hit.id === 'cast:闲汉')?.message).toContain('正文提到但细纲出场名单未列')
     expect(report.scan.find(hit => hit.id === 'soft')?.severity).toBe('hint')
     expect(report.scan.find(hit => hit.id === 'empty-hook')?.severity).toBe('blocking')
   })
@@ -93,7 +95,7 @@ describe('chapter rules', () => {
     expect(overridden.warnings.some(warning => warning.heading === '不存在的标题')).toBe(true)
     expect(readProjectPunctuationPolicy(book)).toBe('preserve')
 
-    const huge = Array.from({ length: 80 }, (_, index) => `${String(index + 1)}. ${'边界'.repeat(40)}`).join('\n')
+    const huge = Array.from({ length: 80 }, (_, index) => `${String(index + 1)}. 边界${String(index)} ${'边界'.repeat(40)}`).join('\n')
     await writeFile(join(book, '设定/核心设定.md'), `# 核心设定\n\n## 病根\n\n${huge}\n`)
     await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({
       punctuation: 'preserve',
@@ -149,5 +151,60 @@ describe('chapter rules', () => {
     const withoutProject = checkBlockingQuality(outline, body)
     expect(withProject).toEqual(withoutProject)
     expect(readProjectPunctuationPolicy(book)).toBe('preserve')
+  })
+
+  it('matches narrative cast lines, skips quoted mentions, and numbers void entries', async context => {
+    const { book } = await bookDir(context)
+    const report = extractChapterRules(book, 4)
+    const cast = report.scan.filter(hit => hit.kind === 'cast').map(hit => hit.id)
+    expect(cast).toEqual(['cast:闲汉'])
+    expect(report.scan.find(hit => hit.id === 'cast:闲汉')?.message).toBe('正文提到但细纲出场名单未列「闲汉」')
+    const state = JSON.parse(await readFile(join(book, '追踪/_tracking-state.json'), 'utf8')) as {
+      context: { continuity_risks: string[] }
+    }
+    state.context.continuity_risks = ['守门人的班次未核', '省港旧线仍写在风险里', '另一条省港班次未删']
+    await writeFile(join(book, '追踪/_tracking-state.json'), JSON.stringify(state))
+    const config = JSON.parse(await readFile(join(book, '设定/写作检查.json'), 'utf8')) as { void_terms: string[] }
+    config.void_terms = ['省港']
+    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify(config))
+    const voids = extractChapterRules(book, 4).scan.filter(hit => hit.kind === 'void-term')
+    expect(voids.map(hit => hit.id)).toEqual(['void:continuity_risks[1]:省港', 'void:continuity_risks[2]:省港'])
+    expect(voids[0]?.message).toContain('省港旧线仍写在风险里')
+    expect(voids[1]?.message).toContain('另一条省港班次未删')
+  })
+
+  it('dedupes the same sentence, defaults a missing punctuation key, and names unknown keys', async context => {
+    const { book } = await bookDir(context)
+    const outline = await readFile(join(book, '大纲/细纲_第003章.md'), 'utf8')
+    await writeFile(join(book, '大纲/细纲_第003章.md'), outline.replace('幕后身份、库房钥匙的来历', '幕后主使的真名。'))
+    const state = JSON.parse(await readFile(join(book, '追踪/_tracking-state.json'), 'utf8')) as {
+      context: { long_term_constraints: string[] }
+    }
+    state.context.long_term_constraints = ['幕后主使的真名']
+    await writeFile(join(book, '追踪/_tracking-state.json'), JSON.stringify(state))
+    const first = extractChapterRules(book, 3)
+    const kept = first.rules.find(rule => rule.id === 'OUT-003-NR')
+    expect(kept?.text).toBe('幕后主使的真名。 also: VOL-BAN, STATE-1')
+    expect(first.rules.some(rule => rule.id === 'VOL-BAN' || rule.id === 'STATE-1')).toBe(false)
+    expect(extractChapterRules(book, 3)).toEqual(first)
+
+    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({
+      forbidden: [{ id: 'empty-hook', pattern: '一切才刚刚开始', severity: 'blocking' }],
+      void_terms: ['旧钥匙'],
+    }))
+    expect(readProjectPunctuationPolicy(book)).toBe('preserve')
+    const withoutPunctuation = extractChapterRules(book, 3)
+    expect(withoutPunctuation.scan.some(hit => hit.id === 'empty-hook' && hit.severity === 'blocking')).toBe(true)
+    expect(withoutPunctuation.warnings).toEqual([])
+    const outlinePath = join(book, '大纲/细纲_第003章.md')
+    const bodyPath = join(book, '正文/第003章.md')
+    const quality = checkBlockingQuality(outlinePath, bodyPath, book)
+    expect(quality.blocking_findings.some(row => row.source === 'punctuation' && row.type === 'TOOL_ERROR')).toBe(false)
+
+    await writeFile(join(book, '设定/写作检查.json'), '{"punctuation":"typo"}')
+    expect(() => extractChapterRules(book, 3)).toThrow('expected {"punctuation"')
+    await writeFile(join(book, '设定/写作检查.json'), '{"punct":"preserve"}')
+    expect(() => readProjectPunctuationPolicy(book)).toThrow(/unknown key "punct"/u)
+    expect(() => readProjectPunctuationPolicy(book)).toThrow(/void_terms/u)
   })
 })

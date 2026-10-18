@@ -43,7 +43,7 @@ interface Fence {
  * Read the punctuation policy a book declares in `设定/写作检查.json`.
  * @param project - the book directory.
  * @returns the declared policy, or `undefined` when the file does not exist.
- * @throws WritingCheckError when the file is unreadable, not JSON, or declares an unknown key or punctuation value.
+ * @throws WritingCheckError when the file is unreadable, not JSON, declares an unknown key, or sets an invalid punctuation value. A missing `punctuation` key means `preserve`.
  */
 export function readProjectPunctuationPolicy(project: string): PunctuationPolicy | undefined {
   return readWritingCheck(project)?.punctuation
