@@ -48,6 +48,14 @@ node {CLI} project query --workspace {工作区} --book {作品名} --kind healt
 
 `--stale-planted`、`--stale-character`、`--stale-thread` 只接受 1 到 100000 的整数，并且只能与 `--kind health` 同用。`--filter` 不能用于 health。分页、16 KiB、`--search`、`--revision` 与其他查询相同；`thresholds` 回显本次阈值，`counts` 在 `--search` 之后只统计命中行。`omitted` 与 `next_offset` 仍表示未展示的行。未初始化时返回 `initialized: false`，不创建文件。
 
+## 一段章节的全书体检
+
+`book audit` 把范围内的章节质量、上面的健康风险、缺角色卡、过期的读者价值哈希，以及仍留在追踪里的作废条目放进同一份 `story-book-audit/v1`。不加 `--write` 时只读。字段、退出码和报告见 [全书体检](../../../story-write/references/long/artifact-protocols.md#全书体检)。健康条目在这里是 hint。只有 hint 时该项为 `warn`，不使体检失败。
+
+```text
+node {CLI} book audit --workspace {工作区} --book {作品名} --from {A} --to {B} --json
+```
+
 ## 设定库检索
 
 ```text

@@ -79,9 +79,36 @@ aliases:
 
 `era` 是 `{ "deny": [], "allow": [] }`。`deny` 是纯子串匹配，命中为 blocking，例如「枪伤」会命中「持枪伤人」；误伤用 `allow` 列表缓解，这段文字落在某条 `allow` 里时跳过。`void_terms` 是字符串数组，命中 `long_term_constraints` 或 `continuity_risks` 时给 hint，表示作废条目仍在追踪里。ID 带上从 0 起的数组下标，第二条风险写作 `void:continuity_risks[1]:省港`，提示含该条目开头的一段原文。
 
-同一句话出现在多个来源时，按去掉空白和句末标点后的文本合并。保留先出现的 ID，原文后面写 ` also: ` 和其余 ID。编号不重排，两次运行结果一致。写手拿到的 `id: text` 是合并后的结果。
+同一句话出现在多个来源时，按去掉空白和句末标点后的文本合并。保留先出现的 ID。`text` 保持该句原文，其余 ID 放在可选字段 `also`（字符串数组）。编号不重排，两次运行结果一致。交给写手的一行在格式化时写成 `id: text`；`also` 非空时再接 ` also: ` 和这些 ID。`rules_sha256` 仍按原文接上 ` also: ID, ID` 之后的文本计算，同一输入的摘要不变。
 
 `chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名。名字在名单原文里出现就算已列，分词仍作补充；分隔符包括顿号、分号、`→`、`->`、`与` 和 `和`。中文引号「」“”『』里的名字不算出场。未列的提示是「正文提到但细纲出场名单未列」。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次扫描里。
+
+---
+
+## 全书体检
+
+`book audit` 对一段连续章号做体检，返回 `story-book-audit/v1`。不加 `--write` 时不写文件、不改追踪。`--write` 只写一份 Markdown；省略路径时写 `草稿/体检_第A-B章.md`。路径必须是书目录内、`追踪/` 之外的 `.md`，拒绝绝对路径、`..`、`.` 和软链接。跨度最多 2000 章。
+
+```text
+node {CLI} book audit --workspace {工作区} --book {作品名} --from {A} --to {B} --json
+node {CLI} book audit --workspace {工作区} --book {作品名} --from {A} --to {B} --write {书内相对路径} --json
+```
+
+退出码：没有 blocking 为 0，有 blocking 为 1，参数或配置错误为 2。`warn` 不使命令失败。同一输入的 JSON 和排序稳定。检查按注册顺序运行。事实账本、节奏、人物弧线和文风检查以后按同一接口挂上，这次还没有这四项。
+
+JSON 含 `schema`、`range`（`from`、`to`）、`state_revision`（没有追踪文件时为 null）、`checks`、`findings` 和 `counts`。`--write` 成功后另有 `report_path`，值为书内相对路径。`checks` 每项是 `id`、`status` 和 `summary`。`status` 为 `fail`（有 blocking）、`warn`（只有 hint）、`pass`（跑过且没有发现）或 `skip`（这项不能跑）。一条 finding 含 `check`、`severity`（`blocking` 或 `hint`）、可选 `chapter`、`category`、`message`、可选 `evidence`、可选 `source`（`path`，以及有行号时的 `line`）。`counts` 是 `pass`、`fail`、`skip`、`warn`、`blocking`、`hint`。排序依次为 severity（blocking 在前）、检查注册顺序、章号（没有章号的在后）、`source.path`、`source.line` 的数值（没有行号的在后）、类别、说明。
+
+| id | 做什么 | 状态 |
+|---|---|---|
+| `chapter` | 范围内每章复用 `chapter check` 的质量与规则扫描。正文缺失记 hint，不中断。没有细纲时跳过照搬比对。本章扫描里的作废词不在这里重复。 | 有 blocking 时 `fail`。只有 hint 时 `warn`。范围内没有任何正文时 `skip`。 |
+| `health` | 复用健康查询，截止章是 `--to`，阈值用默认 30、20、40。伏笔和人物风险转成 hint。 | 没有追踪时 `skip`。有风险时 `warn`，不使命令失败。 |
+| `cast-cards` | 追踪里的角色快照，在 `设定/角色/` 没有同名文件，也没有文件头已声明的别名。 | 有缺卡时 `warn`。没有追踪时 `skip`。没有快照时 `pass`。 |
+| `reader-value-stale` | `reader_value_records` 里范围内、带 64 位十六进制 `body_sha256` 的记录，与当前正文或 `wordcount_records` 的哈希不一致。同一章合成一条，`message` 写明是当前正文、字数记录或两边。`summary` 按记录数计。哈希是正文原始字节的 SHA-256，完整值留在 `evidence`。字段不是对象时 `skip`。没有该字段时通过。正文和字数记录都不存在时不报。 | 有不一致记录时 `warn`。 |
+| `void-entries` | `long_term_constraints` 和 `continuity_risks` 命中 `设定/写作检查.json` 的 `void_terms`，或条目含「作废」。ID 为 `void:<字段>[下标]:词`。伏笔状态已是「放弃」或「作废」但仍留在 state 里，ID 为 `void:foreshadow[<id>]:<状态>`。 | 有条目时 `warn`。没有追踪时 `skip`。写作检查文件非法时命令以 2 退出。 |
+
+Markdown 报告以 `# 全书体检 第A-B章` 开头，列出 schema、修订号、范围，以及写出文件时的 `report_path`。`blocking` 逐条列出。同一章、同一 category、同一 message 的 hint 合成一行，写成「第N章 category M 处：第 2、27…行：说明」。行号按数值升序，超过 12 个时截断，总数仍写在「M 处」。64 位哈希在报告里只印前 8 位。JSON 的 findings 仍逐条保留。
+
+原生单章模板在新提交成功且章号是 10 的倍数时，于返回值放 `book_audit_hint`，建议父会话运行 `book audit --from N-9 --to N`。模板不自动运行。已提交章只做验证时不给这条提示。
 
 ---
 

@@ -19,8 +19,9 @@ function mutationPath(name: string, raw: string): string | undefined {
           || /\bproject[\s'"]+init\b/u.test(command)
           || /\banalysis[\s'"]+write-cards\b/u.test(command)
           || /\btext[\s'"]+normalize\b/u.test(command) && /--apply\b/u.test(command)
+          || /\bbook[\s'"]+audit\b/u.test(command) && /--write\b/u.test(command)
         )
-      ) ? '追踪/_tracking-state.json' : undefined
+      ) ? (/\bbook[\s'"]+audit\b/u.test(command) ? '草稿/体检.md' : '追踪/_tracking-state.json') : undefined
     }
     if (name === 'str_replace_editor' && record.command === 'view') return undefined
     const path = name === 'str_replace_editor' ? record.path : record.file_path

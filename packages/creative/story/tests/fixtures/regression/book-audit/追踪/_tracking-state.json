@@ -1,0 +1,43 @@
+{
+  "schema_version": 5,
+  "book_title": "样书",
+  "last_committed_chapter": 25,
+  "imported_through_chapter": 0,
+  "state_revision": 4,
+  "context": {
+    "position": { "volume": "第一卷", "volume_start_chapter": 1, "story_time": "清晨", "scene": "门口" },
+    "long_term_constraints": ["旧港班次未删", "此条作废"],
+    "active_character_names": ["甲"],
+    "continuity_risks": ["另一处旧港"],
+    "recent_chapters": [],
+    "next_chapter_commitments": []
+  },
+  "characters": {
+    "甲": { "identity": "学徒", "location": "门口", "goal": "进门", "state": "谨慎", "abilities_resources": [], "relationships": [], "knowledge": [], "open_threads": [] },
+    "丙": { "identity": "过客", "location": "门外", "goal": "离开", "state": "急", "abilities_resources": [], "relationships": [], "knowledge": [], "open_threads": [] },
+    "老丁": { "identity": "别名", "location": "廊下", "goal": "传话", "state": "等", "abilities_resources": [], "relationships": [], "knowledge": [], "open_threads": [] }
+  },
+  "foreshadow": {
+    "F001": { "id": "F001", "summary": "门后还有人", "planted_chapter": 1, "planned_resolution_chapter": 2, "status": "已埋", "importance": "中", "updated_chapter": 1 },
+    "F002": { "id": "F002", "summary": "已放下的线", "planted_chapter": 1, "planned_resolution_chapter": null, "status": "放弃", "importance": "低", "updated_chapter": 1 }
+  },
+  "timeline": {
+    "E001": {
+      "id": "E001", "story_time": "清晨", "objective_fact": "丙到过门口", "reader_knowledge": "有人到过门口",
+      "reveal_status": "已揭示", "reveal_chapter": 1, "characters": ["丙"],
+      "first_recorded_chapter": 1, "updated_chapter": 1
+    }
+  },
+  "wordcount_records": {
+    "1": {
+      "metric": "visible_chars_v1", "target": 12, "actual": 12, "status": "internal_pass",
+      "resolution": "within_user_band",
+      "body_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "reader_value_records": {
+    "1": { "body_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+    "2": { "body_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+    "9": { "body_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" }
+  }
+}

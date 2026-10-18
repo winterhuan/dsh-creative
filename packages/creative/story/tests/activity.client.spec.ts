@@ -27,8 +27,12 @@ describe('story file refresh signals', () => {
     expect(latestSettledMutation(snapshot(settled('cli', 'bash', { command })))).toBe('cli\0追踪/_tracking-state.json')
     expect(latestSettledMutation(snapshot(settled('failed', 'bash', { command }, true)))).toBeUndefined()
   })
-  it.each(['project status', 'project query', 'project lookup', 'chapter snapshot', 'chapter check', 'chapter rules', 'analysis inspect', 'text normalize'])('keeps CLI reads out of refresh signals: %s', command => {
+  it.each(['project status', 'project query', 'project lookup', 'chapter snapshot', 'chapter check', 'chapter rules', 'book audit', 'analysis inspect', 'text normalize'])('keeps CLI reads out of refresh signals: %s', command => {
     expect(latestSettledMutation(snapshot(settled('read', 'bash', { command: `node /plugin/lib/cli.js ${command}` })))).toBeUndefined()
+  })
+  it('refreshes after book audit writes a report and ignores the read-only command', () => {
+    expect(latestSettledMutation(snapshot(settled('audit', 'bash', { command: 'dsh-story book audit --workspace /workspace --book 书 --from 1 --to 10 --write' })))).toBe('audit\0草稿/体检.md')
+    expect(latestSettledMutation(snapshot(settled('read', 'bash', { command: 'dsh-story book audit --workspace /workspace --book 书 --from 1 --to 10 --json' })))).toBeUndefined()
   })
   it('refreshes after a chapter transaction, while read-only queries leave the signal unchanged', () => {
     expect(latestSettledMutation(snapshot(settled('commit', 'bash', { command: "python 'storyctl.py' 'chapter' 'commit' --project /book" })))).toBe('commit\0追踪/_tracking-state.json')

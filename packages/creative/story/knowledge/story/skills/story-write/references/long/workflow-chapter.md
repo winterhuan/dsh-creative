@@ -11,7 +11,7 @@
 1. 按 [项目与对标](project-context.md) 确认工程，用 `node {CLI} project check --workspace {工作区} --book {作品名} --json` 取得章号与修订号，读取当前剧情单元、上一章正文和续写状态卡。先按章号定位细纲和正文，兼容已有补零与章名；只读取已存在的文件，不把缺失细纲当成写手的输入，不覆盖已存在章节。写正文前把本次实际读到的文件列给作者：`追踪/上下文.md`、角色状态、伏笔、时间线、细纲、上一章和拆文页，并带上 `check` 返回的 `state_revision`。清单只在会话里展示，不另存成文件，也不替代 JSON。
 2. 运行 `node {CLI} outline check --json --workspace {工作区} --book {作品名} --chapter {N}`。缺细纲返回 `ok=false`、`outline.readable` 和待补建路径，由准备执行者按 [中途补纲](workflow-setup.md#中途补纲) 完成本章文件，再用同一命令复检。通过结构检查后核对七项语义是否具体：读者期待、主角目标、主要阻碍、关键选择、代价或后果、局部兑现、章尾问题。缺少选择或状态变化时先修纲；未知关键事项不能只填占位符后直接写正文。
 3. 按 [写前事实](continuity-context.md) 读取 `project context`，细纲路径传给 `--text`。`omitted.settings` 非零时用 `node {CLI} project lookup --workspace {工作区} --book {作品名} --file {本章细纲} --json` 补全设定摘录；设定摘录不写文件，也不代替健康摘要或到期伏笔。`omitted.health` 非零时用 `node {CLI} project query --workspace {工作区} --book {作品名} --kind health --chapter {N} --json` 补全健康页，翻页带同一修订号；健康摘要不写追踪，也不代替到期伏笔。再用 `node {CLI} project query --workspace {工作区} --book {作品名} --kind foreshadow --filter due --chapter {N} --json` 读取全部到期页，翻页带同一修订号；准备无法覆盖剩余项时停止并说明缺口。结合卷纲处理本章应消费的约束，不能只看状态卡的 8 条活跃伏笔。用定点查询筛选角色状态、信息边界与下一章承诺；需要历史原因再读对应记录或原文。读 [长篇格式](long-format.md)；题材卡、自定义文风和外部对标仅加载本次相关材料。无对标原创直接使用本书规划，不触发“缺少对标模块”错误。
-4. 运行 `node {CLI} chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json`。正文可以还不存在。把 `rules` 交给写手，每条一行 `id: text`。写手逐条遵守，自检说明引用规则 ID。`warnings` 表示来源或标题缺失，命令仍成功，不单独构成停写。`omitted` 非零时在交接里写明条数。来源、ID 和扫描分级见 [写作检查配置](artifact-protocols.md#写作检查配置)。
+4. 运行 `node {CLI} chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json`。正文可以还不存在。把 `rules` 交给写手，每条一行 `id: text`。`text` 保持原文；`also` 非空时在格式化时接 ` also: ` 和其余 ID。写手逐条遵守，自检说明引用规则 ID。`warnings` 表示来源或标题缺失，命令仍成功，不单独构成停写。`omitted` 非零时在交接里写明条数。来源、ID 和扫描分级见 [写作检查配置](artifact-protocols.md#写作检查配置)。
 5. 将重复细纲要求合并成紧凑 `scene_execution_plan`：每场目标、阻碍、策略/选择、后果、结果与信息边界，并指向已批准情节点。正文可重排、合并、交织场景，不逐条复述提纲；不得新增独立主线、角色、承诺、反转或提前泄露未来真相。行动成本可以没有，不为填表硬造代价。
 
 题材和主角代理权有疑问时按 [读者契约](reader-contract-and-progression.md) 核对因果权、结算权、期待债与终局储备。若本章会改变已确认卷纲或兑现归属，先处理该实质冲突；普通场景组织不需要反复确认。外部事实只在本章需要时查证。
@@ -62,3 +62,5 @@ node {CLI} chapter commit --workspace {工作区} --book {作品名} --chapter {
 带外且用户明确接受自然长度时改用 `chapter accept-current-length`，同样要通过质量检查与读者价值评审。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
 
 提交在锁内重读正文和目标，校验字数记录哈希与修订号并原子发布状态及派生视图。失败不推进下一章；写入失败保留原事务重跑，校验失败按报错修事务，状态已变化则重读重构。成功后运行一次 `node {CLI} project check --workspace {工作区} --book {作品名} --json`；按需保留审稿意见，可删除临时正文片段；机械提交成功不代表文学质量通过。正文、事实、摘要与实际执行方式向用户如实汇报。
+
+章号是 10 的倍数且本次是新提交时，原生模板在返回值放 `book_audit_hint`，建议父会话运行 `node {CLI} book audit --workspace {工作区} --book {作品名} --from {N-9} --to {N} --json`。普通路径在向用户汇报时给出同一条建议。两边都不自动运行。已提交章只做验证时不给这条建议。报告格式见 [全书体检](artifact-protocols.md#全书体检)。

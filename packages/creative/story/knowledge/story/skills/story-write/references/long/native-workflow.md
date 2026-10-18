@@ -34,7 +34,7 @@
 
 | 阶段 | 工作与交接 |
 |---|---|
-| Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，读取 `project context` 的健康摘要和设定摘录。`omitted.settings` 非零时补查 `project lookup`，`omitted.health` 非零时补查 `--kind health`，并按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲。设定摘录和健康摘要都不代替全部到期伏笔。运行 `chapter rules`，把 `rules` 以 `id: text` 交给写手；缺标题只记 warning。交回场景计划、规则清单、细纲哈希、修订号，以及本次读到的文件清单。准备者用原生进度反馈展示清单与修订号；模板继续下一阶段，不依赖父会话插入回合。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
+| Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，读取 `project context` 的健康摘要和设定摘录。`omitted.settings` 非零时补查 `project lookup`，`omitted.health` 非零时补查 `--kind health`，并按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲。设定摘录和健康摘要都不代替全部到期伏笔。运行 `chapter rules`，把 `rules` 以 `id: text` 交给写手；`also` 非空时该行再接 ` also: ` 和其余 ID。缺标题只记 warning。交回场景计划、规则清单、细纲哈希、修订号，以及本次读到的文件清单。准备者用原生进度反馈展示清单与修订号；模板继续下一阶段，不依赖父会话插入回合。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
 | Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`，交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
 | Review | 读取实际材料，前后运行 `chapter snapshot` 核对原始字节哈希、文件版本和追踪修订号；返回 `ready / revise / needs_input` 及有来源的可读意见。 |
 | Submit / Verify | 按[追踪事务](tracking-transaction.md)提交与审稿版本一致的正文，再核对实际状态和持久记录。已提交章直接验证，不重写或重复提交。 |
@@ -43,7 +43,7 @@
 
 ## 结果与恢复
 
-父会话读取工具结果的业务 `result.status`：`committed` 为提交并验证完成，`already_committed` 为已提交章本次只验证，两者带实际哈希、修订号及路径。`needs_input`、`revision_limit` 保留草稿和问题，停止后续章；`uncertain` 先核查真实追踪、事务与文件，不能盲目重试。子会话失败、null 或无效响应使运行失败。原生运行完成本身不等于章节提交。
+父会话读取工具结果的业务 `result.status`：`committed` 为提交并验证完成，`already_committed` 为已提交章本次只验证，两者带实际哈希、修订号及路径。本次新提交成功且章号是 10 的倍数时，结果另含 `book_audit_hint`，建议父会话对第 N-9 章到第 N 章运行 `book audit`。已提交章只验证时没有这条字段。模板不自动运行。`needs_input`、`revision_limit` 保留草稿和问题，停止后续章；`uncertain` 先核查真实追踪、事务与文件，不能盲目重试。子会话失败、null 或无效响应使运行失败。原生运行完成本身不等于章节提交。
 
 Prepare 尚未解析实际路径时，结果的 `body_path`、`outline_path` 可为 null。普通缺细纲由 Prepare 内部处理；返回 `needs_input` 时依据具体缺口补充事实或作者决定，再重新调用同一章。已有正文须使用 `resume=true` 并保留实际压缩记录，重新经过准备、检查和审稿；不能只重试缺文件的调用。
 
