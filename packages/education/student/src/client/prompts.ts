@@ -6,6 +6,25 @@ import type { Translate } from './locales.ts'
 export const continuePrompt = '请加载 study 技能，查询 study_status，继续当前学习段。先处理未反馈的答案或提示，再出下一题。一次一题。timeNotice 里的时长是建议，请照原文告诉孩子；孩子还想继续就继续。'
 export const reviewPrompt = '请加载 study 技能，查询 study_status 和到期错题。本段复习到期错题：先做变式，不展示已保存答案。task 写上 mistakeId 和 objectiveId。一次一题。'
 export const hintPrompt = '请加载 study 技能。学生要提示：只指出条件或该画的图，不给算式和答案。如果这题已经答错，下一题换一种表示，并在 task 上写 figure。'
+export const teachHintPrompt = '请加载 study 技能，阅读 references/teaching.md 的「不会做时先教」。按当前题的 phase 教方法：还没示范就先 demo，引导步先给一步提示，不把算式和答案直接填进括号。'
+
+/** Ordinary tries get a nudge. A stuck learner, a teaching step, or a follow-up hint follows the teaching steps. */
+export function hintPromptFor(task: { phase?: string | undefined; hintLevel?: number | undefined; stuck?: boolean | undefined }): string {
+  if (task.stuck || task.phase === 'demo' || task.phase === 'guide' || (task.hintLevel ?? 0) >= 1) return teachHintPrompt
+  return hintPrompt
+}
+
+/** Teach one objective before any later lesson. */
+export function teachPrompt(objectiveId: string): string {
+  return `请加载 study 技能，阅读 references/teaching.md 的「不会做时先教」。本段先教学习目标 ${objectiveId}：按 demo、guide、try、vary 四步，task 写 phase 和这个 objectiveId。今天停在这个目标上，不排下一课。`
+}
+
+/** Teach one confirmed workbook item that is not linked to an objective yet. */
+export function teachQueuePrompt(title: string): string {
+  return `请加载 study 技能，阅读 references/teaching.md 的「不会做时先教」。本段教这道待教的题：${title}。按 demo、guide、try、vary 四步，task 写 phase。`
+}
+
+export const stuckPrompt = '请加载 study 技能，阅读 references/teaching.md 的「不会做时先教」。孩子说不会。先用 demo 示范方法，再进入 guide。摸底段只记下不会，不讲课。'
 export const mistakePhotoPrompt = '请加载 study 技能，读取这张题目照片，用 mistake 保存待确认错题。能对应知识地图时写上 objectiveId。不要替我确认。'
 
 /** Continue around one shipped or custom learning goal. */
@@ -53,3 +72,6 @@ export function organizePrompt(subject: string): string {
 export function paperPhotoPrompt(worksheetId: string): string {
   return `请加载 study 技能，读取练习单 ${worksheetId} 的作答照片，按题号用 paper-draft 保存转录草稿。不要直接入库。`
 }
+
+/** Transcribe a workbook photo that is not tied to a saved worksheet. */
+export const workbookPhotoPrompt = '请加载 study 技能。这是练习册照片，事先没有练习单。用 workbook-draft 按题保存草稿：不会用 stuck，提示后才对用 hinted，独立做错用 independent-wrong，独立做对用 independent-correct。能对应目标就写 objectiveId。不要直接入库，等家长确认。'

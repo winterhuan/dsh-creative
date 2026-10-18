@@ -73,7 +73,11 @@ describe('learning workbench', () => {
     const ask = vi.fn().mockResolvedValue(undefined)
     const view = render(<StudyDesk sessionId="one" visible running={false} ask={ask} t={t} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Give me a hint' }))
-    await waitFor(() => expect(backend.read().task?.hintRequested).toBe(true))
+    await waitFor(() => expect(backend.read().task?.hintLevel).toBe(1))
+    expect(String(ask.mock.calls[0]?.[0])).not.toContain('不会做时先教')
+    fireEvent.click(screen.getByRole('button', { name: 'Another hint' }))
+    await waitFor(() => expect(backend.read().task?.hintLevel).toBe(2))
+    expect(String(ask.mock.calls[1]?.[0])).toContain('不会做时先教')
     view.rerender(<StudyDesk sessionId="one" visible running ask={ask} t={t} />)
     fireEvent.click(screen.getByRole('button', { name: 'Finish and rest' }))
     await screen.findByText(/Take a break away/)
@@ -81,7 +85,31 @@ describe('learning workbench', () => {
     expect(backend.read().rewards).toEqual([])
   })
 
-  it('keeps answers available after the suggested time and offers a start during the suggested break', async () => {
+  it('records 不会 from the task and sends a hinted-correct grade', async () => {
+  const backend = installFetch()
+  const ask = vi.fn().mockResolvedValue(undefined)
+  const view = render(<StudyDesk sessionId="stuck" visible running={false} ask={ask} t={t} />)
+  fireEvent.click(await screen.findByRole('button', { name: en.wont }))
+  await waitFor(() => expect(backend.read().attempts[0]).toMatchObject({ result: 'stuck', response: '不会' }))
+  expect(String(ask.mock.calls[0]?.[0])).toContain('不会做时先教')
+  view.unmount()
+  const sheet = updateStudy(worksheetState(), { action: 'worksheet', worksheet: { id: 'pair', subject: 'math', objectiveId: 'add', items: [
+    { id: 'a', prompt: '请计算 9+6。', answer: '15', explanation: '先凑十。', answerEvidence: '9+1+5=15' },
+  ] } }, NOW)
+  const graded = installFetch(sheet)
+  render(<StudyDesk sessionId="hinted-grade" visible running={false} ask={vi.fn()} t={t} />)
+  await openDesk('Mistakes')
+  const details = screen.getAllByText('凑十加法 · 1 questions · Not checked yet 1')[0]!.closest('details')!
+  fireEvent.click(details.querySelector('summary')!)
+  const panel = within(details)
+  fireEvent.click(panel.getByRole('radio', { name: en.markCorrect }))
+  fireEvent.click(panel.getByRole('checkbox', { name: en.hintedCorrect }))
+  fireEvent.click(panel.getByRole('button', { name: 'Save marks · 1' }))
+  await screen.findByText('Marks saved')
+  expect(graded.read().paperResults[0]).toMatchObject({ itemId: 'a', result: 'correct', assistance: 'hint' })
+})
+
+it('keeps answers available after the suggested time and offers a start during the suggested break', async () => {
     let state = updateStudy(updateStudy(updateStudy(undefined, setup, NOW), start, NOW), { action: 'task', task: answerTask }, NOW)
     const backend = installFetch(state)
     const view = render(<StudyDesk sessionId="one" visible running={false} ask={vi.fn()} t={t} />)

@@ -3,7 +3,7 @@ import type { Dashboard, MistakeStatus } from '../dashboard.ts'
 import type { AskTutor, StudyPhoto } from './bridge.ts'
 import { MistakeConfirmation, type ChangeStudy } from './forms.tsx'
 import type { Translate } from './locales.ts'
-import { mistakePhotoPrompt, paperPhotoPrompt, practiceSheetPrompt, reviewSheetPrompt } from './prompts.ts'
+import { mistakePhotoPrompt, paperPhotoPrompt, practiceSheetPrompt, reviewSheetPrompt, workbookPhotoPrompt } from './prompts.ts'
 import { errorTypesBySubject, type ErrorTypeValue } from '../vocabulary.ts'
 import type { Subject } from './display.ts'
 
@@ -33,6 +33,7 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
 }) {
   return <>
     <PhotoIntake ask={ask} disabled={disabled || running} t={t} />
+    <WorkbookIntake study={study} goals={goals} revision={revision} disabled={disabled || running} change={change} ask={ask} t={t} />
     <section><h3>{t('notebook')} · {t(subject)} · {study.confirmedCount}</h3>
       <nav className="student-segments" aria-label={t('mistakeStatus')}>{(['all', 'due', 'reviewing', 'mastered'] as const).map(name => <button key={name} type="button" aria-pressed={mistakeStatus === name} onClick={() => { setMistakeStatus(name); setMistakeOffset(0) }}>{t(name === 'all' ? 'all' : name === 'due' ? 'bookDue' : name === 'reviewing' ? 'bookReviewing' : 'bookMastered')}{name === 'all' ? '' : ` · ${study.mistakeBook[name]}`}</button>)}</nav>
       {study.confirmedMistakes.length === 0 && <p>{t('empty')}</p>}
@@ -108,12 +109,15 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, change, as
   const [marks, setMarks] = useState<Record<string, Mark>>(() => Object.fromEntries(worksheet.results.flatMap(item => item.result === 'unassessed' ? [] : [[item.itemId, item.result]])))
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [causes, setCauses] = useState<Record<string, ErrorTypeValue | ''>>({})
+  const [helped, setHelped] = useState<Record<string, boolean>>(() => Object.fromEntries(worksheet.results.flatMap(item => item.result === 'correct' && item.assistance === 'hint' ? [[item.itemId, true]] : [])))
   const [paper, setPaper] = useState<Record<string, { result?: Mark; response: string; errorType: ErrorTypeValue | '' }>>(() => Object.fromEntries(worksheet.drafts.map(draft => [draft.itemId, { ...(draft.result === 'correct' || draft.result === 'partial' || draft.result === 'incorrect' ? { result: draft.result } : {}), response: draft.response, errorType: draft.errorType ?? '' }])))
   const [saving, setSaving] = useState(false)
   const changed = worksheet.items.filter(item => {
     const before = worksheet.results.find(result => result.itemId === item.id)
     const mark = marks[item.id]
-    return mark !== undefined && (mark !== before?.result || (answers[item.id]?.trim() ?? '') !== '')
+    if (mark === undefined) return false
+    const assistance = mark === 'correct' ? helped[item.id] ? 'hint' : 'independent' : undefined
+    return mark !== before?.result || (answers[item.id]?.trim() ?? '') !== '' || (mark === 'correct' && before !== undefined && assistance !== before.assistance)
   })
   function markAllRight() {
     setMarks(previous => {
@@ -134,7 +138,7 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, change, as
         const response = answers[item.id]?.trim()
         const mark = marks[item.id] ?? 'correct'
         const cause = causes[item.id]
-        return { itemId: item.id, result: mark, ...(response ? { response } : {}), ...(mark !== 'correct' && cause ? { errorType: cause } : {}) }
+        return { itemId: item.id, result: mark, ...(response ? { response } : {}), ...(mark === 'correct' ? { assistance: helped[item.id] ? 'hint' as const : 'independent' as const } : {}), ...(mark !== 'correct' && cause ? { errorType: cause } : {}) }
       }) } }, revision)
       setAnswers({}); setMessage(t('gradesSaved'))
     } catch (reason) { setError(reason instanceof Error ? reason.message : t('networkError')) }
@@ -189,6 +193,7 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, change, as
         <p>{index + 1}. {item.prompt}</p>
         <p className="student-muted">{t('referenceAnswer')}: {item.answer} · {source?.mistakeId ? `${t('sourceMistake')}: ${source.topic}` : t('practiceItem')}{result ? ` · ${t(result.result)}: ${result.response}` : ''}</p>
         <div className="student-segments" role="radiogroup" aria-label={`${index + 1}`}>{(['correct', 'partial', 'incorrect'] as const).map(mark => <button key={mark} type="button" role="radio" aria-checked={marks[item.id] === mark} onClick={() => setMarks(previous => ({ ...previous, [item.id]: mark }))}>{t(markKeys[mark])}</button>)}</div>
+        {marks[item.id] === 'correct' && <label><input type="checkbox" checked={helped[item.id] === true} onChange={event => { const checked = event.target.checked; setHelped(previous => ({ ...previous, [item.id]: checked })) }} /> {t('hintedCorrect')}</label>}
         {marks[item.id] !== undefined && marks[item.id] !== 'correct' && <label>{t('childAnswer')}<input value={answers[item.id] ?? ''} maxLength={2000} onChange={event => { const value = event.target.value; setAnswers(previous => ({ ...previous, [item.id]: value })) }} /></label>}
         {marks[item.id] !== undefined && marks[item.id] !== 'correct' && <label>{t('errorTypeLabel')}<select value={causes[item.id] ?? ''} onChange={event => { const type = errorTypesBySubject[worksheet.subject].find(candidate => candidate === event.target.value); setCauses(previous => ({ ...previous, [item.id]: type ?? '' })) }}><option value="">{t('errorTypeNone')}</option>{errorTypesBySubject[worksheet.subject].map(type => <option key={type} value={type}>{t(type)}</option>)}</select></label>}
       </fieldset>
@@ -215,7 +220,77 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, change, as
   </details>
 }
 
-function PhotoIntake({ ask, disabled, t, variant = 'mistake', prompt = mistakePhotoPrompt }: { ask: AskTutor; disabled: boolean; t: Translate; variant?: 'mistake' | 'paper'; prompt?: string }) {
+const workbookOutcomeKeys = { stuck: 'workbookStuck', hinted: 'workbookHinted', 'independent-wrong': 'workbookWrong', 'independent-correct': 'workbookRight' } as const
+
+function WorkbookIntake({ study, goals, revision, disabled, change, ask, t }: { study: Study; goals: Goal[]; revision: number; disabled: boolean; change: ChangeStudy; ask: AskTutor; t: Translate }) {
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [outcomes, setOutcomes] = useState<Record<string, Study['workbookDrafts'][number]['outcome']>>({})
+  const [goalsChosen, setGoalsChosen] = useState<Record<string, string>>({})
+  const [corrections, setCorrections] = useState<Record<string, string>>({})
+  const [explanations, setExplanations] = useState<Record<string, string>>({})
+  const [evidence, setEvidence] = useState<Record<string, string>>({})
+  async function confirmDraft(draft: Study['workbookDrafts'][number]) {
+    const outcome = outcomes[draft.id] ?? draft.outcome
+    const objectiveId = goalsChosen[draft.id] ?? draft.objectiveId ?? ''
+    const correction = corrections[draft.id]?.trim() ?? ''
+    const explanation = explanations[draft.id]?.trim() ?? ''
+    const answerEvidence = evidence[draft.id]?.trim() ?? ''
+    if (outcome === 'independent-wrong' && (correction === '' || explanation === '' || answerEvidence === '')) { setError(t('workbookNeedCorrection')); return }
+    setSaving(true); setError(''); setMessage('')
+    try {
+      await change({
+        action: 'confirm-workbook', id: draft.id, outcome, userConfirmation: t('confirmWorkbook'),
+        ...(objectiveId !== (draft.objectiveId ?? '') ? { objectiveId } : {}),
+        ...(outcome === 'independent-wrong' ? { correction, explanation, answerEvidence } : {}),
+      }, revision)
+      setMessage(outcome === 'stuck' || outcome === 'hinted' ? t('teachQueued') : t('workbookSaved'))
+    } catch (reason) { setError(reason instanceof Error ? reason.message : t('networkError')) }
+    finally { setSaving(false) }
+  }
+  async function dismiss(id: string) {
+    setSaving(true); setError(''); setMessage('')
+    try { await change({ action: 'dismiss-teaching', id }, revision); setMessage(t('workbookSaved')) }
+    catch (reason) { setError(reason instanceof Error ? reason.message : t('networkError')) }
+    finally { setSaving(false) }
+  }
+  return <section>
+    <PhotoIntake ask={ask} disabled={disabled || saving} t={t} variant="workbook" prompt={workbookPhotoPrompt} />
+    {study.workbookDrafts.length > 0 && <fieldset className="student-grade" disabled={disabled || saving}>
+      <legend>{t('workbookDrafts')}</legend>
+      {study.workbookDrafts.map(draft => {
+        const outcome = outcomes[draft.id] ?? draft.outcome
+        const objectiveId = goalsChosen[draft.id] ?? draft.objectiveId ?? ''
+        const known = goals.some(goal => goal.id === draft.objectiveId)
+        return <div key={draft.id}>
+          <p>{draft.prompt}</p>
+          {draft.response && <p className="student-muted">{t('learnerAnswer')}: {draft.response}</p>}
+          {draft.uncertainties !== '' && <p className="student-muted">{t('uncertainties')}: {draft.uncertainties}</p>}
+          <label>{t('learningGoal')}<select aria-label={t('learningGoal')} value={objectiveId} onChange={event => { const value = event.target.value; setGoalsChosen(previous => ({ ...previous, [draft.id]: value })) }}>
+            <option value="">{t('workbookNoGoal')}</option>
+            {draft.objectiveId && !known && <option value={draft.objectiveId}>{draft.objectiveId}</option>}
+            {goals.map(goal => <option key={goal.id} value={goal.id}>{goal.title}</option>)}
+          </select></label>
+          <div className="student-segments" role="radiogroup" aria-label={draft.prompt}>{(['stuck', 'hinted', 'independent-wrong', 'independent-correct'] as const).map(name => <button key={name} type="button" role="radio" aria-checked={outcome === name} onClick={() => setOutcomes(previous => ({ ...previous, [draft.id]: name }))}>{t(workbookOutcomeKeys[name])}</button>)}</div>
+          {outcome === 'independent-wrong' && <>
+            <label>{t('correction')}<input value={corrections[draft.id] ?? ''} maxLength={2000} onChange={event => { const value = event.target.value; setCorrections(previous => ({ ...previous, [draft.id]: value })) }} /></label>
+            <label>{t('explanation')}<input value={explanations[draft.id] ?? ''} maxLength={2000} onChange={event => { const value = event.target.value; setExplanations(previous => ({ ...previous, [draft.id]: value })) }} /></label>
+            <label>{t('answerEvidence')}<input value={evidence[draft.id] ?? ''} maxLength={2000} onChange={event => { const value = event.target.value; setEvidence(previous => ({ ...previous, [draft.id]: value })) }} /></label>
+          </>}
+          <button type="button" className="student-primary" disabled={disabled || saving} onClick={() => { void confirmDraft(draft) }}>{t('confirmWorkbook')}</button>
+        </div>
+      })}
+    </fieldset>}
+    {study.teachingQueue.length > 0 && <fieldset className="student-grade" disabled={disabled || saving}>
+      <legend>{t('teachingQueue')}</legend>
+      {study.teachingQueue.map(item => <div key={item.id}><p>{item.prompt}</p><button type="button" className="student-quiet" disabled={disabled || saving} onClick={() => { void dismiss(item.id) }}>{t('dismissTeaching')}</button></div>)}
+    </fieldset>}
+    {message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}
+  </section>
+}
+
+function PhotoIntake({ ask, disabled, t, variant = 'mistake', prompt = mistakePhotoPrompt }: { ask: AskTutor; disabled: boolean; t: Translate; variant?: 'mistake' | 'paper' | 'workbook'; prompt?: string }) {
   const [photo, setPhoto] = useState<StudyPhoto>()
   const [error, setError] = useState('')
   const [reading, setReading] = useState(false)
@@ -236,7 +311,7 @@ function PhotoIntake({ ask, disabled, t, variant = 'mistake', prompt = mistakePh
     try { await ask(prompt, photo); setPhoto(undefined) }
     catch { /* Tutor submission notice is owned by the workbench. */ }
   }
-  return <section><h3>{t(variant === 'mistake' ? 'photo' : 'paperPhoto')}</h3><p>{t(variant === 'mistake' ? 'photoHelp' : 'paperPhotoHelp')}</p><form onSubmit={event => { void submit(event) }}>
+  return <section><h3>{t(variant === 'mistake' ? 'photo' : variant === 'paper' ? 'paperPhoto' : 'workbookPhoto')}</h3><p>{t(variant === 'mistake' ? 'photoHelp' : variant === 'paper' ? 'paperPhotoHelp' : 'workbookPhotoHelp')}</p><form onSubmit={event => { void submit(event) }}>
     <label>{t('photo')}<input type="file" accept="image/png,image/jpeg,image/webp" disabled={disabled || reading} onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; void select(file) }} /></label>
     {photo && <img src={photo.preview} alt={t('preview')} />}
     <button type="submit" disabled={!photo || disabled || reading}>{t('sendPhoto')}</button>

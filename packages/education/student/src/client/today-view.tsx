@@ -3,7 +3,7 @@ import type { Command } from '../schema.ts'
 import type { CheckInIntensity } from '../learning.ts'
 import type { Translate } from './locales.ts'
 import { FigureView } from './figure-view.tsx'
-import { hintPrompt } from './prompts.ts'
+import { hintPromptFor, stuckPrompt } from './prompts.ts'
 import { assistKeys, clock, day, focusKeys, intensityHelpKeys, intensityKeys, planKeys, reasonText, reminderKeys, type Activity, type Mode, type ScopeChoice, type Subject } from './display.ts'
 import type { Dashboard } from '../dashboard.ts'
 
@@ -68,7 +68,7 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
     {active && <>
       <section className="student-focus"><p className="student-muted">{t('chatHelp')}</p>{task ? <Task study={study} goalTitle={goalTitle(study, task.objectiveId)} days={objectiveDays} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
         {available && (running ? <p role="status">{t('tutorWorking')}</p>
-          : (!task || study.feedback || task.response !== undefined || task.hintRequested) && <button disabled={disabled} onClick={() => { void tutor('').catch(() => {}) }}>{t(!task ? 'prepareTask' : study.feedback ? 'nextTask' : task.response !== undefined ? 'retryFeedback' : 'retryHint')}</button>)}
+          : (!task || study.feedback || task.response !== undefined || task.hintLevel > 0) && <button disabled={disabled} onClick={() => { void tutor('').catch(() => {}) }}>{t(!task ? 'prepareTask' : study.feedback ? 'nextTask' : task.response !== undefined ? 'retryFeedback' : 'retryHint')}</button>)}
       </section>
       <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void act({ action: 'stop', sessionId: active.id, reflection: String(form.get('reflection') ?? '') }) }}>
         {(explain || task?.objectiveId) && <p>{t('explainPrompt')}{explain ? ` · ${explain.title}` : ''}</p>}
@@ -189,11 +189,15 @@ function Alternate({ study, activity, setActivity, disabled, start, goal, intens
   </details>
 }
 
+const phaseKeys = { demo: 'phaseDemo', guide: 'phaseGuide', try: 'phaseTry', vary: 'phaseVary' } as const
+
 function Task({ study, goalTitle: title, days, disabled, t, act }: { study: Study; goalTitle: string | undefined; days: number | undefined; disabled: boolean; t: Translate; act: Act }) {
   const task = study.task
   if (!task) return null
   const lit = Math.min(3, days ?? 0)
+  const hintLabel = task.hintLevel > 0 ? t('hintMore') : t('hint')
   return <><h3>{task.topic}</h3>{title && <p className="student-muted">{t('learningGoal')}: {title}</p>}
+    {task.phase && <p className="student-muted">{t(phaseKeys[task.phase])}</p>}
     {days !== undefined && <p className="student-mastery" aria-label={`${t('masteryProgress')} ${lit}/3`}>{[0, 1, 2].map(index => <span key={index} className={index < lit ? 'student-level-mastered' : 'student-level-untouched'} />)}</p>}
     <p className="student-question">{task.prompt}</p>
     {task.figure && <FigureView figure={task.figure} t={t} />}
@@ -201,12 +205,14 @@ function Task({ study, goalTitle: title, days, disabled, t, act }: { study: Stud
     {study.feedback ? <><p className="student-result">{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : task.choices ? <fieldset disabled={disabled}>
       <p>{t('chooseAnswer')}</p>
       <div className="student-choices">{task.choices.map(choice => <button key={choice} type="button" onClick={() => { void act({ action: 'answer', taskId: task.id, response: choice }, true) }}>{choice}</button>)}</div>
-      <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true, hintPrompt) }}>{t('hint')}</button>
+      <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true, hintPromptFor(task)) }}>{hintLabel}</button>
+      <button type="button" onClick={() => { void act({ action: 'stuck', taskId: task.id }, true, stuckPrompt) }}>{t('wont')}</button>
     </fieldset> : <form onSubmit={event => { event.preventDefault(); void act({ action: 'answer', taskId: task.id, response: String(new FormData(event.currentTarget).get('answer') ?? '') }, true) }}>
       <fieldset disabled={disabled}><label>{t('answer')}<input name="answer" required maxLength={2000} /></label><button type="submit">{t('submit')}</button>
-        <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true, hintPrompt) }}>{t('hint')}</button>
+        <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true, hintPromptFor(task)) }}>{hintLabel}</button>
+        <button type="button" onClick={() => { void act({ action: 'stuck', taskId: task.id }, true, stuckPrompt) }}>{t('wont')}</button>
       </fieldset>
     </form>}
-    {task.hintRequested && <p>{t('hinted')}</p>}
+    {task.hintLevel > 0 && <p>{t('hinted')} · {t('hintLevel')} {task.hintLevel}</p>}
   </>
 }

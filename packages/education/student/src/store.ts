@@ -30,6 +30,22 @@ function migrateLegacyFigures(parsed: unknown): unknown {
 }
 
 /**
+ * Turn a saved hint flag into a hint level before parsing.
+ * Missing workbook drafts and the teaching queue are filled by the state schema defaults.
+ */
+export function migrateStudyFile(parsed: unknown): unknown {
+  const next = migrateLegacyFigures(parsed)
+  if (typeof next !== 'object' || next === null) return next
+  const task = (next as { task?: unknown }).task
+  if (typeof task === 'object' && task !== null) {
+    const record = task as { hintRequested?: unknown; hintLevel?: unknown }
+    if (typeof record.hintLevel !== 'number') record.hintLevel = record.hintRequested === true ? 1 : 0
+    delete record.hintRequested
+  }
+  return next
+}
+
+/**
  * Read or update .study/state.json in the calling Session's filesystem.
  * Reads preserve absence; writes require the observed version and current sandbox policy.
  * A competing writer causes an error, never an automatic replay of learning evidence.
@@ -52,7 +68,7 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
     const bytes = await fs.readBytes(target, exec.signal, MAX_BYTES)
     const after = await fs.stat(target, exec.signal)
     if (after?.version !== before.version) throw new Error('学习档案已更新，请查询最新状态后重试。')
-    state = scheduleMistakes(stateSchema.parse(migrateLegacyFigures(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))))
+    state = scheduleMistakes(stateSchema.parse(migrateStudyFile(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))))
   }
   if (command === undefined) return state
   if (expectedRevision !== undefined && expectedRevision !== (state?.revision ?? 0)) throw new StudyConflict()
@@ -82,7 +98,9 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       progress: summary.progress.slice(0, 20), progressCount: summary.progress.length,
       dueMistakes: summary.dueMistakes.slice(0, 20), dueMistakeCount: summary.dueMistakes.length,
       pendingMistakes: summary.pendingMistakes.slice(0, 20), pendingMistakeCount: summary.pendingMistakes.length,
-      more: 'Use study_status kind=progress, due, weak, curriculum or elements with offset for more records.',
+      teachingQueue: state.teachingQueue.slice(0, 20), teachingQueueCount: state.teachingQueue.length,
+      workbookDrafts: state.workbookDrafts.slice(0, 20), workbookDraftCount: state.workbookDrafts.length,
+      more: 'Use study_status kind=progress, due, weak, curriculum or elements with offset for more records. needs-teaching means stay on that objective. A teachingQueue item without an objective is waiting to be taught. workbookDrafts wait for the parent.',
     }
   }
   if (kind === 'curriculum') {
@@ -121,7 +139,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     return {
       revision: state.revision, subject, objectives: page.slice(offset, offset + 20),
       nextOffset: offset + 20 < page.length ? offset + 20 : null,
-      more: 'Write each question from the knowledge points. When a point lists ideas, use each idea definition as the meaning of that concept. Ideas belong to the subject and are shared across grades and units. When a point lists facts, the answer must be checkable against those facts; do not add plot, readings, garden exercises or verse that the facts do not state. A point without facts uses only its definition and example. Also use the common mistakes and question points, and vary one axis at a time. An on-screen task may include the same figure as a worksheet item; copy that figure onto the matching record. The first hint names a condition or a drawing and does not give the operation or the answer. Custom goals read kind=objectives with kind=concepts.',
+      more: 'Write each question from the knowledge points. When a point lists ideas, use each idea definition as the meaning of that concept. Ideas belong to the subject and are shared across grades and units. When a point lists facts, the answer must be checkable against those facts; do not add plot, readings, garden exercises or verse that the facts do not state. A point without facts uses only its definition and example. Also use the common mistakes and question points, and vary one axis at a time. An on-screen task may include the same figure as a worksheet item; copy that figure onto the matching record. The first hint on an ordinary try names a condition or a drawing and does not give the operation or the answer. When the learner is stuck, follow the study skill teaching steps before the next independent question. Custom goals read kind=objectives with kind=concepts.',
     }
   }
   if (kind === 'review-sheet') {
