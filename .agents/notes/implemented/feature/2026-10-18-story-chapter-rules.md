@@ -12,6 +12,8 @@ A long-form chapter can contradict its own outline and core settings while `chap
 
 `chapter rules` extracts that list and returns `story-chapter-rules/v1`. Each rule has an id, text, and a source path and line. Ids stay stable for the same input. The payload, including the trailing newline, stays within 16 KiB. Overflow drops rules from the end, then scan rows, then warnings, and counts those drops in `omitted`. `rules_sha256` hashes the full rule list before the cut. Missing files and headings become warnings. The command exits 0.
 
+`OUT-P` text is `情节点｜边界：执行边界` from the same table row. An empty or placeholder plot keeps the boundary sentence. A placeholder boundary keeps the plot. A row with neither side produces no rule. `主角目标` is one `OUT-NNN-GOAL` rule. A missing field is a warning. `rule_sources` still replaces the whole list, and an unknown prefix is skipped. The `also`, `rules_sha256` and 16 KiB algorithms stay the same.
+
 Default sources and the optional keys in `设定/写作检查.json` are specified in the [artifact protocols](../../../../packages/creative/story/knowledge/story/skills/story-write/references/long/artifact-protocols.md). A present `rule_sources` array replaces the defaults. An absent key keeps them. A file that only sets `punctuation` keeps the previous chapter-check result when the outline has no `出场顺序：` field. A missing `punctuation` key means preserve, so the other keys can stand alone. The same normalized sentence keeps the first rule id. `text` stays that sentence, and later ids go in the optional `also` array. The writer-facing line appends ` also: ` when `also` is non-empty. `rules_sha256` still hashes the appended form, so the digest of one input stays the same. Cast hits match a name inside the cast line, skip names inside Chinese quotation marks, and say the body mentions a name the cast list does not include. A void-term id includes that entry's zero-based array index.
 
 `blocking` is reserved for configured patterns and era terms that have one reading. `hint` reports cast names that appear in the body but not in the cast list, void terms that remain in constraints or risks, and other configured hints. Hints do not fail `chapter check`. `chapter rules` scans cast from the extracted cast rule. `chapter check` reads the outline field directly, including when `rule_sources` omits `OUT-CAST`, and then looks for `出场顺序` unless an `OUT-CAST` source names another heading. Ability-before-acquisition checks are absent. They need a later fact ledger, and this change leaves tracking schema version 5 in place. The [book audit](2026-10-18-story-book-audit.md) reuses the chapter scan and the void-term ids across a range. It does not replace this command. The [rule audit](2026-10-18-story-rule-audit.md) judges the returned `rules` array one id at a time and can gate `chapter commit`. It does not replace this command either.
@@ -23,6 +25,10 @@ The [reader-value decision](2026-09-22-novel-reader-value-generation.md) still o
 ## Alternatives considered
 
 **Hard-code one book's headings in the extractor.** Another book would need a code change. Defaults follow the current templates, and `rule_sources` replaces them per book.
+
+**Extract only the boundary cell.** The auditor then cannot see whether the plot point happened. The composed sentence puts the plot point and the hard constraint on one id.
+
+**Drop a row when its boundary is a placeholder.** The plot point would leave the list, so a missing beat would not be judged. A placeholder boundary still keeps the plot.
 
 **Fail the command when a heading is missing.** Stock templates omit some default headings. A warning lets Prepare continue, and the writer sees the gap.
 

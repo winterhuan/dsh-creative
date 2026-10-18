@@ -11,6 +11,10 @@
  * key replaces the default list. Missing files and headings become warnings.
  * The command still returns; it does not fail the book for an absent section.
  *
+ * `OUT-P` joins one table row as `情节点｜边界：执行边界`. A missing or
+ * placeholder plot keeps the boundary text. A placeholder boundary keeps the
+ * plot. A row with neither side is skipped. `主角目标` is one `OUT-NNN-GOAL`.
+ *
  * `chapter audit-verify` reuses `rules` and `rules_sha256` from this module.
  */
 import { createHash } from 'node:crypto'
@@ -46,6 +50,7 @@ export const DEFAULT_RULE_SOURCES: readonly RuleSource[] = [
   { file: '大纲/细纲_第{chapter}章.md', heading: '执行边界', prefix: 'OUT-P' },
   { file: '大纲/细纲_第{chapter}章.md', heading: '本章禁止提前释放', prefix: 'OUT-NR' },
   { file: '大纲/细纲_第{chapter}章.md', heading: '出场顺序', prefix: 'OUT-CAST' },
+  { file: '大纲/细纲_第{chapter}章.md', heading: '主角目标', prefix: 'OUT-GOAL' },
   { file: '大纲/卷纲_第X卷.md', heading: '禁止提前释放', prefix: 'VOL-NR' },
   { file: '大纲/卷纲_第X卷.md', heading: '终局底牌边界', prefix: 'VOL-BAN' },
   { file: '大纲/卷纲_第X卷.md', heading: '本卷禁碰的终局底牌', prefix: 'VOL-BAN' },
@@ -56,7 +61,7 @@ export const DEFAULT_RULE_SOURCES: readonly RuleSource[] = [
   { file: '追踪/_tracking-state.json', heading: 'long_term_constraints', prefix: 'STATE' },
 ]
 
-const PREFIXES = new Set(['OUT-P', 'OUT-NR', 'OUT-CAST', 'VOL-NR', 'VOL-BAN', 'VOL-OLD', 'CORE', 'CARD', 'STYLE', 'STATE'])
+const PREFIXES = new Set(['OUT-P', 'OUT-NR', 'OUT-CAST', 'OUT-GOAL', 'VOL-NR', 'VOL-BAN', 'VOL-OLD', 'CORE', 'CARD', 'STYLE', 'STATE'])
 
 /** One extracted obligation. `source.line` is 1-based. `also` names later ids of the same sentence. */
 export interface ExtractedRule {
@@ -244,23 +249,54 @@ function listItems(lines: readonly Line[], start: number, end: number): { text: 
   return items
 }
 
-function tableRows(lines: readonly Line[], heading: string): { cells: string[]; line: number; column: number }[] {
-  const rows: { cells: string[]; line: number; column: number }[] = []
+interface OutlinePointRow {
+  readonly plot: string
+  readonly boundary: string
+  readonly line: number
+  readonly number: string
+}
+
+/**
+ * Rows of the first table whose header has `boundaryHeading`.
+ * The plot cell is another column whose header contains `情节点`.
+ * @returns `undefined` when no such column exists.
+ */
+function outlinePointRows(lines: readonly Line[], boundaryHeading: string): OutlinePointRow[] | undefined {
   for (let index = 0; index < lines.length; index += 1) {
     const header = lines[index]
     if (header === undefined || !header.text.includes('|')) continue
     const headers = cellsOf(header.text)
-    const column = headers.findIndex(cell => cell === heading)
+    const boundaryColumn = headers.findIndex(cell => cell === boundaryHeading)
     const separator = lines[index + 1]
-    if (column < 0 || separator === undefined || !/^\s*\|?\s*:?-{3,}/u.test(separator.text)) continue
+    if (boundaryColumn < 0 || separator === undefined || !/^\s*\|?\s*:?-{3,}/u.test(separator.text)) continue
+    const plotColumn = headers.findIndex((cell, column) => column !== boundaryColumn && cell.includes('情节点'))
+    const rows: OutlinePointRow[] = []
     for (let row = index + 2; row < lines.length; row += 1) {
       const line = lines[row]
       if (line === undefined || !line.text.trim().startsWith('|')) break
-      rows.push({ cells: cellsOf(line.text), line: line.number, column })
+      const cells = cellsOf(line.text)
+      rows.push({
+        plot: plotColumn < 0 ? '' : cells[plotColumn] ?? '',
+        boundary: cells[boundaryColumn] ?? '',
+        line: line.number,
+        number: cells[0] ?? '',
+      })
     }
-    if (rows.length > 0 || column >= 0) return rows
+    return rows
   }
-  return rows
+  return undefined
+}
+
+/** `情节点｜边界：执行边界`, or the one side that is not a placeholder. */
+function outlinePointText(plot: string, boundary: string): string | undefined {
+  const plotText = plot.trim()
+  const boundaryText = boundary.trim()
+  const plotOk = !isPlaceholder(plotText)
+  const boundaryOk = !isPlaceholder(boundaryText)
+  if (plotOk && boundaryOk) return `${plotText}｜边界：${boundaryText}`
+  if (boundaryOk) return boundaryText
+  if (plotOk) return plotText
+  return undefined
 }
 
 function cellsOf(line: string): string[] {
@@ -532,18 +568,26 @@ function extractPrefix(
   const rules: ExtractedRule[] = []
   const label = chapterLabel(chapter)
   if (prefix === 'OUT-P') {
-    const rows = tableRows(lines, heading)
-    if (rows.length === 0) {
+    const rows = outlinePointRows(lines, heading)
+    if (rows === undefined || rows.length === 0) {
       warn(warnings, `未找到「${heading}」列`, path, heading)
       return rules
     }
     for (const row of rows) {
-      const text = row.cells[row.column] ?? ''
-      if (isPlaceholder(text)) continue
-      const number = row.cells[0]
-      const point = number !== undefined && /^\d+$/u.test(number) ? number : String(rules.length + 1)
+      const text = outlinePointText(row.plot, row.boundary)
+      if (text === undefined) continue
+      const point = /^\d+$/u.test(row.number) ? row.number : String(rules.length + 1)
       rules.push({ id: `OUT-${label}-P${point}`, text, source: { path, line: row.line } })
     }
+    return rules
+  }
+  if (prefix === 'OUT-GOAL') {
+    const field = fieldIn(lines, 0, lines.length, heading)
+    if (field === undefined) {
+      warn(warnings, `未找到「${heading}」`, path, heading)
+      return rules
+    }
+    if (!isPlaceholder(field.text)) rules.push({ id: `OUT-${label}-GOAL`, text: field.text, source: { path, line: field.line } })
     return rules
   }
   if (prefix === 'OUT-NR' || prefix === 'OUT-CAST') {

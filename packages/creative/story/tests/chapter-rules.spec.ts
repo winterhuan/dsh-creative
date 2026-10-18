@@ -28,9 +28,10 @@ describe('chapter rules', () => {
     const second = extractChapterRules(book, 3)
     expect(first.schema).toBe(CHAPTER_RULES_SCHEMA)
     expect(first.rules.map(rule => rule.id)).toEqual([
-      'OUT-003-P1', 'OUT-003-P2',
+      'OUT-003-P1', 'OUT-003-P2', 'OUT-003-P3', 'OUT-003-P4',
       'OUT-003-NR-1', 'OUT-003-NR-2',
       'OUT-003-CAST',
+      'OUT-003-GOAL',
       'VOL-1-1-NR-1', 'VOL-1-1-NR-2',
       'VOL-1-1-BAN',
       'VOL-BAN',
@@ -41,7 +42,12 @@ describe('chapter rules', () => {
       'STYLE-1', 'STYLE-2',
       'STATE-1',
     ])
-    expect(first.rules.find(rule => rule.id === 'OUT-003-P1')?.text).toBe('只进门，不点破幕后')
+    expect(first.rules.find(rule => rule.id === 'OUT-003-P1')?.text).toBe('账房打开库门｜边界：只进门，不点破幕后')
+    expect(first.rules.find(rule => rule.id === 'OUT-003-P2')?.text).toBe('管事拦住去路｜边界：不交出钥匙')
+    expect(first.rules.find(rule => rule.id === 'OUT-003-P3')?.text).toBe('空边界')
+    expect(first.rules.find(rule => rule.id === 'OUT-003-P4')?.text).toBe('只写边界')
+    expect(first.rules.some(rule => rule.id === 'OUT-003-P5')).toBe(false)
+    expect(first.rules.find(rule => rule.id === 'OUT-003-GOAL')?.text).toBe('查清库门为何封上')
     expect(first.rules.find(rule => rule.id === 'OUT-003-CAST')?.text).toBe('账房、管事')
     expect(first.rules.find(rule => rule.id === 'VOL-BAN')?.text).toBe('幕后主使的真名')
     expect(first.rules.find(rule => rule.id === 'VOL-OLD-1')?.text).toBe('第一章就揭示真名；后置到卷末')
@@ -55,6 +61,15 @@ describe('chapter rules', () => {
     expect(second.rules).toEqual(first.rules)
     expect(second.rules_sha256).toBe(first.rules_sha256)
     expect(readProjectPunctuationPolicy(book)).toBe('preserve')
+    const goalLine = first.rules.find(rule => rule.id === 'OUT-003-GOAL')
+    expect(goalLine?.source).toEqual({ path: '大纲/细纲_第003章.md', line: 7 })
+    expect(first.rules.find(rule => rule.id === 'OUT-003-P1')?.source.line).toBe(19)
+
+    const outline = await readFile(join(book, '大纲/细纲_第003章.md'), 'utf8')
+    await writeFile(join(book, '大纲/细纲_第003章.md'), outline.replace('- 主角目标：查清库门为何封上\n', ''))
+    const missingGoal = extractChapterRules(book, 3)
+    expect(missingGoal.rules.some(rule => rule.id.endsWith('-GOAL'))).toBe(false)
+    expect(missingGoal.warnings).toEqual([expect.objectContaining({ heading: '主角目标', path: '大纲/细纲_第003章.md' })])
   })
 
   it('reports blocking hits and hints without treating hints as blocking', async context => {
@@ -86,6 +101,22 @@ describe('chapter rules', () => {
     expect(missing.warnings).toEqual([expect.objectContaining({ heading: '问种边界', path: '设定/题材正文提示卡.md' })])
     expect(missing.rules.some(rule => rule.id.startsWith('CARD-问种边界'))).toBe(false)
     expect(missing.rules.some(rule => rule.id === 'CARD-禁止漂移-1')).toBe(true)
+
+    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({
+      punctuation: 'preserve',
+      rule_sources: [{ file: '大纲/细纲_第{chapter}章.md', heading: '核心事件', prefix: 'OUT-GOAL' }],
+    }))
+    const retargeted = extractChapterRules(book, 3)
+    expect(retargeted.warnings).toEqual([])
+    expect(retargeted.rules.map(rule => ({ id: rule.id, text: rule.text }))).toEqual([{ id: 'OUT-003-GOAL', text: '账房进门' }])
+
+    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({
+      punctuation: 'preserve',
+      rule_sources: [{ file: '大纲/细纲_第{chapter}章.md', heading: '主角目标', prefix: 'GOAL' }],
+    }))
+    const unknown = extractChapterRules(book, 3)
+    expect(unknown.rules).toEqual([])
+    expect(unknown.warnings.some(warning => warning.message.includes('未知规则前缀 GOAL'))).toBe(true)
 
     await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({
       punctuation: 'preserve',
@@ -159,6 +190,9 @@ describe('chapter rules', () => {
     const report = extractChapterRules(book, 4)
     const cast = report.scan.filter(hit => hit.kind === 'cast').map(hit => hit.id)
     expect(cast).toEqual(['cast:闲汉'])
+    expect(report.rules.find(rule => rule.id === 'OUT-004-P1')?.text).toBe('结算处见面')
+    expect(report.rules.some(rule => rule.id.endsWith('-GOAL'))).toBe(false)
+    expect(report.warnings.some(warning => warning.heading === '主角目标')).toBe(false)
     expect(report.scan.find(hit => hit.id === 'cast:闲汉')?.message).toBe('正文提到但细纲出场名单未列「闲汉」')
     const state = JSON.parse(await readFile(join(book, '追踪/_tracking-state.json'), 'utf8')) as {
       context: { continuity_risks: string[] }
