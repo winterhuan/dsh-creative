@@ -1,4 +1,4 @@
-/** Setting-library lookup: Chinese matching, aliases, provenance, budget and a read-only CLI. */
+/** Setting-library lookup: Chinese matching, aliases, source path and line range, budget and a read-only CLI. */
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
