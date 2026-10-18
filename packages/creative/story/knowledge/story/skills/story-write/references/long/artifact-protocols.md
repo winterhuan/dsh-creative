@@ -77,7 +77,7 @@ aliases:
 
 `forbidden` 是数组，每项 `{ "id", "pattern", "severity", "rule"? }`。`severity` 为 `blocking` 或 `hint`。`pattern` 是最长 200 字的正则，按 `u` 标志编译。非法、空白或超长的模式写入 warning 并跳过。`blocking` 只用于没有第二种读法的固定句子。`hint` 只报告。
 
-`era` 是 `{ "deny": [], "allow": [] }`。`deny` 是纯子串匹配，命中为 blocking，例如「枪伤」会命中「持枪伤人」；误伤用 `allow` 列表缓解，这段文字落在某条 `allow` 里时跳过。`void_terms` 是字符串数组，命中 `long_term_constraints` 或 `continuity_risks` 时给 hint，表示作废条目仍在追踪里。ID 带上该数组里的序号，如 `void:continuity_risks[1]:省港`，提示含该条目开头的一段原文。
+`era` 是 `{ "deny": [], "allow": [] }`。`deny` 是纯子串匹配，命中为 blocking，例如「枪伤」会命中「持枪伤人」；误伤用 `allow` 列表缓解，这段文字落在某条 `allow` 里时跳过。`void_terms` 是字符串数组，命中 `long_term_constraints` 或 `continuity_risks` 时给 hint，表示作废条目仍在追踪里。ID 带上从 0 起的数组下标，第二条风险写作 `void:continuity_risks[1]:省港`，提示含该条目开头的一段原文。
 
 同一句话出现在多个来源时，按去掉空白和句末标点后的文本合并。保留先出现的 ID，原文后面写 ` also: ` 和其余 ID。编号不重排，两次运行结果一致。写手拿到的 `id: text` 是合并后的结果。
 

@@ -12,7 +12,7 @@ Status: implemented
 
 `chapter rules` 提取这份清单，返回 `story-chapter-rules/v1`。每条规则有 ID、原文，以及来源路径和行号。同一输入下 ID 不变。含末尾换行的结果不超过 16 KiB。放不下时从末尾依次丢掉规则、扫描行和 warning，丢掉的条数记入 `omitted`。`rules_sha256` 覆盖截断前的完整规则列表。缺文件或缺标题变成 warning。命令以 0 退出。
 
-默认来源和 `设定/写作检查.json` 的可选键写在[产物协议](../../../../packages/creative/story/knowledge/story/skills/story-write/references/long/artifact-protocols.md)。写出 `rule_sources` 就整份替换默认来源。键缺失时保留默认。文件只设置 `punctuation`，且细纲没有 `出场顺序：` 字段时，章节检查保持原先的结果。缺省 `punctuation` 时按保留处理，其余键可以单独使用。同一句规范化文本保留最先出现的规则 ID，并在原文后写上其余 ID 的 `also:`。出场命中认名单原文里的名字，跳过中文引号里的名字，提示写明正文提到了名单未列的人。作废词 ID 带上该条目在数组中的序号。
+默认来源和 `设定/写作检查.json` 的可选键写在[产物协议](../../../../packages/creative/story/knowledge/story/skills/story-write/references/long/artifact-protocols.md)。写出 `rule_sources` 就整份替换默认来源。键缺失时保留默认。文件只设置 `punctuation`，且细纲没有 `出场顺序：` 字段时，章节检查保持原先的结果。缺省 `punctuation` 时按保留处理，其余键可以单独使用。同一句规范化文本保留最先出现的规则 ID，并在原文后写上其余 ID 的 `also:`。出场命中认名单原文里的名字，跳过中文引号里的名字，提示写明正文提到了名单未列的人。作废词 ID 带上该条目从 0 起的数组下标。
 
 `blocking` 只用于只有一种读法的配置模式和年代词。`hint` 报告正文里出现、但出场名单没有的人名，仍留在约束或风险里的作废词，以及其他配置的 hint。hint 不使 `chapter check` 失败。`chapter rules` 的出场扫描使用已经提取的出场规则。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次变更里。那需要以后的事实账本，追踪 schema 仍是第 5 版。
 
