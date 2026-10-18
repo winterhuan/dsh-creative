@@ -108,11 +108,15 @@ describe('student workspace boundary', () => {
     expect((await request({ method: 'POST', body: 'x'.repeat(65_537) })).status).toBe(413)
     expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change: { action: 'task', task: { id: 'q', sessionId: 's', subject: 'math', topic: 'sum', prompt: '1+1?' } } }) })).status).toBe(403)
     expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change: { action: 'paper-draft', paperDraft: { worksheetId: 'w', itemId: 'q', response: '2', result: 'correct', assistance: 'independent', uncertainties: '' } } }) })).status).toBe(403)
+    expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change: { action: 'workbook-draft', draft: { id: 'wb', subject: 'math', prompt: '20-( )>6', outcome: 'stuck', uncertainties: '' } } }) })).status).toBe(403)
     expect(studyStore).not.toHaveBeenCalled()
     for (const change of [
       { action: 'school-progress', subject: 'math', unitId: 'm2a-u-mul', posture: 'keep-up', preview: 'off', pace: 'teaching', parentConfirmation: '家长确认学校进度。' },
       { action: 'classify-mistake', mistakeId: 'error-1', errorType: 'carry-borrow' },
       { action: 'confirm-paper', worksheetId: 'w', results: [{ itemId: 'q', result: 'correct' }], userConfirmation: '家长核对照片。' },
+      { action: 'stuck', taskId: 'q' },
+      { action: 'confirm-workbook', id: 'wb', userConfirmation: '家长确认练习册。' },
+      { action: 'dismiss-teaching', id: 'tq-wb' },
     ]) expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change }) })).status).toBe(200)
   })
   it('passes the observed revision and reports conflicts without retrying writes', async () => {

@@ -144,23 +144,35 @@ const figure = z.discriminatedUnion('kind', [
 })
 /** A figure shared by an on-screen task and a printed worksheet item. */
 export type Figure = z.infer<typeof figure>
-const attempt = z.object({
+/** One step of teaching the current task: show, guide, independent try, then a variation. */
+export const phaseSchema = z.enum(['demo', 'guide', 'try', 'vary'])
+/** One teaching step on the current task. */
+export type TeachPhase = z.infer<typeof phaseSchema>
+const attemptResult = z.enum(['correct', 'partial', 'incorrect', 'unassessed', 'stuck'])
+const assistance = z.enum(['independent', 'hint', 'worked-example'])
+const attemptBody = {
   id, sessionId: id, subject, topic: text, prompt: text, response: text,
-  result: z.enum(['correct', 'partial', 'incorrect', 'unassessed']),
-  assistance: z.enum(['independent', 'hint', 'worked-example']),
   feedback: text, answerEvidence: text, mistakeId: id.optional(), objectiveId: id.optional(),
   variant: variantSchema.optional(),
   figure: figure.optional(),
-}).strict()
-const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), variant: variantSchema.optional(), mistakeId: id.optional(), objectiveId: id.optional(), figure: figure.optional() }).strict()
+}
+const attempt = z.object({ ...attemptBody, result: attemptResult, assistance }).strict()
+/** A record may omit assistance; the saved attempt always stores the resolved value. */
+const recordAttempt = z.object({ ...attemptBody, result: attemptResult, assistance: assistance.optional() }).strict()
+const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), phase: phaseSchema.optional(), variant: variantSchema.optional(), mistakeId: id.optional(), objectiveId: id.optional(), figure: figure.optional() }).strict()
 const answerSpace = z.enum(['none', 'line', 'lines', 'box'])
 const worksheetItem = z.object({ id, objectiveId: id.optional(), mistakeId: id.optional(), variant: variantSchema.optional(), prompt: text, figure: figure.optional(), space: answerSpace.optional(), answer: text, explanation: text, answerEvidence: text }).strict()
 const worksheet = z.object({ id, subject, kind: sheetKindSchema.optional(), objectiveId: id.optional(), items: z.array(worksheetItem).min(1).max(8) }).strict()
 const result = z.enum(['correct', 'partial', 'incorrect', 'unassessed'])
-const assistance = z.enum(['independent', 'hint', 'worked-example'])
 const paperResult = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, feedback: text, answerEvidence: text, userConfirmation: text }).strict()
 const paperDraft = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, uncertainties: z.string().max(2000), errorType: errorTypeSchema.optional() }).strict()
 const gradeSheet = z.object({ worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text }).strict()
+const workbookOutcome = z.enum(['stuck', 'hinted', 'independent-wrong', 'independent-correct'])
+const workbookDraft = z.object({
+  id, subject, prompt: text, response: text.optional(), outcome: workbookOutcome,
+  objectiveId: id.optional(), uncertainties: z.string().max(2000), imagePath: text.optional(),
+}).strict()
+const teachingItem = z.object({ id, subject, prompt: text, objectiveId: id.optional(), confirmedAt: time, sourceDraftId: id.optional() }).strict()
 
 /** Validated mutations; confirmation fields record user statements, not authenticated identities. */
 export const commandSchema = z.discriminatedUnion('action', [
@@ -175,7 +187,8 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('hint'), taskId: id }).strict(),
   z.object({ action: z.literal('configure-course'), material, course: courseInput }).strict(),
   z.object({ action: z.literal('school-progress'), subject, unitId: id, posture: z.enum(['keep-up', 'catch-up']), preview: z.enum(['on', 'off']), pace: z.enum(['teaching', 'review']), parentConfirmation: text }).strict(),
-  z.object({ action: z.literal('record'), attempt }).strict(),
+  z.object({ action: z.literal('record'), attempt: recordAttempt }).strict(),
+  z.object({ action: z.literal('stuck'), taskId: id }).strict(),
   z.object({ action: z.literal('stop'), sessionId: id, reflection: z.string().max(2000) }).strict(),
   z.object({ action: z.literal('mistake'), mistake }).strict(),
   z.object({ action: z.literal('confirm-mistake'), id, prompt: text, learnerAnswer: text.optional(), correction: text, explanation: text, answerEvidence: text, errorType: errorTypeSchema.optional(), userConfirmation: text }).strict(),
@@ -190,6 +203,9 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('grade-sheet'), grade: gradeSheet }).strict(),
   z.object({ action: z.literal('confirm-paper'), worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text }).strict(),
   z.object({ action: z.literal('discard-sheet'), worksheetId: id }).strict(),
+  z.object({ action: z.literal('workbook-draft'), draft: workbookDraft }).strict(),
+  z.object({ action: z.literal('confirm-workbook'), id, outcome: workbookOutcome.optional(), objectiveId: z.union([id, z.literal('')]).optional(), correction: text.optional(), explanation: text.optional(), answerEvidence: text.optional(), userConfirmation: text }).strict(),
+  z.object({ action: z.literal('dismiss-teaching'), id }).strict(),
 ])
 
 /** One learner and term per workspace; previous materials and attempts are retained. */
@@ -215,9 +231,11 @@ export const stateSchema = z.object({
   worksheets: z.array(worksheet.extend({ createdAt: time, discardedAt: time.optional() }).strict()).max(500).default([]),
   paperResults: z.array(paperResult.extend({ receivedAt: time }).strict()).max(4000).default([]),
   paperDrafts: z.array(paperDraft.extend({ receivedAt: time }).strict()).max(500).default([]),
+  workbookDrafts: z.array(workbookDraft.extend({ receivedAt: time }).strict()).max(500).default([]),
+  teachingQueue: z.array(teachingItem).max(500).default([]),
   rewards: z.array(z.object({ day: z.string(), reason: z.enum(['participation', 'reflection']) }).strict()).max(1000),
   breakUntil: time,
-  task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintRequested: z.boolean() }).strict().optional(),
+  task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintLevel: z.number().int().min(0).max(3), stuck: z.boolean().optional() }).strict().optional(),
 }).strict()
 
 /** A schema-validated learning mutation. */

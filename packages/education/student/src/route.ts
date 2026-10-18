@@ -13,7 +13,7 @@ import { queueWorksheet, renderWorksheet } from './worksheet.ts'
 
 const mutation = z.object({ revision: z.number().int().nonnegative(), change: commandSchema }).strict()
 const printRequest = z.object({ revision: z.number().int().nonnegative(), worksheetId: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u), confirmed: z.literal(true) }).strict()
-const allowed = new Set(['setup', 'limits', 'configure-course', 'school-progress', 'start', 'answer', 'hint', 'stop', 'confirm-mistake', 'confirm-concept', 'link-mistake', 'classify-mistake', 'grade-sheet', 'discard-sheet', 'confirm-paper'])
+const allowed = new Set(['setup', 'limits', 'configure-course', 'school-progress', 'start', 'answer', 'hint', 'stuck', 'stop', 'confirm-mistake', 'confirm-concept', 'link-mistake', 'classify-mistake', 'grade-sheet', 'discard-sheet', 'confirm-paper', 'confirm-workbook', 'dismiss-teaching'])
 
 /** Browser requests must address the local DSH host and originate from the same authority. */
 export function trustedStudyRequest(request: Pick<IncomingMessage, 'headers'>): boolean {

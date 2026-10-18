@@ -10,7 +10,7 @@ import { intensityKeys, levelKeys, subjects, type Activity, type Mode, type Scop
 import { IdeasView } from './ideas-view.tsx'
 import { MapView } from './map-view.tsx'
 import { PracticeView } from './practice-view.tsx'
-import { continuePrompt, dailySheetPrompt, diagnosePrompt, dictationPrompt, goalPrompt, organizePrompt, previewPrompt, reviewPrompt } from './prompts.ts'
+import { continuePrompt, dailySheetPrompt, diagnosePrompt, dictationPrompt, goalPrompt, organizePrompt, previewPrompt, reviewPrompt, teachPrompt, teachQueuePrompt } from './prompts.ts'
 import { TodayView } from './today-view.tsx'
 
 type Study = NonNullable<Dashboard['study']>
@@ -112,7 +112,8 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     if (recommendation.kind === 'diagnose') { void startDiagnosis(recommendation.subject, chosenIntensity(recommendation.subject)); return }
     const mode: Mode = recommendation.kind === 'review' ? 'review' : resolveMode(recommendation.subject, 'foundation')
     selectSubject(recommendation.subject); setActivity({ subject: recommendation.subject, mode }); setSelectedObjectiveId(mode === 'review' ? '' : recommendation.objectiveId ?? ''); setMistakeOffset(0)
-    const prompt = recommendation.kind === 'review' ? reviewPrompt : recommendation.kind === 'preview' && recommendation.objectiveId ? previewPrompt(recommendation.objectiveId) : recommendation.objectiveId ? goalPrompt(recommendation.objectiveId) : continuePrompt
+    const teaching = recommendation.reason.code === 'needs-teaching'
+    const prompt = recommendation.kind === 'review' ? reviewPrompt : teaching && recommendation.objectiveId ? teachPrompt(recommendation.objectiveId) : teaching ? teachQueuePrompt(recommendation.title ?? '') : recommendation.kind === 'preview' && recommendation.objectiveId ? previewPrompt(recommendation.objectiveId) : recommendation.objectiveId ? goalPrompt(recommendation.objectiveId) : continuePrompt
     void act({ action: 'start', id: crypto.randomUUID(), subject: recommendation.subject, mode }, true, prompt)
   }
   const parentSettings = view === 'parent' && parentTab === 'parent'

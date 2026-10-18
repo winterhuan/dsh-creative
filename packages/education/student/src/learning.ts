@@ -90,12 +90,13 @@ function sameSavedAnswer(task: { response?: string | undefined; rawResponse?: st
 type AttemptInput = StudyState['attempts'][number]
 
 function alignRecord<T extends { id: string; topic: string; prompt: string; response: string; mistakeId?: string | undefined; objectiveId?: string | undefined; variant?: AttemptInput['variant']; figure?: AttemptInput['figure'] }>(task: NonNullable<StudyState['task']>, attempt: T): T {
-  if (task.response === undefined) throw new Error(`请先用 answer 保存原始回答，再记录反馈。当前题目 id：${task.id}。`)
+  const demoNote = task.phase === 'demo' && task.response === undefined
+  if (!demoNote && task.response === undefined) throw new Error(`请先用 answer 保存原始回答，再记录反馈。当前题目 id：${task.id}。`)
   const problems: string[] = []
   if (attempt.id !== task.id) problems.push(`id 不一致。期望：${showValue(task.id)}。收到：${showValue(attempt.id)}。`)
   if (foldText(attempt.topic) !== foldText(task.topic)) problems.push(`topic 不一致。期望：${showValue(task.topic)}。收到：${showValue(attempt.topic)}。`)
   if (foldText(attempt.prompt) !== foldText(task.prompt)) problems.push(`prompt 不一致。期望：${showValue(task.prompt)}。收到：${showValue(attempt.prompt)}。`)
-  if (!sameSavedAnswer(task, attempt.response)) {
+  if (!demoNote && !sameSavedAnswer(task, attempt.response)) {
     const expected = task.rawResponse !== undefined && task.rawResponse !== task.response ? `${showValue(task.response)}（原始输入：${showValue(task.rawResponse)}）` : showValue(task.response)
     problems.push(`response 不一致。期望：${expected}。收到：${showValue(attempt.response)}。`)
   }
@@ -109,12 +110,28 @@ function alignRecord<T extends { id: string; topic: string; prompt: string; resp
     id: task.id,
     topic: task.topic,
     prompt: task.prompt,
-    response: task.response,
+    response: demoNote ? attempt.response : task.response ?? attempt.response,
     ...(task.mistakeId !== undefined ? { mistakeId: task.mistakeId } : {}),
     ...(task.objectiveId !== undefined ? { objectiveId: task.objectiveId } : {}),
     ...(task.variant !== undefined ? { variant: task.variant } : {}),
     ...(task.figure !== undefined ? { figure: task.figure } : {}),
   }
+}
+
+type Assistance = AttemptInput['assistance']
+
+/** Omitted assistance follows the current step: a demo is a worked example, a hint or a guide step is help, and everything else is independent. */
+function resolveAssistance(task: StudyState['task'] | undefined, assistance: Assistance | undefined): Assistance {
+  if (assistance !== undefined) return assistance
+  if (task?.phase === 'demo') return 'worked-example'
+  if ((task?.hintLevel ?? 0) > 0 || task?.phase === 'guide') return 'hint'
+  return 'independent'
+}
+
+/** An independent correct answer finishes teaching for that objective. */
+function dropTaught(state: StudyState, objectiveId: string | undefined): void {
+  if (objectiveId === undefined) return
+  state.teachingQueue = state.teachingQueue.filter(item => item.objectiveId !== objectiveId)
 }
 
 function todaySpent(state: StudyState, now: number): number {
@@ -221,6 +238,7 @@ function gradeItem(state: StudyState, worksheet: Worksheet, item: WorksheetItem,
     })
     item.mistakeId = id
   }
+  if (entry.result === 'correct' && entry.assistance === 'independent') dropTaught(state, itemObjectiveId(state, worksheet, item))
   return true
 }
 
@@ -260,7 +278,7 @@ export function scheduleMistakes(state: StudyState): StudyState {
     let days: string[] = []
     let due = studyDay(confirmedAt + DAY)
     for (const item of (evidence.get(mistake.id) ?? []).filter(entry => entry.at >= confirmedAt).sort((a, b) => a.at - b.at)) {
-      if (item.result === 'unassessed') continue
+      if (item.result === 'unassessed' || item.result === 'stuck') continue
       const day = studyDay(item.at)
       if (item.result !== 'correct' || item.assistance !== 'independent') {
         due = studyDay(item.at + DAY)
@@ -304,7 +322,7 @@ export function studyStatus(state: StudyState, now: number) {
     const key = objectiveId ?? JSON.stringify([subject, topic, materialId])
     const item = progress.get(key) ?? { subject, topic, ...(materialId ? { materialId } : {}), ...(objectiveId ? { objectiveId } : {}), attempts: 0, independentDays: [] }
     item.attempts += 1
-    if (result !== 'unassessed' && (result !== 'correct' || assistance !== 'independent')) item.independentDays = []
+    // Distinct independent days stay. A later hint does not erase them; map mastery still withholds mastered while recent help is inside 14 days.
     if (result === 'correct' && assistance === 'independent' && !item.independentDays.includes(studyDay(at))) item.independentDays.push(studyDay(at))
     progress.set(key, item)
   }
@@ -374,7 +392,7 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
     case 'task': {
       requireValue(active && active.id === command.task.sessionId && active.subject === command.task.subject, '请在当前学习段内出题。')
       if (state.task?.id === command.task.id && state.task.sessionId === command.task.sessionId) {
-        const { response: _response, rawResponse: _raw, answeredAt: _answeredAt, hintRequested: _hint, ...stored } = state.task
+        const { response: _response, rawResponse: _raw, answeredAt: _answeredAt, hintLevel: _hint, stuck: _stuck, ...stored } = state.task
         requireValue(canonical(stored) === canonical(command.task), '这个学习段里的题目编号已用于另一道题。')
         return previous
       }
@@ -383,10 +401,11 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       const mistake = state.mistakes.find(item => item.id === command.task.mistakeId)
       requireValue(active.mode !== 'review' || mistake, '复习题需要关联一条已确认的错题。')
       requireValue(active.mode !== 'diagnose' || command.task.objectiveId !== undefined, '摸底题必须关联学习目标（objectiveId）。')
+      requireValue(active.mode !== 'diagnose' || command.task.phase === undefined, '摸底题不进入教学步骤。')
       if (command.task.mistakeId) requireValue(mistake && mistake.subject === active.subject && mistake.confirmedAt !== undefined && mistake.uncertainties === '', '请先确认这道错题，再开始复习。')
       if (command.task.objectiveId) requireValue(objectiveOf(state, command.task.objectiveId)?.subject === active.subject, '学习目标不存在或科目不符。')
       if (mistake?.objectiveId) requireValue(command.task.objectiveId === mistake.objectiveId, '复习题必须对应错题的学习目标。')
-      state.task = { ...command.task, hintRequested: false }
+      state.task = { ...command.task, hintLevel: 0 }
       break
     }
     case 'answer':
@@ -402,10 +421,27 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
         task.rawResponse = command.response
         task.answeredAt = now
       } else {
-        if (task.hintRequested) return previous
+        if (task.hintLevel >= 3) return previous
         requireValue(task.response === undefined, '答案已提交，请等待反馈。')
-        task.hintRequested = true
+        task.hintLevel += 1
       }
+      break
+    }
+    case 'stuck': {
+      const task = state.task
+      requireValue(task && task.id === command.taskId && active && active.id === task.sessionId, '当前题目已结束，请刷新学习状态。')
+      if (state.attempts.some(item => item.id === task.id && item.sessionId === task.sessionId)) return previous
+      task.stuck = true
+      const materialId = active.materialId
+      state.attempts.push({
+        id: task.id, sessionId: task.sessionId, subject: task.subject, topic: task.topic, prompt: task.prompt,
+        response: '不会', result: 'stuck', assistance: 'hint', feedback: '孩子表示不会，先教方法再独立做。', answerEvidence: '未作答，记为不会。',
+        ...(task.mistakeId !== undefined ? { mistakeId: task.mistakeId } : {}),
+        ...(task.objectiveId !== undefined ? { objectiveId: task.objectiveId } : {}),
+        ...(task.variant !== undefined ? { variant: task.variant } : {}),
+        ...(task.figure !== undefined ? { figure: task.figure } : {}),
+        at: now, ...(materialId ? { materialId } : {}), ...(now > active.deadline ? { late: true as const } : {}),
+      })
       break
     }
     case 'limits':
@@ -475,10 +511,12 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       const attempt = command.attempt
       const openTask = state.task?.sessionId === attempt.sessionId && state.task.id === attempt.id ? state.task : undefined
       const aligned = openTask ? alignRecord(openTask, attempt) : attempt
-      const existing = state.attempts.find(item => item.id === aligned.id && item.sessionId === aligned.sessionId)
+      const assistance = resolveAssistance(openTask, aligned.assistance)
+      const recorded = { ...aligned, assistance }
+      const existing = state.attempts.find(item => item.id === recorded.id && item.sessionId === recorded.sessionId)
       if (existing) {
         const { at: _at, materialId: _material, late: _late, rawResponse: _raw, ...stored } = existing
-        if (canonical(stored) === canonical(aligned)) return previous
+        if (canonical(stored) === canonical(recorded)) return previous
         throw new Error('该记录 ID 已用于另一条内容。完全相同的重试会直接成功；新的一条请换一个 ID。')
       }
       requireValue(active && active.id === attempt.sessionId && active.subject === attempt.subject, '作答必须属于当前学习段和科目。')
@@ -488,7 +526,9 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
         const unit = objective !== undefined && 'unit' in objective && typeof objective.unit === 'string' ? objective.unit : ''
         requireValue(scopeSelects(active.scope, aligned.subject, unit, aligned.objectiveId), '作答目标不在本段学习范围内。')
       }
-      if (openTask && openTask.sessionId === active.id) requireValue(!openTask.hintRequested || aligned.assistance !== 'independent', '学生请求过提示，不能记录为独立作答。')
+      if (openTask && openTask.sessionId === active.id && openTask.phase === 'guide') requireValue(openTask.hintLevel >= 1, '引导步要先请求提示。')
+      if (openTask && openTask.sessionId === active.id && (openTask.phase === 'demo' || openTask.phase === 'guide')) requireValue(recorded.assistance !== 'independent', '示范或引导不能记录为独立作答。')
+      if (openTask && openTask.sessionId === active.id) requireValue(openTask.hintLevel === 0 || recorded.assistance !== 'independent', '学生请求过提示，不能记录为独立作答。')
       const mistake = aligned.mistakeId ? state.mistakes.find(item => item.id === aligned.mistakeId) : undefined
       requireValue(!aligned.mistakeId || mistake, '错题不存在，请先查询错题记录。')
       if (aligned.objectiveId) {
@@ -500,7 +540,8 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       requireValue(active.mode !== 'diagnose' || aligned.objectiveId !== undefined, '摸底作答必须关联学习目标（objectiveId）。')
       if (mistake) requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === aligned.subject, '先确认图片转录、答案依据与科目，再进行复习。')
       const materialId = mistake?.materialId ?? active.materialId
-      state.attempts.push({ ...aligned, at: now, ...(materialId ? { materialId } : {}), ...(openTask?.rawResponse ? { rawResponse: openTask.rawResponse } : {}), ...(now > active.deadline ? { late: true as const } : {}) })
+      state.attempts.push({ ...recorded, at: now, ...(materialId ? { materialId } : {}), ...(openTask?.rawResponse ? { rawResponse: openTask.rawResponse } : {}), ...(now > active.deadline ? { late: true as const } : {}) })
+      if (recorded.result === 'correct' && recorded.assistance === 'independent') dropTaught(state, recorded.objectiveId)
       break
     }
     case 'stop': {
@@ -714,6 +755,56 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       worksheet.discardedAt = now
       break
     }
+    case 'workbook-draft': {
+      const draft = command.draft
+      if (draft.objectiveId) requireValue(objectiveOf(state, draft.objectiveId)?.subject === draft.subject, '学习目标不存在或科目不符。')
+      const next = { ...draft, uncertainties: draft.uncertainties }
+      const existing = state.workbookDrafts.find(item => item.id === draft.id)
+      if (existing) {
+        const { receivedAt: _receivedAt, ...before } = existing
+        if (canonical(before) === canonical(next)) return previous
+        state.workbookDrafts = state.workbookDrafts.map(item => item.id === draft.id ? { ...next, receivedAt: existing.receivedAt } : item)
+        break
+      }
+      state.workbookDrafts.push({ ...next, receivedAt: now })
+      break
+    }
+    case 'confirm-workbook': {
+      const draft = state.workbookDrafts.find(item => item.id === command.id)
+      if (!draft) return previous
+      const outcome = command.outcome ?? draft.outcome
+      const objectiveId = command.objectiveId === '' ? undefined : command.objectiveId ?? draft.objectiveId
+      if (objectiveId) requireValue(objectiveOf(state, objectiveId)?.subject === draft.subject, '学习目标不存在或科目不符。')
+      state.workbookDrafts = state.workbookDrafts.filter(item => item.id !== draft.id)
+      if (outcome === 'independent-correct') { dropTaught(state, objectiveId); break }
+      if (outcome === 'stuck' || outcome === 'hinted') {
+        const queueId = `tq-${draft.id}`.slice(0, 80)
+        if (!state.teachingQueue.some(item => item.id === queueId)) {
+          state.teachingQueue.push({
+            id: queueId, subject: draft.subject, prompt: draft.prompt, confirmedAt: now, sourceDraftId: draft.id,
+            ...(objectiveId !== undefined ? { objectiveId } : {}),
+          })
+        }
+        break
+      }
+      if (command.correction === undefined || command.explanation === undefined || command.answerEvidence === undefined) throw new Error('独立做错要写订正、说明和答案依据。')
+      const mistakeId = `wb-${draft.id}`.slice(0, 80)
+      if (!state.mistakes.some(item => item.id === mistakeId)) {
+        state.mistakes.push({
+          id: mistakeId, subject: draft.subject, topic: draft.prompt.slice(0, 60), prompt: draft.prompt,
+          learnerAnswer: draft.response ?? '（未转录）', correction: command.correction, explanation: command.explanation, answerEvidence: command.answerEvidence,
+          uncertainties: '', ...(draft.imagePath !== undefined ? { imagePath: draft.imagePath } : {}),
+          ...(objectiveId !== undefined ? { objectiveId } : {}),
+          confirmedAt: now, userConfirmation: command.userConfirmation, stage: 0, independentDays: [],
+        })
+      }
+      break
+    }
+    case 'dismiss-teaching': {
+      if (!state.teachingQueue.some(item => item.id === command.id)) return previous
+      state.teachingQueue = state.teachingQueue.filter(item => item.id !== command.id)
+      break
+    }
   }
   state.revision += 1
   state.updatedAt = now
@@ -863,7 +954,7 @@ const RECHECK_AFTER = 30 * DAY
 
 /** Why an objective needs attention; codes are localized by the workbench and read by the model. */
 export interface InsightReason {
-  code: 'due-mistakes' | 'open-mistakes' | 'recent-help-or-error' | 'recurring-error' | 'not-practised-recently' | 'not-started' | 'diagnosis-due' | 'preview' | 'school-pace'
+  code: 'due-mistakes' | 'open-mistakes' | 'recent-help-or-error' | 'recurring-error' | 'not-practised-recently' | 'not-started' | 'diagnosis-due' | 'preview' | 'school-pace' | 'needs-teaching'
   count: number
 }
 
@@ -1011,6 +1102,22 @@ function scopeSelects(scope: { grade: number; term: 'first' | 'second'; units?: 
   return file?.units.some(item => item.id === unit) ?? false
 }
 
+type Outcome = { at: number; result: string; assistance: string }
+
+/**
+ * Whether this objective still needs a teaching block.
+ * One "不会" stays until a later independent correct. Correct only with help, and a teaching-queue item
+ * with no independent correct after it was confirmed, do the same.
+ */
+function teachingNeeded(outcomes: Outcome[], queue: { confirmedAt: number }[]): boolean {
+  const stuckAt = outcomes.flatMap(item => item.result === 'stuck' ? [item.at] : [])
+  const latestStuck = stuckAt.length > 0 ? Math.max(...stuckAt) : undefined
+  if (latestStuck !== undefined && !outcomes.some(item => item.at > latestStuck && item.result === 'correct' && item.assistance === 'independent')) return true
+  const independentCorrect = outcomes.some(item => item.result === 'correct' && item.assistance === 'independent')
+  if (!independentCorrect && outcomes.some(item => item.result === 'correct' && item.assistance !== 'independent')) return true
+  return queue.some(item => !outcomes.some(outcome => outcome.at >= item.confirmedAt && outcome.result === 'correct' && outcome.assistance === 'independent'))
+}
+
 /** New learning stays inside the current unit, or inside every taught unit when catching up, unless a session scope overrides. A review week adds none. */
 function learnable(state: StudyState, item: ObjectiveInsight, scope?: CurriculumScope & { units?: string[] | undefined; objectiveIds?: string[] | undefined }): boolean {
   if (item.level !== 'untouched') return false
@@ -1049,20 +1156,23 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
     for (const mistake of mistakes) if (mistake.errorType !== undefined) causeCounts.set(mistake.errorType, (causeCounts.get(mistake.errorType) ?? 0) + 1)
     const errorTypes = [...causeCounts.entries()].map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count || a.type.localeCompare(b.type)).slice(0, 5)
     const recurringTypes = [...causeCounts.values()].filter(count => count >= 2).length
-    const weak = activeMistakes >= 2 || helpedOrWrong >= 2 || (independentDays.size === 0 && wrongRecent >= 1)
+    const queue = state.teachingQueue.filter(item => item.objectiveId === base.id)
+    const teaching = teachingNeeded(outcomes, queue)
+    const weak = teaching || activeMistakes >= 2 || helpedOrWrong >= 2 || (independentDays.size === 0 && wrongRecent >= 1)
     const stalled = !weak && independentDays.size < 3 && lastAt !== undefined && now - lastAt > 10 * DAY
     const level = dueMistakes > 0 ? 'due' : weak ? 'weak'
       : independentDays.size >= 3 && activeMistakes === 0 && helpedOrWrong === 0 ? 'mastered' : stalled ? 'stalled'
         : lastAt !== undefined || mistakes.length > 0 ? 'practising' : 'untouched'
     const reasons: InsightReason[] = []
     if (dueMistakes > 0) reasons.push({ code: 'due-mistakes', count: dueMistakes })
+    if (teaching) reasons.push({ code: 'needs-teaching', count: 1 })
     if (activeMistakes > 0) reasons.push({ code: 'open-mistakes', count: activeMistakes })
     if (helpedOrWrong > 0) reasons.push({ code: 'recent-help-or-error', count: helpedOrWrong })
     if (recurringTypes > 0) reasons.push({ code: 'recurring-error', count: recurringTypes })
     if (stalled && lastAt !== undefined) reasons.push({ code: 'not-practised-recently', count: Math.floor((now - lastAt) / DAY) })
     if (level === 'untouched') reasons.push({ code: 'not-started', count: 0 })
     const priority = level === 'mastered' ? 0
-      : dueMistakes * 40 + Math.min(36, helpedOrWrong * 12) + Math.min(24, activeMistakes * 8) + Math.min(16, recurringTypes * 8) + (stalled ? 10 : 0) + (level === 'untouched' ? 5 : 0)
+      : (teaching ? 64 : 0) + dueMistakes * 40 + Math.min(36, helpedOrWrong * 12) + Math.min(24, activeMistakes * 8) + Math.min(16, recurringTypes * 8) + (stalled ? 10 : 0) + (level === 'untouched' ? 5 : 0)
     objectives.push({ ...base, level, independentDays: independentDays.size, attempts: outcomes.length, helpedOrWrong,
       ...(lastAt !== undefined ? { lastAt } : {}), activeMistakes, dueMistakes, masteredMistakes: mistakes.length - activeMistakes, errorTypes, priority, reasons })
   }
@@ -1112,11 +1222,18 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
   const untouched = objectives.find(item => learnable(state, item))
   const preview = objectives.find(item => item.level === 'untouched' && schoolGate(state, item.subject)?.previewUnit === item.unit)
   const held = objectives.find(item => item.level === 'untouched' && schoolGate(state, item.subject) !== undefined && !learnable(state, item) && schoolGate(state, item.subject)?.previewUnit !== item.unit)
+  const teachingGoal = objectives.filter(item => item.reasons.some(reason => reason.code === 'needs-teaching') && taughtUnit(state, item.subject, item.unit))
+    .sort((a, b) => b.priority - a.priority)[0]
+  const queued = state.teachingQueue.filter(item => item.objectiveId === undefined).sort((a, b) => a.confirmedAt - b.confirmedAt)[0]
   const recommendation: StudyInsight['recommendation'] = first
     ? { kind: 'review', subject: first.subject, reason: { code: 'due-mistakes', count: first.count } }
-    : weakPoints[0]
-      ? { kind: 'practice', subject: weakPoints[0].subject, objectiveId: weakPoints[0].id, title: weakPoints[0].title, reason: weakPoints[0].reasons[0] ?? { code: 'recent-help-or-error', count: 0 } }
-      : checkIn
+    : teachingGoal
+      ? { kind: 'practice', subject: teachingGoal.subject, objectiveId: teachingGoal.id, title: teachingGoal.title, reason: { code: 'needs-teaching', count: 1 } }
+      : queued
+        ? { kind: 'practice', subject: queued.subject, title: queued.prompt.slice(0, 40), reason: { code: 'needs-teaching', count: 1 } }
+        : weakPoints[0]
+          ? { kind: 'practice', subject: weakPoints[0].subject, objectiveId: weakPoints[0].id, title: weakPoints[0].title, reason: weakPoints[0].reasons[0] ?? { code: 'recent-help-or-error', count: 0 } }
+          : checkIn
         ? { kind: 'diagnose', subject: checkIn.subject, reason: { code: 'diagnosis-due', count: checkIn.sample.length } }
         : untouched
           ? { kind: 'learn', subject: untouched.subject, objectiveId: untouched.id, title: untouched.title, reason: { code: 'not-started', count: 0 } }
@@ -1146,7 +1263,7 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
   }
   for (const item of objectives) {
     const outcomes = outcomesByObjective.get(item.id) ?? []
-    if (outcomes.length > 0 && item.independentDays === 0 && outcomes.every(outcome => studyDay(outcome.at) === today)) remind(item, 'first-explain')
+    if (outcomes.some(outcome => outcome.result !== 'stuck') && item.independentDays === 0 && outcomes.every(outcome => studyDay(outcome.at) === today)) remind(item, 'first-explain')
   }
   for (const mistake of state.mistakes) {
     if (mistake.confirmedAt === undefined || !mistake.independentDays.includes(today)) continue
@@ -1189,20 +1306,29 @@ export function diagnosticFor(state: StudyState, subject: CurriculumSubject, now
     pool = scoped.map(base => {
       const existing = insight.objectives.find(item => item.id === base.id)
       if (existing) return existing
-      const outcomes = state.attempts.filter(item => item.objectiveId === base.id).map(item => ({ at: item.at, result: item.result, assistance: item.assistance }))
+      const outcomes = [
+        ...state.attempts.filter(item => item.objectiveId === base.id).map(item => ({ at: item.at, result: item.result, assistance: item.assistance })),
+        ...state.paperResults.filter(item => {
+          const sheet = state.worksheets.find(worksheet => worksheet.id === item.worksheetId)
+          return sheet !== undefined && questionObjectiveId(state, sheet, item.itemId) === base.id
+        }).map(item => ({ at: item.receivedAt, result: item.result, assistance: item.assistance })),
+      ]
       const independentDays = new Set(outcomes.filter(item => item.result === 'correct' && item.assistance === 'independent').map(item => studyDay(item.at)))
       const lastAt = outcomes.reduce<number | undefined>((latest, item) => latest === undefined || item.at > latest ? item.at : latest, undefined)
       const helpedOrWrong = outcomes.filter(item => item.at >= now - 14 * DAY && (item.result === 'incorrect' || item.result === 'partial' || (item.result === 'correct' && item.assistance !== 'independent'))).length
       const mistakes = state.mistakes.filter(item => item.objectiveId === base.id && item.confirmedAt !== undefined)
       const activeMistakes = mistakes.filter(item => item.stage < 4).length
       const dueMistakes = mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= now).length
-      const weak = activeMistakes >= 2 || helpedOrWrong >= 2
+      const queue = state.teachingQueue.filter(item => item.objectiveId === base.id)
+      const teaching = teachingNeeded(outcomes, queue)
+      const weak = teaching || activeMistakes >= 2 || helpedOrWrong >= 2
       const stalled = !weak && independentDays.size < 3 && lastAt !== undefined && now - lastAt > 10 * DAY
       const level = dueMistakes > 0 ? 'due' as const : weak ? 'weak' as const
         : independentDays.size >= 3 && activeMistakes === 0 && helpedOrWrong === 0 ? 'mastered' as const : stalled ? 'stalled' as const
           : lastAt !== undefined || mistakes.length > 0 ? 'practising' as const : 'untouched' as const
-      const priority = level === 'mastered' ? 0 : dueMistakes * 40 + Math.min(36, helpedOrWrong * 12) + Math.min(24, activeMistakes * 8) + (stalled ? 10 : 0) + (level === 'untouched' ? 5 : 0)
-      return { ...base, level, independentDays: independentDays.size, attempts: outcomes.length, helpedOrWrong, ...(lastAt !== undefined ? { lastAt } : {}), activeMistakes, dueMistakes, masteredMistakes: mistakes.length - activeMistakes, errorTypes: [], priority, reasons: level === 'untouched' ? [{ code: 'not-started' as const, count: 0 }] : [] }
+      const priority = level === 'mastered' ? 0 : (teaching ? 64 : 0) + dueMistakes * 40 + Math.min(36, helpedOrWrong * 12) + Math.min(24, activeMistakes * 8) + (stalled ? 10 : 0) + (level === 'untouched' ? 5 : 0)
+      const reasons: InsightReason[] = teaching ? [{ code: 'needs-teaching', count: 1 }] : level === 'untouched' ? [{ code: 'not-started', count: 0 }] : []
+      return { ...base, level, independentDays: independentDays.size, attempts: outcomes.length, helpedOrWrong, ...(lastAt !== undefined ? { lastAt } : {}), activeMistakes, dueMistakes, masteredMistakes: mistakes.length - activeMistakes, errorTypes: [], priority, reasons }
     })
   }
   const lastAt = state.sessions.filter(item => item.mode === 'diagnose' && item.subject === subject).reduce<number | undefined>((latest, item) => latest === undefined || item.startedAt > latest ? item.startedAt : latest, undefined)

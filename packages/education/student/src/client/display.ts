@@ -13,7 +13,7 @@ export type Activity = { subject: Subject; mode: Mode }
 export type ScopeChoice = { grade?: number; term?: 'first' | 'second'; unit?: string }
 
 export const levelKeys = { due: 'levelDue', weak: 'levelWeak', stalled: 'levelStalled', mastered: 'levelMastered', practising: 'levelPractising', untouched: 'levelUntouched' } as const
-export const reasonKeys = { 'due-mistakes': 'reasonDue', 'open-mistakes': 'reasonOpen', 'recent-help-or-error': 'reasonRecent', 'recurring-error': 'reasonRecurring', 'not-practised-recently': 'reasonStalled', 'not-started': 'reasonNew', 'diagnosis-due': 'reasonDiagnose', preview: 'reasonPreview', 'school-pace': 'reasonSchoolPace' } as const
+export const reasonKeys = { 'due-mistakes': 'reasonDue', 'open-mistakes': 'reasonOpen', 'recent-help-or-error': 'reasonRecent', 'recurring-error': 'reasonRecurring', 'not-practised-recently': 'reasonStalled', 'not-started': 'reasonNew', 'diagnosis-due': 'reasonDiagnose', preview: 'reasonPreview', 'school-pace': 'reasonSchoolPace', 'needs-teaching': 'reasonTeaching' } as const
 export const planKeys = { review: 'recommendReview', practice: 'recommendPractice', diagnose: 'recommendDiagnose', learn: 'recommendLearn', preview: 'recommendPreview', hold: 'recommendHold' } as const
 export const intensityKeys = { light: 'intensityLight', standard: 'intensityStandard', deep: 'intensityDeep' } as const
 export const intensityHelpKeys = { light: 'intensityLightHelp', standard: 'intensityStandardHelp', deep: 'intensityDeepHelp' } as const
@@ -35,5 +35,5 @@ export function day(ms: number | undefined): string {
 
 /** One line of evidence reasons for a goal or recommendation. */
 export function reasonText(reasons: InsightReason[], t: Translate): string {
-  return reasons.map(reason => reason.code === 'not-started' || reason.code === 'preview' || reason.code === 'school-pace' ? t(reasonKeys[reason.code]) : `${t(reasonKeys[reason.code])} ${reason.count}`).join(' · ')
+  return reasons.map(reason => reason.code === 'not-started' || reason.code === 'preview' || reason.code === 'school-pace' || reason.code === 'needs-teaching' ? t(reasonKeys[reason.code]) : `${t(reasonKeys[reason.code])} ${reason.count}`).join(' · ')
 }
