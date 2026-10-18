@@ -14,6 +14,7 @@ import { auditBook, BOOK_AUDIT_MAX_SPAN, defaultAuditReportPath, renderBookAudit
 import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
 import { extractChapterRules } from '../core/rules.ts'
+import { ruleAuditRelativePath, verifyRuleAudit } from '../core/rule-audit.ts'
 import { type AiPatternsDocument, scanAiPatterns, aiPatternsDocument } from '../core/checks/ai-patterns.ts'
 import { scanDegeneration } from '../core/checks/degeneration.ts'
 import { checkOutlineCopy } from '../core/checks/outline-copy.ts'
@@ -81,6 +82,7 @@ function specFor(family: string, action: string): Options | undefined {
       snapshot: { ...WORKSPACE, ...BOOK, ...CHAPTER, 'outline-only': { kind: 'flag' } },
       commit: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
       'accept-current-length': { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
+      'audit-verify': { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value' } },
     },
     short: {
       'plan-check': { ...WORKSPACE, ...BOOK },
@@ -497,6 +499,12 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       return [report, report.ok ? 0 : 1]
     }
     if (action === 'rules') return [extractChapterRules(book, chapter), 0]
+    if (action === 'audit-verify') {
+      const relative = typeof values.input === 'string' ? values.input : ruleAuditRelativePath(chapter)
+      const path = filePath(relative, book, true)
+      const verified = verifyRuleAudit(book, chapter, path)
+      return [verified, verified.verified ? 0 : 1]
+    }
     if (action === 'snapshot') {
       const stateFile = statePath(book)
       filePath(stateFile, book)

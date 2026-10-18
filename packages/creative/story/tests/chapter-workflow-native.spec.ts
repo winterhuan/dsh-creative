@@ -50,7 +50,7 @@ class ChapterAdapter extends LlmAdapter {
   readonly childStopped = Promise.withResolvers<void>()
   reviewCount = 0
   constructor(readonly workflowArgs: Record<string, unknown>, readonly project: string,
-    readonly mode: 'commit' | 'create-outline' | 'prepare-needs-input' | 'missing-approved-outline' | 'needs-input' | 'invalid-review' | 'cancel' | 'writer-error' | 'writer-text' | 'writer-reasoning') { super() }
+    readonly mode: 'commit' | 'create-outline' | 'prepare-needs-input' | 'missing-approved-outline' | 'needs-input' | 'invalid-review' | 'audit-limit' | 'cancel' | 'writer-error' | 'writer-text' | 'writer-reasoning') { super() }
   override async resolveModel(provider: string, model: string) { return { provider, id: model, name: model } }
   read(file_path: string): Step { return { name: 'read', args: { file_path } } }
   skill(name: string): Step { return { name: 'skill', args: { name } } }
@@ -134,9 +134,38 @@ class ChapterAdapter extends LlmAdapter {
         } }),
       ]
     }
+    if (prompt.includes('You are the rule auditor.')) {
+      expect(prompt).toContain('rule-auditor.md')
+      expect(prompt).toContain('chapter audit-verify')
+      const auditFile = join(this.project, '草稿/审稿/第001章.rules.json')
+      return [this.skill('story-review'),
+        this.read(join(reviewSkill, 'references/roles/rule-auditor.md')),
+        this.bash(`${this.cliCommand('chapter', 'rules', ['--chapter', '1'])} > chapter-rules.json && cat chapter-rules.json`),
+        this.read(body),
+        this.bash(`mkdir -p ${quote(join(this.project, '草稿/审稿'))}`),
+        async () => {
+          const rules = JSON.parse(await readFile(join(this.project, 'chapter-rules.json'), 'utf8')) as { rules: { id: string }[]; rules_sha256: string }
+          expect(rules.rules.length).toBeGreaterThan(0)
+          const bytes = await readFile(body)
+          const firstLine = bytes.toString('utf8').split('\n').find(line => line.trim() !== '') ?? ''
+          expect(firstLine).not.toBe('')
+          const verdicts = this.mode === 'audit-limit'
+            ? [{ rule_id: rules.rules[0]!.id, verdict: 'violate', evidence: [{ line: 1, quote: firstLine }], reason: '这一句还没按规则收住', fix: '改这一句' },
+              ...rules.rules.slice(1).map(rule => ({ rule_id: rule.id, verdict: 'pass' }))]
+            : rules.rules.map(rule => ({ rule_id: rule.id, verdict: 'pass' }))
+          const document = { schema: 'story-rule-audit/v1', body_sha256: createHash('sha256').update(bytes).digest('hex'), rules_sha256: rules.rules_sha256, verdicts }
+          return { name: 'write', args: { file_path: auditFile, content: JSON.stringify(document) } }
+        },
+        this.bash(`${this.cliCommand('chapter', 'audit-verify', ['--chapter', '1'])} > audit-verified.json && cat audit-verified.json`),
+        async () => {
+          expect(JSON.parse(await readFile(join(this.project, 'audit-verified.json'), 'utf8')).verified).toBe(true)
+          return { name: STRUCTURED_OUTPUT_TOOL, args: JSON.parse(await readFile(auditFile, 'utf8')) as object }
+        },
+      ]
+    }
     if (prompt.includes('You are an independent reviewer.')) {
       this.reviewCount++
-      const recommendation = this.mode === 'invalid-review' ? 'invalid' : this.mode === 'needs-input' ? 'needs_input' : this.reviewCount === 1 ? 'revise' : 'ready'
+      const recommendation = this.mode === 'invalid-review' ? 'invalid' : this.mode === 'needs-input' ? 'needs_input' : this.mode === 'audit-limit' || this.reviewCount > 1 ? 'ready' : 'revise'
       const identityCommand = this.checkCommand('snapshot')
       return [this.skill('story-review'),
         this.read(join(reviewSkill, 'references/workflow.md')), this.read(join(reviewSkill, 'references/quality-rubric.md')),
@@ -262,15 +291,33 @@ async function setup(test: TestContext, mode: ChapterAdapter['mode']) {
   return { ctx, lead, idle, adapter, project }
 }
 
+function orderedStarts(labels: readonly string[]): string[] {
+  const ordered: string[] = []
+  for (let index = 0; index < labels.length; index++) {
+    const current = labels[index] ?? ''
+    const next = labels[index + 1]
+    const reviewAudit = next !== undefined && (
+      (current.startsWith('Review') && next.startsWith('Audit')) ||
+      (current.startsWith('Audit') && next.startsWith('Review'))
+    )
+    if (reviewAudit) {
+      ordered.push(current.startsWith('Review') ? current : next, current.startsWith('Audit') ? current : next)
+      index++
+    } else ordered.push(current)
+  }
+  return ordered
+}
+
 describe('chapter template through the native model and tool runtime', () => {
   it.for(['commit', 'create-outline'] as const)('prepares %s, revises with a fresh reviewer and verifies a guarded commit', async (mode, test) => {
     const { ctx, lead, idle, adapter, project } = await setup(test, mode)
     await idle
     const events = lead.session.snapshotEvents()
     const workflowEvents = events.filter(event => event.type.startsWith('tool-workflow/'))
-    expect(workflowEvents.map(event => event.type)).toEqual([
-      'tool-workflow/run-start', ...Array.from({ length: 6 }, () => ['tool-workflow/agent-start', 'tool-workflow/agent-end']).flat(), 'tool-workflow/run-end',
-    ])
+    expect(workflowEvents[0]?.type).toBe('tool-workflow/run-start')
+    expect(workflowEvents.at(-1)?.type).toBe('tool-workflow/run-end')
+    expect(workflowEvents.filter(event => event.type === 'tool-workflow/agent-start')).toHaveLength(8)
+    expect(workflowEvents.filter(event => event.type === 'tool-workflow/agent-end')).toHaveLength(8)
     expect(workflowEvents.at(-1)?.data, JSON.stringify(adapter.requests.at(-2)?.messages.slice(-5))).toMatchObject({ stopReason: 'completed' })
     const state = JSON.parse(await readFile(join(project, '追踪/_tracking-state.json'), 'utf8'))
     expect(state).toMatchObject({ last_committed_chapter: 1, state_revision: 1 })
@@ -278,9 +325,9 @@ describe('chapter template through the native model and tool runtime', () => {
     expect(state).not.toHaveProperty('reader_value_records')
     expect(await readFile(join(project, '正文/第1章.md'), 'utf8')).toBe(finalBody)
     const children = [...adapter.queues.keys()].filter(id => id !== lead.id)
-    expect(children).toHaveLength(6)
-    expect(events.filter(event => event.type === 'tool-workflow/agent-start').map(event => event.data.label))
-      .toEqual(['Prepare', 'Write', 'Review', 'Revise 1', 'Review 1', 'Submit'])
+    expect(children).toHaveLength(8)
+    expect(orderedStarts(events.filter(event => event.type === 'tool-workflow/agent-start').map(event => String(event.data.label))))
+      .toEqual(['Prepare', 'Write', 'Review', 'Audit', 'Revise 1', 'Review 1', 'Audit 1', 'Submit'])
     expect(await readFile(join(project, '大纲/细纲_第1章.md'), 'utf8')).toBe(outlineText)
     for (const id of children) expect(ctx.agents.get(SessionId(id))).toBeUndefined()
     const history = JSON.stringify(adapter.requests)
@@ -295,13 +342,15 @@ describe('chapter template through the native model and tool runtime', () => {
     const toolText = events.filter(event => event.type === 'tool/result')
       .flatMap(event => event.data.message.content).filter(block => block.type === 'text').map(block => block.text).join('\n')
     expect(toolText).toContain('"status": "committed"')
+    const verified = await execa(process.execPath, [cliPath, 'chapter', 'audit-verify', '--workspace', dirname(project), '--book', 'book', '--chapter', '1', '--json'], { cancelSignal: test.signal })
+    expect(JSON.parse(verified.stdout).verified).toBe(true)
     await ctx.sessionPersistence.flush()
   })
 
   it('does not submit when native structured validation rejects the reviewer', async test => {
     const { lead, idle, adapter, project } = await setup(test, 'invalid-review')
     await idle
-    expect(adapter.queues.size).toBe(4)
+    expect(adapter.queues.size).toBe(5)
     expect(lead.session.snapshotEvents().filter(event => event.type === 'tool-workflow/run-end').at(-1)?.data).toMatchObject({ stopReason: 'error' })
     expect(JSON.parse(await readFile(join(project, '追踪/_tracking-state.json'), 'utf8')).last_committed_chapter).toBe(0)
   })
@@ -350,6 +399,24 @@ describe('chapter template through the native model and tool runtime', () => {
     expect(text).toContain('需要作者裁定')
     expect(JSON.parse(await readFile(join(project, '追踪/_tracking-state.json'), 'utf8')).state_revision).toBe(0)
     expect(await readFile(join(project, '正文/第1章.md'), 'utf8')).toBe(initialBody)
+  })
+
+  it('stops at the shared revision cap when a violate stays unaccepted', async test => {
+    const { lead, idle, project } = await setup(test, 'audit-limit')
+    await idle
+    const events = lead.session.snapshotEvents()
+    expect(orderedStarts(events.filter(event => event.type === 'tool-workflow/agent-start').map(event => String(event.data.label)))).toEqual([
+      'Prepare', 'Write', 'Review', 'Audit', 'Revise 1', 'Review 1', 'Audit 1', 'Revise 2', 'Review 2', 'Audit 2',
+    ])
+    expect(events.find(event => event.type === 'tool-workflow/run-end')?.data).toMatchObject({ stopReason: 'completed' })
+    const text = events.filter(event => event.type === 'tool/result')
+      .flatMap(event => event.data.message.content).filter(block => block.type === 'text').map(block => block.text).join('\n')
+    expect(text).toContain('"status": "revision_limit"')
+    expect(text).toContain('OUT-001-P1')
+    expect(text).toContain('accepted_findings')
+    expect(text).toContain('change the rule source')
+    expect(text).toContain('change the outline')
+    expect(JSON.parse(await readFile(join(project, '追踪/_tracking-state.json'), 'utf8')).last_committed_chapter).toBe(0)
   })
 
   it('cancels a live child and waits for its termination before recording run-end', async test => {

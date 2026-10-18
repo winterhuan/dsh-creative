@@ -11,7 +11,7 @@
  * key replaces the default list. Missing files and headings become warnings.
  * The command still returns; it does not fail the book for an absent section.
  *
- * Phase 1b can reuse `rules`, `rules_sha256`, and `scan` without a second parser.
+ * `chapter audit-verify` reuses `rules` and `rules_sha256` from this module.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
@@ -765,7 +765,14 @@ function insideQuote(spans: readonly [number, number][], start: number, end: num
   return spans.some(([from, to]) => start >= from && end <= to)
 }
 
-function normalizeRuleText(text: string): string {
+/**
+ * Sentence key shared by rule dedupe and rule-audit quotes.
+ * Bold marks and whitespace are removed. Sentence punctuation at the end is removed.
+ * Punctuation inside the sentence stays, so a quote that drops a comma does not match.
+ * @param text - a rule sentence or one body line or quote.
+ * @returns the key used for equality and for finding a quote inside a line.
+ */
+export function normalizeRuleSentence(text: string): string {
   return stripMarks(text).replace(/\s+/gu, '').replace(/[。．.！!？?；;，,、]+$/u, '')
 }
 
@@ -775,7 +782,7 @@ function dedupeRules(rules: readonly ExtractedRule[]): ExtractedRule[] {
   const indexByText = new Map<string, number>()
   const also = new Map<number, string[]>()
   for (const rule of rules) {
-    const key = normalizeRuleText(rule.text)
+    const key = normalizeRuleSentence(rule.text)
     const prior = key === '' ? undefined : indexByText.get(key)
     if (prior === undefined) {
       if (key !== '') indexByText.set(key, kept.length)

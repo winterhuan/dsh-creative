@@ -172,9 +172,16 @@ export function renderContext(state: TrackingState): string {
  * @param title - the chapter title.
  * @param delta - the validated delta.
  * @param coreNames - names that are core characters after this chapter, plus those retired by it.
+ * @param acceptedFindings - author-accepted rule exceptions. An empty list leaves the record unchanged.
  * @returns the Markdown record.
  */
-export function renderDelta(chapter: number, title: string, delta: TrackingDelta, coreNames: ReadonlySet<string>): string {
+export function renderDelta(
+  chapter: number,
+  title: string,
+  delta: TrackingDelta,
+  coreNames: ReadonlySet<string>,
+  acceptedFindings: readonly { readonly rule_id: string; readonly reason: string }[] = [],
+): string {
   const lines = [
     `# 第${String(chapter).padStart(3, '0')}章 · ${title}`,
     `- 结果：${delta.result}`,
@@ -205,6 +212,9 @@ export function renderDelta(chapter: number, title: string, delta: TrackingDelta
   if (retired.length > 0) {
     // 退役条目在此留档，续写状态卡收缩后仍可回查当初撤下了什么。
     lines.push('', '## 本章退役登记', ...retired.map(item => `- ${item}`))
+  }
+  if (acceptedFindings.length > 0) {
+    lines.push('', '## 接受的规则例外', ...acceptedFindings.map(item => `- ${item.rule_id}｜${item.reason}`))
   }
   const payload = `${lines.join('\n')}\n`
   const size = byteSize(payload)

@@ -19,6 +19,20 @@ const reviewSchema = object({
   recommendation: { type: 'string', enum: ['ready', 'revise', 'needs_input'] },
   review: string,
 }, ['recommendation', 'review'])
+const evidenceSchema = object({ line: { type: 'integer' }, quote: string }, ['line', 'quote'])
+const verdictSchema = object({
+  rule_id: string,
+  verdict: { type: 'string', enum: ['pass', 'violate', 'not_applicable', 'unclear'] },
+  evidence: { type: 'array', items: evidenceSchema },
+  reason: string,
+  fix: string,
+}, ['rule_id', 'verdict'])
+const auditSchema = object({
+  schema: { type: 'string', enum: ['story-rule-audit/v1'] },
+  body_sha256: string,
+  rules_sha256: string,
+  verdicts: { type: 'array', items: verdictSchema },
+}, ['schema', 'body_sha256', 'rules_sha256', 'verdicts'])
 const commitSchema = object({
   status: { type: 'string', enum: ['committed', 'already_committed', 'needs_input', 'uncertain'] },
   summary: string,
@@ -48,7 +62,15 @@ if (args.accepted_length !== undefined &&
     (!digest(args.accepted_length?.body_sha256) || !digest(args.accepted_length?.outline_sha256))) {
   throw new Error('accepted_length must identify the draft explicitly accepted by the user')
 }
-const root = `${args.skills_root.replace(/[\\/]+$/, '')}/story-write`
+const acceptedFindings = args.accepted_findings ?? []
+if (!Array.isArray(acceptedFindings) || acceptedFindings.some(item =>
+  typeof item?.rule_id !== 'string' || !item.rule_id.trim() || typeof item?.reason !== 'string' || !item.reason.trim())) {
+  throw new Error('accepted_findings must list rule_id and reason')
+}
+const acceptedRuleIds = new Set(acceptedFindings.map(item => item.rule_id))
+const skillsRoot = args.skills_root.replace(/[\\/]+$/, '')
+const root = `${skillsRoot}/story-write`
+const reviewRoot = `${skillsRoot}/story-review`
 const quote = value => `'${value.replaceAll("'", "'\\''")}'`
 const cli = `node ${quote(args.cli)}`
 const scope = `--workspace ${quote(args.workspace)} --book ${quote(args.book)}`
@@ -85,6 +107,27 @@ const identity = value => {
     throw new Error('Missing checked source identity')
   }
   return { body_sha256: value.body_sha256, outline_sha256: value.outline_sha256, state_revision: value.state_revision }
+}
+const readAudit = (value, bodyHash) => {
+  if (value === null || value === undefined) {
+    throw new Error('Audit failed: no structured result from native agent(). Inspect the failed member\'s child Session for provider/tool errors or an ending without structured_output, then check actual files and tracking before resuming. Do not retry the chapter blindly.')
+  }
+  if (typeof value !== 'object' || value.schema !== 'story-rule-audit/v1' || !digest(value.body_sha256) || !digest(value.rules_sha256) || !Array.isArray(value.verdicts)) {
+    throw new Error('Audit returned invalid schema, hashes, or verdicts')
+  }
+  if (value.body_sha256 !== bodyHash) throw new Error('Audit does not match the checked body')
+  const seen = new Set()
+  for (const item of value.verdicts) {
+    if (typeof item?.rule_id !== 'string' || !item.rule_id.trim() || !['pass', 'violate', 'not_applicable', 'unclear'].includes(item.verdict)) {
+      throw new Error('Audit returned an invalid verdict')
+    }
+    if (seen.has(item.rule_id)) throw new Error(`Audit returned a duplicate verdict for ${item.rule_id}`)
+    seen.add(item.rule_id)
+    if (item.verdict === 'violate' && (!Array.isArray(item.evidence) || item.evidence.length === 0 || item.evidence.some(entry => !Number.isInteger(entry?.line) || entry.line < 1 || typeof entry?.quote !== 'string' || !entry.quote.trim()))) {
+      throw new Error(`Audit violate ${item.rule_id} lacks evidence`)
+    }
+  }
+  return value
 }
 
 phase('Prepare')
@@ -171,19 +214,44 @@ if (alreadyCommitted) {
       return outcome('needs_input', 'Current length requires the user’s decision; retain the draft without padding.')
     }
     phase('Review')
-    const reviewed = response(await agent(`${common()}
+    const auditPath = `${task.project}/草稿/审稿/第${String(args.chapter).padStart(Math.max(3, String(args.chapter).length), '0')}章.rules.json`
+    const round = revisions ? ` ${revisions}` : ''
+    const [reviewValue, auditValue] = await Promise.all([
+      agent(`${common()}
 You are an independent reviewer. Call the skill tool with the exact name story-review before other actions, then follow that skill for the selected review references and read the actual body, outline and necessary context. You are already inside the chapter workflow: follow only this review stage, and do not start another workflow.
 Do not edit the manuscript, outline or tracking. Inspect this exact identity: ${JSON.stringify(verifiedSource)}.
 Before and after reading, run through bash: ${snapshot}. Both snapshots must match each other's body_path, outline_path, hashes, file_versions and state_revision and the required identity above; otherwise return needs_input, never ready. Do not repeat full chapter checks or hold a lock while reviewing.
 Return recommendation ready only if no important unresolved issue remains; revise for actionable local findings; needs_input for missing facts or decisions outside scope.
-review is readable prose with source locations and suggestions, at most 4000 characters. No scores, quote quotas or model certificates. Writer summary is not evidence.`, {
-      label: revisions ? `Review ${revisions}` : 'Review', schema: reviewSchema,
-    }), 'review', 'Review', 4000)
-    lastReview = reviewed.review
+review is readable prose with source locations and suggestions, at most 4000 characters. No scores, quote quotas or model certificates. Writer summary is not evidence. Scan hints are notes, not a revise by themselves.`, {
+        label: `Review${round}`, schema: reviewSchema,
+      }),
+      agent(`${common()}
+You are the rule auditor. Call the skill tool with the exact name story-review before other actions, then read ${reviewRoot}/references/roles/rule-auditor.md. You are already inside the chapter workflow: follow only this audit stage, and do not start another workflow.
+Do not edit the manuscript, outline, tracking, or 设定/写作检查.json. Do not invent rule ids and do not accept an exception.
+Inspect this exact body identity: ${JSON.stringify(verifiedSource)}.
+Run through bash: ${chapterRules}
+Read the body at the task body_path, that rules JSON, adjacent chapter files under the book when they exist, and project context when a rule needs it: ${cli} project context ${scope} --chapter ${args.chapter} --text <body path> --json.
+Judge only ids in the returned rules array. One verdict each: pass, violate, not_applicable, or unclear. A violate needs evidence with a 1-based line and a quote copied from that line. unclear is a note. A scan hint is not a violate.
+Write story-rule-audit/v1 to ${auditPath}. Create 草稿/审稿 when that directory is missing. Then run through bash: ${cli} chapter audit-verify ${scope} --chapter ${args.chapter} --json
+If it is not verified, correct the file from its reasons and run it again. Return the same document only after verified is true. body_sha256 and rules_sha256 must be the values that command checked.`, {
+        label: `Audit${round}`, schema: auditSchema,
+      }),
+    ])
+    const reviewed = response(reviewValue, 'review', 'Review', 4000)
+    const audited = readAudit(auditValue, verifiedSource.body_sha256)
+    const unresolved = audited.verdicts.filter(item => item.verdict === 'violate' && !acceptedRuleIds.has(item.rule_id)).map(item => item.rule_id)
+    const notes = audited.verdicts.flatMap(item => {
+      if (item.verdict === 'violate' && !acceptedRuleIds.has(item.rule_id)) return [`violate ${item.rule_id}: ${[item.reason, item.fix].filter(Boolean).join(' ')}`]
+      if (item.verdict === 'unclear') return [`unclear ${item.rule_id}: ${item.reason ?? ''}`.trim()]
+      return []
+    }).join('\n')
+    lastReview = [reviewed.review, notes].filter(item => item.trim()).join('\n')
     if (reviewed.recommendation === 'needs_input') return outcome('needs_input', lastReview)
-    if (reviewed.recommendation === 'ready') break
-    if (reviewed.recommendation !== 'revise') throw new Error('Invalid review recommendation')
-    if (revisions === 2) return outcome('revision_limit', 'Two revision passes completed; important findings remain.')
+    if (reviewed.recommendation !== 'ready' && reviewed.recommendation !== 'revise') throw new Error('Invalid review recommendation')
+    if (reviewed.recommendation === 'ready' && unresolved.length === 0) break
+    if (revisions === 2) {
+      return outcome('revision_limit', `Two revision passes completed. Unresolved rule ids: ${unresolved.join(', ') || '(none)'}. Choose one: accept the exception in accepted_findings, change the rule source, or change the outline.`, { unresolved_rule_ids: unresolved })
+    }
     revisions++
     draft = await write(lastReview)
   }
@@ -196,6 +264,8 @@ Call the skill tool with exact name story-write before other actions. Follow onl
 Read ${root}/references/long/tracking-transaction.md, the final body, outline and required facts.
 Required identity: ${JSON.stringify(verifiedSource)}.
 ${alreadyCommitted ? 'Verify the existing chapter, wordcount record, actual files and derived tracking views; return already_committed only when they agree.' : `Build a mode=append transaction from actual story facts. Include expected_state_revision=${verifiedSource.state_revision}, expected_body_sha256=${verifiedSource.body_sha256}, expected_outline_sha256=${verifiedSource.outline_sha256}. Do not supply wordcount or review records.
+${acceptedFindings.length > 0 ? `Include accepted_findings ${JSON.stringify(acceptedFindings)} on the transaction. Do not invent further acceptances.` : 'Omit accepted_findings unless task data already lists them. Do not invent an acceptance.'}
+Read 设定/写作检查.json. When rule_audit is "required", run ${cli} chapter audit-verify ${scope} --chapter ${args.chapter} --json before the commit. Commit only when that result is verified and every violate rule_id is listed in accepted_findings. When the key is missing or "off", do not block on the audit file. unclear does not block a commit.
 Run ${cli} chapter ${['under', 'over'].includes(draft.length_status) ? 'accept-current-length' : 'commit'} ${scope} --chapter ${args.chapter} --input <absolute-transaction-file> --json. Never replace expected values after a rejection.
 After success run ${trackingCheck} and inspect the persisted wordcount record and current source hashes. committed requires last_committed_chapter equal to this chapter and state_revision=${verifiedSource.state_revision + 1}, with the same body and outline hashes.`}
 Do not edit prose or outline. On failure inspect actual state before reporting: an ambiguous outcome is uncertain, a stale source or revision is needs_input. Never retry a commit blindly.

@@ -53,7 +53,7 @@ aliases:
 
 ## 写作检查配置
 
-`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`。未知键会报错，指出那个键，并列出这些支持的键。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
+`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`、`rule_audit`。未知键会报错，指出那个键，并列出这些支持的键。`rule_audit` 取 `off` 或 `required`，缺省为 `off`。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
 
 `chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json` 在正文出现之前提取本章规则。结果模式是 `story-chapter-rules/v1`，含 `rules`、`scan`、`warnings`、`rules_sha256`、`omitted`，以及 `chapter` 和 `state_revision`。每条规则有 `id`、`text` 和 `source.path`、`source.line`。含末尾换行的一次结果不超过 16 KiB；放不下时从末尾依次丢掉规则、扫描行和 warning，丢掉的条数记入 `omitted`。`rules_sha256` 覆盖截断前的完整规则列表。同一输入的规则 ID 不变。来源文件或标题缺失时写入 `warnings`，命令仍成功。正文还不存在时只做提取，以及追踪里的作废词扫描。
 
@@ -82,6 +82,25 @@ aliases:
 同一句话出现在多个来源时，按去掉空白和句末标点后的文本合并。保留先出现的 ID。`text` 保持该句原文，其余 ID 放在可选字段 `also`（字符串数组）。编号不重排，两次运行结果一致。交给写手的一行在格式化时写成 `id: text`；`also` 非空时再接 ` also: ` 和这些 ID。`rules_sha256` 仍按原文接上 ` also: ID, ID` 之后的文本计算，同一输入的摘要不变。
 
 `chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名。名字在名单原文里出现就算已列，分词仍作补充；分隔符包括顿号、分号、`→`、`->`、`与` 和 `和`。中文引号「」“”『』里的名字不算出场。未列的提示是「正文提到但细纲出场名单未列」。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次扫描里。
+
+## 规则审稿
+
+`chapter audit-verify` 校验一份 `story-rule-audit/v1`。默认读 `草稿/审稿/第NNN章.rules.json`。`--input` 可改成书内相对路径。路径离开本书时命令以 2 退出。
+
+```text
+node {CLI} chapter audit-verify --workspace {工作区} --book {作品名} --chapter {N} --json
+node {CLI} chapter audit-verify --workspace {工作区} --book {作品名} --chapter {N} --input {书内相对路径} --json
+```
+
+JSON 含 `schema`、`body_sha256`、`rules_sha256` 和 `verdicts`。`verdicts` 每一项有 `rule_id` 和 `verdict`（`pass`、`violate`、`not_applicable`、`unclear`）。`violate` 必须带 `evidence`。每处证据是正文里从 1 起的 `line`，以及该行上的 `quote`。`reason` 和 `fix` 可选。结论只覆盖 `chapter rules` 返回的 `rules`，每条恰好一次。`also` 里的 ID 不另给结论。被 16 KiB 截掉的规则不审。审稿者不自创规则 ID。
+
+`body_sha256` 是当前正文原始字节的 SHA-256。`rules_sha256` 必须等于当前 `chapter rules` 的同名字段。引文先去掉 `**`、空白和句末标点，再在对应行的同样归一化文本里查找。句中标点必须保留。对不上的引文会使校验失败。
+
+校验通过时退出码为 0，结果模式是 `story-rule-audit-verify/v1`，含 `verified: true`、两个哈希，以及 `violate` 和 `unclear` 的 ID 列表。失败时退出码为 1，`verified: false`，`reasons` 列出全部原因。缺文件也是失败。写作检查文件非法时以 2 退出。
+
+`rule_audit` 为 `off` 时，`chapter commit` 不要求这份文件。为 `required` 时，提交要求默认路径上的文件通过上述校验，并且每条 `violate` 的 `rule_id` 都出现在事务的 `accepted_findings` 里。`unclear` 和扫描 hint 只进入修改意见，不拦提交。门禁默认关闭。试点开启前先在第 001–012 章标定：R1–R3 必须命中，已知干净章的误报 violate 不超过 1 条。
+
+`accepted_findings` 是事务的可选数组，每项为 `{ "rule_id", "reason" }`，最多 12 条，`rule_id` 不重复。工具把它写进该章逐章记录的 `## 接受的规则例外`，不写入 `_tracking-state.json`。不写这个键或写成空数组时，逐章记录与没有该字段的事务相同。追踪 schema 仍是版本 5。
 
 ---
 

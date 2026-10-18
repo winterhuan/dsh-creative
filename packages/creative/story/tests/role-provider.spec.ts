@@ -10,7 +10,7 @@ describe('packaged specialist instructions', () => {
       story: ['story-explorer', 'story-researcher'],
       'story-write': ['character-designer', 'narrative-writer', 'story-architect'],
       'story-analyze': ['chapter-extractor'],
-      'story-review': ['consistency-checker'],
+      'story-review': ['consistency-checker', 'rule-auditor'],
     }
     for (const [skill, names] of Object.entries(owners)) {
       const base = resolve(skills, skill)
