@@ -38,7 +38,7 @@ Creative 小说写作流程会检查文件结构、追踪状态、细纲消费�
 
 所有 AI 模式规则都是 advisory，包括同义否定对比和相邻句首尾重复。JSON 报告包含全文命中密度；单次命中和密度都不决定验收。[回归语料](../../../../packages/creative/story/tests/fixtures/novel-pattern-corpus.json) 将公版摘录与合成对话、植入的规避变体分开。测试在这些标注样本上计算规则 precision 和 recall，并确认模式命中不能阻断。未来的阻断式模式规则需要更广泛的人类文本校准；小语料集不能证明普遍准确性，也未打包获得授权的当代真人网文语料。
 
-标点默认保留。项目可在 `设定/写作检查.json` 选择 `normalize-narration`；显式归一化仍保留引号内停顿。写作和精修中的朱雀分数都只作诊断，既不授权提交，也不触发重试。退化与检查器执行失败仍阻断。
+标点默认保留。项目可在 `设定/写作检查.json` 选择 `normalize-narration`；显式归一化仍保留引号内停顿。该文件还可以设置 `forbidden`、`era` 和 `void_terms`。没有歧义的 `blocking` 模式和 `era.deny` 命中会使 chapter check 失败；hint 不会。这次扫描由[章节规则决策](2026-10-18-story-chapter-rules.zh.md)负责。写作和精修中的朱雀分数都只作诊断，既不授权提交，也不触发重试。退化与检查器执行失败仍阻断。
 
 ### 续写保留故事事实
 

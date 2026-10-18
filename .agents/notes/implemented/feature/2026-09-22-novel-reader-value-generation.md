@@ -38,7 +38,7 @@ DSH Session history owns actual execution and request metadata. The [native coll
 
 All AI-pattern rules are advisory, including synonym contrasts and repeated sentence links. The JSON report includes document-level finding density; neither a single hit nor density decides acceptance. The [regression corpus](../../../../packages/creative/story/tests/fixtures/novel-pattern-corpus.json) separates public-domain excerpts from synthetic dialogue and planted evasion variants. Tests calculate rule precision and recall on those labeled cases and ensure pattern findings cannot block. A future blocking pattern rule requires broader human-prose calibration; the small corpus does not establish general accuracy, and no licensed contemporary human web-fiction corpus is bundled.
 
-Punctuation defaults to preservation. Projects can select `normalize-narration` in `设定/写作检查.json`; explicit normalization preserves quoted pauses. Zhuque scores remain diagnostic in both writing and polishing: they neither authorize submission nor trigger retries. Degeneration and checker execution failures still block.
+Punctuation defaults to preservation. Projects can select `normalize-narration` in `设定/写作检查.json`; explicit normalization preserves quoted pauses. That file may also set `forbidden`, `era` and `void_terms`. Unambiguous `blocking` patterns and `era.deny` hits fail chapter check; hints do not. The [chapter rules decision](2026-10-18-story-chapter-rules.md) owns that scan. Zhuque scores remain diagnostic in both writing and polishing: they neither authorize submission nor trigger retries. Degeneration and checker execution failures still block.
 
 ### Continuation retains story facts
 

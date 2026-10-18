@@ -54,6 +54,8 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 在对话中通过 `story` 查询状态、角色、伏笔或历史记录；CLI 入口是 `dsh-story project status`、`project query`、一次取齐写前上下文的 `project context`，以及只读检索 `设定/` 的 `project lookup`。查询带来源与修订号，每次最多 50 条且不超过 16 KiB，分页可用 `--revision` 拒绝混合版本。`project query --kind health` 用同一套分页列出「风险」卡片的四类条目。默认阈值是未定回收伏笔埋设 30 章、角色自最近一次时间线接触起 20 章、未揭示事实或未收线索 40 章；`--stale-planted`、`--stale-character`、`--stale-thread` 可改。`project context` 在同一 16 KiB 内最多保留 8 条健康摘要，省略条目时仍保留计数，并最多附上 4 条与细纲或草稿命中的设定摘录；放不下时先省略设定摘录。写前准备先看这份摘要，再单独查询全部到期伏笔，覆盖续写状态卡最多 8 条之外的项。设定摘录被省略，或要核对另一段原文时，用 `project lookup`：`--file` 指向细纲或草稿，`--text` 传入字面量。精确名称和别名优先，其余按关键词打分。别名写在设定文件头部。日期提醒由作者和写作流程结合卷纲处理，不自动延期或回收。具体命令见[连续性查询](knowledge/story/skills/story/references/project/continuity-query.md)。
 
+`dsh-story chapter rules` 在正文出现之前列出本章适用的规则。每条规则有稳定 ID、原文，以及来源路径和行号。一次结果不超过 16 KiB。放不下的规则、扫描行和 warning 计入 `omitted`，`rules_sha256` 覆盖完整列表。缺文件或缺标题是 warning，命令仍成功。一本书可以在 `设定/写作检查.json` 里换掉默认来源，并加上 `forbidden`、`era` 和 `void_terms`。字段和 ID 见[产物协议](knowledge/story/skills/story-write/references/long/artifact-protocols.md)。
+
 “记住本书的写法”使用既有 book 范围作者记忆与确认回执；角色、伏笔和事件经章节事务保存。记忆的候选确认、替换、撤回与优先级见[作者记忆](knowledge/story/skills/story/references/project/author-memory.md)。
 
 <a id="specialist-agents"></a>
@@ -63,7 +65,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 ### 原生单章 workflow
 
-要求 `story-write` 用原生 workflow 写长篇新章，或声明后续章节采用这一偏好。父会话提供工程、章号和约束，再按[调用说明](knowledge/story/skills/story-write/references/long/native-workflow.md)读取模板。DSH 已有的 `workflow` 工具内，Prepare 在已授权规划内检查或补建本章细纲并生成场景计划，随后执行写作、独立审稿、最多两轮修订及追踪提交验证。已有可用细纲直接复用；除非用户要求确认，常规准备不再次索要批准。关键事实缺失或需要作者裁定时停止依赖工作。连续章串行执行，保留仍有未决问题的草稿。
+要求 `story-write` 用原生 workflow 写长篇新章，或声明后续章节采用这一偏好。父会话提供工程、章号和约束，再按[调用说明](knowledge/story/skills/story-write/references/long/native-workflow.md)读取模板。DSH 已有的 `workflow` 工具内，Prepare 在已授权规划内检查或补建本章细纲，运行 `chapter rules`，并生成场景计划。写手收到每条 `id: text`，逐条遵守，并在摘要里引用这些 ID。随后执行写作、独立审稿、最多两轮修订及追踪提交验证。已有可用细纲直接复用；除非用户要求确认，常规准备不再次索要批准。关键事实缺失或需要作者裁定时停止依赖工作。连续章串行执行，保留仍有未决问题的草稿。
 
 审稿在此 workflow 内返回少量流程分支字段，普通审稿仍为自然语言。提交校验审稿对应的正文、细纲哈希和预期追踪修订号；文件变化后须重检重评审。追踪不增加审稿证明。原生运行完成可能包含未提交的章节结果，调用方须检查返回状态再推进。
 
@@ -98,11 +100,11 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 #### 模型看到什么
 
-小说预设提供小说协作者身份，区分讨论、审稿和已授权正文工作。领域目录列出六个 Skill；其他预设不获得小说目录、工具或写作钩子。加载时向当前 Agent 提供指令和资源路径。所选 Skill 或 workflow 分配执行顺序和检查，Role 提供专业方法。写入 hook 要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。只有父会话读取调用说明，子会话接收阶段职责和选定参考。Prepare 返回实际路径、场景计划和已检查的细纲身份；写手接收这些结果及完整检查命令。workflow 子会话以 `structured_output` 结束，缺少结果时提示父会话查看失败子会话。委派失败保留已有产物并报告诊断，模型服务认证或地址错误需修复提供商配置。前置委派须完成且产物检查通过后才推进。只读的 `story-explorer` 用自然语言交回事实、来源和缺口。`story_zhuque` 调用包内检测 CLI，后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
+小说预设提供小说协作者身份，区分讨论、审稿和已授权正文工作。领域目录列出六个 Skill；其他预设不获得小说目录、工具或写作钩子。加载时向当前 Agent 提供指令和资源路径。所选 Skill 或 workflow 分配执行顺序和检查，Role 提供专业方法。写入 hook 要求重新检查和审稿，再由指定提交者通过章节事务更新追踪。只有父会话读取调用说明，子会话接收阶段职责和选定参考。Prepare 返回实际路径、场景计划、本章规则清单和已检查的细纲身份；写手接收这些结果及完整检查命令，并遵守每条规则 ID。workflow 子会话以 `structured_output` 结束，缺少结果时提示父会话查看失败子会话。委派失败保留已有产物并报告诊断，模型服务认证或地址错误需修复提供商配置。前置委派须完成且产物检查通过后才推进。只读的 `story-explorer` 用自然语言交回事实、来源和缺口。`story_zhuque` 调用包内检测 CLI，后台执行返回 DSH 作业 ID，供 `job_output` 与 `job_kill` 使用。
 
 #### Token 影响
 
-Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。连续性查询每次最多 16 KiB，超过条数或字节预算会返回下一页位置；健康摘要共用这一预算。设定检索另有一次最多 16 KiB 的调用。写前上下文把最多 4 条设定摘录放进同一份 16 KiB，放不下时先省略这些摘录。写前到期伏笔较多时需要额外分页，不能静默省略。读取再提交 workflow 模板会保留两份源码，独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；查询容量不等于提供商 token 计费或端到端效率承诺。
+Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。连续性查询每次最多 16 KiB，超过条数或字节预算会返回下一页位置；健康摘要共用这一预算。设定检索另有一次最多 16 KiB 的调用。`chapter rules` 也是一次只读调用，上限相同。写前上下文把最多 4 条设定摘录放进同一份 16 KiB，放不下时先省略这些摘录。写前到期伏笔较多时需要额外分页，不能静默省略。读取再提交 workflow 模板会保留两份源码，独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；查询容量不等于提供商 token 计费或端到端效率承诺。
 
 #### KV Cache 影响
 
@@ -119,6 +121,7 @@ Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工�
 - 概览通过现有文件 API 读取状态，受 `editorMaxBytes` 限制；大列表在界面分页，不新增数据库或服务器。它校验展示字段，完整追踪体检仍使用 `dsh-story project check`。历史查询提供已有逐章记录，不重建任意章的完整世界状态；原文和缺失记录需定点核查。
 - 角色快照没有更新章。健康查询和「风险」卡片用点名该角色的时间线事件里最新的 `updated_chapter`，没有这类事件的角色不列入。健康检查只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。
 - 设定检索通过 `project lookup` 只读 `设定/` 下的 Markdown。别名只认文件头 front matter，以及前 40 行里、第一个二级标题之前的「别名：」行。它不改追踪状态，也没有工作台入口。实现只有 TypeScript，不在 Python 基准里。
+- `chapter rules` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。`tests/reference/normalize-punctuation.js` 仍然只接受 `punctuation`。通用模板没有部分默认标题，这些书会报 warning，直到补上标题或用 `rule_sources` 换掉默认来源。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
 - 运行时已完成从 Python/JavaScript 到 TypeScript 的迁移：CLI 与全部确定性操作都是 TypeScript，包内不再分发 `runtime/`；原实现保留在 `tests/reference/` 仅作差分测试基准，`tests/ts-port-parity*.spec.ts` 在相同输入上比对两者输出，parity 仍是兼容性依据。
 
 <a id="dev-note"></a>

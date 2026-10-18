@@ -19,6 +19,7 @@ const prepared = {
   status: 'ready', summary: 'Existing outline checked.', outline_sha256: source.outline_sha256, state_revision: 7,
   body_path: args.body_path, outline_path: args.outline_path, context_paths: args.context_paths,
   scene_execution_plan: 'The protagonist uses the signed order to enter; retain the concealed fact.',
+  chapter_rules: 'OUT-008-NR: Do not reveal the concealed fact.',
 }
 
 function run(replies: unknown[], overrides: Record<string, unknown> = {}, preparation: unknown = prepared) {
@@ -131,6 +132,9 @@ describe('native chapter template transitions', () => {
     expect(await result).toMatchObject({ status: 'committed', body_path: prepared.body_path })
     expect(calls[0]!.label).toBe('Prepare')
     expect(calls[1]!.prompt).toContain(prepared.scene_execution_plan)
+    expect(calls[1]!.prompt).toContain(prepared.chapter_rules)
+    expect(calls[1]!.prompt).toContain('never pad an underlength draft')
+    expect(calls[0]!.prompt).toContain('chapter rules')
     expect(calls[1]!.prompt).toContain(prepared.outline_path)
   })
 

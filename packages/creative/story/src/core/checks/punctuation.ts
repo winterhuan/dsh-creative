@@ -11,8 +11,7 @@
  * project policy file. Line endings are kept per line, so one stray CRLF
  * never rewrites the whole file.
  */
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readWritingCheck } from '../writing-check.ts'
 
 /** Whether narration pauses are rewritten or left alone. */
 export type PunctuationPolicy = 'preserve' | 'normalize-narration'
@@ -40,35 +39,14 @@ interface Fence {
   readonly minimumLength: number
 }
 
-const POLICIES: readonly string[] = ['preserve', 'normalize-narration']
-
 /**
  * Read the punctuation policy a book declares in `设定/写作检查.json`.
  * @param project - the book directory.
  * @returns the declared policy, or `undefined` when the file does not exist.
- * @throws Error when the file is unreadable, not JSON, or declares anything else.
+ * @throws WritingCheckError when the file is unreadable, not JSON, declares an unknown key, or sets an invalid punctuation value. A missing `punctuation` key means `preserve`.
  */
 export function readProjectPunctuationPolicy(project: string): PunctuationPolicy | undefined {
-  const settingsPath = join(project, '设定', '写作检查.json')
-  let source: string
-  try {
-    source = readFileSync(settingsPath, 'utf8')
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return undefined
-    throw new Error(`Unable to read ${settingsPath}: ${error instanceof Error ? error.message : String(error)}`)
-  }
-  let settings: unknown
-  try { settings = JSON.parse(source) }
-  catch { throw new Error(`Invalid JSON in ${settingsPath}`) } // The policy file must parse; a broken file is a configuration error.
-  if (typeof settings !== 'object' || settings === null || Array.isArray(settings)
-    || Object.keys(settings).some(key => key !== 'punctuation')) {
-    throw new Error(`${settingsPath}: expected {"punctuation":"preserve"|"normalize-narration"}`)
-  }
-  const policy = (settings as { readonly punctuation?: unknown }).punctuation
-  if (typeof policy !== 'string' || !POLICIES.includes(policy)) {
-    throw new Error(`${settingsPath}: expected {"punctuation":"preserve"|"normalize-narration"}`)
-  }
-  return policy as PunctuationPolicy
+  return readWritingCheck(project)?.punctuation
 }
 
 /**

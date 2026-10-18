@@ -110,6 +110,7 @@ class ChapterAdapter extends LlmAdapter {
           return { name: STRUCTURED_OUTPUT_TOOL, args: {
             status: 'ready', summary: 'Outline checked and scene plan prepared.', body_path: body, outline_path: outline,
             context_paths: [join(this.project, '追踪/上下文.md')], scene_execution_plan: scenePlan,
+            chapter_rules: 'OUT-001-NR: 不提前交账。',
             outline_sha256: snapshot.outline_sha256, state_revision: snapshot.state_revision,
           } }
         },
@@ -118,6 +119,7 @@ class ChapterAdapter extends LlmAdapter {
     }
     if (prompt.includes('You are the narrative-writer.')) {
       expect(prompt).toContain(scenePlan)
+      expect(prompt).toContain('OUT-001-NR: 不提前交账。')
       if (this.mode.startsWith('writer-')) return [this.skill('story-write')]
       const prose = this.reviewCount ? finalBody : initialBody
       return [this.skill('story-write'), this.read(join(writeSkill, 'references/roles/narrative-writer.md')),

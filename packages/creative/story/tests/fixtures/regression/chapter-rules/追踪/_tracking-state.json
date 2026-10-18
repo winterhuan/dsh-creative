@@ -1,0 +1,23 @@
+{
+  "schema_version": 5,
+  "book_title": "样书",
+  "last_committed_chapter": 2,
+  "imported_through_chapter": 2,
+  "state_revision": 3,
+  "context": {
+    "position": { "volume": "第一卷", "volume_start_chapter": 1, "story_time": "清晨", "scene": "库房" },
+    "long_term_constraints": ["旧钥匙仍在柜中"],
+    "active_character_names": ["账房"],
+    "continuity_risks": ["守门人的班次未核"],
+    "recent_chapters": [{ "chapter": 2, "summary": "昨日清点未完" }],
+    "next_chapter_commitments": ["核对班次"]
+  },
+  "characters": {
+    "账房": { "identity": "学徒", "location": "库房", "goal": "进门", "state": "谨慎", "abilities_resources": [], "relationships": [], "knowledge": [], "open_threads": [] },
+    "守门": { "identity": "门卫", "location": "廊下", "goal": "守门", "state": "困", "abilities_resources": [], "relationships": [], "knowledge": [], "open_threads": [] },
+    "账差": { "identity": "差役", "location": "门外", "goal": "传话", "state": "急", "abilities_resources": [], "relationships": [], "knowledge": [], "open_threads": [] }
+  },
+  "foreshadow": {},
+  "timeline": {},
+  "wordcount_records": {}
+}

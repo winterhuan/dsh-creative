@@ -5,7 +5,7 @@ const sourceFields = { body_sha256: string, outline_sha256: string, state_revisi
 const prepareSchema = object({
   status: { type: 'string', enum: ['ready', 'already_committed', 'needs_input'] },
   summary: string, body_path: string, outline_path: string,
-  context_paths: { type: 'array', items: string }, scene_execution_plan: string,
+  context_paths: { type: 'array', items: string }, scene_execution_plan: string, chapter_rules: string,
   ...sourceFields,
 }, ['status', 'summary'])
 const draftSchema = object({
@@ -54,6 +54,7 @@ const cli = `node ${quote(args.cli)}`
 const scope = `--workspace ${quote(args.workspace)} --book ${quote(args.book)}`
 const trackingCheck = `${cli} project check ${scope} --json`
 const chapterCheck = `${cli} chapter check ${scope} --chapter ${args.chapter} --json`
+const chapterRules = `${cli} chapter rules ${scope} --chapter ${args.chapter} --json`
 const outlineCheck = `${cli} outline check ${scope} --chapter ${args.chapter} --json`
 const snapshot = `${cli} chapter snapshot ${scope} --chapter ${args.chapter} --json`
 let task = { ...args, project }
@@ -97,9 +98,11 @@ For an uncommitted chapter, preserve existing prose. If a body exists with resum
 Run ${outlineCheck}. A missing-outline finding is preparation work: when no body exists, read the confirmed volume/unit plan, current context, previous chapter and necessary settings, then create only this chapter's missing outline within the authorized plan. Create its directory if needed. If prose already exists but the outline is missing, restore only an identifiable approved version; otherwise return needs_input, never infer approval from the prose.
 Reuse a ready outline without editing it. Complete missing fields only from confirmed materials; conflicting content or missing decisions require needs_input. Do not change confirmed volume plans or create tracking, prose or future chapters. Routine scene organization within an authorized plan needs no new approval unless the user required it.
 Read ${root}/references/long/continuity-context.md. When the checked outline exists, run through bash: ${cli} project context ${scope} --chapter ${args.chapter} --text <outline path> --json. Otherwise run it without --text. When omitted.settings is not 0, page ${cli} project lookup ${scope} --file <outline path> --json and pass the previous index_sha256 as --revision. Setting excerpts are omitted before health rows and do not replace due pages or the health summary. When omitted.health is not 0, page ${cli} project query ${scope} --kind health --chapter ${args.chapter} --json with the same state_revision. Health does not write tracking and does not replace due pages. Run through bash: ${cli} project query ${scope} --kind foreshadow --filter due --chapter ${args.chapter} --json. Consume every page using next_offset and the same state_revision, including low-importance due items absent from the eight-item continuation card. Query failures, a changed revision or unchecked remaining pages require needs_input. Resolve relevant obligations against the approved volume plan before preparing scenes; do not automatically postpone or resolve a hook. Use focused character and timeline queries for missing facts and pass their actual source paths to the writer.
+Run through bash: ${chapterRules}
+The command only reads. Missing files or headings are warnings and do not by themselves require needs_input. When returning ready, set chapter_rules to one line per rule from the rules array, exactly \`id: text\`, at most 12000 characters. If omitted is not 0, name that count in the summary. Do not invent rule ids.
 Run the outline check after creation and assess concrete goals, obstacles, choices, consequences, payoff and stopping point. Missing key facts, a required author approval or changes outside the confirmed plan require needs_input; do not fill placeholders to pass.
 Run ${snapshot} --outline-only before reading the checked outline to form a concise scene_execution_plan (at most 4000 characters): each scene's goal, obstacle, choice, consequence and information boundary. Return only necessary existing context_paths, under the project or from the supplied context_paths.
-Repeat ${snapshot} --outline-only after planning; both snapshots must match outline_path, outline_sha256, file_versions and state_revision. A change requires needs_input. ready requires an existing checked outline, resolved body_path (which may not exist yet), outline_path, context_paths, scene_execution_plan, outline_sha256 and state_revision.`, {
+Repeat ${snapshot} --outline-only after planning; both snapshots must match outline_path, outline_sha256, file_versions and state_revision. A change requires needs_input. ready requires an existing checked outline, resolved body_path (which may not exist yet), outline_path, context_paths, scene_execution_plan, chapter_rules, outline_sha256 and state_revision.`, {
   label: 'Prepare', schema: prepareSchema,
 }), 'summary', 'Prepare', 1600)
 if (prepared.status === 'needs_input') return outcome('needs_input', prepared.summary)
@@ -116,10 +119,13 @@ if (['body_path', 'outline_path'].some(key => args[key] !== undefined && args[ke
     (args.expected_state_revision !== undefined && args.expected_state_revision !== prepared.state_revision)) {
   return outcome('needs_input', 'Prepared paths or tracking revision differ from the supplied constraints; reload facts before resuming.')
 }
-if (prepared.status === 'ready') response(prepared, 'scene_execution_plan', 'Prepare', 4000)
+if (prepared.status === 'ready') {
+  response(prepared, 'scene_execution_plan', 'Prepare', 4000)
+  response(prepared, 'chapter_rules', 'Prepare', 12000)
+}
 task = { ...args, project, body_path: prepared.body_path, outline_path: prepared.outline_path,
   context_paths: prepared.context_paths, expected_state_revision: prepared.state_revision, expected_outline_sha256: prepared.outline_sha256,
-  ...prepared.status === 'ready' ? { scene_execution_plan: prepared.scene_execution_plan } : {},
+  ...prepared.status === 'ready' ? { scene_execution_plan: prepared.scene_execution_plan, chapter_rules: prepared.chapter_rules } : {},
 }
 const matchesPreparation = source => source.state_revision === prepared.state_revision && source.outline_sha256 === prepared.outline_sha256
 const write = async feedback => {
@@ -133,7 +139,8 @@ Verify the supplied chapter paths. A new chapter normally has no body file yet: 
 ${!revisions && !args.resume ? 'If an uncommitted body already exists, return needs_input without overwriting it.' : 'The existing uncommitted body is the draft to inspect or revise; if missing, return needs_input.'}
 If already committed, do not edit: run the chapter check below and return already_committed with the current checked identity for independent verification.
 ${args.resume && !revisions ? 'Resume: preserve the existing draft, check it and return it for review before any rewrite.' : 'Write only the assigned uncommitted body, or revise it using the findings below.'}
-Use scene_execution_plan from the prepared task data. Follow the chapter writing and length procedure. This workflow assigns final checks to you; tracking and submission belong to a separate stage. Never change the outline, write tracking or submit.
+Use scene_execution_plan from the prepared task data. Follow every line of task.chapter_rules. Each line is one rule id and its text. Do not release an item a rule forbids, add a character absent from the cast rule, or cross an execution boundary. In the summary, cite the rule ids you checked. If chapter_rules is missing, return needs_input.
+Follow the chapter writing and length procedure. This workflow assigns final checks to you; tracking and submission belong to a separate stage. Never change the outline, write tracking or submit.
 Compression already used: ${compressionUsed}. At most one compression pass across this run and resumed work; never pad an underlength draft.
 After your final edit, run through bash: ${chapterCheck}
 Use the documented CLI, not imports of script internals. checked requires outline_readiness.status=pass and quality.status=pass, exact hashes and state_revision from that command, and an allowed length. Return its length.status as length_status. Otherwise return needs_input with the concrete decision or failed check.

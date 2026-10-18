@@ -1,0 +1,9 @@
+{
+  "punctuation": "preserve",
+  "forbidden": [
+    { "id": "empty-hook", "pattern": "一切才刚刚开始", "severity": "blocking" },
+    { "id": "soft", "pattern": "不禁", "severity": "hint", "rule": "STYLE-1" }
+  ],
+  "era": { "deny": ["手机"], "allow": ["手机铺"] },
+  "void_terms": ["旧钥匙", "班次"]
+}
