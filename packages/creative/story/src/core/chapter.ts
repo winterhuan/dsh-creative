@@ -79,9 +79,15 @@ function punctuationAdvisory(body: string, text: string, project: string | undef
  * @param outline - the chapter outline path.
  * @param body - the chapter body path.
  * @param project - the book directory supplying the punctuation policy.
+ * @param options - `missingOutline: 'skip'` omits outline-copy when that file is absent. The default still reports a tool error.
  * @returns blocking findings, advisories and the overall status.
  */
-export function checkBlockingQuality(outline: string, body: string, project?: string): QualityReport {
+export function checkBlockingQuality(
+  outline: string,
+  body: string,
+  project?: string,
+  options?: { readonly missingOutline?: 'skip' },
+): QualityReport {
   const blocking: QualityRow[] = []
   const advisories: QualityRow[] = []
   let text: string
@@ -104,11 +110,13 @@ export function checkBlockingQuality(outline: string, body: string, project?: st
   sorted('degeneration', scanDegeneration(text))
   const punctuation = punctuationAdvisory(body, text, project)
   if (punctuation !== undefined) (punctuation.type === 'TOOL_ERROR' ? blocking : advisories).push(punctuation)
-  try {
-    const copied = checkOutlineCopy(body, outline)
-    if (copied.status === 1) advisories.push({ source: 'outline-copy', type: 'OUTLINE_COPY_REVIEW', message: copied.output.trim() })
-  } catch (error) {
-    blocking.push({ source: 'outline-copy', type: 'TOOL_ERROR', message: `check-outline-copy.js exited 2: ${error instanceof Error ? error.message : String(error)}` })
+  if (!(options?.missingOutline === 'skip' && !existsSync(outline))) {
+    try {
+      const copied = checkOutlineCopy(body, outline)
+      if (copied.status === 1) advisories.push({ source: 'outline-copy', type: 'OUTLINE_COPY_REVIEW', message: copied.output.trim() })
+    } catch (error) {
+      blocking.push({ source: 'outline-copy', type: 'TOOL_ERROR', message: `check-outline-copy.js exited 2: ${error instanceof Error ? error.message : String(error)}` })
+    }
   }
   if (project !== undefined) {
     try {

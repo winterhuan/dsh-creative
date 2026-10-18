@@ -1,0 +1,5 @@
+{
+  "punctuation": "preserve",
+  "void_terms": ["旧港"],
+  "forbidden": [{ "id": "bad-end", "pattern": "一切才刚刚开始", "severity": "blocking" }]
+}

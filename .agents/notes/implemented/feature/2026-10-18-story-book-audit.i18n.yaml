@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-18-story-book-audit.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-18-story-book-audit.md
+/agent-note-book-audit-over-a-chapter-range:
+  en: 83776fe8d94c89c5
+  zh: b68dd13652080660
+/agent-note-book-audit-over-a-chapter-range/problem:
+  en: 27a22d73ce155e62
+  zh: 55e9568dbbaaa3e9
+/agent-note-book-audit-over-a-chapter-range/decision:
+  en: c9a77fc3b2250fc7
+  zh: d64aa3a1678e9f37
+/agent-note-book-audit-over-a-chapter-range/alternatives-considered:
+  en: b8da26686bef1ac6
+  zh: 579d31b20b4ae120
+/agent-note-book-audit-over-a-chapter-range/consequences:
+  en: ee9d6c3348965b65
+  zh: 084eb32b2957ea3f
+/agent-note-book-audit-over-a-chapter-range/verification:
+  en: 6c75f7e875235c2f
+  zh: ffbbd7ebad33ce60

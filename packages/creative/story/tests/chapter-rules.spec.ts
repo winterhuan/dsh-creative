@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -5,7 +6,7 @@ import { execa } from 'execa'
 import { describe, expect, it, type TestContext } from 'vitest'
 import { checkBlockingQuality } from '../src/core/chapter.ts'
 import { readProjectPunctuationPolicy } from '../src/core/checks/punctuation.ts'
-import { CHAPTER_RULES_SCHEMA, extractChapterRules, RULES_MAX_BYTES, type ChapterRules } from '../src/core/rules.ts'
+import { CHAPTER_RULES_SCHEMA, extractChapterRules, formatRuleLine, RULES_MAX_BYTES, type ChapterRules } from '../src/core/rules.ts'
 
 const fixture = resolve(import.meta.dirname, 'fixtures/regression/chapter-rules')
 const entry = resolve(import.meta.dirname, '../src/cli.ts')
@@ -184,7 +185,15 @@ describe('chapter rules', () => {
     await writeFile(join(book, '追踪/_tracking-state.json'), JSON.stringify(state))
     const first = extractChapterRules(book, 3)
     const kept = first.rules.find(rule => rule.id === 'OUT-003-NR')
-    expect(kept?.text).toBe('幕后主使的真名。 also: VOL-BAN, STATE-1')
+    expect(kept?.text).toBe('幕后主使的真名。')
+    expect(kept?.also).toEqual(['VOL-BAN', 'STATE-1'])
+    expect(formatRuleLine(kept ?? first.rules[0]!)).toBe('OUT-003-NR: 幕后主使的真名。 also: VOL-BAN, STATE-1')
+    const canonical = first.rules.map(rule => ({
+      id: rule.id,
+      text: rule.also === undefined || rule.also.length === 0 ? rule.text : `${rule.text} also: ${rule.also.join(', ')}`,
+      source: rule.source,
+    }))
+    expect(first.rules_sha256).toBe(createHash('sha256').update(JSON.stringify(canonical)).digest('hex'))
     expect(first.rules.some(rule => rule.id === 'VOL-BAN' || rule.id === 'STATE-1')).toBe(false)
     expect(extractChapterRules(book, 3)).toEqual(first)
 

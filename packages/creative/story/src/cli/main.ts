@@ -7,9 +7,10 @@
  * 2 invalid input, 3 execution failure; `detect zhuque` also uses 4 for service
  * errors.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { auditBook, BOOK_AUDIT_MAX_SPAN, defaultAuditReportPath, renderBookAudit } from '../core/audit.ts'
 import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
 import { extractChapterRules } from '../core/rules.ts'
@@ -42,7 +43,7 @@ export class CliError extends Error {
 }
 
 interface OptionSpec {
-  readonly kind: 'flag' | 'value' | 'append'
+  readonly kind: 'flag' | 'value' | 'append' | 'optional-value'
   readonly required?: boolean
   readonly choices?: readonly string[]
   readonly type?: 'int' | 'float'
@@ -104,6 +105,13 @@ function specFor(family: string, action: string): Options | undefined {
     export: { txt: { ...WORKSPACE, ...BOOK, 'out-dir': { kind: 'value', required: true } } },
     lineage: { record: { ...WORKSPACE, 'from-domain': { kind: 'value', required: true }, 'from-path': { kind: 'value', required: true }, 'to-domain': { kind: 'value', required: true }, 'to-path': { kind: 'value', required: true }, decision: { kind: 'append' }, by: { kind: 'value', default: 'agent' } } },
     detect: { zhuque: { ...WORKSPACE, ...BOOK, file: { kind: 'value', required: true }, out: { kind: 'value' }, target: { kind: 'value', type: 'float', default: DEFAULT_TARGET }, 'max-chars': { kind: 'value', type: 'int', default: DEFAULT_MAX_CHARS }, 'credential-pool-stdin': { kind: 'flag' } } },
+    book: {
+      audit: {
+        ...WORKSPACE, ...BOOK,
+        from: { kind: 'value', type: 'int', required: true }, to: { kind: 'value', type: 'int', required: true },
+        write: { kind: 'optional-value' },
+      },
+    },
   }
   return families[family]?.[action]
 }
@@ -145,7 +153,7 @@ export function parseArguments(argv: readonly string[]): Parsed {
   const [family, action, ...rest] = argv
   const spec = family === undefined || action === undefined ? undefined : specFor(family, action)
   if (spec === undefined || family === undefined || action === undefined) {
-    const known = ['project', 'outline', 'chapter', 'short', 'text', 'memory', 'analysis', 'export', 'lineage', 'detect']
+    const known = ['project', 'outline', 'chapter', 'short', 'text', 'memory', 'analysis', 'export', 'lineage', 'detect', 'book']
     throw usageError(family === undefined || !known.includes(family)
       ? `unknown command: ${family ?? '(none)'}; choose from ${known.join(', ')}`
       : `unknown action for ${family}: ${action ?? '(none)'}`)
@@ -166,6 +174,20 @@ export function parseArguments(argv: readonly string[]): Parsed {
     if (option.kind === 'flag') {
       if (equals !== -1) throw usageError(`argument --${name}: ignored explicit argument '${token.slice(equals + 1)}'`)
       values[name] = true
+      continue
+    }
+    if (option.kind === 'optional-value') {
+      let raw: string | undefined
+      if (equals !== -1) raw = token.slice(equals + 1)
+      else {
+        const next = rest[index + 1]
+        if (next !== undefined && !next.startsWith('--')) {
+          index += 1
+          raw = next
+        }
+      }
+      if (raw === '') throw usageError(`argument --${name}: expected one argument`)
+      values[name] = raw ?? true
       continue
     }
     let raw: string
@@ -255,6 +277,62 @@ function containedTree(root: string, directory: string): void {
   walk(directory)
 }
 
+function reportParts(relative: string): string[] {
+  if (relative === '' || relative.includes('\0') || isAbsolute(relative)) throw new CliError(`report path must stay inside the book: ${relative}`)
+  const parts = relative.replaceAll('\\', '/').split('/')
+  if (parts.some(part => part === '' || part === '.' || part === '..')) throw new CliError(`report path must stay inside the book: ${relative}`)
+  if (!parts[parts.length - 1]?.endsWith('.md') || parts[0] === '追踪') {
+    throw new CliError(`report path must be a Markdown file inside the book and outside 追踪: ${relative}`)
+  }
+  return parts
+}
+
+function pathInfo(path: string, relative: string) {
+  try {
+    return lstatSync(path, { throwIfNoEntry: false })
+  } catch {
+    throw new CliError(`report path is not a directory: ${relative}`)
+  }
+}
+
+/** Reject a report path that leaves the book, uses a symlink, or is not Markdown. Does not create directories. */
+function assertReportPath(book: string, relative: string): void {
+  const root = looseRealpath(book)
+  let current = root
+  for (const part of reportParts(relative)) {
+    const next = join(current, part)
+    const info = pathInfo(next, relative)
+    if (info?.isSymbolicLink() === true) throw new CliError(`report path contains a symlink: ${relative}`)
+    if (info === undefined) return
+    if (!within(root, looseRealpath(next))) throw new CliError(`report path leaves the book: ${relative}`)
+    current = next
+  }
+  const leaf = pathInfo(current, relative)
+  if (leaf?.isSymbolicLink() === true) throw new CliError(`report path contains a symlink: ${relative}`)
+  if (leaf?.isFile() !== true) throw new CliError(`report path is not a file: ${relative}`)
+}
+
+/** Create missing parent directories and return the file to write. Rechecks symlinks. */
+function prepareReportFile(book: string, relative: string): string {
+  const root = looseRealpath(book)
+  const parts = reportParts(relative)
+  let current = root
+  for (let index = 0; index < parts.length; index += 1) {
+    const next = join(current, parts[index] ?? '')
+    const info = pathInfo(next, relative)
+    if (info?.isSymbolicLink() === true) throw new CliError(`report path contains a symlink: ${relative}`)
+    const last = index === parts.length - 1
+    if (!last) {
+      if (info === undefined) mkdirSync(next)
+      else if (!info.isDirectory()) throw new CliError(`report path is not a directory: ${relative}`)
+    } else if (info !== undefined && !info.isFile()) throw new CliError(`report path is not a file: ${relative}`)
+    const real = last && info === undefined ? looseRealpath(current) : looseRealpath(next)
+    if (!within(root, real)) throw new CliError(`report path leaves the book: ${relative}`)
+    current = next
+  }
+  return current
+}
+
 /** Locate the package root (holding `knowledge/`) from either the source tree or the built `lib/`. */
 function packageRoot(): string {
   let directory = dirname(fileURLToPath(import.meta.url))
@@ -340,7 +418,7 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
   const { family, action, values } = parsed
   const workspace = typeof values.workspace === 'string' ? workspacePath(values.workspace) : undefined
   let project: string | undefined
-  if (['project', 'outline', 'chapter', 'short', 'export', 'detect'].includes(family)) {
+  if (['project', 'outline', 'chapter', 'short', 'export', 'detect', 'book'].includes(family)) {
     project = bookPath(workspace ?? '', text(values, 'book'), family === 'project' && action === 'init')
   }
   if (family === 'text') {
@@ -484,6 +562,20 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       decisions: values.decision as string[], by: text(values, 'by'),
     }), 0]
   }
+  if (family === 'book') {
+    const book = project ?? ''
+    const from = integer(values, 'from') ?? 0
+    const to = integer(values, 'to') ?? 0
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < 1) throw new CliError('--from and --to must be positive integers')
+    if (from > to) throw new CliError('--from cannot exceed --to')
+    if (to - from + 1 > BOOK_AUDIT_MAX_SPAN) throw new CliError(`book audit accepts at most ${String(BOOK_AUDIT_MAX_SPAN)} chapters`)
+    const write = values.write
+    const relative = write === undefined ? undefined : write === true ? defaultAuditReportPath(from, to) : text(values, 'write')
+    if (relative !== undefined) assertReportPath(book, relative)
+    const report = auditBook(book, { from, to })
+    if (relative !== undefined) writeFileSync(prepareReportFile(book, relative), renderBookAudit(report), 'utf8')
+    return [report, report.findings.some(item => item.severity === 'blocking') ? 1 : 0]
+  }
   const book = project ?? ''
   const source = filePath(text(values, 'file'), book)
   const output = typeof values.out === 'string' ? filePath(values.out, book, true) : undefined
@@ -505,7 +597,7 @@ function emit(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value)}\n`)
 }
 
-const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'WritingCheckError', 'SyntaxError'])
+const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'WritingCheckError', 'BookAuditError', 'SyntaxError'])
 
 /**
  * Run one command and report its result or structured error on stdout.

@@ -58,11 +58,24 @@ export const DEFAULT_RULE_SOURCES: readonly RuleSource[] = [
 
 const PREFIXES = new Set(['OUT-P', 'OUT-NR', 'OUT-CAST', 'VOL-NR', 'VOL-BAN', 'VOL-OLD', 'CORE', 'CARD', 'STYLE', 'STATE'])
 
-/** One extracted obligation. `source.line` is 1-based. */
+/** One extracted obligation. `source.line` is 1-based. `also` names later ids of the same sentence. */
 export interface ExtractedRule {
   readonly id: string
   readonly text: string
+  /** Other rule ids whose normalized sentence matches `text`, in source order. */
+  readonly also?: readonly string[]
   readonly source: { readonly path: string; readonly line: number }
+}
+
+/**
+ * One writer-facing line. `text` stays the source sentence; later ids are appended here.
+ * @param rule - one extracted rule.
+ * @returns `id: text`, plus ` also: ` and the other ids when `also` is non-empty.
+ */
+export function formatRuleLine(rule: ExtractedRule): string {
+  const extra = rule.also
+  const suffix = extra === undefined || extra.length === 0 ? '' : ` also: ${extra.join(', ')}`
+  return `${rule.id}: ${rule.text}${suffix}`
 }
 
 /** A skipped file or heading. The command still succeeds. */
@@ -83,7 +96,11 @@ export interface RuleScanHit {
   readonly rule?: string
 }
 
-/** The bounded `chapter rules` payload. `rules_sha256` covers the deduped rule list, including rules left in `omitted`. */
+/**
+ * The bounded `chapter rules` payload.
+ * `rules_sha256` covers the deduped rule list, including rules left in `omitted`.
+ * The digest uses `id: text` with any `also` ids appended, so it stays the same as when that suffix lived in `text`.
+ */
 export interface ChapterRules {
   readonly schema: string
   readonly chapter: number
@@ -772,8 +789,14 @@ function dedupeRules(rules: readonly ExtractedRule[]): ExtractedRule[] {
   return kept.map((rule, index) => {
     const extra = also.get(index)
     if (extra === undefined || extra.length === 0) return rule
-    return { ...rule, text: `${rule.text} also: ${extra.join(', ')}` }
+    return { ...rule, also: extra }
   })
+}
+
+/** Text the digest covers: the original sentence, then any later ids. */
+function hashedRuleText(rule: ExtractedRule): string {
+  const extra = rule.also
+  return extra === undefined || extra.length === 0 ? rule.text : `${rule.text} also: ${extra.join(', ')}`
 }
 
 function entryPreview(entry: string): string {
@@ -910,7 +933,7 @@ function scanManuscript(
 }
 
 function rulesSha256(rules: readonly ExtractedRule[]): string {
-  const canonical = rules.map(rule => ({ id: rule.id, text: rule.text, source: { path: rule.source.path, line: rule.source.line } }))
+  const canonical = rules.map(rule => ({ id: rule.id, text: hashedRuleText(rule), source: { path: rule.source.path, line: rule.source.line } }))
   return createHash('sha256').update(JSON.stringify(canonical)).digest('hex')
 }
 

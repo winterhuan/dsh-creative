@@ -43,6 +43,7 @@ describe('native chapter template transitions', () => {
   it('submits only after a separate structured reviewer recommends ready', async () => {
     const { result, calls, phases } = run([draft, ready, committed])
     expect(await result).toMatchObject({ status: 'committed', revisions: 0, state_revision: 8 })
+    expect(await result).not.toHaveProperty('book_audit_hint')
     expect(phases).toEqual(['Prepare', 'Write', 'Review', 'Submit'])
     expect(calls.map(call => call.label)).toEqual(['Prepare', 'Write', 'Review', 'Submit'])
     expect(calls[2]!.schema).toMatchObject({ required: ['recommendation', 'review'], additionalProperties: false })
@@ -135,7 +136,23 @@ describe('native chapter template transitions', () => {
     expect(calls[1]!.prompt).toContain(prepared.chapter_rules)
     expect(calls[1]!.prompt).toContain('never pad an underlength draft')
     expect(calls[0]!.prompt).toContain('chapter rules')
+    expect(calls[0]!.prompt).toContain('also')
+    expect(calls[1]!.prompt).toContain('also:')
     expect(calls[1]!.prompt).toContain(prepared.outline_path)
+  })
+
+  it('suggests a book audit after a committed tenth chapter and does not run it', async () => {
+    const tenthArgs = {
+      chapter: 10,
+      body_path: '/book/正文/第010章.md',
+      outline_path: '/book/大纲/细纲_第010章.md',
+    }
+    const { result, calls } = run([draft, ready, committed], tenthArgs, { ...prepared, ...tenthArgs })
+    expect(await result).toMatchObject({
+      status: 'committed',
+      book_audit_hint: '建议父会话运行 book audit --workspace / --book book --from 1 --to 10 --json。本模板不自动运行。',
+    })
+    expect(calls.some(call => call.prompt.includes('book audit'))).toBe(false)
   })
 
   it('stops before writing when preparation needs a decision, returns null or sees a stale revision', async () => {
