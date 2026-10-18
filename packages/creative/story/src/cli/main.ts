@@ -573,8 +573,9 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     const relative = write === undefined ? undefined : write === true ? defaultAuditReportPath(from, to) : text(values, 'write')
     if (relative !== undefined) assertReportPath(book, relative)
     const report = auditBook(book, { from, to })
-    if (relative !== undefined) writeFileSync(prepareReportFile(book, relative), renderBookAudit(report), 'utf8')
-    return [report, report.findings.some(item => item.severity === 'blocking') ? 1 : 0]
+    const document = relative === undefined ? report : { ...report, report_path: relative }
+    if (relative !== undefined) writeFileSync(prepareReportFile(book, relative), renderBookAudit(document), 'utf8')
+    return [document, report.findings.some(item => item.severity === 'blocking') ? 1 : 0]
   }
   const book = project ?? ''
   const source = filePath(text(values, 'file'), book)

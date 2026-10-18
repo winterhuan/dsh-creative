@@ -50,7 +50,7 @@ node {CLI} project query --workspace {工作区} --book {作品名} --kind healt
 
 ## 一段章节的全书体检
 
-`book audit` 把范围内的章节质量、上面的健康风险、缺角色卡、过期的读者价值哈希，以及仍留在追踪里的作废条目放进同一份 `story-book-audit/v1`。不加 `--write` 时只读。字段、退出码和报告见 [全书体检](../../../story-write/references/long/artifact-protocols.md#全书体检)。健康条目在这里是 hint，不单独使体检失败。
+`book audit` 把范围内的章节质量、上面的健康风险、缺角色卡、过期的读者价值哈希，以及仍留在追踪里的作废条目放进同一份 `story-book-audit/v1`。不加 `--write` 时只读。字段、退出码和报告见 [全书体检](../../../story-write/references/long/artifact-protocols.md#全书体检)。健康条目在这里是 hint。只有 hint 时该项为 `warn`，不使体检失败。
 
 ```text
 node {CLI} book audit --workspace {工作区} --book {作品名} --from {A} --to {B} --json

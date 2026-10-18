@@ -56,7 +56,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 `dsh-story chapter rules` 在正文出现之前列出本章适用的规则。每条规则有稳定 ID、原文，以及来源路径和行号。一次结果不超过 16 KiB。放不下的规则、扫描行和 warning 计入 `omitted`，`rules_sha256` 覆盖完整列表。缺文件或缺标题是 warning，命令仍成功。一本书可以在 `设定/写作检查.json` 里换掉默认来源，并加上 `forbidden`、`era` 和 `void_terms`。同一句话把最先的 ID 留在 `text`，其余 ID 放进 `also`。字段和 ID 见[产物协议](knowledge/story/skills/story-write/references/long/artifact-protocols.md)。
 
-`dsh-story book audit` 读取一段连续章号，返回 `story-book-audit/v1`。不加 `--write` 时不创建文件、不改追踪。`--write` 在书内保存一份 Markdown；默认路径是 `草稿/体检_第A-B章.md`。路径必须是书目录内、`追踪/` 之外的 `.md`，软链接会被拒绝。没有 blocking 时退出码为 0，有则为 1，参数或配置错误为 2。第一批检查复用章节质量、健康查询、角色卡、读者价值哈希和仍留着的作废条目。以后的检查挂在同一份列表上。字段见[产物协议](knowledge/story/skills/story-write/references/long/artifact-protocols.md#全书体检)。
+`dsh-story book audit` 读取一段连续章号，返回 `story-book-audit/v1`。不加 `--write` 时不创建文件、不改追踪。`--write` 在书内保存一份 Markdown；默认路径是 `草稿/体检_第A-B章.md`。路径必须是书目录内、`追踪/` 之外的 `.md`，软链接会被拒绝。没有 blocking 时退出码为 0。只有 hint 时该项为 `warn`，`warn` 仍以 0 退出。有 blocking 时为 1，参数或配置错误为 2。`--write` 在 JSON 里加上 `report_path`。第一批检查复用章节质量、健康查询、角色卡、读者价值哈希和仍留着的作废条目。以后的检查挂在同一份列表上。字段见[产物协议](knowledge/story/skills/story-write/references/long/artifact-protocols.md#全书体检)。
 
 “记住本书的写法”使用既有 book 范围作者记忆与确认回执；角色、伏笔和事件经章节事务保存。记忆的候选确认、替换、撤回与优先级见[作者记忆](knowledge/story/skills/story/references/project/author-memory.md)。
 
@@ -124,7 +124,7 @@ Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工�
 - 角色快照没有更新章。健康查询和「风险」卡片用点名该角色的时间线事件里最新的 `updated_chapter`，没有这类事件的角色不列入。健康检查只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。
 - 设定检索通过 `project lookup` 只读 `设定/` 下的 Markdown。别名只认文件头 front matter，以及前 40 行里、第一个二级标题之前的「别名：」行。它不改追踪状态，也没有工作台入口。实现只有 TypeScript，不在 Python 基准里。
 - `chapter rules` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。`tests/reference/normalize-punctuation.js` 仍然只接受 `punctuation`。通用模板没有部分默认标题，这些书会报 warning，直到补上标题或用 `rule_sources` 换掉默认来源。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
-- `book audit` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。hint 不使命令失败。事实账本、节奏、人物弧线和文风检查不在第一批列表里。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
+- `book audit` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。hint 不使命令失败。只有 hint 时该项为 `warn`。Markdown 报告会合并这些 hint，哈希只印前 8 位。事实账本、节奏、人物弧线和文风检查不在第一批列表里。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
 - 运行时已完成从 Python/JavaScript 到 TypeScript 的迁移：CLI 与全部确定性操作都是 TypeScript，包内不再分发 `runtime/`；原实现保留在 `tests/reference/` 仅作差分测试基准，`tests/ts-port-parity*.spec.ts` 在相同输入上比对两者输出，parity 仍是兼容性依据。
 
 <a id="dev-note"></a>

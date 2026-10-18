@@ -40,10 +40,10 @@ export interface BookAuditRange {
   readonly to: number
 }
 
-/** One registered check's outcome. Hints do not make `status` `fail`. */
+/** One registered check's outcome. `warn` means hints and no blocking finding. */
 export interface BookAuditCheckResult {
   readonly id: string
-  readonly status: 'pass' | 'fail' | 'skip'
+  readonly status: 'pass' | 'fail' | 'skip' | 'warn'
   readonly summary: string
 }
 
@@ -63,6 +63,7 @@ export interface BookAuditCounts {
   readonly pass: number
   readonly fail: number
   readonly skip: number
+  readonly warn: number
   readonly blocking: number
   readonly hint: number
 }
@@ -75,6 +76,8 @@ export interface BookAuditReport {
   readonly checks: readonly BookAuditCheckResult[]
   readonly findings: readonly BookAuditFinding[]
   readonly counts: BookAuditCounts
+  /** Book-relative Markdown path. Present only after `--write` succeeds. */
+  readonly report_path?: string
 }
 
 /** What every check may read. The audit does not write. */
@@ -88,7 +91,7 @@ export interface BookAuditContext {
 /** One pluggable check. `run` must be deterministic for the same files. */
 export interface BookAuditCheck {
   readonly id: string
-  run(context: BookAuditContext): { readonly status: 'pass' | 'fail' | 'skip'; readonly summary: string; readonly findings: readonly BookAuditFinding[] }
+  run(context: BookAuditContext): { readonly status: 'pass' | 'fail' | 'skip' | 'warn'; readonly summary: string; readonly findings: readonly BookAuditFinding[] }
 }
 
 /** Markdown path used when `--write` omits a path. */
@@ -141,23 +144,42 @@ function countsOf(checks: readonly BookAuditCheckResult[], findings: readonly Bo
     pass: countStatus('pass'),
     fail: countStatus('fail'),
     skip: countStatus('skip'),
+    warn: countStatus('warn'),
     blocking: countSeverity('blocking'),
     hint: countSeverity('hint'),
   }
 }
 
+function chapterRank(chapter: number | undefined): number {
+  return chapter ?? Number.MAX_SAFE_INTEGER
+}
+
+function lineRank(line: number | undefined): number {
+  return line ?? Number.MAX_SAFE_INTEGER
+}
+
+/** Blocking before hint, then check, chapter, path, numeric line, category, message. */
 function compareFindings(order: ReadonlyMap<string, number>, left: BookAuditFinding, right: BookAuditFinding): number {
+  if (left.severity !== right.severity) return left.severity === 'blocking' ? -1 : 1
   const rank = (order.get(left.check) ?? order.size) - (order.get(right.check) ?? order.size)
   if (rank !== 0) return rank
-  const leftChapter = left.chapter ?? Number.MAX_SAFE_INTEGER
-  const rightChapter = right.chapter ?? Number.MAX_SAFE_INTEGER
-  if (leftChapter !== rightChapter) return leftChapter - rightChapter
-  if (left.severity !== right.severity) return left.severity === 'blocking' ? -1 : 1
+  const chapter = chapterRank(left.chapter) - chapterRank(right.chapter)
+  if (chapter !== 0) return chapter
+  const path = (left.source?.path ?? '').localeCompare(right.source?.path ?? '', 'zh')
+  if (path !== 0) return path
+  const line = lineRank(left.source?.line) - lineRank(right.source?.line)
+  if (line !== 0) return line
   return left.category.localeCompare(right.category, 'zh')
     || left.message.localeCompare(right.message, 'zh')
     || (left.evidence ?? '').localeCompare(right.evidence ?? '', 'zh')
-    || (left.source?.path ?? '').localeCompare(right.source?.path ?? '', 'zh')
-    || (left.source?.line ?? 0) - (right.source?.line ?? 0)
+}
+
+/** A skipped check stays skipped. Hints without a blocking finding are `warn`. */
+function settleStatus(declared: BookAuditCheckResult['status'], findings: readonly BookAuditFinding[]): BookAuditCheckResult['status'] {
+  if (declared === 'skip') return 'skip'
+  if (findings.some(item => item.severity === 'blocking')) return 'fail'
+  if (findings.length > 0) return 'warn'
+  return 'pass'
 }
 
 const chapterCheck: BookAuditCheck = {
@@ -198,7 +220,7 @@ const chapterCheck: BookAuditCheck = {
       }
       if (chapterBlocking) blockingChapters += 1
     }
-    const status = scanned === 0 ? 'skip' : blockingChapters > 0 ? 'fail' : 'pass'
+    const status = scanned === 0 ? 'skip' : blockingChapters > 0 ? 'fail' : findings.length > 0 ? 'warn' : 'pass'
     const summary = scanned === 0
       ? `范围内 ${String(missing)} 章没有正文，未做质量扫描`
       : `${String(scanned)} 章已扫描，${String(blockingChapters)} 章有阻断项，${String(missing)} 章没有正文`
@@ -237,7 +259,7 @@ const healthCheck: BookAuditCheck = {
       source: { path: item.source },
     }))
     return {
-      status: 'pass',
+      status: findings.length === 0 ? 'pass' : 'warn',
       summary: findings.length === 0 ? '没有伏笔或人物风险' : `${String(findings.length)} 条伏笔或人物风险`,
       findings,
     }
@@ -280,7 +302,7 @@ const castCardsCheck: BookAuditCheck = {
       source: { path: '追踪/_tracking-state.json' },
     }))
     return {
-      status: 'pass',
+      status: findings.length === 0 ? 'pass' : 'warn',
       summary: findings.length === 0 ? '角色快照都有对应的角色卡' : `${String(findings.length)} 个角色快照没有角色卡`,
       findings,
     }
@@ -329,26 +351,27 @@ const readerValueCheck: BookAuditCheck = {
     for (const row of rows) {
       const body = bodyDigest(chapterFile(context.project, row.chapter, false))
       const wordcount = context.state.wordcount_records[String(row.chapter)]?.body_sha256
+      const sides: string[] = []
+      const evidence = [`record=${row.hash}`]
       if (body !== undefined && body !== row.hash) {
-        findings.push(finding({
-          check: 'reader-value-stale', severity: 'hint', chapter: row.chapter, category: 'body-hash',
-          message: `第${String(row.chapter)}章读者价值记录的正文哈希与当前正文不一致`,
-          evidence: `record=${row.hash} body=${body}`,
-          source: { path: '追踪/_tracking-state.json' },
-        }))
+        sides.push('当前正文')
+        evidence.push(`body=${body}`)
       }
       if (wordcount !== undefined && wordcount !== row.hash) {
-        findings.push(finding({
-          check: 'reader-value-stale', severity: 'hint', chapter: row.chapter, category: 'wordcount-hash',
-          message: `第${String(row.chapter)}章读者价值记录的正文哈希与字数记录不一致`,
-          evidence: `record=${row.hash} wordcount=${wordcount}`,
-          source: { path: '追踪/_tracking-state.json' },
-        }))
+        sides.push('字数记录')
+        evidence.push(`wordcount=${wordcount}`)
       }
+      if (sides.length === 0) continue
+      findings.push(finding({
+        check: 'reader-value-stale', severity: 'hint', chapter: row.chapter, category: 'stale-hash',
+        message: `第${String(row.chapter)}章读者价值记录的正文哈希与${sides.join('、')}不一致`,
+        evidence: evidence.join(' '),
+        source: { path: '追踪/_tracking-state.json' },
+      }))
     }
     return {
-      status: 'pass',
-      summary: findings.length === 0 ? '范围内的读者价值正文哈希与当前正文和字数记录一致' : `${String(findings.length)} 条读者价值正文哈希不一致`,
+      status: findings.length === 0 ? 'pass' : 'warn',
+      summary: findings.length === 0 ? '范围内的读者价值正文哈希与当前正文和字数记录一致' : `${String(findings.length)} 条读者价值记录的正文哈希不一致`,
       findings,
     }
   },
@@ -404,7 +427,7 @@ const voidEntriesCheck: BookAuditCheck = {
       push(`void:foreshadow[${row.id}]:${status}`, `伏笔 ${row.id} 状态为${status}，仍留在追踪里`)
     }
     return {
-      status: 'pass',
+      status: findings.length === 0 ? 'pass' : 'warn',
       summary: findings.length === 0 ? '没有仍留在追踪里的作废条目' : `${String(findings.length)} 条作废条目仍留在追踪里`,
       findings,
     }
@@ -441,7 +464,7 @@ export function auditBook(project: string, options: { readonly from: number; rea
   const findings: BookAuditFinding[] = []
   for (const check of checks) {
     const outcome = check.run(context)
-    results.push({ id: check.id, status: outcome.status, summary: outcome.summary })
+    results.push({ id: check.id, status: settleStatus(outcome.status, outcome.findings), summary: outcome.summary })
     findings.push(...outcome.findings)
   }
   const order = new Map(checks.map((check, index) => [check.id, index]))
@@ -456,9 +479,56 @@ export function auditBook(project: string, options: { readonly from: number; rea
   }
 }
 
+const HASH64 = /\b[0-9a-f]{64}\b/gu
+/** How many line numbers one grouped hint line prints before an ellipsis. */
+const HINT_LINE_PREVIEW = 12
+
+function shortenHashes(text: string): string {
+  return text.replace(HASH64, value => value.slice(0, 8))
+}
+
+function renderBlocking(item: BookAuditFinding): string {
+  const where = item.chapter === undefined ? '' : `第${String(item.chapter)}章 `
+  const evidence = item.evidence === undefined ? '' : ` [${item.evidence}]`
+  const source = item.source === undefined ? '' : ` (${item.source.path}${item.source.line === undefined ? '' : `:${String(item.source.line)}`})`
+  return shortenHashes(`- ${item.check} ${where}${item.category}：${item.message}${evidence}${source}`)
+}
+
+function renderHintGroup(group: readonly BookAuditFinding[]): string {
+  const first = group[0]
+  if (first === undefined) return '- （无）'
+  const where = first.chapter === undefined ? '' : `第${String(first.chapter)}章 `
+  const lines = [...new Set(group.flatMap(item => item.source?.line === undefined ? [] : [item.source.line]))].sort((left, right) => left - right)
+  const shown = lines.slice(0, HINT_LINE_PREVIEW)
+  const lineText = lines.length === 0 ? '' : `第 ${shown.join('、')}${lines.length > shown.length ? '…' : ''}行：`
+  const evidenceValues = [...new Set(group.flatMap(item => item.evidence === undefined ? [] : [item.evidence]))]
+  const evidence = evidenceValues.length === 1 ? ` [${evidenceValues[0]}]` : ''
+  const paths = [...new Set(group.flatMap(item => item.source?.path === undefined ? [] : [item.source.path]))]
+  const source = paths.length === 1 ? ` (${paths[0]})` : ''
+  return shortenHashes(`- ${first.check} ${where}${first.category} ${String(group.length)} 处：${lineText}${first.message}${evidence}${source}`)
+}
+
+function hintGroups(rows: readonly BookAuditFinding[]): BookAuditFinding[][] {
+  const groups: BookAuditFinding[][] = []
+  const index = new Map<string, BookAuditFinding[]>()
+  for (const item of rows) {
+    const key = `${item.check}\0${item.chapter === undefined ? '' : String(item.chapter)}\0${item.category}\0${item.message}`
+    const existing = index.get(key)
+    if (existing === undefined) {
+      const created = [item]
+      index.set(key, created)
+      groups.push(created)
+      continue
+    }
+    existing.push(item)
+  }
+  return groups
+}
+
 /**
- * Render one audit as Markdown. The JSON document remains the source of the result.
- * @param report - a report from {@link auditBook}.
+ * Render one audit as Markdown. JSON findings stay one row each.
+ * Hints that share a chapter, category and message become one line, and a 64-character hash prints as its first eight characters.
+ * @param report - a report from {@link auditBook}, plus `report_path` when the CLI wrote the file.
  * @returns the report text, ending in a newline.
  */
 export function renderBookAudit(report: BookAuditReport): string {
@@ -469,25 +539,20 @@ export function renderBookAudit(report: BookAuditReport): string {
     `- state_revision: ${report.state_revision === null ? 'null' : String(report.state_revision)}`,
     `- from: ${String(report.range.from)}`,
     `- to: ${String(report.range.to)}`,
+    ...(report.report_path === undefined ? [] : [`- report_path: ${report.report_path}`]),
     '',
     '## 检查',
     '',
     ...report.checks.map(check => `- ${check.id}: ${check.status} — ${check.summary}`),
   ]
-  for (const severity of ['blocking', 'hint'] as const) {
-    lines.push('', `## ${severity}`, '')
-    const rows = report.findings.filter(item => item.severity === severity)
-    if (rows.length === 0) {
-      lines.push('- （无）')
-      continue
-    }
-    for (const item of rows) {
-      const where = item.chapter === undefined ? '' : `第${String(item.chapter)}章 `
-      const evidence = item.evidence === undefined ? '' : ` [${item.evidence}]`
-      const source = item.source === undefined ? '' : ` (${item.source.path}${item.source.line === undefined ? '' : `:${String(item.source.line)}`})`
-      lines.push(`- ${item.check} ${where}${item.category}：${item.message}${evidence}${source}`)
-    }
-  }
+  lines.push('', '## blocking', '')
+  const blocking = report.findings.filter(item => item.severity === 'blocking')
+  if (blocking.length === 0) lines.push('- （无）')
+  else for (const item of blocking) lines.push(renderBlocking(item))
+  lines.push('', '## hint', '')
+  const hints = hintGroups(report.findings.filter(item => item.severity === 'hint'))
+  if (hints.length === 0) lines.push('- （无）')
+  else for (const group of hints) lines.push(renderHintGroup(group))
   lines.push('')
   return lines.join('\n')
 }

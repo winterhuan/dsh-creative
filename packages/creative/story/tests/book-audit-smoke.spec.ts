@@ -1,11 +1,12 @@
 import { existsSync } from 'node:fs'
 import { basename, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 import { BOOK_AUDIT_SCHEMA } from '../src/core/audit.ts'
 
 const book = process.env.SHENJI_BOOK
-const entry = new URL('../src/cli.ts', import.meta.url)
+const entry = fileURLToPath(new URL('../src/cli.ts', import.meta.url))
 const loader = import.meta.resolve('tsx')
 
 describe('book audit smoke', () => {
