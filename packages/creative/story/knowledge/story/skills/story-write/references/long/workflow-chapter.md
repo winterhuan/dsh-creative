@@ -51,6 +51,8 @@ node {CLI} chapter check --workspace {工作区} --book {作品名} --chapter {N
 
 按 `story-review` 阅读最终正文，指出有依据的问题和修改建议，不提交固定评审 JSON 或模型证明。重要的承诺、选择、连续性或可读性问题应先处理；低压章可以靠关系变化、阶段收益和微期待成立。按反馈局部修订，重新检查并复核受影响内容。
 
+同一轮另做规则审稿。角色说明在 `story-review` 的 [规则审稿](../../../story-review/references/roles/rule-auditor.md)。它只对 `chapter rules` 返回的 ID 给结论，写入 `草稿/审稿/第NNN章.rules.json`，再跑 `chapter audit-verify`。整体审稿与逐条审稿并存。未接受的 `violate` 和整体审稿的修改意见共用最多两轮修订。到上限时停在 `revision_limit`，列出未解决的 `rule_id`，由作者三选一：在事务里接受例外、改规则来源，或改细纲。`unclear` 只写进修改意见。字段和门禁见 [规则审稿](artifact-protocols.md#规则审稿)。
+
 ## 4. 提交一次完整事务
 
 按 [追踪事务](tracking-transaction.md) 从最终正文构造 `delta`、完整当前 `context`、必要角色快照，使用最新 `state_revision` 作为 `expected_state_revision`；事务不手填 `wordcount`。只记录对未来有用的事实与承诺，不把质检统计、引用材料或未来计划混入当前状态。
@@ -59,7 +61,7 @@ node {CLI} chapter check --workspace {工作区} --book {作品名} --chapter {N
 node {CLI} chapter commit --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
 ```
 
-带外且用户明确接受自然长度时改用 `chapter accept-current-length`，同样要通过质量检查与读者价值评审。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
+带外且用户明确接受自然长度时改用 `chapter accept-current-length`，同样要通过质量检查与读者价值评审。`设定/写作检查.json` 的 `rule_audit` 为 `required` 时，提交前还要让默认路径上的规则审稿通过 `audit-verify`，未处理的 `violate` 须列入 `accepted_findings`。缺省 `off` 不拦提交。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
 
 提交在锁内重读正文和目标，校验字数记录哈希与修订号并原子发布状态及派生视图。失败不推进下一章；写入失败保留原事务重跑，校验失败按报错修事务，状态已变化则重读重构。成功后运行一次 `node {CLI} project check --workspace {工作区} --book {作品名} --json`；按需保留审稿意见，可删除临时正文片段；机械提交成功不代表文学质量通过。正文、事实、摘要与实际执行方式向用户如实汇报。
 

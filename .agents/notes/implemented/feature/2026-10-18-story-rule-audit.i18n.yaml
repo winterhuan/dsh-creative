@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-18-story-rule-audit.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-18-story-rule-audit.md
+/agent-note-independent-rule-audit-and-the-commit-gate:
+  en: 3ce2479ac4199b90
+  zh: 5771070683a168fb
+/agent-note-independent-rule-audit-and-the-commit-gate/problem:
+  en: f023e93fad9911bf
+  zh: 3ee9f7713a8ba2a1
+/agent-note-independent-rule-audit-and-the-commit-gate/decision:
+  en: 803225107c79de8b
+  zh: 5adcfb04ac3c515f
+/agent-note-independent-rule-audit-and-the-commit-gate/alternatives-considered:
+  en: 4b35afc6e6dbaa9d
+  zh: 87b3ac194b7eb8b8
+/agent-note-independent-rule-audit-and-the-commit-gate/consequences:
+  en: 38494e31bb195c83
+  zh: 2df621680c967249
+/agent-note-independent-rule-audit-and-the-commit-gate/verification:
+  en: fefe4150b36ad6b1
+  zh: 8bdd7858e30384b7

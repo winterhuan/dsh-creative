@@ -18,13 +18,14 @@
   "instructions": "按已确认卷纲续写，保留用户文风、字数、信息边界和停笔点。",
   "context_paths": [],
   "resume": false,
-  "compression_used": false
+  "compression_used": false,
+  "accepted_findings": [{ "rule_id": "OUT-001-NR", "reason": "作者保留这一句" }]
 }
 ```
 
 `skills_root` 是当前 Skill 目录的直接父目录，供模板定位各阶段所属 Skill；每个阶段只读自身参考。`cli` 按当前 Skill 上四级的包位置解析，不猜另一份检出目录。所有路径填写实际绝对路径。
 
-`context_paths` 可为空；提供时只包含本章必要的设定、上一章、状态、选定风格与作者记忆。`body_path`、`outline_path`、`expected_state_revision` 可省略，由 Prepare 解析；显式传入时作为约束核对，不允许静默替换。`resume=true` 表示保留已有未提交稿，先重检重评审，再按新意见修订。`compression_used` 据实际历史记录该稿是否用过唯一压缩机会；不清楚时先核实，不重置机会。子会话不保证继承用户约束，必须写入 `instructions`。
+`context_paths` 可为空；提供时只包含本章必要的设定、上一章、状态、选定风格与作者记忆。`body_path`、`outline_path`、`expected_state_revision` 可省略，由 Prepare 解析；显式传入时作为约束核对，不允许静默替换。`resume=true` 表示保留已有未提交稿，先重检重评审，再按新意见修订。`compression_used` 据实际历史记录该稿是否用过唯一压缩机会；不清楚时先核实，不重置机会。`accepted_findings` 可省略；提供时每项含 `rule_id` 和 `reason`，模板把这些 ID 视为作者已经接受的例外，并原样放进提交事务。子会话不保证继承用户约束，必须写入 `instructions`。
 
 只有用户明确接受这份稿件的自然长度时，才加入 `accepted_length: {"body_sha256":"…","outline_sha256":"…"}`，哈希来自该稿的 `chapter check`。接受只对应这份正文与细纲，修订改变哈希后需重新处理长度；`ready` 不能代替授权。缺少 workflow、结构化响应或必要工具时报告具体缺口，不默默切换执行模式。
 
@@ -37,9 +38,10 @@
 | Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，读取 `project context` 的健康摘要和设定摘录。`omitted.settings` 非零时补查 `project lookup`，`omitted.health` 非零时补查 `--kind health`，并按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲。设定摘录和健康摘要都不代替全部到期伏笔。运行 `chapter rules`，把 `rules` 以 `id: text` 交给写手；`also` 非空时该行再接 ` also: ` 和其余 ID。缺标题只记 warning。交回场景计划、规则清单、细纲哈希、修订号，以及本次读到的文件清单。准备者用原生进度反馈展示清单与修订号；模板继续下一阶段，不依赖父会话插入回合。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
 | Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`，交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
 | Review | 读取实际材料，前后运行 `chapter snapshot` 核对原始字节哈希、文件版本和追踪修订号；返回 `ready / revise / needs_input` 及有来源的可读意见。 |
-| Submit / Verify | 按[追踪事务](tracking-transaction.md)提交与审稿版本一致的正文，再核对实际状态和持久记录。已提交章直接验证，不重写或重复提交。 |
+| Audit | 与 Review 同一轮启动。读取 [规则审稿](../../../story-review/references/roles/rule-auditor.md)，只对 `chapter rules` 返回的 ID 给结论，写入 `草稿/审稿/第NNN章.rules.json`，并运行 `chapter audit-verify`。不自创规则，不代替作者接受例外。 |
+| Submit / Verify | 按[追踪事务](tracking-transaction.md)提交与审稿版本一致的正文，再核对实际状态和持久记录。`rule_audit` 为 `required` 时，提交前确认默认审稿文件已通过校验，且每条 `violate` 都在 `accepted_findings` 里。已提交章直接验证，不重写或重复提交。 |
 
-每个子 Agent 用原生 `structured_output` 返回模板要求的字段，普通消息里的 JSON 或进度说明不算完成。初稿后最多两轮局部修订，每轮重检重评审。带外自然长度必须得到用户对准确正文、细纲哈希的接受；欠长不填充，超长最多使用一次压缩机会。细纲或追踪变化后须重新准备，不能悄悄替换预期值。
+每个子 Agent 用原生 `structured_output` 返回模板要求的字段，普通消息里的 JSON 或进度说明不算完成。Review 与 Audit 在同一阶段里一起启动。当前 DSH 的 `agent()` 在并发上限至少为 2 时重叠执行；上限为 1 时排队，两步仍都会跑完。初稿后最多两轮局部修订，每轮重检、重做整体审稿和规则审稿。未接受的 `violate` 计入同一上限。到上限时返回 `revision_limit`，`unresolved_rule_ids` 列出仍未接受的 ID，并提示作者接受例外、改规则来源或改细纲。`unclear` 只进入修改意见。带外自然长度必须得到用户对准确正文、细纲哈希的接受；欠长不填充，超长最多使用一次压缩机会。细纲或追踪变化后须重新准备，不能悄悄替换预期值。
 
 ## 结果与恢复
 

@@ -14,6 +14,7 @@ import type { CheckFinding } from './checks/findings.ts'
 import { checkOutlineCopy } from './checks/outline-copy.ts'
 import { normalizePunctuation, readProjectPunctuationPolicy } from './checks/punctuation.ts'
 import { scanChapterQuality } from './rules.ts'
+import { assertRuleAuditForCommit } from './rule-audit.ts'
 import { verifyOutline } from './outline-contract.ts'
 import { normalizeState, require as requireTracking } from './tracking/schema.ts'
 import { applyTransaction, loadState, projectCommitInProgress, statePath } from './tracking/store.ts'
@@ -235,6 +236,7 @@ export function chapterCommit(project: string, chapter: number, inputPath: strin
   require(document.chapter === chapter, 'tracking transaction chapter does not match command')
   require(!Object.hasOwn(document, 'wordcount'), 'tracking transaction must not provide wordcount')
   require(document.expected_state_revision === checked.state_revision, 'tracking state changed since this transaction was prepared')
+  assertRuleAuditForCommit(project, chapter, document)
   const digests = { body_sha256: checked.body_sha256, outline_sha256: checked.outline_sha256 }
   validateExpectedSourceDigests(document, digests)
   // Bind this check to the locked transaction even on the ordinary direct path.

@@ -14,9 +14,9 @@ Status: implemented
 
 检查实现同一接口，按 `BOOK_AUDIT_CHECKS` 运行。第一批五项是 `chapter`、`health`、`cast-cards`、`reader-value-stale` 和 `void-entries`。`chapter` 对每份正文调用 `checkBlockingQuality`，并去掉作废词行，由 `void-entries` 报告一次。正文缺失是 hint。没有细纲时跳过照搬比对。`health` 以 `--to` 为截止章、用默认阈值调用 `assessHealth`；这些行保持 hint。`cast-cards` 把快照名对上 `设定/角色/` 的文件名或已声明别名。`reader-value-stale` 把记录里的 `body_sha256` 与当前正文原始字节的 SHA-256，以及 `wordcount_records` 对照，每条记录只出一条发现。说明写明哪些边不一致，`evidence` 保留完整哈希。Markdown 报告把 64 位哈希缩成前 8 位，并把同一章、同一类别、同一说明的 hint 合成一行。`void-entries` 沿用[章节规则](2026-10-18-story-chapter-rules.zh.md)的 `void:<字段>[下标]:词`，并报告状态已是「放弃」或「作废」的伏笔。追踪 schema 保持第 5 版。`reader_value_records` 仍是不验证的历史字段。
 
-新提交成功后，原生单章模板在章号是 10 的倍数时加上 `book_audit_hint`。提示点名 `book audit --from N-9 --to N`。模板不运行该命令。已提交章只做验证时省略这个字段。
+新提交成功后，原生单章模板在章号是 10 的倍数时加上 `book_audit_hint`。提示点名 `book audit --from N-9 --to N`。模板不运行该命令。已提交章只做验证时省略这个字段。单章逐条审稿是[规则审稿](2026-10-18-story-rule-audit.zh.md)。这条命令仍是区间报告。
 
-[章节规则决策](2026-10-18-story-chapter-rules.zh.md) 仍负责提取、扫描分级和 `also` 字段。[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md) 仍负责该字段为何是历史数据。[原生 workflow 决策](2026-10-03-story-native-workflow.zh.md) 仍负责阶段顺序。这三份记录都没有被整份取代。
+[章节规则决策](2026-10-18-story-chapter-rules.zh.md) 仍负责提取、扫描分级和 `also` 字段。[读者价值决策](2026-09-22-novel-reader-value-generation.zh.md) 仍负责该字段为何是历史数据。[原生 workflow 决策](2026-10-03-story-native-workflow.zh.md) 仍负责规则审稿子会话以外的阶段顺序。这三份记录都没有被整份取代。
 
 ## 考虑过的替代方案
 

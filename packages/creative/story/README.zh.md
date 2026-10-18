@@ -58,6 +58,8 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 `dsh-story book audit` 读取一段连续章号，返回 `story-book-audit/v1`。不加 `--write` 时不创建文件、不改追踪。`--write` 在书内保存一份 Markdown；默认路径是 `草稿/体检_第A-B章.md`。路径必须是书目录内、`追踪/` 之外的 `.md`，软链接会被拒绝。没有 blocking 时退出码为 0。只有 hint 时该项为 `warn`，`warn` 仍以 0 退出。有 blocking 时为 1，参数或配置错误为 2。`--write` 在 JSON 里加上 `report_path`。第一批检查复用章节质量、健康查询、角色卡、读者价值哈希和仍留着的作废条目。以后的检查挂在同一份列表上。字段见[产物协议](knowledge/story/skills/story-write/references/long/artifact-protocols.md#全书体检)。
 
+`dsh-story chapter audit-verify` 校验一份 `story-rule-audit/v1`。默认路径是 `草稿/审稿/第NNN章.rules.json`。`--input` 改读本书内的另一条路径。当前 `chapter rules` 清单里的每个 ID 都要有一条结论，清单外的 ID 会使校验失败。`violate` 的引文经过与章节规则相同的归一化后，必须出现在所标正文行上。`body_sha256` 和 `rules_sha256` 必须对应当前正文原始字节和当前规则列表。退出码 0 返回已校验结果，并列出 violate 与 unclear 的 ID。退出码 1 列出全部原因，缺文件也算失败。离开本书的路径以 2 退出。`设定/写作检查.json` 可以把 `rule_audit` 设为 `off` 或 `required`。缺这个键等于 `off`，`off` 时 `chapter commit` 不要求这份文件。`required` 要求默认路径上的文件已通过校验，并且每条 violate 的 ID 都在事务的 `accepted_findings` 里。这些例外写入逐章记录，不写入追踪状态。`unclear` 不拦提交。门禁保持关闭，直到第 001–012 章完成标定：R1–R3 必须命中，已知干净章的误报 violate 不超过 1 条。字段见[产物协议](knowledge/story/skills/story-write/references/long/artifact-protocols.md#规则审稿)。
+
 “记住本书的写法”使用既有 book 范围作者记忆与确认回执；角色、伏笔和事件经章节事务保存。记忆的候选确认、替换、撤回与优先级见[作者记忆](knowledge/story/skills/story/references/project/author-memory.md)。
 
 <a id="specialist-agents"></a>
@@ -67,7 +69,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 ### 原生单章 workflow
 
-要求 `story-write` 用原生 workflow 写长篇新章，或声明后续章节采用这一偏好。父会话提供工程、章号和约束，再按[调用说明](knowledge/story/skills/story-write/references/long/native-workflow.md)读取模板。DSH 已有的 `workflow` 工具内，Prepare 在已授权规划内检查或补建本章细纲，运行 `chapter rules`，并生成场景计划。写手收到每条 `id: text`。`also` 非空时，该行再接 ` also: ` 和其余 ID。写手逐条遵守，并在摘要里引用这些 ID。随后执行写作、独立审稿、最多两轮修订及追踪提交验证。已有可用细纲直接复用；除非用户要求确认，常规准备不再次索要批准。关键事实缺失或需要作者裁定时停止依赖工作。连续章串行执行，保留仍有未决问题的草稿。
+要求 `story-write` 用原生 workflow 写长篇新章，或声明后续章节采用这一偏好。父会话提供工程、章号和约束，再按[调用说明](knowledge/story/skills/story-write/references/long/native-workflow.md)读取模板。DSH 已有的 `workflow` 工具内，Prepare 在已授权规划内检查或补建本章细纲，运行 `chapter rules`，并生成场景计划。写手收到每条 `id: text`。`also` 非空时，该行再接 ` also: ` 和其余 ID。写手逐条遵守，并在摘要里引用这些 ID。随后执行写作、独立审稿、同一轮的逐条规则审稿、最多两轮修订及追踪提交验证。未接受的 violate 共用这一上限。到上限时模板返回 `revision_limit` 和未解决的规则 ID。作者接受例外、改规则来源，或改细纲。已有可用细纲直接复用；除非用户要求确认，常规准备不再次索要批准。关键事实缺失或需要作者裁定时停止依赖工作。连续章串行执行，保留仍有未决问题的草稿。
 
 审稿在此 workflow 内返回少量流程分支字段，普通审稿仍为自然语言。提交校验审稿对应的正文、细纲哈希和预期追踪修订号；文件变化后须重检重评审。追踪不增加审稿证明。原生运行完成可能包含未提交的章节结果，调用方须检查返回状态再推进。第 10、20 章及此后整十章新提交成功时，结果另含 `book_audit_hint`。模板不运行 `book audit`。
 
@@ -106,7 +108,7 @@ node /Users/winter/dsh-creative/packages/creative/story/lib/cli.js project statu
 
 #### Token 影响
 
-Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。连续性查询每次最多 16 KiB，超过条数或字节预算会返回下一页位置；健康摘要共用这一预算。设定检索另有一次最多 16 KiB 的调用。`chapter rules` 也是一次只读调用，上限相同。`book audit` 读取一段章号；`--write` 多写一份 Markdown，默认单章路径不调用它。原生模板只在第 10、20 章及此后整十章提交成功后点名这条命令。写前上下文把最多 4 条设定摘录放进同一份 16 KiB，放不下时先省略这些摘录。写前到期伏笔较多时需要额外分页，不能静默省略。读取再提交 workflow 模板会保留两份源码，独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；查询容量不等于提供商 token 计费或端到端效率承诺。
+Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工具 schema 或整套专家正文。连续性查询每次最多 16 KiB，超过条数或字节预算会返回下一页位置；健康摘要共用这一预算。设定检索另有一次最多 16 KiB 的调用。`chapter rules` 也是一次只读调用，上限相同。`chapter audit-verify` 只读一份审稿文件，不刷新工作台。原生模板在审稿的同一阶段启动它。`book audit` 读取一段章号；`--write` 多写一份 Markdown，默认单章路径不调用它。原生模板只在第 10、20 章及此后整十章提交成功后点名这条命令。写前上下文把最多 4 条设定摘录放进同一份 16 KiB，放不下时先省略这些摘录。写前到期伏笔较多时需要额外分页，不能静默省略。读取再提交 workflow 模板会保留两份源码，独立子 Agent 还会读取各自指令和原文，因此可能比直接委派更贵；查询容量不等于提供商 token 计费或端到端效率承诺。
 
 #### KV Cache 影响
 
@@ -124,6 +126,7 @@ Skill 正文和专业指令按需加载，初始目录不增加专用 Role 工�
 - 角色快照没有更新章。健康查询和「风险」卡片用点名该角色的时间线事件里最新的 `updated_chapter`，没有这类事件的角色不列入。健康检查只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。
 - 设定检索通过 `project lookup` 只读 `设定/` 下的 Markdown。别名只认文件头 front matter，以及前 40 行里、第一个二级标题之前的「别名：」行。它不改追踪状态，也没有工作台入口。实现只有 TypeScript，不在 Python 基准里。
 - `chapter rules` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。`tests/reference/normalize-punctuation.js` 仍然只接受 `punctuation`。通用模板没有部分默认标题，这些书会报 warning，直到补上标题或用 `rule_sources` 换掉默认来源。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
+- `chapter audit-verify` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。`tests/reference/normalize-punctuation.js` 仍然只接受 `punctuation`，所以带 `rule_audit` 的文件不进入那份对照。提交门禁默认关闭。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
 - `book audit` 只有 TypeScript 实现，不在 `tests/reference/` 的 Python 基准里。hint 不使命令失败。只有 hint 时该项为 `warn`。Markdown 报告会合并这些 hint，哈希只印前 8 位。事实账本、节奏、人物弧线和文风检查不在第一批列表里。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
 - 运行时已完成从 Python/JavaScript 到 TypeScript 的迁移：CLI 与全部确定性操作都是 TypeScript，包内不再分发 `runtime/`；原实现保留在 `tests/reference/` 仅作差分测试基准，`tests/ts-port-parity*.spec.ts` 在相同输入上比对两者输出，parity 仍是兼容性依据。
 

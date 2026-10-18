@@ -284,6 +284,7 @@ export function applyTransaction(project: string, document: unknown): TrackingWr
       transaction.delta,
       // 本章退役的角色在 next_state 里已被删除，但本章记录里仍应标为核心。
       new Set([...Object.keys(next.characters), ...transaction.delta.retired_characters]),
+      transaction.acceptedFindings,
     )
     const views = renderViews(next)
     const nextPayload = jsonPayload(next)

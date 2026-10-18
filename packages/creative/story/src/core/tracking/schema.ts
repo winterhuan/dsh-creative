@@ -300,7 +300,13 @@ export interface TrackingDelta {
   readonly retired_characters: readonly string[]
 }
 
-/** A validated transaction, ready to merge. */
+/** An author-accepted rule-audit exception. It is recorded on the chapter Markdown and is not part of the state file. */
+export interface AcceptedFinding {
+  readonly rule_id: string
+  readonly reason: string
+}
+
+/** A validated transaction, ready to merge. `acceptedFindings` is not copied into {@link TrackingState}. */
 export interface TrackingTransaction {
   readonly mode: 'append' | 'revision'
   readonly chapter: number
@@ -310,6 +316,7 @@ export interface TrackingTransaction {
   readonly snapshots: Record<string, CharacterSnapshot>
   readonly wordcount: WordcountRecord | null
   readonly source_snapshot: ChapterSourceSnapshot | null
+  readonly acceptedFindings: readonly AcceptedFinding[]
 }
 
 function validatePosition(value: unknown, label = 'context.position'): Position {
@@ -492,6 +499,34 @@ function validateContextInput(value: unknown, includeInitialFields: boolean): Tr
   }
 }
 
+function normalizeAcceptedFindings(value: unknown): AcceptedFinding[] {
+  const items = asList(value, 'accepted_findings')
+  require(items.length <= 12, 'accepted_findings may contain at most 12 items')
+  const seen = new Set<string>()
+  return items.map((raw, index) => {
+    const label = `accepted_findings[${String(index)}]`
+    const item = asMapping(raw, label)
+    requireKnownKeys(item, new Set(['rule_id', 'reason']), label)
+    const ruleId = cleanText(item.rule_id, `${label}.rule_id`, { maxBytes: 120 })
+    const reason = cleanText(item.reason, `${label}.reason`, { maxBytes: 240 })
+    require(!seen.has(ruleId), `accepted_findings contains duplicate rule_id ${ruleId}`)
+    seen.add(ruleId)
+    return { rule_id: ruleId, reason }
+  })
+}
+
+/**
+ * Read optional author acceptances from a transaction document.
+ * @param document - the raw transaction JSON.
+ * @returns the cleaned list. Absence and an empty array are both empty.
+ * @throws TrackingError when the field is present but not the expected list.
+ */
+export function acceptedFindingsOf(document: unknown): readonly AcceptedFinding[] {
+  const root = asMapping(document, 'transaction')
+  if (!Object.hasOwn(root, 'accepted_findings') || root.accepted_findings === undefined) return []
+  return normalizeAcceptedFindings(root.accepted_findings)
+}
+
 function normalizeDelta(value: unknown, throughChapter: number, snapshots: Record<string, CharacterSnapshot>, existingCoreNames: ReadonlyMap<string, string>): TrackingDelta {
   const delta = asMapping(value, 'delta')
   requireKnownKeys(delta, new Set(['result', 'character_changes', 'foreshadow_changes', 'timeline_events', 'constraints', 'next_chapter_commitments', 'retired_context_items', 'retired_characters']), 'delta')
@@ -642,7 +677,7 @@ export function normalizeInitialDocument(document: unknown): TrackingState {
  */
 export function normalizeTransaction(project: string, state: TrackingState, document: unknown): TrackingTransaction {
   const root = asMapping(document, 'transaction')
-  requireKnownKeys(root, new Set(['schema_version', 'mode', 'chapter', 'chapter_title', 'expected_state_revision', 'delta', 'context', 'character_snapshots', 'wordcount', 'reader_value', 'expected_body_sha256', 'expected_outline_sha256']), 'transaction')
+  requireKnownKeys(root, new Set(['schema_version', 'mode', 'chapter', 'chapter_title', 'expected_state_revision', 'delta', 'context', 'character_snapshots', 'wordcount', 'reader_value', 'expected_body_sha256', 'expected_outline_sha256', 'accepted_findings']), 'transaction')
   require(root.schema_version === INPUT_SCHEMA_VERSION, 'transaction schema_version is unsupported')
   const mode = cleanText(root.mode, 'mode', { maxBytes: 24 })
   require(mode === 'append' || mode === 'revision', 'mode must be append or revision')
@@ -679,6 +714,7 @@ export function normalizeTransaction(project: string, state: TrackingState, docu
     snapshots,
     wordcount,
     source_snapshot: sourceSnapshot,
+    acceptedFindings: acceptedFindingsOf(root),
   }
 }
 
