@@ -12,7 +12,7 @@ Status: implemented
 
 Write 之后，单章模板在同一个 `phase('Review')` 里用 `Promise.all` 启动 Review 和 Audit。rc.2 的 `@deepseek-ai/dsh-workflow-ptc` 里，`agent()` 先占一个槽再启动子会话。默认上限是 `min(16, max(1, availableParallelism() - 2))`。上限至少为 2 时两个子会话重叠。上限为 1 时它们排队，两步仍都会跑完。模板不另写一条串行退路。
 
-审稿者加载 `story-review` 并阅读 `references/roles/rule-auditor.md`。它只判断 `chapter rules` 返回的 `rules` 数组里的 ID，不自创 ID，也不代替作者接受例外。`also` 里的 ID 不另给结论。被 16 KiB 截掉的规则不审。文件是 `story-rule-audit/v1`，路径为 `草稿/审稿/第NNN章.rules.json`。每条结论是 `pass`、`violate`、`not_applicable` 或 `unclear`。`violate` 至少带一处 `{ line, quote }`。
+审稿者加载 `story-review` 并阅读 `references/roles/rule-auditor.md`。它只判断 `chapter rules` 返回的 `rules` 数组里的 ID，不自创 ID，也不代替作者接受例外。`also` 里的 ID 不另给结论。被 16 KiB 截掉的规则不审。文件是 `story-rule-audit/v1`，路径为 `草稿/审稿/第NNN章.rules.json`。每条结论是 `pass`、`violate`、`not_applicable` 或 `unclear`。`violate` 至少带一处 `{ line, quote }`。判定口径在同一份角色说明里：`CORE` 与 `VOL-OLD` 出现反模式的任一段即 violate，后文补救不抵消；以「禁止」开头的规则只查被禁行为是否出现；`OUT-P` 合成句缺情节点或越界都是 violate；`OUT-GOAL` 与目标矛盾是 violate，目标未推进且未用 `not_applicable` 说明时是 unclear。证据只取本章正文。称谓或外号能对应到同一人即适用。存疑是 unclear。
 
 `chapter audit-verify` 不调用模型。当前每条规则恰好一个结论，每个结论 ID 都必须在这份清单里。`normalizeRuleSentence` 去掉 `**`、空白和句末标点。引文随后必须出现在该 1 起行号的正文行上。句中标点保留，因此删掉逗号会失败。`body_sha256` 是当前正文原始字节的 SHA-256。`rules_sha256` 是当前章节规则摘要。通过时退出码为 0，并列出 violate 与 unclear 的 ID。失败时退出码为 1，列出全部原因，缺文件也算失败。离开本书的路径以 2 退出。写作检查文件非法时以 2 退出。
 
