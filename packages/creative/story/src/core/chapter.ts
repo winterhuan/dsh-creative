@@ -13,6 +13,7 @@ import { scanDegeneration } from './checks/degeneration.ts'
 import type { CheckFinding } from './checks/findings.ts'
 import { checkOutlineCopy } from './checks/outline-copy.ts'
 import { normalizePunctuation, readProjectPunctuationPolicy } from './checks/punctuation.ts'
+import { scanChapterQuality } from './rules.ts'
 import { verifyOutline } from './outline-contract.ts'
 import { normalizeState, require as requireTracking } from './tracking/schema.ts'
 import { applyTransaction, loadState, projectCommitInProgress, statePath } from './tracking/store.ts'
@@ -108,6 +109,25 @@ export function checkBlockingQuality(outline: string, body: string, project?: st
     if (copied.status === 1) advisories.push({ source: 'outline-copy', type: 'OUTLINE_COPY_REVIEW', message: copied.output.trim() })
   } catch (error) {
     blocking.push({ source: 'outline-copy', type: 'TOOL_ERROR', message: `check-outline-copy.js exited 2: ${error instanceof Error ? error.message : String(error)}` })
+  }
+  if (project !== undefined) {
+    try {
+      for (const hit of scanChapterQuality(project, outline, body, text)) {
+        const row: QualityRow = {
+          source: 'chapter-rules',
+          type: hit.kind === 'forbidden' ? 'FORBIDDEN' : hit.kind === 'era' ? 'ERA_DENY' : hit.kind === 'cast' ? 'CAST' : 'VOID_TERM',
+          severity: hit.severity,
+          file: body,
+          message: hit.message,
+          id: hit.id,
+          ...(hit.line === undefined ? {} : { line: hit.line }),
+          ...(hit.rule === undefined ? {} : { rule: hit.rule }),
+        }
+        ;(hit.severity === 'blocking' ? blocking : advisories).push(row)
+      }
+    } catch (error) {
+      blocking.push({ source: 'chapter-rules', type: 'TOOL_ERROR', message: `chapter rules scan failed: ${error instanceof Error ? error.message : String(error)}` })
+    }
   }
   return { status: blocking.length > 0 ? 'fail' : 'pass', blocking_findings: blocking, advisories }
 }

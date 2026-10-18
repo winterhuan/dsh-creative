@@ -12,6 +12,7 @@ import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
+import { extractChapterRules } from '../core/rules.ts'
 import { type AiPatternsDocument, scanAiPatterns, aiPatternsDocument } from '../core/checks/ai-patterns.ts'
 import { scanDegeneration } from '../core/checks/degeneration.ts'
 import { checkOutlineCopy } from '../core/checks/outline-copy.ts'
@@ -75,6 +76,7 @@ function specFor(family: string, action: string): Options | undefined {
     outline: { check: { ...WORKSPACE, ...BOOK, ...CHAPTER } },
     chapter: {
       check: { ...WORKSPACE, ...BOOK, ...CHAPTER },
+      rules: { ...WORKSPACE, ...BOOK, ...CHAPTER },
       snapshot: { ...WORKSPACE, ...BOOK, ...CHAPTER, 'outline-only': { kind: 'flag' } },
       commit: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
       'accept-current-length': { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
@@ -416,6 +418,7 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       const report = verifyOutline(path)
       return [report, report.ok ? 0 : 1]
     }
+    if (action === 'rules') return [extractChapterRules(book, chapter), 0]
     if (action === 'snapshot') {
       const stateFile = statePath(book)
       filePath(stateFile, book)
@@ -502,7 +505,7 @@ function emit(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value)}\n`)
 }
 
-const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'SyntaxError'])
+const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'WritingCheckError', 'SyntaxError'])
 
 /**
  * Run one command and report its result or structured error on stdout.

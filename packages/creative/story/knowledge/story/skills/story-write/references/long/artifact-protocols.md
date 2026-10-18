@@ -51,6 +51,38 @@ aliases:
 
 ---
 
+## 写作检查配置
+
+`设定/写作检查.json` 必须包含 `punctuation`，取值为 `preserve` 或 `normalize-narration`。文件不存在时标点按默认保留。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。未知键使文件无效，报错仍要求标点取值合法。`tests/reference/normalize-punctuation.js` 只接受 `punctuation`，带其余键的文件不进入那份对照。
+
+`chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json` 在正文出现之前提取本章规则。结果模式是 `story-chapter-rules/v1`，含 `rules`、`scan`、`warnings`、`rules_sha256`、`omitted`，以及 `chapter` 和 `state_revision`。每条规则有 `id`、`text` 和 `source.path`、`source.line`。含末尾换行的一次结果不超过 16 KiB；放不下时从末尾依次丢掉规则、扫描行和 warning，丢掉的条数记入 `omitted`。`rules_sha256` 覆盖截断前的完整规则列表。同一输入的规则 ID 不变。来源文件或标题缺失时写入 `warnings`，命令仍成功。正文还不存在时只做提取，以及追踪里的作废词扫描。
+
+`rule_sources` 是数组，每项为 `{ "file", "heading", "prefix" }`。`heading` 可以是字符串或字符串数组。写了这一键就整份替换默认来源，空数组不提取规则。键缺失时按默认来源。字段行去掉 `**` 后再认 `标题：内容`。占位、`无`、`没有`、`[待补充]`、整格 `{...}`，以及以「没有就写」开头的文字，都不生成规则。一条字段只拆出一段时 ID 不带序号；拆成多段时从 `-1` 编号。
+
+| prefix | 默认 file | 默认 heading | ID |
+|---|---|---|---|
+| `OUT-P` | `大纲/细纲_第{chapter}章.md` | `执行边界` | 情节点表该列。`OUT-NNN-Pk` 的 k 用表内 `#` 列 |
+| `OUT-NR` | 同上 | `本章禁止提前释放` | 按顿号、分号拆。`OUT-NNN-NR` 或 `OUT-NNN-NR-n` |
+| `OUT-CAST` | 同上 | `出场顺序` | 整份名单一条，`OUT-NNN-CAST`。显式「无」不产生规则 |
+| `VOL-NR` | `大纲/卷纲_第X卷.md` | `禁止提前释放` | 当前剧情单元内，`VOL-<单元ID>-NR` |
+| `VOL-BAN` | 同上 | `终局底牌边界` | 当前剧情单元内，`VOL-<单元ID>-BAN` |
+| `VOL-BAN` | 同上 | `本卷禁碰的终局底牌` | 标题以「本卷」开头时搜整份卷纲，ID 为 `VOL-BAN` |
+| `VOL-OLD` | 同上 | `必须删掉或后置的旧设计` | 节内表格行用分号接单元格，否则用列表。`VOL-OLD-n` |
+| `CORE` | `设定/核心设定.md` | `本次必须修掉的旧稿病根` | 编号列表用原文编号，`CORE-n` |
+| `CARD` | `设定/题材正文提示卡.md` | `禁止漂移`、`问种边界` | 节内正文按句号、分号拆句。`CARD-<节名>-n` |
+| `STYLE` | `设定/文风.md` | `禁止` | 列表序号，`STYLE-n` |
+| `STATE` | `追踪/_tracking-state.json` | `long_term_constraints` | 条目原文，`STATE-n`。其他标题 warning 后跳过 |
+
+`{chapter}` 定位本章细纲。`第X卷` 选择剧情单元 `章节范围` 盖住本章、且范围最窄的那份卷纲。单元 ID 取自 `单元ID`。通用模板里没有「问种边界」「本次必须修掉的旧稿病根」或卷纲旧设计表时，对应来源给出 warning。
+
+`forbidden` 是数组，每项 `{ "id", "pattern", "severity", "rule"? }`。`severity` 为 `blocking` 或 `hint`。`pattern` 是最长 200 字的正则，按 `u` 标志编译。非法、空白或超长的模式写入 warning 并跳过。`blocking` 只用于没有第二种读法的固定句子。`hint` 只报告。
+
+`era` 是 `{ "deny": [], "allow": [] }`。`deny` 按子串扫描正文，命中为 blocking；这段文字落在某条 `allow` 里时跳过。`void_terms` 是字符串数组，命中 `long_term_constraints` 或 `continuity_risks` 时给 hint，表示作废条目仍在追踪里。
+
+`chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名：正文出现、且该人的任一名字不在出场名单的分词里，就报一条 hint。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次扫描里。
+
+---
+
 ## 对标/{对标书名}/拆文报告.md
 
 > **拆文库/对标关系**：`拆文库/` 是 analyze 的共享产出，多本长篇按 `设定/题材定位.md` 的登记直接阅读。`对标/` 里已有的副本仍可打开；新的引用不再复制进去。

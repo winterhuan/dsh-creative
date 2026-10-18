@@ -30,7 +30,7 @@ node {CLI} chapter accept-current-length --workspace {工作区} --book {作品�
 
 - `init`：只在 `_tracking-state.json` 不存在时执行，绝不覆盖已初始化项目。
 - `text count --checkpoint`：纯测量；返回当前实际字数、用户带与剩余用户区间，不写正文、不写 tracking、不做语义判断。每章最多调用一次。
-- `chapter check`：重新读取当前正文与细纲目标，返回细纲就绪、确定性长度状态、现有 blocking quality、`state_revision` 和当前可执行动作，不保存 approval。`under` 不提供自动补写；`over` 额外返回一次净删型 `compress-once` 及进入内带/用户带所需的机器删除区间。
+- `chapter check`：重新读取当前正文与细纲目标，返回细纲就绪、确定性长度状态、现有 blocking quality、`state_revision` 和当前可执行动作，不保存 approval。`under` 不提供自动补写；`over` 额外返回一次净删型 `compress-once` 及进入内带/用户带所需的机器删除区间。`设定/写作检查.json` 里 `forbidden` 的 `blocking` 项和 `era.deny` 并入 blocking quality；`hint`、出场名单和 `void_terms` 只进入 advisories。分级见 [写作检查配置](artifact-protocols.md#写作检查配置)。
 - `chapter commit`：再次读取当前文件、重新计数；只接受用户带内章节，将与正文哈希绑定的字数记录和逐章事务原子提交。
 - `chapter accept-current-length`：只接受带外但 quality pass 的章节，接受动作发生时重新读取、重新计数并立即原子提交，不保存可陈旧的历史决议。
 - `check`：严格验证 state schema、逐章记录连续性/规范名/体积、固定 7 栏、角色快照硬上限、派生文件集合，以及所有派生视图与 state 的逐字一致性。

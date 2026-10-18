@@ -221,6 +221,17 @@ function usableForm(form: string): boolean {
   return trimmed.length >= 2 && trimmed.length <= 80 && /[\p{L}\p{N}]/u.test(trimmed) && !GENERIC_TERMS.has(trimmed)
 }
 
+/**
+ * Aliases declared in one Markdown file: front matter `aliases` / `别名`, then
+ * `别名：` lines in the first 40 lines before the first second-level heading.
+ * @param text - the file text.
+ * @returns at most 12 usable aliases, in source order.
+ */
+export function declaredAliases(text: string): readonly string[] {
+  const matter = splitFrontMatter(text)
+  return takeAliases([...matter.aliases, ...headerAliases(matter.body, matter.startLine)])
+}
+
 function takeAliases(values: readonly string[]): string[] {
   const seen = new Set<string>()
   const result: string[] = []

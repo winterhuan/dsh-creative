@@ -27,7 +27,7 @@ describe('story file refresh signals', () => {
     expect(latestSettledMutation(snapshot(settled('cli', 'bash', { command })))).toBe('cli\0追踪/_tracking-state.json')
     expect(latestSettledMutation(snapshot(settled('failed', 'bash', { command }, true)))).toBeUndefined()
   })
-  it.each(['project status', 'project query', 'project lookup', 'chapter snapshot', 'chapter check', 'analysis inspect', 'text normalize'])('keeps CLI reads out of refresh signals: %s', command => {
+  it.each(['project status', 'project query', 'project lookup', 'chapter snapshot', 'chapter check', 'chapter rules', 'analysis inspect', 'text normalize'])('keeps CLI reads out of refresh signals: %s', command => {
     expect(latestSettledMutation(snapshot(settled('read', 'bash', { command: `node /plugin/lib/cli.js ${command}` })))).toBeUndefined()
   })
   it('refreshes after a chapter transaction, while read-only queries leave the signal unchanged', () => {
