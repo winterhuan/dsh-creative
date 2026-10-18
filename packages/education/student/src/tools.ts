@@ -1,6 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool, type ValueSchemaSpec, type ParameterSchemaSpec } from '@deepseek-ai/dsh-tools'
 import { z } from 'zod'
+import { updateNotices } from './learning.ts'
 import { commandSchema } from './schema.ts'
 import { queryStudy, studyStore } from './store.ts'
 
@@ -35,7 +36,7 @@ export function registerStudyTools(context: Context): void {
     name: 'study_status',
     description: 'Read this workspace\'s learner profile, time budget, courses, knowledge map, weak points, check-ins, mistakes, worksheets and evidence. Call it before each learning step. kind selects the page; collections return 20 records. Reading does not start or stop a timer. Load the study skill for how to teach from a page.',
     parameters: {
-      kind: { type: 'string', enum: ['status', 'materials', 'mistakes', 'due', 'pending', 'attempts', 'sessions', 'progress', 'concepts', 'objectives', 'relations', 'worksheets', 'paper-results', 'curriculum', 'weak', 'elements', 'diagnose', 'review-sheet'], description: 'status (default) includes the time budget, top weak points and one recommendation. curriculum needs subject; optional grade and term browse another map without mastery. weak lists weak points and the next step. elements needs subject and returns question-writing elements for taught goals; optional unit or id. diagnose returns check-in plans; optional subject, grade, term and unit select a cross-grade or single-unit plan. review-sheet needs subject and returns the next printed review picks. Other values page materials, mistakes, due, pending, attempts, sessions, progress, concepts, objectives, relations, worksheets or paper-results. id selects one record; a mistake id returns its confirmed prompt and answer evidence.' },
+      kind: { type: 'string', enum: ['status', 'materials', 'mistakes', 'due', 'pending', 'attempts', 'sessions', 'progress', 'concepts', 'objectives', 'relations', 'worksheets', 'paper-results', 'curriculum', 'weak', 'elements', 'diagnose', 'review-sheet'], description: 'status (default) includes the suggested time budget, timeNotice, top weak points and one recommendation. Relay timeNotice as written; it states elapsed time, the suggestion and any break clock in Beijing time. curriculum needs subject; optional grade and term browse another map without mastery. weak lists weak points and the next step. elements needs subject and returns question-writing elements for taught goals; optional unit or id. diagnose returns check-in plans; optional subject, grade, term and unit select a cross-grade or single-unit plan. review-sheet needs subject and returns the next printed review picks. Other values page materials, mistakes, due, pending, attempts, sessions, progress, concepts, objectives, relations, worksheets or paper-results. id selects one record; a mistake id returns its confirmed prompt and answer evidence.' },
       offset: { type: 'integer', description: 'Zero-based collection offset; defaults to 0.' },
       id: { type: 'string', description: 'Optional exact record ID for materials, mistakes, attempts, sessions, concepts, objectives or worksheets.' },
       subject: { type: 'string', enum: ['chinese', 'math', 'english'], description: 'Optional subject filter for subject-owned records; required for kind=curriculum and kind=elements.' },
@@ -56,10 +57,16 @@ export function registerStudyTools(context: Context): void {
   }))
   context.tools.register(defineTool({
     name: 'study_update',
-    description: 'Save one learning change in this workspace. Load the study skill first; it owns question writing, figures, hints, review spacing and paper grading. Confirmation text must quote the user. Use shipped objective IDs from study_status. Inside a running block, save one task, the learner\'s real answer, any hint request, then the assessment of that task. A task and its record may carry the same figure. Paper grading does not need a running block. Identical retries succeed; reusing an id for different content fails. Do not edit .study/state.json directly.',
-    parameters: { change: { ...toolSchema(z.toJSONSchema(commandSchema)), required: true, description: 'One action. setup limits are block 5–15, break 5–15 and daily 10–30 minutes; grade-two defaults 10/5/20 are product settings, not medical guidance. Course material must match the profile. Dates come from the host. start for diagnose, foundation or school may include scope (grade, term, units or objectiveIds); without scope the confirmed school unit stays the default.' } },
+    description: 'Save one learning change in this workspace. Load the study skill first; it owns question writing, figures, hints, review spacing and paper grading. Confirmation text must quote the user. Use shipped objective IDs from study_status. Inside a running block, save one task, the learner\'s real answer, any hint request, then the assessment of that task. A task and its record may carry the same figure; an omitted figure, objective, mistake or variant is copied from the current task. A conflicting field is rejected with the expected value. Choice answers accept case, width, spacing and letter forms such as A or 选择A; the stored response is the choice text and rawResponse keeps the input. Paper grading does not need a running block. Identical retries succeed; reusing an id for different content fails. Do not edit .study/state.json directly.',
+    parameters: { change: { ...toolSchema(z.toJSONSchema(commandSchema)), required: true, description: 'One action. setup limits are block 5–15, break 5–15 and daily 10–30 minutes; grade-two defaults 10/5/20 are suggestions, not a rejection and not medical guidance. A passed block, an unfinished break or a full day still saves, and the result includes timeNotice. intensity is stored only for diagnose; other modes ignore it and say so in notices. Course material must match the profile. Dates come from the host. start for diagnose, foundation or school may include scope (grade, term, units or objectiveIds); without scope the confirmed school unit stays the default.' } },
     output: { schema: { type: 'json' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
     isConcurrencySafe: () => false,
-    async execute(args, exec) { return z.json().parse(queryStudy(await studyStore(exec, args.change), 'status', 0)) },
+    async execute(args, exec) {
+      const status = z.json().parse(queryStudy(await studyStore(exec, args.change), 'status', 0))
+      const notices = updateNotices(args.change)
+      if (notices.length === 0 || typeof status !== 'object' || status === null) return status
+      const prior = 'notices' in status && Array.isArray(status.notices) ? status.notices.filter(item => typeof item === 'string') : []
+      return { ...status, notices: [...prior, ...notices] }
+    },
   }))
 }

@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-18-student-soft-time.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-10-18-student-soft-time.md
+/agent-note-soft-study-time-reminders:
+  en: 1b612349f8120c2b
+  zh: 7269be9362121662
+/agent-note-soft-study-time-reminders/problem:
+  en: 5ee39db0c02d8f29
+  zh: d9147727e99deaec
+/agent-note-soft-study-time-reminders/decision:
+  en: bdd78d064df6d748
+  zh: 05e4a9c3b52df199
+/agent-note-soft-study-time-reminders/alternatives-considered:
+  en: 5fcd1f5c5d3e7a93
+  zh: 5131618c9e967ca9
+/agent-note-soft-study-time-reminders/verification:
+  en: 318e1ec85c8a3ad6
+  zh: fbcd5f07f8fbd2f4
+/agent-note-soft-study-time-reminders/consequences:
+  en: 0dd5563af30c7cc8
+  zh: 01546508f3679deb

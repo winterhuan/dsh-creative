@@ -61,7 +61,7 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
     </section>
     <section><h3>{t('due')} · {study.dueCount}</h3>{study.dueMistakes.length === 0 && <p>{t('empty')}</p>}
       {study.dueMistakes.map(item => <p key={item.id}>{t(item.subject)} · {item.topic}</p>)}
-      {study.dueSubjects.map(item => <button key={item} disabled={disabled || running || study.phase !== 'ready'} onClick={() => onReview(item)}>{t('review')} · {t(item)}</button>)}
+      {study.dueSubjects.map(item => <button key={item} disabled={disabled || running} onClick={() => onReview(item)}>{t('review')} · {t(item)}</button>)}
       {study.dueSubjects.length > 0 && study.phase !== 'ready' && <p>{t('reviewBlocked')}</p>}
     </section>
     <section><h3>{t('pending')} · {study.pendingCount}</h3>{study.pendingMistakes.length === 0 && <p>{t('empty')}</p>}

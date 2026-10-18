@@ -81,19 +81,21 @@ describe('learning workbench', () => {
     expect(backend.read().rewards).toEqual([])
   })
 
-  it('blocks answers for an expired block and does not offer a new start during the break', async () => {
+  it('keeps answers available after the suggested time and offers a start during the suggested break', async () => {
     let state = updateStudy(updateStudy(updateStudy(undefined, setup, NOW), start, NOW), { action: 'task', task: answerTask }, NOW)
     const backend = installFetch(state)
     const view = render(<StudyDesk sessionId="one" visible running={false} ask={vi.fn()} t={t} />)
     const submit = await screen.findByRole('button', { name: 'Submit answer' })
-    expect(submit.closest('fieldset')?.disabled).toBe(true)
+    expect(submit.closest('fieldset')?.disabled).toBe(false)
+    expect(await screen.findByText(/past the suggested time/)).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Start learning' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Start now' })).toBeNull()
     view.unmount()
     state = updateStudy(backend.read(), { action: 'stop', sessionId: start.id, reflection: '' }, Date.now())
     installFetch(state)
     render(<StudyDesk sessionId="two" visible running={false} ask={vi.fn()} t={t} />)
     await screen.findByText(/Take a break away/)
-    expect(screen.queryByRole('button', { name: 'Start learning' })).toBeNull()
+    expect((await screen.findByRole('button', { name: 'Start now' }) as HTMLButtonElement).disabled).toBe(false)
   })
 
   it('does not poll hidden tabs and aborts a pending read on session removal', async () => {
@@ -263,7 +265,7 @@ it('carries the due subject into review without starting until the learner choos
   expect(backend.read().sessions[0]).toMatchObject({ subject: 'english', mode: 'review' })
 })
 
-it('keeps due review unavailable during a break', async () => {
+it('keeps due review available during a suggested break and shows the suggestion', async () => {
   vi.spyOn(Date, 'now').mockReturnValue(NOW)
   let state = updateStudy(undefined, setup, NOW - DAY)
   state = updateStudy(state, { action: 'mistake', mistake }, NOW - DAY)
@@ -274,7 +276,8 @@ it('keeps due review unavailable during a break', async () => {
   render(<StudyDesk sessionId="break" visible running={false} ask={vi.fn()} t={t} />)
   await screen.findByText(/Take a break away/)
   await openDesk('Mistakes')
-  expect((screen.getByRole('button', { name: 'Due review · Math' }) as HTMLButtonElement).disabled).toBe(true)
+  expect((screen.getByRole('button', { name: 'Due review · Math' }) as HTMLButtonElement).disabled).toBe(false)
+  expect(screen.getByText(/Review can start now/)).toBeTruthy()
   expect(backend.requests).toHaveLength(0)
 })
 
@@ -288,7 +291,7 @@ it('shows the saved answer with feedback and offers the next question', async ()
   await screen.findByText(`My answer: ${attempt.response}`)
   expect(screen.getByText(attempt.feedback)).toBeTruthy()
   expect(screen.getByRole('button', { name: 'Next question' })).toBeTruthy()
-  expect(screen.getByText('Time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
+  expect(screen.getByText('Suggested time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
 })
 
 it('uses the server clock immediately without showing more than the block limit', async () => {
@@ -297,8 +300,8 @@ it('uses the server clock immediately without showing more than the block limit'
   const state = updateStudy(updateStudy(undefined, setup, serverNow), start, serverNow)
   vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(dashboard(state, serverNow)))))
   render(<StudyDesk sessionId="clock" visible running={false} ask={vi.fn()} t={t} />)
-  await screen.findByText('Time left: 10:00')
-  expect(screen.getByText('Time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
+  await screen.findByText('Suggested time left: 10:00')
+  expect(screen.getByText('Suggested time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
 })
 
 it('shows the knowledge map and mistake book on the main tab and starts the recommended review', async () => {
@@ -337,7 +340,7 @@ it('surfaces a weak knowledge point and starts practice around it', async () => 
   const backend = installFetch(state)
   const ask = vi.fn().mockResolvedValue(undefined)
   render(<StudyDesk sessionId="weak" visible running={false} ask={ask} t={t} />)
-  await screen.findByText('Time left today: 20:00 · Due for review: 1 · Weak points: 1')
+  await screen.findByText('Suggested time left today: 20:00 · Due for review: 1 · Weak points: 1')
   fireEvent.click(screen.getByText('Weak points · 1'))
   expect(screen.getByText('Math · 熟记并运用2～9的乘法口诀 · Review due')).toBeTruthy()
   expect(screen.getByText('Mistakes due for review 1 · Open mistakes not yet reviewed 1')).toBeTruthy()

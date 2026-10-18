@@ -203,7 +203,7 @@ export const stateSchema = z.object({
     materialId: id.optional(), unit: text.optional(), reflection: z.string().max(2000).optional(),
     scope: z.object({ grade: z.number().int().min(1).max(6), term: z.enum(['first', 'second']), units: z.array(id).max(20).optional(), objectiveIds: z.array(id).max(60).optional() }).strict().optional(),
   }).strict()).max(5000),
-  attempts: z.array(attempt.extend({ at: time, materialId: id.optional() }).strict()).max(20000),
+  attempts: z.array(attempt.extend({ at: time, materialId: id.optional(), rawResponse: text.optional(), late: z.literal(true).optional() }).strict()).max(20000),
   mistakes: z.array(mistake.extend({
     confirmedAt: time.optional(), userConfirmation: text.optional(), dueAt: time.optional(),
     source: z.object({ worksheetId: id, itemId: id }).strict().optional(),
@@ -217,7 +217,7 @@ export const stateSchema = z.object({
   paperDrafts: z.array(paperDraft.extend({ receivedAt: time }).strict()).max(500).default([]),
   rewards: z.array(z.object({ day: z.string(), reason: z.enum(['participation', 'reflection']) }).strict()).max(1000),
   breakUntil: time,
-  task: task.extend({ response: text.optional(), answeredAt: time.optional(), hintRequested: z.boolean() }).strict().optional(),
+  task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintRequested: z.boolean() }).strict().optional(),
 }).strict()
 
 /** A schema-validated learning mutation. */

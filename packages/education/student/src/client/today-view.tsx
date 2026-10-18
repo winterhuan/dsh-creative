@@ -45,7 +45,8 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
 }) {
   const active = study.active
   const task = study.task?.sessionId === active?.id ? study.task : undefined
-  const available = !!active && now < active.deadline && study.phase === 'studying'
+  const available = !!active
+  const pastSuggestion = !!active && now >= active.deadline
   const recommendation = study.recommendation
   const progress = curriculum?.scope.current ? study.courses.find(item => item.subject === subject)?.progress : undefined
   const frontierIndex = progress ? curriculum?.units.findIndex(unit => unit.id === progress.unitId) ?? -1 : -1
@@ -59,13 +60,13 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
       {schoolUnit && <p>{t('schoolFrontier')}: {schoolUnit.name} · {t(progress?.posture === 'catch-up' ? 'catchUp' : 'keepUp')}{progress?.pace === 'review' ? ` · ${t('reviewWeek')}` : ''} · {t('homeProgress')}: {homeUnit?.name ?? t('homeNotStarted')}</p>}
       {schoolUnit && <p>{t('schoolHere')}</p>}
       <p className="student-muted">{t(subject === 'chinese' ? 'chineseMethod' : subject === 'math' ? 'mathMethod' : 'englishMethod')}</p>
-      {active ? <><p>{t(active.subject)} · {t(active.mode)}</p><p className="student-timer">{t('time')}: {clock(active.deadline - now)}</p>
-        {!available && <p role="status">{t('expired')}</p>}
+      {active ? <><p>{t(active.subject)} · {t(active.mode)}</p><p className="student-timer">{t('time')}: {clock(Math.max(0, active.deadline - now))}</p>
+        {pastSuggestion && <p role="status">{t('expired')}</p>}
       </> : study.phase === 'break' && study.breakRemainingMs - (now - serverNow) > 0 ? <p>{t('rest')} · {clock(study.breakRemainingMs - (now - serverNow))}</p>
         : study.phase === 'daily-complete' ? <p>{t('done')}</p> : null}
     </section>
     {active && <>
-      <section className="student-focus"><p className="student-muted">{t('chatHelp')}</p>{task ? <Task study={study} goalTitle={goalTitle(study, task.objectiveId)} days={objectiveDays} available={available} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
+      <section className="student-focus"><p className="student-muted">{t('chatHelp')}</p>{task ? <Task study={study} goalTitle={goalTitle(study, task.objectiveId)} days={objectiveDays} disabled={disabled || running} t={t} act={act} /> : <p>{t('waiting')}</p>}
         {available && (running ? <p role="status">{t('tutorWorking')}</p>
           : (!task || study.feedback || task.response !== undefined || task.hintRequested) && <button disabled={disabled} onClick={() => { void tutor('').catch(() => {}) }}>{t(!task ? 'prepareTask' : study.feedback ? 'nextTask' : task.response !== undefined ? 'retryFeedback' : 'retryHint')}</button>)}
       </section>
@@ -78,7 +79,8 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
       {recommendation ? <><p>{t(planKeys[recommendation.kind])} · {t(recommendation.subject)}{recommendation.title ? ` · ${recommendation.title}` : ''}</p>
         <p className="student-muted">{reasonText([recommendation.reason], t)}</p>
         {recommendation.kind === 'hold' ? <button type="button" onClick={openParent}>{t('updateSchoolProgress')}</button>
-          : study.phase === 'ready' ? <button type="button" className="student-primary" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button> : <p>{t('planBlocked')}</p>}
+          : <button type="button" className="student-primary" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button>}
+        {recommendation.kind !== 'hold' && study.phase !== 'ready' && <p className="student-muted">{t('planBlocked')}</p>}
       </> : <p>{t('allDone')}</p>}
       {goal && <p>{t('learningGoal')}: {goal.title} <button type="button" onClick={clearGoal}>{t('clearGoal')}</button></p>}
       {study.weakPoints.length > 0 && <details><summary>{t('weakPoints')} · {study.weakPoints.length}</summary><p className="student-muted">{t('weakHint')}</p>
@@ -87,7 +89,7 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
         </div>)}
       </details>}
     </section>}
-    {!active && study.phase === 'ready' && <Alternate study={study} activity={activity} setActivity={setActivity} disabled={disabled || running} t={t} goal={goal} intensityLabel={intensityLabel} openCheckins={openCheckins} scope={scope} setScope={setScope} scopeUnits={scopeUnits} start={start} />}
+    {!active && <Alternate study={study} activity={activity} setActivity={setActivity} disabled={disabled || running} t={t} goal={goal} intensityLabel={intensityLabel} openCheckins={openCheckins} scope={scope} setScope={setScope} scopeUnits={scopeUnits} start={start} />}
     {!active && (() => {
       const unit = progress && curriculum ? curriculum.units.find(item => item.id === progress.unitId) : undefined
       const causes = study.errorProfile.filter(item => item.subject === subject).slice(0, 3)
@@ -98,7 +100,7 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
         {causes.length > 0 && <p className="student-muted">{t('topCauses')}：{causes.map(item => `${t(item.type)} ×${item.count}`).join('、')}</p>}
         <div className="student-segments">
           <button type="button" disabled={disabled || running} onClick={() => { void tutor(prompts.daily).catch(() => {}) }}>{t('printDailySheet')}</button>
-          <button type="button" disabled={disabled || running || study.phase !== 'ready'} onClick={() => { void tutor(prompts.dictation).catch(() => {}) }}>{t('dictation')}</button>
+          <button type="button" disabled={disabled || running} onClick={() => { void tutor(prompts.dictation).catch(() => {}) }}>{t('dictation')}</button>
         </div>
       </section>
     })()}
@@ -109,7 +111,7 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
       <p>{study.diagnostic.lastAt !== undefined ? `${t('diagnosisLast')}: ${day(study.diagnostic.lastAt)} · ${t('nextCheck')}: ${day(study.diagnostic.nextAt)}` : t('diagnosisNever')} · {t('coverage')}: {study.diagnostic.coverage.probed} / {study.diagnostic.coverage.total}</p>
       <p className="student-muted">{t(study.diagnostic.due ? 'diagnosisDue' : 'diagnosisNotDue')}{study.diagnostic.samples[chosenIntensity].length > 0 ? ` · ${t('diagnosisSample')}: ${study.diagnostic.samples[chosenIntensity].map(item => item.title).join(' · ')}` : ''}</p>
       <p className="student-muted">{t('intensity')}: {t(intensityKeys[chosenIntensity])} · {t(intensityHelpKeys[chosenIntensity])} <button type="button" onClick={openCheckins}>{t('chooseIntensity')}</button></p>
-      {study.diagnostic.samples[chosenIntensity].length > 0 && <button type="button" disabled={disabled || running || study.phase !== 'ready'} onClick={() => { void startDiagnosis(subject, chosenIntensity) }}>{t(study.diagnostic.due ? 'startDiagnosis' : 'repeatDiagnosis')}</button>}
+      {study.diagnostic.samples[chosenIntensity].length > 0 && <button type="button" disabled={disabled || running} onClick={() => { void startDiagnosis(subject, chosenIntensity) }}>{t(study.diagnostic.due ? 'startDiagnosis' : 'repeatDiagnosis')}</button>}
       {(() => { const last = study.checkIns.find(item => item.subject === subject); return last && last.results.length > 0 ? <details open={!study.diagnostic.due}><summary>{t('diagnosisResults')} · {day(last.startedAt)} · {t(intensityKeys[last.intensity])}</summary>
         <p className="student-muted">{t('assistIndependent')} {last.counts.independent} · {t('assistHint')} {last.counts.helped} · {t('wrong')} {last.counts.wrong}</p>
         {last.results.map(item => <div key={item.id}><p>{item.title} · {t(item.result)} · {t(assistKeys[item.assistance])}</p>
@@ -187,7 +189,7 @@ function Alternate({ study, activity, setActivity, disabled, start, goal, intens
   </details>
 }
 
-function Task({ study, goalTitle: title, days, available, disabled, t, act }: { study: Study; goalTitle: string | undefined; days: number | undefined; available: boolean; disabled: boolean; t: Translate; act: Act }) {
+function Task({ study, goalTitle: title, days, disabled, t, act }: { study: Study; goalTitle: string | undefined; days: number | undefined; disabled: boolean; t: Translate; act: Act }) {
   const task = study.task
   if (!task) return null
   const lit = Math.min(3, days ?? 0)
@@ -196,12 +198,12 @@ function Task({ study, goalTitle: title, days, available, disabled, t, act }: { 
     <p className="student-question">{task.prompt}</p>
     {task.figure && <FigureView figure={task.figure} t={t} />}
     {task.response !== undefined && <p>{t('answer')}: {task.response}</p>}
-    {study.feedback ? <><p className="student-result">{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : task.choices ? <fieldset disabled={!available || disabled}>
+    {study.feedback ? <><p className="student-result">{t(study.feedback.result)}</p><p>{study.feedback.feedback}</p></> : task.response !== undefined ? <p role="status">{t('submitted')}</p> : task.choices ? <fieldset disabled={disabled}>
       <p>{t('chooseAnswer')}</p>
       <div className="student-choices">{task.choices.map(choice => <button key={choice} type="button" onClick={() => { void act({ action: 'answer', taskId: task.id, response: choice }, true) }}>{choice}</button>)}</div>
       <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true, hintPrompt) }}>{t('hint')}</button>
     </fieldset> : <form onSubmit={event => { event.preventDefault(); void act({ action: 'answer', taskId: task.id, response: String(new FormData(event.currentTarget).get('answer') ?? '') }, true) }}>
-      <fieldset disabled={!available || disabled}><label>{t('answer')}<input name="answer" required maxLength={2000} /></label><button type="submit">{t('submit')}</button>
+      <fieldset disabled={disabled}><label>{t('answer')}<input name="answer" required maxLength={2000} /></label><button type="submit">{t('submit')}</button>
         <button type="button" onClick={() => { void act({ action: 'hint', taskId: task.id }, true, hintPrompt) }}>{t('hint')}</button>
       </fieldset>
     </form>}

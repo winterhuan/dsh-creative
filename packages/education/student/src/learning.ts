@@ -25,7 +25,96 @@ function sameScope(a: StudyState['profile'], b: StudyState['materials'][number][
 }
 
 function spent(session: StudyState['sessions'][number], now: number): number {
-  return session.spentMs ?? Math.max(0, Math.min(now, session.deadline) - session.startedAt)
+  if (session.spentMs !== undefined) return session.spentMs
+  const end = session.endedAt ?? now
+  return Math.max(0, end - session.startedAt)
+}
+
+/** Case, width and surrounding space are not part of a choice or a copied question. */
+function foldText(value: string): string {
+  return value.normalize('NFKC').replace(/\u3000/gu, ' ').trim().replace(/\s+/gu, ' ').toLowerCase()
+}
+
+function formatDuration(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000))
+  const minutes = Math.floor(total / 60)
+  const seconds = total % 60
+  if (minutes === 0) return `${seconds}秒`
+  if (seconds === 0) return `${minutes}分钟`
+  return `${minutes}分${seconds}秒`
+}
+
+/** Clock time in the Shanghai teaching zone, independent of the host timezone. */
+function beijingClock(at: number): string {
+  const shifted = new Date(at + OFFSET)
+  return `${String(shifted.getUTCHours()).padStart(2, '0')}:${String(shifted.getUTCMinutes()).padStart(2, '0')}`
+}
+
+function showValue(value: unknown): string {
+  if (value === undefined) return '（无）'
+  return typeof value === 'string' ? `「${value}」` : JSON.stringify(value)
+}
+
+/**
+ * Match a learner's choice to one published option.
+ * Letter forms use A for the first option. An ambiguous fold matches none.
+ * @param choices - options in display order.
+ * @param input - the learner's text after schema trimming.
+ * @returns the published option, or undefined when none fits.
+ */
+function matchChoice(choices: readonly string[], input: string): string | undefined {
+  const exact = choices.filter(choice => foldText(choice) === foldText(input))
+  if (exact.length === 1) return exact[0] ?? undefined
+  if (exact.length > 1) return exact.find(choice => choice === input.trim())
+  const compact = input.normalize('NFKC').replace(/[\s\u3000]+/gu, '').toLowerCase()
+  const letter = compact.match(/^(?:我选择|我选|选择|选的是|选|正确答案是|答案是|答案为|答案|theansweris|option|answer)?[:：]?[(（]?([a-d])[)）.、。:：]?$/u)
+  if (!letter?.[1]) return undefined
+  const index = letter[1].charCodeAt(0) - 97
+  return index >= 0 && index < choices.length ? choices[index] : undefined
+}
+
+function choiceMismatch(choices: readonly string[], input: string): string {
+  const listed = choices.map((choice, index) => `${String.fromCharCode(65 + index)}. ${choice}`).join('；')
+  const letters = choices.map((_, index) => String.fromCharCode(65 + index)).join('、')
+  return `请选择题目给出的选项之一。可选：${listed}。也可以写 ${letters}，或「A.」「选A」「选择A」「答案是A」。收到：「${input}」。`
+}
+
+function sameSavedAnswer(task: { response?: string | undefined; rawResponse?: string | undefined; choices?: string[] | undefined }, incoming: string): boolean {
+  if (task.response === undefined) return false
+  if (incoming === task.response || incoming === task.rawResponse) return true
+  if (foldText(incoming) === foldText(task.response)) return true
+  if (task.rawResponse !== undefined && foldText(incoming) === foldText(task.rawResponse)) return true
+  return task.choices !== undefined && matchChoice(task.choices, incoming) === task.response
+}
+
+type AttemptInput = StudyState['attempts'][number]
+
+function alignRecord<T extends { id: string; topic: string; prompt: string; response: string; mistakeId?: string | undefined; objectiveId?: string | undefined; variant?: AttemptInput['variant']; figure?: AttemptInput['figure'] }>(task: NonNullable<StudyState['task']>, attempt: T): T {
+  if (task.response === undefined) throw new Error(`请先用 answer 保存原始回答，再记录反馈。当前题目 id：${task.id}。`)
+  const problems: string[] = []
+  if (attempt.id !== task.id) problems.push(`id 不一致。期望：${showValue(task.id)}。收到：${showValue(attempt.id)}。`)
+  if (foldText(attempt.topic) !== foldText(task.topic)) problems.push(`topic 不一致。期望：${showValue(task.topic)}。收到：${showValue(attempt.topic)}。`)
+  if (foldText(attempt.prompt) !== foldText(task.prompt)) problems.push(`prompt 不一致。期望：${showValue(task.prompt)}。收到：${showValue(attempt.prompt)}。`)
+  if (!sameSavedAnswer(task, attempt.response)) {
+    const expected = task.rawResponse !== undefined && task.rawResponse !== task.response ? `${showValue(task.response)}（原始输入：${showValue(task.rawResponse)}）` : showValue(task.response)
+    problems.push(`response 不一致。期望：${expected}。收到：${showValue(attempt.response)}。`)
+  }
+  for (const field of ['mistakeId', 'objectiveId', 'variant'] as const) {
+    if (attempt[field] !== undefined && attempt[field] !== task[field]) problems.push(`${field} 不一致。期望：${showValue(task[field])}。收到：${showValue(attempt[field])}。`)
+  }
+  if (attempt.figure !== undefined && canonical(attempt.figure) !== canonical(task.figure ?? null)) problems.push(`figure 不一致。期望：${showValue(task.figure ?? null)}。收到：${showValue(attempt.figure)}。`)
+  if (problems.length > 0) throw new Error(`反馈必须对应当前题目和已保存的原始回答。${problems.join('')}`)
+  return {
+    ...attempt,
+    id: task.id,
+    topic: task.topic,
+    prompt: task.prompt,
+    response: task.response,
+    ...(task.mistakeId !== undefined ? { mistakeId: task.mistakeId } : {}),
+    ...(task.objectiveId !== undefined ? { objectiveId: task.objectiveId } : {}),
+    ...(task.variant !== undefined ? { variant: task.variant } : {}),
+    ...(task.figure !== undefined ? { figure: task.figure } : {}),
+  }
 }
 
 function todaySpent(state: StudyState, now: number): number {
@@ -190,14 +279,26 @@ export function scheduleMistakes(state: StudyState): StudyState {
 }
 
 /**
- * Summarize today's shared budget, course confirmation, rewards and evidence-derived progress.
- * Reading does not close expired sessions; stop records when the learner actually stopped.
+ * Summarize today's suggested budget, course confirmation, rewards and evidence-derived progress.
+ * `phase` names a suggestion. A passed block, an unfinished break or a full day does not reject a later call.
+ * `timeNotice` is the text to relay; it already states elapsed time, the suggestion and any break clock.
+ * Reading does not close a session past its suggestion; stop records when the learner actually stopped.
  */
 export function studyStatus(state: StudyState, now: number) {
   const active = activeSession(state)
-  const remainingMs = Math.max(0, state.profile.limits.dailyMinutes * MINUTE - todaySpent(state, now))
+  const todayMs = todaySpent(state, now)
+  const remainingMs = Math.max(0, state.profile.limits.dailyMinutes * MINUTE - todayMs)
   const phase = active ? now >= active.deadline ? 'stop-required' : 'studying'
     : now < state.breakUntil ? 'break' : remainingMs === 0 ? 'daily-complete' : 'ready'
+  const blockElapsedMs = active ? Math.max(0, now - active.startedAt) : 0
+  const timeParts = [
+    ...(active ? [`本段已用 ${formatDuration(blockElapsedMs)}，建议 ${state.profile.limits.blockMinutes} 分钟。`] : []),
+    ...(active && now >= active.deadline ? ['已超过本段建议时长，可以继续，也可以结束休息。'] : []),
+    `今天累计 ${formatDuration(todayMs)}，建议 ${state.profile.limits.dailyMinutes} 分钟。`,
+    ...(todayMs > state.profile.limits.dailyMinutes * MINUTE ? ['今天已超过建议时长，仍可以继续。'] : []),
+    ...(now < state.breakUntil ? [`建议休息到 ${beijingClock(state.breakUntil)}（北京时间），现在也可以开始。`] : []),
+  ]
+  const timeNotice = timeParts.join('')
   const progress = new Map<string, { subject: string; topic: string; materialId?: string; objectiveId?: string; attempts: number; independentDays: string[] }>()
   function includeEvidence(subject: string, topic: string, at: number, result: string, assistance: string, materialId?: string, objectiveId?: string) {
     const key = objectiveId ?? JSON.stringify([subject, topic, materialId])
@@ -216,7 +317,15 @@ export function studyStatus(state: StudyState, now: number) {
   }
   return {
     task: state.task ?? null, feedback: state.task ? state.attempts.find(item => item.id === state.task?.id) ?? null : null,
-    revision: state.revision, profile: state.profile, phase, remainingMs,
+    revision: state.revision, profile: state.profile, phase, remainingMs, timeNotice,
+    time: {
+      timezone: 'Asia/Shanghai',
+      blockElapsed: active ? formatDuration(blockElapsedMs) : null,
+      blockSuggested: `${state.profile.limits.blockMinutes}分钟`,
+      todayElapsed: formatDuration(todayMs),
+      todaySuggested: `${state.profile.limits.dailyMinutes}分钟`,
+      breakUntil: now < state.breakUntil ? beijingClock(state.breakUntil) : null,
+    },
     breakRemainingMs: Math.max(0, state.breakUntil - now), active: active ?? null,
     courses: state.courses, unconfirmedSubjects: ['chinese', 'math', 'english'].filter(subject => !state.courses.some(course => course.subject === subject)),
     stars: state.rewards.length, todayStars: state.rewards.filter(reward => reward.day === studyDay(now)).length,
@@ -229,8 +338,15 @@ export function studyStatus(state: StudyState, now: number) {
 /**
  * Apply one validated mutation without changing the input. No wall-clock time is supplied by the model.
  * Duplicate identities with identical content are no-ops; conflicting reuse throws.
- * Throws on unconfirmed curricula, exhausted time, skipped breaks or unconfirmed reviews.
+ * Suggested block, break and daily durations do not reject a call. Throws on unconfirmed curricula,
+ * a record that contradicts the saved task, or an unconfirmed review.
  */
+export function updateNotices(input: unknown): string[] {
+  const parsed = commandSchema.safeParse(input)
+  if (!parsed.success || parsed.data.action !== 'start' || parsed.data.mode === 'diagnose' || parsed.data.intensity === undefined) return []
+  return [`已忽略 intensity「${parsed.data.intensity}」。摸底强度只用于摸底检测，本次不记录强度。`]
+}
+
 export function updateStudy(previous: StudyState | undefined, input: unknown, now: number): StudyState {
   const command = commandSchema.parse(input)
   if (command.action === 'setup') {
@@ -256,9 +372,9 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
       return stateSchema.parse({ ...withCourse, revision: previous.revision + 1 })
     }
     case 'task': {
-      requireValue(active && active.id === command.task.sessionId && active.subject === command.task.subject && now < active.deadline, '请在有效学习段内出题。')
+      requireValue(active && active.id === command.task.sessionId && active.subject === command.task.subject, '请在当前学习段内出题。')
       if (state.task?.id === command.task.id && state.task.sessionId === command.task.sessionId) {
-        const { response: _response, answeredAt: _answeredAt, hintRequested: _hint, ...stored } = state.task
+        const { response: _response, rawResponse: _raw, answeredAt: _answeredAt, hintRequested: _hint, ...stored } = state.task
         requireValue(canonical(stored) === canonical(command.task), '这个学习段里的题目编号已用于另一道题。')
         return previous
       }
@@ -276,12 +392,14 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
     case 'answer':
     case 'hint': {
       const task = state.task
-      requireValue(task && task.id === command.taskId && active?.id === task.sessionId && now < active.deadline, '当前题目已结束，请刷新学习状态。')
+      requireValue(task && task.id === command.taskId && active?.id === task.sessionId, '当前题目已结束，请刷新学习状态。')
       requireValue(!state.attempts.some(item => item.id === task.id), '这道题已记录反馈。')
       if (command.action === 'answer') {
-        if (task.response !== undefined) { requireValue(task.response === command.response, '答案已提交，请等待反馈。'); return previous }
-        if (task.choices) requireValue(task.choices.includes(command.response), '请选择题目给出的选项之一。')
-        task.response = command.response
+        if (task.response !== undefined) { requireValue(sameSavedAnswer(task, command.response), '答案已提交，请等待反馈。'); return previous }
+        const matched = task.choices ? matchChoice(task.choices, command.response) : command.response
+        if (task.choices) requireValue(matched, choiceMismatch(task.choices, command.response))
+        task.response = matched ?? command.response
+        task.rawResponse = command.response
         task.answeredAt = now
       } else {
         if (task.hintRequested) return previous
@@ -335,8 +453,7 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
         existing.id = archived
       }
       const id = command.id
-      requireValue(!active, '请先结束当前学习段；到时也需要记录停止。')
-      requireValue(command.mode === 'diagnose' || command.intensity === undefined, '摸底强度只用于摸底检测。')
+      requireValue(!active, '请先结束当前学习段。')
       requireValue(command.scope === undefined || command.mode === 'diagnose' || command.mode === 'foundation' || command.mode === 'school', '自定义范围只用于摸底或学习。')
       if (command.scope) {
         const file = curriculumFor({ grade: command.scope.grade, term: command.scope.term }, command.subject)
@@ -344,14 +461,11 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
         if (command.scope.units) for (const unitId of command.scope.units) requireValue(file.units.some(unit => unit.id === unitId), `单元不在该年级学期的知识地图里：${unitId}`)
         if (command.scope.objectiveIds) for (const objectiveId of command.scope.objectiveIds) requireValue(builtinObjectiveIn({ grade: command.scope.grade, term: command.scope.term }, command.subject, objectiveId) || state.objectives.some(item => item.id === objectiveId), `学习目标不存在：${objectiveId}`)
       }
-      requireValue(now >= state.breakUntil, '还在休息时间，请离屏活动，休息结束后再开始。')
-      const remaining = state.profile.limits.dailyMinutes * MINUTE - todaySpent(state, now)
-      requireValue(remaining > 0, '今天的学习时长已到上限，明天再继续。')
       const course = state.courses.find(item => item.subject === command.subject)
       requireValue(command.mode !== 'school' || course, '该科教材与学校进度尚未确认；可先选择 foundation 通用基础练习。')
       const nextMidnight = (Math.floor((now + OFFSET) / DAY) + 1) * DAY - OFFSET
       state.sessions.push({ id, subject: command.subject, mode: command.mode, startedAt: now, ...(command.mode === 'diagnose' ? { intensity: command.intensity ?? 'standard' } : {}),
-        deadline: Math.min(now + state.profile.limits.blockMinutes * MINUTE, now + remaining, nextMidnight),
+        deadline: Math.min(now + state.profile.limits.blockMinutes * MINUTE, nextMidnight),
         ...(command.mode === 'school' && course ? { materialId: course.materialId, unit: course.unit } : {}),
         ...(command.scope !== undefined ? { scope: command.scope } : {}),
       })
@@ -359,35 +473,34 @@ export function updateStudy(previous: StudyState | undefined, input: unknown, no
     }
     case 'record': {
       const attempt = command.attempt
-      if (duplicate(state.attempts, item => item.id === attempt.id && item.sessionId === attempt.sessionId, item => {
-        const { at: _at, materialId: _material, ...stored } = item
-        return canonical(stored) === canonical(attempt)
-      })) return previous
+      const openTask = state.task?.sessionId === attempt.sessionId && state.task.id === attempt.id ? state.task : undefined
+      const aligned = openTask ? alignRecord(openTask, attempt) : attempt
+      const existing = state.attempts.find(item => item.id === aligned.id && item.sessionId === aligned.sessionId)
+      if (existing) {
+        const { at: _at, materialId: _material, late: _late, rawResponse: _raw, ...stored } = existing
+        if (canonical(stored) === canonical(aligned)) return previous
+        throw new Error('该记录 ID 已用于另一条内容。完全相同的重试会直接成功；新的一条请换一个 ID。')
+      }
       requireValue(active && active.id === attempt.sessionId && active.subject === attempt.subject, '作答必须属于当前学习段和科目。')
-      requireValue(now <= active.deadline, '本段学习已到时，请停止并休息。超时答案可在对话中保留，下次学习再复核。')
-      if (attempt.objectiveId && active.scope) {
-        const objective = objectiveOf(state, attempt.objectiveId)
-        requireValue(objective?.subject === attempt.subject, '学习目标不存在或科目不符。')
+      if (aligned.objectiveId && active.scope) {
+        const objective = objectiveOf(state, aligned.objectiveId)
+        requireValue(objective?.subject === aligned.subject, '学习目标不存在或科目不符。')
         const unit = objective !== undefined && 'unit' in objective && typeof objective.unit === 'string' ? objective.unit : ''
-        requireValue(scopeSelects(active.scope, attempt.subject, unit, attempt.objectiveId), '作答目标不在本段学习范围内。')
+        requireValue(scopeSelects(active.scope, aligned.subject, unit, aligned.objectiveId), '作答目标不在本段学习范围内。')
       }
-      if (state.task?.sessionId === active.id) {
-        const task = state.task
-        requireValue(task.id === attempt.id && task.topic === attempt.topic && task.prompt === attempt.prompt && task.mistakeId === attempt.mistakeId && task.objectiveId === attempt.objectiveId && task.variant === attempt.variant && canonical(task.figure ?? null) === canonical(attempt.figure ?? null) && task.response === attempt.response, '反馈必须对应当前题目和已保存的原始回答。')
-        requireValue(!task.hintRequested || attempt.assistance !== 'independent', '学生请求过提示，不能记录为独立作答。')
+      if (openTask && openTask.sessionId === active.id) requireValue(!openTask.hintRequested || aligned.assistance !== 'independent', '学生请求过提示，不能记录为独立作答。')
+      const mistake = aligned.mistakeId ? state.mistakes.find(item => item.id === aligned.mistakeId) : undefined
+      requireValue(!aligned.mistakeId || mistake, '错题不存在，请先查询错题记录。')
+      if (aligned.objectiveId) {
+        const objective = objectiveOf(state, aligned.objectiveId)
+        requireValue(objective?.subject === aligned.subject, '学习目标不存在或科目不符。')
       }
-      const mistake = attempt.mistakeId ? state.mistakes.find(item => item.id === attempt.mistakeId) : undefined
-      requireValue(!attempt.mistakeId || mistake, '错题不存在，请先查询错题记录。')
-      if (attempt.objectiveId) {
-        const objective = objectiveOf(state, attempt.objectiveId)
-        requireValue(objective?.subject === attempt.subject, '学习目标不存在或科目不符。')
-      }
-      if (mistake?.objectiveId) requireValue(attempt.objectiveId === mistake.objectiveId, '作答必须对应错题的学习目标。')
+      if (mistake?.objectiveId) requireValue(aligned.objectiveId === mistake.objectiveId, '作答必须对应错题的学习目标。')
       requireValue(active.mode !== 'review' || mistake, '复习模式的作答需要关联一条已确认的错题。')
-      requireValue(active.mode !== 'diagnose' || attempt.objectiveId !== undefined, '摸底作答必须关联学习目标（objectiveId）。')
-      if (mistake) requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === attempt.subject, '先确认图片转录、答案依据与科目，再进行复习。')
+      requireValue(active.mode !== 'diagnose' || aligned.objectiveId !== undefined, '摸底作答必须关联学习目标（objectiveId）。')
+      if (mistake) requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === aligned.subject, '先确认图片转录、答案依据与科目，再进行复习。')
       const materialId = mistake?.materialId ?? active.materialId
-      state.attempts.push({ ...attempt, at: now, ...(materialId ? { materialId } : {}) })
+      state.attempts.push({ ...aligned, at: now, ...(materialId ? { materialId } : {}), ...(openTask?.rawResponse ? { rawResponse: openTask.rawResponse } : {}), ...(now > active.deadline ? { late: true as const } : {}) })
       break
     }
     case 'stop': {

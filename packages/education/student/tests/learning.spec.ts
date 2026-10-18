@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { checkInHistory, curriculumView, diagnosticFor, studyDay, studyInsight, studyStatus, updateStudy } from '../src/learning.ts'
+import { checkInHistory, curriculumView, diagnosticFor, studyDay, studyInsight, studyStatus, updateNotices, updateStudy } from '../src/learning.ts'
 import { stateSchema } from '../src/schema.ts'
 import { queryStudy } from '../src/store.ts'
 import { renderWorksheet } from '../src/worksheet.ts'
@@ -16,21 +16,44 @@ describe('daily learning and rest', () => {
     expect(studyStatus(state, NOW)).toMatchObject({ phase: 'ready', remainingMs: 20 * MINUTE, unconfirmedSubjects: ['chinese', 'math', 'english'] })
   })
 
-  it('counts all subjects and exploration against one budget and requires real stop plus break', () => {
+  it('keeps block, break and daily durations as suggestions and still saves the work', () => {
     let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
     expect(() => updateStudy(state, { ...start, id: 'parallel' }, NOW)).toThrow('结束当前')
-    expect(studyStatus(state, NOW + 10 * MINUTE).phase).toBe('stop-required')
-    expect(() => updateStudy(state, { action: 'record', attempt }, NOW + 11 * MINUTE)).toThrow('已到时')
+    expect(state.sessions[0]?.deadline).toBe(NOW + 10 * MINUTE)
+    const due = studyStatus(state, NOW + 10 * MINUTE)
+    expect(due.phase).toBe('stop-required')
+    expect(due.timeNotice).toContain('本段已用 10分钟，建议 10 分钟')
+    expect(due.timeNotice).toContain('已超过本段建议时长')
+    expect(due.time).toMatchObject({ timezone: 'Asia/Shanghai', blockSuggested: '10分钟', todaySuggested: '20分钟', breakUntil: null })
+    state = updateStudy(state, { action: 'record', attempt }, NOW + 11 * MINUTE)
+    expect(state.attempts[0]).toMatchObject({ response: attempt.response, late: true })
     state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 15 * MINUTE)
-    expect(state.sessions[0]?.spentMs).toBe(10 * MINUTE)
-    expect(studyStatus(state, NOW + 16 * MINUTE).phase).toBe('break')
-    expect(() => updateStudy(state, { ...start, id: 'b2', subject: 'english', mode: 'explore' }, NOW + 19 * MINUTE)).toThrow('休息')
-    state = updateStudy(state, { ...start, id: 'b2', subject: 'english', mode: 'explore' }, NOW + 20 * MINUTE)
+    expect(state.sessions[0]?.spentMs).toBe(15 * MINUTE)
+    const resting = studyStatus(state, NOW + 16 * MINUTE)
+    expect(resting.phase).toBe('break')
+    expect(resting.time.breakUntil).toBe('09:20')
+    expect(resting.timeNotice).toContain('建议休息到 09:20（北京时间）')
+    state = updateStudy(state, { ...start, id: 'b2', subject: 'english', mode: 'explore' }, NOW + 19 * MINUTE)
+    expect(state.sessions[1]).toMatchObject({ id: 'b2', deadline: NOW + 29 * MINUTE })
+    expect(studyStatus(state, NOW + 19 * MINUTE).timeNotice).toContain('建议休息到 09:20')
     state = updateStudy(state, { action: 'stop', sessionId: 'b2', reflection: '' }, NOW + 30 * MINUTE)
     expect(studyStatus(state, NOW + 35 * MINUTE).phase).toBe('daily-complete')
-    expect(() => updateStudy(state, { ...start, id: 'b3' }, NOW + 35 * MINUTE)).toThrow('上限')
+    state = updateStudy(state, { ...start, id: 'b3' }, NOW + 35 * MINUTE)
+    expect(state.sessions[2]?.deadline).toBe(NOW + 45 * MINUTE)
+    state = updateStudy(state, { action: 'stop', sessionId: 'b3', reflection: '' }, NOW + 36 * MINUTE)
     expect(studyStatus(state, NOW + DAY).phase).toBe('ready')
-    expect(state.rewards).toEqual([])
+    expect(state.rewards).toEqual([{ day: '2026-10-05', reason: 'participation' }])
+  })
+
+  it('does not shorten a block to the remaining daily suggestion', () => {
+    let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
+    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 10 * MINUTE)
+    state = updateStudy(state, { ...start, id: 'b2' }, NOW + 15 * MINUTE)
+    state = updateStudy(state, { action: 'stop', sessionId: 'b2', reflection: '' }, NOW + 23 * MINUTE)
+    expect(studyStatus(state, NOW + 28 * MINUTE).time).toMatchObject({ todayElapsed: '18分钟', todaySuggested: '20分钟' })
+    state = updateStudy(state, { ...start, id: 'b3' }, NOW + 28 * MINUTE)
+    expect(state.sessions[2]?.deadline).toBe(NOW + 38 * MINUTE)
+    expect(studyStatus(state, NOW + 28 * MINUTE).timeNotice).toContain('今天累计 18分钟，建议 20 分钟')
   })
 
   it('gives no stars for idle time and at most two per day for actual work and reflection', () => {
@@ -60,7 +83,8 @@ describe('daily learning and rest', () => {
     let state = updateStudy(updateStudy(undefined, setup, late), start, late)
     state = updateStudy(state, { action: 'record', attempt }, late + MINUTE)
     state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, late + 10 * MINUTE)
-    expect(state.sessions[0]?.spentMs).toBe(2 * MINUTE)
+    expect(state.sessions[0]?.deadline).toBe(Date.parse('2026-10-06T00:00:00+08:00'))
+    expect(state.sessions[0]?.spentMs).toBe(10 * MINUTE)
     expect(state.rewards[0]?.day).toBe('2026-10-05')
     expect(studyDay(late + 2 * MINUTE)).toBe('2026-10-06')
     expect(studyStatus(state, late + 15 * MINUTE).remainingMs).toBe(20 * MINUTE)
@@ -147,27 +171,30 @@ describe('shared workbench tasks', () => {
 
   it('preserves published questions and submitted answers through reload and rejects fabricated assessment', () => {
     let state = stateSchema.parse(JSON.parse(JSON.stringify(begin())))
-    expect(() => updateStudy(state, { action: 'record', attempt }, NOW)).toThrow('已保存')
+    expect(() => updateStudy(state, { action: 'record', attempt }, NOW)).toThrow('请先用 answer 保存原始回答')
     expect(() => updateStudy(state, { action: 'task', task: { ...task, id: 'next' } }, NOW)).toThrow('完成当前')
     state = updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)
     expect(updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)).toBe(state)
     expect(() => updateStudy(state, { action: 'answer', taskId: task.id, response: '改写答案' }, NOW + MINUTE)).toThrow('已提交')
-    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, prompt: '另一道题' } }, NOW + MINUTE)).toThrow('对应当前')
+    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, prompt: '另一道题' } }, NOW + MINUTE)).toThrow('prompt 不一致。期望：「8 + 7 等于多少？」')
     state = updateStudy(state, { action: 'record', attempt }, NOW + MINUTE)
     expect(studyStatus(state, NOW + MINUTE).feedback?.id).toBe(task.id)
     state = updateStudy(state, { action: 'task', task: { ...task, id: 'next' } }, NOW + MINUTE)
     expect(state.task?.response).toBeUndefined()
   })
 
-  it('records hints as assistance and prevents extra work at or after the deadline', () => {
+  it('records hints as assistance and still saves a task after the suggested deadline', () => {
     let state = updateStudy(begin(), { action: 'hint', taskId: task.id }, NOW)
     state = updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)
     expect(() => updateStudy(state, { action: 'record', attempt }, NOW + MINUTE)).toThrow('不能记录为独立')
     state = updateStudy(state, { action: 'record', attempt: { ...attempt, assistance: 'hint' } }, NOW + MINUTE)
     expect(studyStatus(state, NOW + MINUTE).progress[0]?.independentDays).toEqual([])
-    for (const action of [{ action: 'task', task: { ...task, id: 'late' } }, { action: 'answer', taskId: task.id, response: '15' }, { action: 'hint', taskId: task.id }]) expect(() => updateStudy(state, action, NOW + 10 * MINUTE)).toThrow()
-    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 10 * MINUTE)
-    expect(state.task?.response).toBe(attempt.response)
+    state = updateStudy(state, { action: 'task', task: { ...task, id: 'late' } }, NOW + 10 * MINUTE)
+    state = updateStudy(state, { action: 'answer', taskId: 'late', response: '15' }, NOW + 11 * MINUTE)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'late', response: '15' } }, NOW + 11 * MINUTE)
+    expect(state.attempts.at(-1)).toMatchObject({ id: 'late', late: true })
+    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 12 * MINUTE)
+    expect(state.task).toMatchObject({ id: 'late', response: '15' })
   })
 
   it('validates review source before showing a question', () => {
@@ -369,8 +396,12 @@ describe('choice tasks, map browsing and recurring check-ins', () => {
     state = updateStudy(state, { action: 'task', task }, NOW)
     expect(state.task?.figure).toEqual(figure)
     state = updateStudy(state, { action: 'answer', taskId: 'fig', response: '3时' }, NOW)
-    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时' } }, NOW)).toThrow('对应当前')
-    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时', figure } }, NOW)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时' } }, NOW)
+    expect(state.attempts.at(-1)?.figure).toEqual(figure)
+    state = updateStudy(state, { action: 'task', task: { ...task, id: 'fig-2' } }, NOW)
+    state = updateStudy(state, { action: 'answer', taskId: 'fig-2', response: '3时' }, NOW)
+    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig-2', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时', figure: { kind: 'clock', clocks: [{ hour: 4, minute: 0 }] } } }, NOW)).toThrow('figure 不一致。期望：{"kind":"clock","clocks":[{"hour":3,"minute":0}]}')
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'fig-2', sessionId: start.id, topic: '钟面', prompt: '现在是几时？', response: '3时', figure } }, NOW)
     expect(state.attempts.at(-1)?.figure).toEqual(figure)
   })
 
@@ -379,9 +410,25 @@ describe('choice tasks, map browsing and recurring check-ins', () => {
     const task = { id: 'c1', sessionId: start.id, subject: 'math' as const, topic: '乘法', prompt: '3 + 3 + 3 + 3 写成乘法是？', choices: ['3 × 4', '3 + 4', '4 × 4'], objectiveId: 'm2a-o-meaning' }
     expect(() => updateStudy(state, { action: 'task', task: { ...task, choices: ['只有一个'] } }, NOW)).toThrow()
     state = updateStudy(state, { action: 'task', task }, NOW)
-    expect(() => updateStudy(state, { action: 'answer', taskId: 'c1', response: '12' }, NOW)).toThrow('选项')
-    state = updateStudy(state, { action: 'answer', taskId: 'c1', response: '3 × 4' }, NOW)
-    expect(state.task).toMatchObject({ choices: task.choices, response: '3 × 4' })
+    expect(() => updateStudy(state, { action: 'answer', taskId: 'c1', response: '12' }, NOW)).toThrow('可选：A. 3 × 4；B. 3 + 4；C. 4 × 4')
+    state = updateStudy(state, { action: 'answer', taskId: 'c1', response: ' ３ × ４ ' }, NOW)
+    expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'c1', topic: task.topic, prompt: task.prompt, response: '选择A', objectiveId: 'other' } }, NOW)).toThrow('objectiveId 不一致。期望：「m2a-o-meaning」')
+    expect(state.task).toMatchObject({ response: '3 × 4', rawResponse: '３ × ４' })
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'c1', topic: task.topic, prompt: task.prompt, response: '选择A' } }, NOW)
+    expect(state.attempts.at(-1)).toMatchObject({ response: '3 × 4', rawResponse: '３ × ４', objectiveId: 'm2a-o-meaning' })
+    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW)
+    state = updateStudy(state, { ...start, id: 'en', subject: 'english' }, NOW)
+    const english = { id: 'c2', sessionId: 'en', subject: 'english' as const, topic: '动词', prompt: 'Which action is it?', choices: ['run', 'jump', 'play ping-pong'] }
+    state = updateStudy(state, { action: 'task', task: english }, NOW)
+    state = updateStudy(state, { action: 'answer', taskId: 'c2', response: 'Jump' }, NOW)
+    expect(state.task).toMatchObject({ response: 'jump', rawResponse: 'Jump' })
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'c2', sessionId: 'en', subject: 'english', topic: '动词', prompt: 'Which action is it?', response: '答案是B' } }, NOW)
+    expect(state.attempts.at(-1)).toMatchObject({ response: 'jump', rawResponse: 'Jump' })
+    expect(updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'c2', sessionId: 'en', subject: 'english', topic: '动词', prompt: 'Which action is it?', response: '答案是B' } }, NOW)).toBe(state)
+    state = updateStudy(state, { action: 'task', task: { ...english, id: 'c3' } }, NOW)
+    expect(() => updateStudy(state, { action: 'answer', taskId: 'c3', response: 'swim' }, NOW)).toThrow('也可以写 A、B、C')
+    state = updateStudy(state, { action: 'answer', taskId: 'c3', response: 'play  ping-pong' }, NOW)
+    expect(state.task).toMatchObject({ response: 'play ping-pong', rawResponse: 'play  ping-pong' })
   })
 
   it('browses another term without mastery while task validation stays on the profile term', () => {
@@ -448,7 +495,10 @@ describe('choice tasks, map browsing and recurring check-ins', () => {
 describe('check-in intensity, coverage, history and learning order', () => {
   it('stores the intensity on diagnose blocks only and sizes samples per intensity', () => {
     let state = updateStudy(undefined, setup, NOW)
-    expect(() => updateStudy(state, { ...start, intensity: 'light' }, NOW)).toThrow('摸底强度')
+    state = updateStudy(state, { ...start, intensity: 'light' }, NOW)
+    expect(state.sessions[0]?.intensity).toBeUndefined()
+    expect(updateNotices({ ...start, intensity: 'light' })).toEqual(['已忽略 intensity「light」。摸底强度只用于摸底检测，本次不记录强度。'])
+    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW)
     const plan = studyInsight(state, NOW).diagnostics.find(item => item.subject === 'chinese')
     expect(plan).toMatchObject({ coverage: { probed: 0, total: 9 }, recommendedIntensity: 'standard' })
     expect(plan?.samples.light).toHaveLength(3)
@@ -456,7 +506,7 @@ describe('check-in intensity, coverage, history and learning order', () => {
     expect(plan?.samples.deep).toHaveLength(9)
     expect(plan?.samples.deep.every(item => item.reason === 'untouched')).toBe(true)
     state = updateStudy(state, { ...start, id: 'deep', mode: 'diagnose', intensity: 'deep' }, NOW)
-    expect(state.sessions[0]?.intensity).toBe('deep')
+    expect(state.sessions.find(item => item.id === 'deep')?.intensity).toBe('deep')
     state = updateStudy(state, { action: 'task', task: { id: 'd1', sessionId: 'deep', subject: 'math', topic: '摸底', prompt: '题', objectiveId: 'm2a-o-meaning' } }, NOW)
     state = updateStudy(state, { action: 'answer', taskId: 'd1', response: '答' }, NOW)
     state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'd1', sessionId: 'deep', topic: '摸底', prompt: '题', response: '答', assistance: 'hint', objectiveId: 'm2a-o-meaning' } }, NOW + MINUTE)
@@ -466,7 +516,7 @@ describe('check-in intensity, coverage, history and learning order', () => {
     expect(history[0]).toMatchObject({ subject: 'math', intensity: 'deep', counts: { independent: 0, helped: 1, wrong: 0, unassessed: 0 }, results: [{ objectiveId: 'm2a-o-meaning', title: '把同数连加改写成乘法算式并说明意义' }] })
     expect(studyInsight(state, NOW + 3 * MINUTE).diagnostics.find(item => item.subject === 'math')).toMatchObject({ coverage: { probed: 1, total: 8 } })
     expect(queryStudy(state, 'diagnose', 0, { subject: 'math' })).toMatchObject({ history: [{ sessionId: 'deep' }] })
-    expect(stateSchema.parse(JSON.parse(JSON.stringify(state))).sessions[0]?.intensity).toBe('deep')
+    expect(stateSchema.parse(JSON.parse(JSON.stringify(state))).sessions.find(item => item.id === 'deep')?.intensity).toBe('deep')
   })
 
   it('orders knowledge points so prerequisites come first', () => {

@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/student.md
 /:
-  en: d292849d341409d3
-  zh: c1065083bbfef31f
+  en: d26466a336fccfb5
+  zh: f3ccb1102caaa28e
 /student-learning:
   en: 8a9db6bc6970ef95
   zh: bcddf9a35008f256
 /student-learning/summary:
-  en: c833598c95e9fd8a
-  zh: 2c86d33d393a5fd4
+  en: 8cf7a7c3b5243ed3
+  zh: 4965ef67446eb0d1
 /student-learning/table-of-contents:
   en: 39018ab5fc9150a9
   zh: 64c70fa8690753b6
@@ -18,11 +18,11 @@
   en: e48c21a1e260bd15
   zh: 0271b5d2ef11e565
 /student-learning/materials-and-learner-evidence:
-  en: aacc8ca331d92bb3
-  zh: 81f5748bdd82811d
+  en: 61fad9e85ad62b6a
+  zh: bf0309064f22f9dd
 /student-learning/time-and-rewards:
-  en: 0680925e63dec506
-  zh: c8bdd0d2db86d1f8
+  en: 7cc161a1d94035cd
+  zh: 5e772903bd79ae32
 /student-learning/related-contracts:
   en: 76656a11ed8c4b2c
   zh: f38d87d965b4b9f6
