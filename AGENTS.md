@@ -9,6 +9,7 @@
 - 新用到 `ctx.remote.<命名空间>` 时，把提供它的 DSH 包加进该包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。
 - `scripts/` 和 `types/` 里首行标着 `Copied from deepseek-harness` 的文件是上游拷贝；修改或重新同步后，更新 HANDOFF.md 第 8 节的改动表。
 - 客户端 UI 的改动要在真实 dsh 里验证（HANDOFF.md 第 5 节）；单元测试覆盖不到浏览器里的行为。
+- 已 link 进本机 `web` profile 的插件：改源码后必须 `pnpm run build`（或 `pnpm --filter <包名> build`），再 `dsh-webctl restart` 才生效；浏览器 UI 再硬刷新。完整步骤见 [HANDOFF.md](HANDOFF.md) 第 5 节「在 DSH 中安装、调试和移除」。勿对 link 包跑会改写依赖的 npm 版 `plugin-update`。
 - 代码风格沿用 DSH 的约定（`upstream/AGENTS.md` 的 Conventions 与 Type safety 部分）；其中针对 monorepo 的门禁、快照和发布流程不适用于本仓库。
 
 ## 命令

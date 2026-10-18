@@ -339,7 +339,26 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 注意事项：
 
 - 必须先从 web 模板创建 profile。profile 不存在时，第一次 `dsh plugin add` 会建一个只有 `@deepseek-ai/dsh-base` 的 profile，没有 web 应用。
-- `dsh plugin add <路径>` 用 `link:` 安装。改代码后 `pnpm run build`，再重启 dsh 即可生效。
+- `dsh plugin add <路径>` 用 `link:` 安装。日常本机验证用的是 `web` profile（`~/.dsh/profiles/web`），`@winterhuan/*` 已 link 到本仓库 `packages/...`。
+- **开发完如何生效（日常）**：
+
+  ```sh
+  cd ~/dsh-creative
+  pnpm run build                              # 或：pnpm --filter @winterhuan/dsh-story build
+  dsh-webctl restart                          # Host / 飞书 bot 立即加载新 lib/
+  # 浏览器若开着 dsh web：Cmd+Shift+R 硬刷新，避免旧 client bundle
+  ```
+
+  说明：插件入口指向各包的 `lib/`，只改 `src/` 不 build 不会生效；dsh-web 进程也不会热替换已加载模块，必须重启。控制脚本在 `~/.dsh/bin/dsh-webctl`（`status` / `restart` / `logs` / `plugin-add`）。
+- **第一次把新包链进 web**：
+
+  ```sh
+  cd ~/dsh-creative && pnpm run build
+  dsh plugin --profile web add /Users/winter/dsh-creative/packages/<分类>/<包目录>
+  dsh-webctl restart
+  ```
+
+  之后仍走「build → restart」。不要对已 link 的 `@winterhuan/*` 执行会改写依赖的 npm `plugin-update`（会盖掉本地 link）；外部包如 `@xmanrui/dsh-im` 才用 `dsh-webctl plugin-add <pkg>@版本`。
 - 想不碰 `~/.dsh` 做隔离测试，就给每条命令加上 `DSH_HOME=/tmp/<目录>`。
 - 隔离 `DSH_HOME` 不会改变首次默认工作区的 Documents 路径。在首次打开浏览器前，为临时 profile 的 `workspace-controller.config.documentsDirectory` 指定临时目录；已有工作区仍使用原路径，新一轮验证应使用没有工作区记录的临时 home。
 - 确认浏览器 bundle 已加载：页面 HTML 的 `plugins/??...` 列表里应有 四个领域包的 `client.js`、`@winterhuan/dsh-client-ui-skill-viewer/client.js`、`@winterhuan/dsh-client-ui-settings-creative-produce/client.js` 和 `@winterhuan/dsh-client-ui-settings-story/client.js`。
