@@ -34,7 +34,7 @@ Status: implemented
 
 ## 影响
 
-父会话可以在不改状态的情况下体检一段章号。hint 不使命令失败，所以 `warn` 退出时仍可能列出过期哈希和缺卡。Markdown 的合并行藏起了 JSON 里仍逐条保留的行。事实账本、节奏、人物弧线和文风检查不在第一批列表里；它们以后加入 `BOOK_AUDIT_CHECKS`。错误的 `--write` 路径在体检运行前以 2 退出。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
+父会话可以在不改状态的情况下体检一段章号。hint 不使命令失败，所以 `warn` 退出时仍可能列出过期哈希和缺卡。Markdown 的合并行藏起了 JSON 里仍逐条保留的行。`BOOK_AUDIT_CHECKS` 还运行 `facts-stale`、`rhythm`、`plan`、`cast-limits` 和 `style`。书里没有账本、卖点表、卷纲、力量表或 `style` 时，这些检查为 `skip`。`--issues` 写 `草稿/问题单.json`；默认体检仍只读。账本文件和门禁见[事实账本笔记](2026-10-19-story-fact-ledger.zh.md)。错误的 `--write` 路径在体检运行前以 2 退出。此命令未在真实 DSH 浏览器里验证，也未调用真实模型。
 
 ## 验证
 

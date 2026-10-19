@@ -15,6 +15,8 @@ import { checkOutlineCopy } from './checks/outline-copy.ts'
 import { normalizePunctuation, readProjectPunctuationPolicy } from './checks/punctuation.ts'
 import { scanChapterQuality } from './rules.ts'
 import { assertRuleAuditForCommit } from './rule-audit.ts'
+import { assertFactsDiffForCommit } from './facts.ts'
+import { styleQualityRows } from './style.ts'
 import { verifyOutline } from './outline-contract.ts'
 import { normalizeState, require as requireTracking } from './tracking/schema.ts'
 import { applyTransaction, loadState, projectCommitInProgress, statePath } from './tracking/store.ts'
@@ -124,7 +126,7 @@ export function checkBlockingQuality(
       for (const hit of scanChapterQuality(project, outline, body, text)) {
         const row: QualityRow = {
           source: 'chapter-rules',
-          type: hit.kind === 'forbidden' ? 'FORBIDDEN' : hit.kind === 'era' ? 'ERA_DENY' : hit.kind === 'cast' ? 'CAST' : 'VOID_TERM',
+          type: hit.kind === 'forbidden' ? 'FORBIDDEN' : hit.kind === 'era' ? 'ERA_DENY' : hit.kind === 'cast' ? 'CAST' : hit.kind === 'skill' ? 'SKILL_EARLY' : 'VOID_TERM',
           severity: hit.severity,
           file: body,
           message: hit.message,
@@ -138,6 +140,15 @@ export function checkBlockingQuality(
       blocking.push({ source: 'chapter-rules', type: 'TOOL_ERROR', message: `chapter rules scan failed: ${error instanceof Error ? error.message : String(error)}` })
     }
   }
+  return { status: blocking.length > 0 ? 'fail' : 'pass', blocking_findings: blocking, advisories }
+}
+
+function withStyle(quality: QualityReport, project: string, chapter: number, bodyPath: string, bodyText: string): QualityReport {
+  const rows = styleQualityRows(project, chapter, bodyPath, bodyText)
+  if (rows.length === 0) return quality
+  const blocking = [...quality.blocking_findings]
+  const advisories = [...quality.advisories]
+  for (const row of rows) (row.severity === 'blocking' ? blocking : advisories).push(row)
   return { status: blocking.length > 0 ? 'fail' : 'pass', blocking_findings: blocking, advisories }
 }
 
@@ -164,7 +175,7 @@ export function chapterCheck(project: string, chapter: number): ChapterCheck {
   const length = evaluateWordcount(body, target, { chapter })
   const outlineReport = verifyOutline(outline)
   const outlineReadiness: OutlineReadiness = { status: outlineReport.ok ? 'pass' : 'fail', failures: outlineReport.failures }
-  const quality = checkBlockingQuality(outline, bodyPath, project)
+  const quality = withStyle(checkBlockingQuality(outline, bodyPath, project), project, chapter, bodyPath, body)
   const lengthOk = length.status === 'internal_pass' || length.status === 'borderline'
   let actions: string[]
   if (outlineReadiness.status !== 'pass' || quality.status !== 'pass' || length.status === 'invalid') actions = []
@@ -237,6 +248,7 @@ export function chapterCommit(project: string, chapter: number, inputPath: strin
   require(!Object.hasOwn(document, 'wordcount'), 'tracking transaction must not provide wordcount')
   require(document.expected_state_revision === checked.state_revision, 'tracking state changed since this transaction was prepared')
   assertRuleAuditForCommit(project, chapter, document)
+  assertFactsDiffForCommit(project, chapter)
   const digests = { body_sha256: checked.body_sha256, outline_sha256: checked.outline_sha256 }
   validateExpectedSourceDigests(document, digests)
   // Bind this check to the locked transaction even on the ordinary direct path.

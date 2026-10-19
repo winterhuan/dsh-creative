@@ -30,7 +30,7 @@ Each Skill owns its references and specialist Roles. Roles supply professional i
 
 Both long and short fiction use `{workspace}/{book name}/`. Discovery, file routes, redirects and writing instructions use that boundary; the workspace itself is not a book. The workspace-level analysis library has a separate identity. Book discovery continues independently of the bounded file listing, so a truncated listing does not hide books from Overview.
 
-The `/story` API resolves the calling Session and checks trusted hosts, allowed paths, resolved containment and file budgets. Editor writes use the observed `FsVersion`; conflicting saves preserve the draft. Chapter submission checks hashes and tracking revisions before committing the transaction. Post-write hooks direct review and defer tracking changes to the assigned submitter; the overview does not advance tracking.
+The `/story` API resolves the calling Session and checks trusted hosts, allowed paths, resolved containment and file budgets. Editor writes use the observed `FsVersion`; conflicting saves preserve the draft. Chapter submission checks hashes and tracking revisions before committing the transaction. The fact ledger is the sidecar `追踪/事实账本.json`, not a tracking-schema field; see the [fact ledger note](../../.agents/notes/implemented/feature/2026-10-19-story-fact-ledger.md). Post-write hooks direct review and defer tracking changes to the assigned submitter; the overview does not advance tracking.
 
 <a id="detection"></a>
 ## Settings and detection

@@ -11,6 +11,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CONTEXT_SETTINGS_EXCERPT_CHARS, CONTEXT_SETTINGS_LIMIT, lookupSettings, type LookupHit } from './settings-lookup.ts'
+import { contextFacts, type FactView } from './facts.ts'
+import { volumeSlice } from './plan.ts'
 import { assessHealth, HEALTH_SUMMARY_LIMIT, type HealthReport } from './tracking/health.ts'
 import { matchesForeshadow } from './tracking/query.ts'
 import type { CharacterSnapshot, ForeshadowRow, TimelineRow } from './tracking/schema.ts'
@@ -56,7 +58,11 @@ export interface ContextBundle {
   readonly health: HealthReport
   /** Setting excerpts for `text`. Empty when no text was scanned. */
   readonly settings: readonly LookupHit[]
-  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number; readonly health: number; readonly settings: number }
+  /** Fact-ledger rows for named subjects, active injuries, and the era. At most 2 KiB before the shared trim. */
+  readonly facts: readonly FactView[]
+  /** Volume contract for this chapter. At most 1.5 KiB before the shared trim. */
+  readonly volume: { readonly path: string; readonly text: string } | null
+  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number; readonly health: number; readonly settings: number; readonly facts: number; readonly volume: number }
 }
 
 /**
@@ -122,6 +128,12 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     limit: CONTEXT_SETTINGS_LIMIT, excerptChars: CONTEXT_SETTINGS_EXCERPT_CHARS,
   })
   const settingItems = settingsResult === undefined ? [] : [...settingsResult.items]
+  const factResult = contextFacts(project, {
+    chapter,
+    activeNames: state.context.active_character_names,
+    ...(options.text === undefined ? {} : { text: options.text }),
+  })
+  const volume = volumeSlice(project, chapter)
   const bundle = {
     schema: CONTEXT_SCHEMA,
     book_title: state.book_title,
@@ -139,12 +151,16 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     timeline,
     health: { ...report, items: healthItems },
     settings: settingItems,
+    facts: factResult.items,
+    volume,
     omitted: {
       characters: 0, due_foreshadow: 0, timeline: 0, health: report.items.length - healthItems.length,
       settings: settingsResult?.omitted ?? 0,
+      facts: factResult.omitted,
+      volume: 0,
     },
   }
-  // Setting excerpts leave first: they are reference, and due foreshadow is the obligation list.
+  // Setting excerpts leave first, then fact rows, then the volume slice. Due foreshadow stays longest.
   const trimmed = {
     ...bundle,
     characters: [...characters],
@@ -152,10 +168,14 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     timeline: [...timeline],
     health: { ...bundle.health, items: [...healthItems] },
     settings: [...settingItems],
+    facts: [...factResult.items],
+    volume,
     omitted: { ...bundle.omitted },
   }
   while (encodedBytes(trimmed) > CONTEXT_BUNDLE_MAX_BYTES) {
     if (trimmed.settings.length > 0) { trimmed.settings.pop(); trimmed.omitted.settings += 1; continue }
+    if (trimmed.facts.length > 0) { trimmed.facts.pop(); trimmed.omitted.facts += 1; continue }
+    if (trimmed.volume !== null) { trimmed.volume = null; trimmed.omitted.volume += 1; continue }
     if (trimmed.health.items.length > 0) { trimmed.health.items.pop(); trimmed.omitted.health += 1; continue }
     if (trimmed.timeline.length > 0) { trimmed.timeline.pop(); trimmed.omitted.timeline += 1; continue }
     if (trimmed.characters.length > 0) { trimmed.characters.pop(); trimmed.omitted.characters += 1; continue }

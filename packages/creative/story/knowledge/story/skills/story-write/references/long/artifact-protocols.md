@@ -53,7 +53,7 @@ aliases:
 
 ## 写作检查配置
 
-`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`、`rule_audit`。未知键会报错，指出那个键，并列出这些支持的键。`rule_audit` 取 `off` 或 `required`，缺省为 `off`。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
+`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`、`rule_audit`、`facts_diff`、`rhythm`、`style`。未知键会报错，指出那个键，并列出这些支持的键。`rule_audit` 和 `facts_diff` 各取 `off` 或 `required`，缺省都是 `off`。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
 
 `chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json` 在正文出现之前提取本章规则。结果模式是 `story-chapter-rules/v1`，含 `rules`、`scan`、`warnings`、`rules_sha256`、`omitted`，以及 `chapter` 和 `state_revision`。每条规则有 `id`、`text` 和 `source.path`、`source.line`。含末尾换行的一次结果不超过 16 KiB；放不下时从末尾依次丢掉规则、扫描行和 warning，丢掉的条数记入 `omitted`。`rules_sha256` 覆盖截断前的完整规则列表。同一输入的规则 ID 不变。来源文件或标题缺失时写入 `warnings`，命令仍成功。正文还不存在时只做提取，以及追踪里的作废词扫描。
 
@@ -82,7 +82,7 @@ aliases:
 
 同一句话出现在多个来源时，按去掉空白和句末标点后的文本合并。保留先出现的 ID。`text` 保持该句原文，其余 ID 放在可选字段 `also`（字符串数组）。编号不重排，两次运行结果一致。交给写手的一行在格式化时写成 `id: text`；`also` 非空时再接 ` also: ` 和这些 ID。`rules_sha256` 仍按原文接上 ` also: ID, ID` 之后的文本计算，同一输入的摘要不变。`OUT-P` 的 `text` 是合成句，合并按整句比较，不把 `｜` 两侧拆开。
 
-`chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名。名字在名单原文里出现就算已列，分词仍作补充；分隔符包括顿号、分号、`→`、`->`、`与` 和 `和`。中文引号「」“”『』里的名字不算出场。未列的提示是「正文提到但细纲出场名单未列」。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次扫描里。
+`chapter check` 把上述 `blocking` 命中并入 blocking quality，`hint` 进入 advisories，不单独使检查失败。出场 hint 比较 `设定/角色/` 的文件名、文件头已声明的别名，以及追踪里的角色名。名字在名单原文里出现就算已列，分词仍作补充；分隔符包括顿号、分号、`→`、`->`、`与` 和 `和`。中文引号「」“”『』里的名字不算出场。未列的提示是「正文提到但细纲出场名单未列」。`chapter rules` 只用已经提取出来的 `OUT-NNN-CAST`。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。账本里 `kind` 为「能力」的条目，若本章早于 `since` 且正文含该条的名称或 ID 末段，扫描给 hint，ID 为 `skill:<账本 id>`。细纲「爽点」非空时另有 `OUT-NNN-PAY`。卷纲「原著事实校正与改编边界」「第一卷写作口径」（没有这一节时用「写作口径」）的编号条，只在正文或细纲提到其中的章号或两到四字专名时进入清单，ID 为 `CANON-n`、`OWN-n`。当前单元的「兑现方式与归属」生成 `OWN-<单元ID>`。这些标题缺失不产生 warning。
 
 ## 规则审稿
 
@@ -114,7 +114,7 @@ node {CLI} book audit --workspace {工作区} --book {作品名} --from {A} --to
 node {CLI} book audit --workspace {工作区} --book {作品名} --from {A} --to {B} --write {书内相对路径} --json
 ```
 
-退出码：没有 blocking 为 0，有 blocking 为 1，参数或配置错误为 2。`warn` 不使命令失败。同一输入的 JSON 和排序稳定。检查按注册顺序运行。事实账本、节奏、人物弧线和文风检查以后按同一接口挂上，这次还没有这四项。
+退出码：没有 blocking 为 0，有 blocking 为 1，参数或配置错误为 2。`warn` 不使命令失败。同一输入的 JSON 和排序稳定。检查按注册顺序运行。`--issues` 另写一份 `story-issues/v1`，省略路径时是 `草稿/问题单.json`，必须是书内、`追踪/` 之外的 `.json`。默认体检不加 `--issues` 时不写这份文件。
 
 JSON 含 `schema`、`range`（`from`、`to`）、`state_revision`（没有追踪文件时为 null）、`checks`、`findings` 和 `counts`。`--write` 成功后另有 `report_path`，值为书内相对路径。`checks` 每项是 `id`、`status` 和 `summary`。`status` 为 `fail`（有 blocking）、`warn`（只有 hint）、`pass`（跑过且没有发现）或 `skip`（这项不能跑）。一条 finding 含 `check`、`severity`（`blocking` 或 `hint`）、可选 `chapter`、`category`、`message`、可选 `evidence`、可选 `source`（`path`，以及有行号时的 `line`）。`counts` 是 `pass`、`fail`、`skip`、`warn`、`blocking`、`hint`。排序依次为 severity（blocking 在前）、检查注册顺序、章号（没有章号的在后）、`source.path`、`source.line` 的数值（没有行号的在后）、类别、说明。
 
@@ -125,10 +125,45 @@ JSON 含 `schema`、`range`（`from`、`to`）、`state_revision`（没有追踪
 | `cast-cards` | 追踪里的角色快照，在 `设定/角色/` 没有同名文件，也没有文件头已声明的别名。 | 有缺卡时 `warn`。没有追踪时 `skip`。没有快照时 `pass`。 |
 | `reader-value-stale` | `reader_value_records` 里范围内、带 64 位十六进制 `body_sha256` 的记录，与当前正文或 `wordcount_records` 的哈希不一致。同一章合成一条，`message` 写明是当前正文、字数记录或两边。`summary` 按记录数计。哈希是正文原始字节的 SHA-256，完整值留在 `evidence`。字段不是对象时 `skip`。没有该字段时通过。正文和字数记录都不存在时不报。 | 有不一致记录时 `warn`。 |
 | `void-entries` | `long_term_constraints` 和 `continuity_risks` 命中 `设定/写作检查.json` 的 `void_terms`，或条目含「作废」。ID 为 `void:<字段>[下标]:词`。伏笔状态已是「放弃」或「作废」但仍留在 state 里，ID 为 `void:foreshadow[<id>]:<状态>`。 | 有条目时 `warn`。没有追踪时 `skip`。写作检查文件非法时命令以 2 退出。 |
+| `facts-stale` | 范围内来源章正文或字数记录的哈希与账本 `source.body_sha256` 不一致，或字数记录里的章不在 `covered_chapters`。没有账本文件时 `skip`。 | 有过期或缺章时 `warn`。 |
+| `rhythm` | 卖点提醒间隔、爽点连续为「无」、情绪高峰间隔、同一章节定位连续超限。没有这些材料时 `skip`。 | 有提示时 `warn`。 |
+| `plan` | 卷纲章节范围不连续；离卷末不超过 10 章时下一卷卷纲不存在，或创作参考登记里下一卷主对标状态仍含「扩卷前核实」。没有卷纲时 `skip`。 | 有 blocking 时 `fail`。 |
+| `cast-limits` | 力量体系超上限、禁用手段、关系阶段越过卡片上限，以及范围内至少三章出场仍无卡的已知名字。快照缺卡仍只由 `cast-cards` 报告。没有其余发现时 `skip`。 | 力量问题为 blocking，其余为 hint。 |
+| `style` | `写作检查.json` 的 `style`。段长、破折号、顶针、固定比喻超限先是 hint，同一指标连续 `streak` 章（默认 3）后为 blocking。`forbid_blank_lines` 的空行当场 blocking。没有 `style` 时 `skip`。 | 有 blocking 时 `fail`。 |
 
 Markdown 报告以 `# 全书体检 第A-B章` 开头，列出 schema、修订号、范围，以及写出文件时的 `report_path`。`blocking` 逐条列出。同一章、同一 category、同一 message 的 hint 合成一行，写成「第N章 category M 处：第 2、27…行：说明」。行号按数值升序，超过 12 个时截断，总数仍写在「M 处」。64 位哈希在报告里只印前 8 位。JSON 的 findings 仍逐条保留。
 
 原生单章模板在新提交成功且章号是 10 的倍数时，于返回值放 `book_audit_hint`，建议父会话运行 `book audit --from N-9 --to N`。模板不自动运行。已提交章只做验证时不给这条提示。
+
+## 事实账本与规划检查
+
+事实账本是 `追踪/事实账本.json`，模式 `story-facts/v1`，不写入追踪 state，schema 仍是第 5 版。`kind` 为场地、伤情、账目、物件、能力、年代、指令。每条有 `source.body_sha256`。修改追加 `changes`，不覆盖原 `attrs`。写入持有 `追踪/.tracking-commit.lock/`。
+
+```text
+node {CLI} facts record --workspace {工作区} --book {作品名} --chapter {N} --input {主张JSON} --json
+node {CLI} facts query --workspace {工作区} --book {作品名} --kind {场地|伤情|账目|物件|能力|年代|指令} --subject {主体} --json
+node {CLI} facts diff --workspace {工作区} --book {作品名} --chapter {N} --input {claims.json} --json
+node {CLI} facts stale --workspace {工作区} --book {作品名} --json
+```
+
+`record` 要求该章已提交，且正文原始字节的 SHA-256 与字数记录一致。空 `entries` 仍把该章记入 `covered_chapters`。`diff` 对同 id 同属性、值不同、且没有本章 `change` 的主张报冲突；未知 id 放进 `unmatched`，不算冲突。有冲突时退出码 1。`stale` 列出来源章正文已变的条目，以及有字数记录但不在 `covered_chapters` 里的章；有这类结果时退出码 1。缺章不由 `project check` 报告。`facts_diff` 为 `required` 时，`chapter commit` 要求 `草稿/事实/第NNN章.claims.json` 存在且 `diff` 通过。缺省或 `off` 不拦提交。
+
+`project context` 增加 `facts`（最多 2 KiB：年代、活跃角色未愈伤情、正文或细纲点到的主体）和 `volume`（最多 1.5 KiB：卷契约、当前单元、禁碰底牌；书旁 `拆文库/<主对标>/节奏卡/` 里盖住本章的卡片会附在同一段里）。省略顺序是设定摘录、事实、卷切片，然后才是健康摘要。`omitted.facts` 非零时用 `facts query` 补页。
+
+```text
+node {CLI} project rhythm --workspace {工作区} --book {作品名} --from {A} --to {B} --json
+node {CLI} project plan check --workspace {工作区} --book {作品名} --chapter {N} --json
+node {CLI} project cast check --workspace {工作区} --book {作品名} --from {A} --to {B} --json
+node {CLI} project lookup --workspace {工作区} --book {作品名} --text {查询} --reference --json
+node {CLI} analysis rhythm-card --workspace {工作区} --title {主对标} --chapters {A-B} --json
+node {CLI} text style-baseline --workspace {工作区} --book {作品名} --chapters {A-B} --apply --json
+node {CLI} project legacy archive --workspace {工作区} --book {作品名} --reader-value --json
+node {CLI} project context retire --workspace {工作区} --book {作品名} --item {原文} --reason {原因} --json
+```
+
+`rhythm` 的缺省是 `max_no_payoff` 1、`min_peak_gap` 5、`max_peak_gap` 8、`peak_intensity` 8、`max_same_position` 2。书可以在 `rhythm` 里改这些整数。有发现时退出码 1，发现都是 hint。`plan check` 在离卷末不超过 10 章时要求下一卷卷纲已在，且「创作参考登记」或「对标登记」里该卷主对标的状态不含「扩卷前核实」。`cast check` 读 `设定/世界观/力量体系.md` 的境界表，以及角色卡头的 `关系阶段：` 和 `阶段序：`。境界和手段来自账本 `kind=能力`，不改追踪 schema。出场计数只看追踪快照名和已有角色卡文件名里至少两个字的名字。`lookup --reference` 只读 `拆文库/<主对标>/角色/`、`设定/` 和 `剧情/剧情单元_*.md`，跳过 `原文/`、文件名含「章节摘要汇总」的文件，以及超过 512 KiB 的文件。命中带 `source: reference`，不是本书事实。不加 `--reference` 时结果与原来的设定检索相同。`rhythm-card` 把卡片写到 `拆文库/<书>/节奏卡/第A-B章.md`，不超过 2 KiB，并附节奏基准。`style-baseline` 测量已有正文；`--apply` 才写入 `style`。`legacy archive` 把 `reader_value_records` 移到 `追踪/_legacy/reader_value_records.json` 并删除 state 字段，`state_revision` 加 1。没有该字段时不改修订号。`context retire` 按原文从长期约束、连续性风险或下一章承诺里去掉一条，追加 `追踪/维护记录.md`，`state_revision` 加 1。修订事务本身仍不声明退役；要单独退役用这条命令。
+
+已提交章的改稿模板是 `workflows/revise.js`。阶段是 Locate、Plan、Rewrite、Audit、Submit。`approved` 为 false 且 Plan 返回 `needs_approval` 时停在 `needs_input`。Submit 使用 `mode=revision`，成功后跑 `facts stale`，有主张文件时再 `facts record`。
 
 ---
 

@@ -20,7 +20,7 @@ description: "创作长篇或短篇小说：设定、卷纲、细纲、小节规
 | 短篇构思、规划、正文和交付 | [短篇流程](references/short/writing-workflow.md) |
 | 缺少具体写作方法 | [方法索引](references/methods/agent-reference-profiles.md)，只取相应体裁与问题 |
 
-用户明确选择原生 workflow 或已有持续偏好时，父会话按 [原生章节 workflow](references/long/native-workflow.md) 读取本 Skill 的 `workflows/chapter.js` 并顶层调用。模板内完成准备、写作、独立审稿、有限修订和提交；父会话不重复准备。子阶段加载自己的 Skill，只执行分配阶段，不再读取或启动模板。
+用户明确选择原生 workflow 或已有持续偏好时，父会话按 [原生章节 workflow](references/long/native-workflow.md) 读取本 Skill 的 `workflows/chapter.js` 并顶层调用。模板内完成准备、写作、独立审稿、有限修订和提交；父会话不重复准备。已提交章的改稿读取 `workflows/revise.js`，阶段是 Locate、Plan、Rewrite、Audit、Submit。子阶段加载自己的 Skill，只执行分配阶段，不再读取或启动模板。
 
 ## 写作约束
 

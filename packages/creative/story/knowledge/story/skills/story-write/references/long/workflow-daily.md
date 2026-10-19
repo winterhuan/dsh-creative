@@ -27,7 +27,7 @@
 
 每章只提交对后续有用的结果、角色变化、伏笔变化、事实/揭示、约束和下一章承诺。需要复用的核心角色变化要带完整动态快照；一次性路人不强建快照。当前位置、活跃角色、长期约束和连续性风险提交完整当前值；固定七栏及容量要求见 [追踪事务](tracking-transaction.md)。
 
-长期约束最多六条，新增溢出先合并语义或裁定，不静默删除。删除仍登记的上下文项或退役角色要用 `delta.retired_context_items` / `delta.retired_characters` 明确声明；只在 append 退役，revision 保留截至最后已写章的完整当前上下文。
+长期约束最多六条，新增溢出先合并语义或裁定，不静默删除。删除仍登记的上下文项或退役角色要用 `delta.retired_context_items` / `delta.retired_characters` 明确声明。章节事务只在 append 里退役；revision 保留截至最后已写章的完整当前上下文。不随章节提交的退役用 `project context retire --item {原文} --reason {原因}`，原因写入 `追踪/维护记录.md`。
 
 ## 批次收尾
 

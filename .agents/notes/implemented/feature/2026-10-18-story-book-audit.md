@@ -34,7 +34,7 @@ The [chapter-rules decision](2026-10-18-story-chapter-rules.md) still owns extra
 
 ## Consequences
 
-A parent session can audit a range without changing state. Hints do not fail the command, so a `warn` exit can still list stale hashes and missing cards. The Markdown grouping hides per-line rows that the JSON still lists. Fact-ledger, pacing, character-arc, and style checks are not in the first list; they join `BOOK_AUDIT_CHECKS`. A bad `--write` path exits 2 before the audit runs. The command was not verified in a real DSH browser and was not run with a real model.
+A parent session can audit a range without changing state. Hints do not fail the command, so a `warn` exit can still list stale hashes and missing cards. The Markdown grouping hides per-line rows that the JSON still lists. `BOOK_AUDIT_CHECKS` also runs `facts-stale`, `rhythm`, `plan`, `cast-limits` and `style`. Those checks skip when the book has no ledger, promise table, volume plan, power table or `style` key. `--issues` writes `草稿/问题单.json`; the default audit stays read-only. The ledger file and its gates are in the [fact ledger note](2026-10-19-story-fact-ledger.md). A bad `--write` path exits 2 before the audit runs. The command was not verified in a real DSH browser and was not run with a real model.
 
 ## Verification
 
