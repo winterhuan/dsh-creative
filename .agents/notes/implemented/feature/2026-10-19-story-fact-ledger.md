@@ -1,0 +1,47 @@
+# Agent Note: Fact ledger beside tracking
+
+Status: implemented
+
+English | [中文](2026-10-19-story-fact-ledger.zh.md)
+
+## Problem
+
+A chapter can change a venue, an injury, an account, or an ability, and the next chapter still writes the old value. Tracking schema version 5 already has a place for historical reader-value hashes, and putting another unvalidated object there would either bump the schema or break the Python tracking comparison. Chapter rules can forbid a sentence, but they cannot tell a later claim from the value that was true at an earlier chapter.
+
+## Decision
+
+The ledger is `追踪/事实账本.json` with schema `story-facts/v1`. It is not a tracking-state field. Kinds are 场地, 伤情, 账目, 物件, 能力, 年代 and 指令. Each entry stores `source.body_sha256` of the chapter that introduced it. A later record with the same id appends `changes` and leaves the original `attrs` in place. `facts record` requires the chapter to be committed and the raw body hash to match `wordcount_records`. `facts diff` reports a conflict when the same id and attribute differ and no change for that chapter already stores the claimed value. An unknown id is `unmatched`, not a conflict. `facts stale` lists entries whose source chapter body or wordcount hash moved, and wordcount chapters absent from `covered_chapters`.
+
+`project check` stays `{ last_committed_chapter, state_revision }`. A missing ledger chapter is a `facts stale` row and a book-audit `facts-stale` hint. That keeps `tests/ts-port-parity-tracking.spec.ts` on the Python oracle. `facts_diff` follows `rule_audit`: both are `off` unless `设定/写作检查.json` sets `required`. A pilot book may set `required`. Other books do not.
+
+`project context` adds `facts` (at most 2 KiB) after setting excerpts and before the health summary, then `volume` (at most 1.5 KiB). Trim order is settings, facts, volume, health, timeline, characters, due foreshadow. Prepare runs `project rhythm` from chapter N-8 through N+2 and `project plan check`. A payoff, promise, or blocking plan finding stops before prose. After a successful new commit, the chapter template runs `facts record` when a claims file exists, then `facts stale`.
+
+`project rhythm` defaults to a small payoff at least every other chapter (`max_no_payoff` 1) and a peak of intensity 8 every 5 to 8 chapters. A book may replace those integers under `rhythm`. `project plan check` requires contiguous volume ranges. Within 10 chapters of a volume end, the next volume file must exist and its registration status must not still contain 「扩卷前核实」. `OUT-NNN-PAY` comes from the outline 爽点 field. `CANON-n` and `OWN-n` come from the volume headings 原著事实校正与改编边界 and 第一卷写作口径, and only when this chapter's outline or body mentions the chapter number or a two-to-four-character token in that item. `OWN-<单元ID>` comes from 兑现方式与归属. Missing headings do not warn.
+
+`project lookup --reference` reads `拆文库/<主对标>/角色/`, `设定/`, and `剧情/剧情单元_*.md`. It skips `原文/`, names containing 章节摘要汇总, and files over 512 KiB. Hits use `source: reference` and are not book facts. `analysis rhythm-card` writes at most 2 KiB under `拆文库/<书>/节奏卡/`. When that card's chapter range covers the chapter being written, `volume` appends it.
+
+Realm and ability stay `kind` 能力. `project cast check` compares those rows with `设定/世界观/力量体系.md` and compares `关系阶段：` with `阶段序：` on the card. Snapshot names without a card stay on book-audit `cast-cards`. Appearance counts a snapshot or card name of at least two characters that occurs in three or more chapter files. It does not invent names from prose. `text style-baseline` measures paragraph median, dashes, anadiplosis (the last 2–4 characters of a sentence matching the next sentence), a fixed metaphor list, and blank lines. Drift is a hint until the same metric exceeds the limit for `streak` chapters (default 3). Blank lines are blocking when `forbid_blank_lines` is set.
+
+`project legacy archive --reader-value` moves `reader_value_records` to `追踪/_legacy/reader_value_records.json` and increments `state_revision` only when the field was present. `project context retire` removes one exact string from the current context lists without a chapter append, appends `追踪/维护记录.md`, and increments `state_revision`. A `mode=revision` transaction still resubmits the current context and does not retire items. `workflows/revise.js` is Locate, Plan, Rewrite, Audit, Submit. Plan returns `needs_input` when approval is still required. Submit uses `mode=revision`, then `facts stale` and, when a claims file exists, `facts record`.
+
+Book audit keeps pass, warn, fail, skip and the read-only default. `--issues` writes `story-issues/v1` to `草稿/问题单.json`. The [book audit note](2026-10-18-story-book-audit.md) still owns the report document. The [chapter rules note](2026-10-18-story-chapter-rules.md) still owns default extraction. The [rule audit note](2026-10-18-story-rule-audit.md) still owns per-rule verdicts. This note does not replace them.
+
+## Alternatives considered
+
+**Put the ledger in tracking schema version 6.** `requireKnownKeys`, the rendered views, and the Python byte comparison would all move. A sidecar keeps that comparison stable. The cost is that commit and record are two writes. `facts stale` names the gap.
+
+**Report a missing ledger chapter from `project check`.** The check result is a frozen pair. Callers and the parity test read those two fields. A third field would be a different command.
+
+**Turn `facts_diff` on for every book.** A book with no ledger would fail the next commit. The gate matches `rule_audit` and stays off until that book sets `required`.
+
+**Retire context only on the next append.** A voided line would stay in Prepare until some later chapter. `project context retire` removes it without pretending the retirement happened inside an older chapter's revision record.
+
+**Extract every prose name for the cast check.** The deterministic check has no name list beyond snapshots and card stems. Semantic ownership of a highlight stays with the rule verdict for `OWN-<单元ID>`.
+
+## Consequences
+
+A writer can record, query, diff and stale-check facts without a schema bump. Context can omit fact rows before it omits health rows. Rhythm and plan findings are hints or blocking plan rows, not tracking mutations. Reference hits cannot be stored as book facts by these commands. Style blocking is a quality row on `chapter check`. Book audit reports that row on `style`. The audit chapter check does not repeat it. The commands were not verified in a real DSH browser and were not run with a real model.
+
+## Verification
+
+`packages/creative/story/tests/facts.spec.ts` reads `tests/fixtures/regression/R4.md`, `R5.md`, `R7.md`, `R8.md` and `R9.md`. Those files are one-line synthetic fields, not novel prose. R4, R7, R8 and R9 are diff conflicts. R5 is an ability token before `since`, visible to `chapter rules` as kind `skill`. The same file covers an appended change, an unknown id, a stale body, and a CLI record that exits 0 while diff exits 1. `tests/rhythm.spec.ts`, `tests/plan.spec.ts`, `tests/reference-lookup.spec.ts`, `tests/rhythm-card.spec.ts`, `tests/cast.spec.ts`, `tests/style-drift.spec.ts`, `tests/legacy.spec.ts` and `tests/revise-workflow.spec.ts` cover the other commands. `tests/book-audit.spec.ts` still expects the regression fixture to warn on health, cast cards, reader value and void entries, and to skip the new checks. `tests/context.spec.ts` expects `omitted.facts` and `omitted.volume`.

@@ -2,9 +2,10 @@
  * Read-only book audit over a chapter range.
  *
  * Each check implements {@link BookAuditCheck} and is listed in {@link BOOK_AUDIT_CHECKS}.
- * A later check — a fact ledger, pacing, character, or style pass — joins that list
+ * A fact, rhythm, plan, cast, or style check joins {@link BOOK_AUDIT_CHECKS}
  * and returns the same result shape. The command writes nothing; the CLI stores
- * the Markdown rendering only when `--write` is set.
+ * the Markdown rendering only when `--write` is set, and a problem list only
+ * when `--issues` is set.
  *
  * `chapter` reuses {@link checkBlockingQuality}. Void-term advisories from that
  * scan are omitted here and reported once by `void-entries`.
@@ -14,6 +15,11 @@ import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node
 import { join, relative, sep } from 'node:path'
 import { checkBlockingQuality, type QualityRow } from './chapter.ts'
 import { declaredAliases } from './settings-lookup.ts'
+import { staleFacts } from './facts.ts'
+import { checkRhythm } from './rhythm.ts'
+import { checkPlan } from './plan.ts'
+import { checkCast } from './cast.ts'
+import { styleFindings } from './style.ts'
 import { assessHealth } from './tracking/health.ts'
 import { type TrackingState } from './tracking/schema.ts'
 import { loadState, statePath } from './tracking/store.ts'
@@ -434,6 +440,120 @@ const voidEntriesCheck: BookAuditCheck = {
   },
 }
 
+const factsStaleCheck: BookAuditCheck = {
+  id: 'facts-stale',
+  run(context) {
+    let report: ReturnType<typeof staleFacts>
+    try {
+      report = staleFacts(context.project)
+    } catch (error) {
+      return {
+        status: 'fail',
+        summary: '事实账本无法读取',
+        findings: [finding({ check: 'facts-stale', severity: 'blocking', category: 'ledger', message: error instanceof Error ? error.message : String(error), source: { path: '追踪/事实账本.json' } })],
+      }
+    }
+    if (!report.present) return { status: 'skip', summary: '没有事实账本', findings: [] }
+    const findings: BookAuditFinding[] = []
+    for (const row of report.stale) {
+      if (row.chapter < context.from || row.chapter > context.to) continue
+      findings.push(finding({
+        check: 'facts-stale', severity: 'hint', chapter: row.chapter, category: 'stale',
+        message: `${row.id} 的来源章正文已变化`,
+        evidence: `source=${row.source_body_sha256} current=${row.current_body_sha256 ?? 'missing'}`,
+        source: { path: '追踪/事实账本.json' },
+      }))
+    }
+    for (const chapter of report.missing_chapters) {
+      if (chapter < context.from || chapter > context.to) continue
+      findings.push(finding({
+        check: 'facts-stale', severity: 'hint', chapter, category: 'missing-chapter',
+        message: `账本缺第 ${String(chapter)} 章`,
+        evidence: String(chapter),
+        source: { path: '追踪/事实账本.json' },
+      }))
+    }
+    return {
+      status: findings.length === 0 ? 'pass' : 'warn',
+      summary: findings.length === 0 ? '范围内的事实账本与来源章正文一致' : `${String(findings.length)} 条事实账本过期或缺章`,
+      findings,
+    }
+  },
+}
+
+const rhythmAuditCheck: BookAuditCheck = {
+  id: 'rhythm',
+  run(context) {
+    const report = checkRhythm(context.project, context.from, context.to)
+    if (!report.applicable) return { status: 'skip', summary: '没有卖点表、爽点字段或情绪弧线', findings: [] }
+    const findings = report.findings.map(item => finding({
+      check: 'rhythm', severity: 'hint', ...(item.chapter === undefined ? {} : { chapter: item.chapter }),
+      category: item.category, message: item.message,
+    }))
+    return {
+      status: findings.length === 0 ? 'pass' : 'warn',
+      summary: findings.length === 0 ? '承诺与节奏未超限' : `${String(findings.length)} 条承诺或节奏提示`,
+      findings,
+    }
+  },
+}
+
+const planAuditCheck: BookAuditCheck = {
+  id: 'plan',
+  run(context) {
+    const report = checkPlan(context.project, context.to)
+    if (!report.applicable) return { status: 'skip', summary: '没有卷纲，未做规划检查', findings: [] }
+    const findings = report.findings.map(item => finding({
+      check: 'plan', severity: item.severity, ...(item.chapter === undefined ? {} : { chapter: item.chapter }),
+      category: item.category, message: item.message,
+    }))
+    return {
+      status: findings.some(item => item.severity === 'blocking') ? 'fail' : findings.length > 0 ? 'warn' : 'pass',
+      summary: findings.length === 0 ? '卷纲范围连续，近卷末的下一卷已登记' : `${String(findings.length)} 条规划问题`,
+      findings,
+    }
+  },
+}
+
+const castLimitsCheck: BookAuditCheck = {
+  id: 'cast-limits',
+  run(context) {
+    const report = checkCast(context.project, { from: context.from, to: context.to })
+    const extra = report.findings.filter(item => item.category !== 'missing-card')
+    if (extra.length === 0) return { status: 'skip', summary: '没有力量、关系阶段或反复出场的新增发现', findings: [] }
+    const findings = extra.map(item => finding({
+      check: 'cast-limits', severity: item.severity, category: item.category, message: item.message,
+      ...(item.evidence === undefined ? {} : { evidence: item.evidence }),
+    }))
+    return {
+      status: findings.some(item => item.severity === 'blocking') ? 'fail' : 'warn',
+      summary: `${String(findings.length)} 条力量、关系或出场发现`,
+      findings,
+    }
+  },
+}
+
+const styleAuditCheck: BookAuditCheck = {
+  id: 'style',
+  run(context) {
+    const configured = readWritingCheck(context.project)?.style
+    if (configured === undefined) return { status: 'skip', summary: '没有文风指标', findings: [] }
+    const findings: BookAuditFinding[] = []
+    for (const chapter of chapters(context)) {
+      for (const item of styleFindings(context.project, chapter)) {
+        findings.push(finding({
+          check: 'style', severity: item.severity, chapter, category: item.metric, message: item.message, evidence: item.metric,
+        }))
+      }
+    }
+    return {
+      status: findings.some(item => item.severity === 'blocking') ? 'fail' : findings.length > 0 ? 'warn' : 'pass',
+      summary: findings.length === 0 ? '文风指标未超限' : `${String(findings.length)} 条文风指标超限`,
+      findings,
+    }
+  },
+}
+
 /**
  * Checks run for every audit, in this order.
  * Append a {@link BookAuditCheck} here to report it in the same document.
@@ -444,6 +564,11 @@ export const BOOK_AUDIT_CHECKS: readonly BookAuditCheck[] = [
   castCardsCheck,
   readerValueCheck,
   voidEntriesCheck,
+  factsStaleCheck,
+  rhythmAuditCheck,
+  planAuditCheck,
+  castLimitsCheck,
+  styleAuditCheck,
 ]
 
 /**
@@ -555,4 +680,22 @@ export function renderBookAudit(report: BookAuditReport): string {
   else for (const group of hints) lines.push(renderHintGroup(group))
   lines.push('')
   return lines.join('\n')
+}
+
+/** Problem list derived from one audit. The audit itself does not write this file. */
+export function issuesFromAudit(report: BookAuditReport): {
+  schema: 'story-issues/v1'
+  range: BookAuditRange
+  items: readonly { readonly chapter?: number; readonly line?: number; readonly id: string; readonly suggestion: string }[]
+} {
+  return {
+    schema: 'story-issues/v1',
+    range: report.range,
+    items: report.findings.map(item => ({
+      ...(item.chapter === undefined ? {} : { chapter: item.chapter }),
+      ...(item.source?.line === undefined ? {} : { line: item.source.line }),
+      id: item.evidence ?? `${item.check}:${item.category}`,
+      suggestion: item.message,
+    })),
+  }
 }

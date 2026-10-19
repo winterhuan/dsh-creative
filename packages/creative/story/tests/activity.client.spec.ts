@@ -32,7 +32,17 @@ describe('story file refresh signals', () => {
   })
   it('refreshes after book audit writes a report and ignores the read-only command', () => {
     expect(latestSettledMutation(snapshot(settled('audit', 'bash', { command: 'dsh-story book audit --workspace /workspace --book 书 --from 1 --to 10 --write' })))).toBe('audit\0草稿/体检.md')
+    expect(latestSettledMutation(snapshot(settled('issues', 'bash', { command: 'dsh-story book audit --workspace /workspace --book 书 --from 1 --to 10 --issues' })))).toBe('issues\0草稿/问题单.json')
     expect(latestSettledMutation(snapshot(settled('read', 'bash', { command: 'dsh-story book audit --workspace /workspace --book 书 --from 1 --to 10 --json' })))).toBeUndefined()
+  })
+  it('refreshes after fact, maintenance, rhythm-card and style writes', () => {
+    expect(latestSettledMutation(snapshot(settled('facts', 'bash', { command: 'dsh-story facts record --chapter 1 --input claims.json' })))).toBe('facts\0追踪/事实账本.json')
+    expect(latestSettledMutation(snapshot(settled('legacy', 'bash', { command: 'dsh-story project legacy archive --reader-value' })))).toBe('legacy\0追踪/_tracking-state.json')
+    expect(latestSettledMutation(snapshot(settled('retire', 'bash', { command: 'dsh-story project context retire --item 旧港 --reason 作废' })))).toBe('retire\0追踪/_tracking-state.json')
+    expect(latestSettledMutation(snapshot(settled('card', 'bash', { command: 'dsh-story analysis rhythm-card --title 样书 --chapters 1-3' })))).toBe('card\0拆文库/节奏卡.md')
+    expect(latestSettledMutation(snapshot(settled('style', 'bash', { command: 'dsh-story text style-baseline --chapters 1-7 --apply' })))).toBe('style\0设定/写作检查.json')
+    expect(latestSettledMutation(snapshot(settled('quiet', 'bash', { command: 'dsh-story facts query --kind 场地' })))).toBeUndefined()
+    expect(latestSettledMutation(snapshot(settled('quiet-style', 'bash', { command: 'dsh-story text style-baseline --chapters 1-7' })))).toBeUndefined()
   })
   it('refreshes after a chapter transaction, while read-only queries leave the signal unchanged', () => {
     expect(latestSettledMutation(snapshot(settled('commit', 'bash', { command: "python 'storyctl.py' 'chapter' 'commit' --project /book" })))).toBe('commit\0追踪/_tracking-state.json')

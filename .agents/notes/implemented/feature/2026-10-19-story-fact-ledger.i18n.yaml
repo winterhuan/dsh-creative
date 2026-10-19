@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-19-story-fact-ledger.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-19-story-fact-ledger.md
+/agent-note-fact-ledger-beside-tracking:
+  en: 47b777ab9607ff26
+  zh: 5629321006c67cfa
+/agent-note-fact-ledger-beside-tracking/problem:
+  en: 2e4c6df5825705ab
+  zh: 17d8e8764482a8fe
+/agent-note-fact-ledger-beside-tracking/decision:
+  en: 84f43b3c2eb034fd
+  zh: 6b5c04224d82fac7
+/agent-note-fact-ledger-beside-tracking/alternatives-considered:
+  en: 9b556e772943b7c9
+  zh: 00450e6f587c93f3
+/agent-note-fact-ledger-beside-tracking/consequences:
+  en: 00e764e5d82adde6
+  zh: 9f3c77dc99583c11
+/agent-note-fact-ledger-beside-tracking/verification:
+  en: 3f70aef481643a43
+  zh: 213f0ef5c1f50eac

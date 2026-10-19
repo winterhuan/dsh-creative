@@ -11,17 +11,7 @@ function mutationPath(name: string, raw: string): string | undefined {
     if (name === 'bash') {
       const command = record.command
       // This only invalidates the listing; native bash retains ownership of execution and paths.
-      return typeof command === 'string' && (
-        command.includes('storyctl.py') && /\bchapter\b/u.test(command) && /\b(commit|accept-current-length)\b/u.test(command)
-        || command.includes('tracking_commit.py') && /\b(init|commit)\b/u.test(command)
-        || /(?:\bdsh-story\b|[/\\]lib[/\\]cli\.js)/u.test(command) && (
-          /\bchapter[\s'"]+(?:commit|accept-current-length)\b/u.test(command)
-          || /\bproject[\s'"]+init\b/u.test(command)
-          || /\banalysis[\s'"]+write-cards\b/u.test(command)
-          || /\btext[\s'"]+normalize\b/u.test(command) && /--apply\b/u.test(command)
-          || /\bbook[\s'"]+audit\b/u.test(command) && /--write\b/u.test(command)
-        )
-      ) ? (/\bbook[\s'"]+audit\b/u.test(command) ? '草稿/体检.md' : '追踪/_tracking-state.json') : undefined
+      return typeof command === 'string' ? cliMutation(command) : undefined
     }
     if (name === 'str_replace_editor' && record.command === 'view') return undefined
     const path = name === 'str_replace_editor' ? record.path : record.file_path
@@ -37,6 +27,25 @@ function mutationPath(name: string, raw: string): string | undefined {
  * @param cwd - the Session working directory that scopes absolute paths.
  * @returns whether the mutation is a listing refresh signal.
  */
+function cliMutation(command: string): string | undefined {
+  const packaged = /(?:\bdsh-story\b|[/\\]lib[/\\]cli\.js)/u.test(command)
+  if (command.includes('storyctl.py') && /\bchapter\b/u.test(command) && /\b(commit|accept-current-length)\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (command.includes('tracking_commit.py') && /\b(init|commit)\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (!packaged) return undefined
+  if (/\bchapter[\s'"]+(?:commit|accept-current-length)\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (/\bproject[\s'"]+init\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (/\banalysis[\s'"]+write-cards\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (/\btext[\s'"]+normalize\b/u.test(command) && /--apply\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (/\bbook[\s'"]+audit\b/u.test(command) && /--write\b/u.test(command)) return '草稿/体检.md'
+  if (/\bbook[\s'"]+audit\b/u.test(command) && /--issues\b/u.test(command)) return '草稿/问题单.json'
+  if (/\bfacts[\s'"]+record\b/u.test(command)) return '追踪/事实账本.json'
+  if (/\bproject[\s'"]+(?:legacy[\s'"]+archive|legacy-archive)\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (/\bproject[\s'"]+(?:context[\s'"]+retire|context-retire)\b/u.test(command)) return '追踪/_tracking-state.json'
+  if (/\banalysis[\s'"]+rhythm-card\b/u.test(command)) return '拆文库/节奏卡.md'
+  if (/\btext[\s'"]+style-baseline\b/u.test(command) && /--apply\b/u.test(command)) return '设定/写作检查.json'
+  return undefined
+}
+
 function changesListing(name: string, path: string, cwd: string | undefined): boolean {
   if (name === 'bash') return true
   const relative = workspaceRelativePath(path, cwd)

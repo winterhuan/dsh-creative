@@ -23,6 +23,8 @@
 
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
 
+2026-10-19 小说事实账本、节奏规划、对标检索、人物力量与文风检查：旁路文件，门禁默认关闭。见[事实账本](.agents/notes/implemented/feature/2026-10-19-story-fact-ledger.zh.md)。
+
 当前实现是独立的 `@winterhuan` 插件仓库：
 
 - 依赖 npm 上发布的 DSH `0.2.1-rc.2`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
@@ -30,11 +32,11 @@
 - 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
 
-2026-10-18 小说设定库检索：`packages/creative/story` 新增只读 `project lookup`。`--text` 传入字面量，`--file` 指向细纲或草稿，二者只能给一个。它识别 `设定/` 下 Markdown 的文件名、一级标题和可选别名，精确与别名优先，其余用自写 BM25（词典最长匹配，其余二字、三字片段，无空格中文可命中），不使用向量或外部服务。别名写在文件头 front matter 的 `aliases` 或 `别名`，或前 40 行、第一个二级标题之前的 `别名：` 行；没有别名的旧文件仍按文件名和标题匹配。两个字的栏目标题不作精确实体。结果带路径、标题和行范围，默认 8 条，`--limit` 最大 20，单次不超过 16 KiB，超出计入 `omitted`。`project context` 在同一 16 KiB 内最多附 4 条摘录，放不下时先于健康摘要和到期伏笔省略；`omitted.settings` 非零时再调 lookup。不写文件，不改 state schema，无追踪文件也可查。本轮不做工作台。根 `typecheck`、`build` 与全量 101 个文件 948 项测试通过。未在真实 DSH 浏览器验证，未调用真实模型。
+2026-10-18 小说设定库检索：`project lookup` 只读 `设定/`，精确名称和别名优先，一次不超过 16 KiB。命令见[小说包说明](packages/creative/story/README.zh.md)。未在真实 DSH 浏览器验证，未调用真实模型。
 
-2026-10-17 小说伏笔与人物健康检查：`packages/creative/story`的 `project query --kind health` 只读列出四类风险（逾期未回收、未定回收且埋设已久、核心角色久未更新、长期未收的线索）。默认阈值 30／20／40 章，可用 `--stale-planted`、`--stale-character`、`--stale-thread` 调整。角色快照没有更新章，最近接触取时间线事件的 `updated_chapter`，没有这类事件的角色不报。`project context` 附带最多 8 条摘要，计入 16 KiB；放不下时 `omitted.health` 增加且计数保留。概览新增「风险」卡片，点来源跳到已有文件。追踪锁文档改为目录锁，与 `src/core/tracking/store.ts` 一致。根 typecheck、build与全量100个文件935项测试通过。未在真实 DSH 浏览器验证，未调用真实模型。
+2026-10-17 小说伏笔与人物健康检查：`project query --kind health` 只读四类风险，默认阈值 30／20／40。命令见[小说包说明](packages/creative/story/README.zh.md)。未在真实 DSH 浏览器验证，未调用真实模型。
 
-2026-10-17 DSH 升级到 `0.2.1-rc.2`（`next` 通道）：根与 11 个插件的 `@deepseek-ai/dsh-*` 精确版本改为 `0.2.1-rc.2`，插件自身版本不变。配套 Cordis 为 `~4.0.5`、schemastery 为 `~3.18.5`、`cordis-plugin-loader` 为 `~1.0.6`、`cordis-plugin-include` 为 `~1.0.10`、`cordis-plugin-group` 为 `~1.0.5`。子模块移到 `dsh-v0.2.1-rc.2`。各插件不声明 `engines.dsh`，安装兼容仍按 DSH peer 判断。[第 8 节](#8-从上游复制的文件及本地改动)重新同步客户端打包拷贝，`clientBundle()` 改为接收包目录。typert 生成器的 `isTypeMetaSymbol()` 仍不认 npm 安装的协议包，补丁按 rc.2 重做；`api-remotes` 仍只把 Remote 包列为 devDependencies；`dsh-client-test-runtime` 仍导入 3 个未发布的 `src` 文件。JSONL 持久化没有默认导出，三处测试改为 `import * as`。`pnpm install`、`typecheck`、`build` 通过。全量 99 个文件里 911 项通过，其余 14 项在改为命名空间导入后通过。本机全局 dsh 仍是 `0.2.1-alpha.2`，未在真实 DSH 里安装验证。
+2026-10-17 DSH 升级到 `0.2.1-rc.2`（`next` 通道）：根与 11 个插件的 `@deepseek-ai/dsh-*` 精确版本改为 `0.2.1-rc.2`，插件自身版本不变。配套版本与子模块标签见[第 6 节](#6-依赖策略)和[第 9 节](#9-升级-dsh-版本清单)。[第 8 节](#8-从上游复制的文件及本地改动)重新同步客户端打包拷贝。`pnpm install`、`typecheck`、`build` 通过。本机全局 dsh 仍是 `0.2.1-alpha.2`，未在真实 DSH 里安装验证。
 
 2026-10-17 知识点可考事实：语文摸底只靠一句定义时，会写出课页里没有的内容（《场景歌》被写成“一片沙滩”，葡萄干被写成“阴房”，《植物妈妈有办法》漏掉石榴）。知识点新增可选 `facts`（2–8 条、每条最多 240 字）。`kind=curriculum` 与 `kind=elements` 随知识点返回，工作台在知识点下列出；出题说明要求答案能在 `facts` 里核对，没有 `facts` 的知识点只用定义和例子。二年级上册语文 39 个知识点已按随包人教课页写上事实，并改正与课页矛盾的定义和例子。其余十一份地图的每个知识点也写了可考事实：数学是算法和例子，语文是这一课可以核对的内容。英语二年级上册前四单元按朗读纸、后六单元和一年级四个单元按已读原句核对，其余英语单元仍是词义。出版社和册次可以不同，只收与该知识点同一个概念的内容。新题另写，不照抄原题。学习目标 ID 不变。决策见[知识地图事实](.agents/notes/implemented/feature/2026-10-17-student-knowledge-facts.zh.md)。学生包 7 个文件 110 项测试通过，`typecheck`、文档 16 项与规范 3 项检查通过。未调用真实模型，未在真实 DSH 浏览器打开工作台。
 

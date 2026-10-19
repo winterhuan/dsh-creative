@@ -21,6 +21,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { basename, dirname, join, relative, sep } from 'node:path'
 import { declaredAliases } from './settings-lookup.ts'
+import { earlySkillHits } from './facts.ts'
 import { normalizeState, type TrackingState } from './tracking/schema.ts'
 import { statePath } from './tracking/store.ts'
 import { findChapterFile } from './wordcount.ts'
@@ -94,7 +95,7 @@ export interface RuleWarning {
 export interface RuleScanHit {
   readonly id: string
   readonly severity: 'blocking' | 'hint'
-  readonly kind: 'forbidden' | 'era' | 'cast' | 'void-term'
+  readonly kind: 'forbidden' | 'era' | 'cast' | 'void-term' | 'skill'
   readonly message: string
   readonly path?: string
   readonly line?: number
@@ -980,6 +981,23 @@ function scanManuscript(
       }
     }
   }
+  if (bodyText !== undefined && bodyPath !== undefined) {
+    const chapter = chapterFromBody(bodyPath)
+    if (chapter !== undefined) {
+      const relativeBody = posixRelative(project, bodyPath)
+      for (const hint of earlySkillHits(project, chapter, bodyText)) {
+        hits.push({
+          id: hint.id,
+          severity: 'hint',
+          kind: 'skill',
+          message: hint.message,
+          path: relativeBody,
+          line: hint.line,
+          rule: hint.id,
+        })
+      }
+    }
+  }
   return hits
 }
 
@@ -1064,7 +1082,68 @@ function collect(project: string, chapter: number, file: WritingCheckFile | unde
       rules.push(...extractPrefix(source.prefix, heading, lines, relativePath, chapter, warnings, state, stateText))
     }
   }
+  appendOptionalRules(project, chapter, outline, rules)
   return { rules, warnings, config, state, bodyPath: locateBody(project, chapter) }
+}
+
+function chapterFromBody(path: string): number | undefined {
+  const matched = /第0*(\d+)章/u.exec(basename(path))
+  if (matched?.[1] === undefined) return undefined
+  return Number(matched[1])
+}
+
+function appendOptionalRules(project: string, chapter: number, outline: string | undefined, rules: ExtractedRule[]): void {
+  if (outline !== undefined) {
+    const loaded = readSource(outline)
+    if (loaded !== undefined) {
+      const field = fieldIn(toLines(loaded.text), 0, Number.MAX_SAFE_INTEGER, '爽点')
+      if (field !== undefined && field.text.trim() !== '') {
+        rules.push({ id: `OUT-${chapterLabel(chapter)}-PAY`, text: field.text, source: { path: posixRelative(project, outline), line: field.line } })
+      }
+    }
+  }
+  const volume = locateVolume(project, chapter, [])
+  if (volume === undefined) return
+  const loaded = readSource(volume)
+  if (loaded === undefined) return
+  const lines = toLines(loaded.text)
+  const relative = posixRelative(project, volume)
+  const haystack = `${outline === undefined ? '' : readSource(outline)?.text ?? ''}\n${readSource(locateBody(project, chapter) ?? '')?.text ?? ''}`
+  pushMentioned(rules, lines, relative, '原著事实校正与改编边界', 'CANON', haystack, chapter)
+  const ownHeading = sectionSpan(lines, '第一卷写作口径') !== undefined ? '第一卷写作口径' : sectionSpan(lines, '写作口径') !== undefined ? '写作口径' : undefined
+  if (ownHeading !== undefined) pushMentioned(rules, lines, relative, ownHeading, 'OWN', haystack, chapter)
+  const unit = currentUnit(lines, chapter)
+  if (unit === undefined) return
+  const owned = fieldIn(lines, unit.start, unit.end, '兑现方式与归属')
+  if (owned !== undefined && !isPlaceholder(owned.text)) {
+    rules.push({ id: `OWN-${unit.id}`, text: owned.text, source: { path: relative, line: owned.line } })
+  }
+}
+
+function pushMentioned(
+  rules: ExtractedRule[],
+  lines: readonly Line[],
+  path: string,
+  heading: string,
+  prefix: string,
+  haystack: string,
+  chapter: number,
+): void {
+  const span = sectionSpan(lines, heading)
+  if (span === undefined) return
+  const items = numberedItems(lines, span.start, span.end)
+  for (const item of items) {
+    if (!mentionedInChapter(item.text, haystack, chapter)) continue
+    rules.push({ id: `${prefix}-${String(item.number)}`, text: item.text, source: { path, line: item.line } })
+  }
+}
+
+const MENTION_STOP = new Set(['本章', '不可', '不要', '不能', '必须', '原著', '写作', '口径', '事实', '校正', '改编', '边界', '第一', '不得'])
+
+function mentionedInChapter(text: string, haystack: string, chapter: number): boolean {
+  if (new RegExp(`第\\s*0*${String(chapter)}\\s*章`, 'u').test(text)) return true
+  const tokens = text.match(/[\u4e00-\u9fff]{2,4}/gu) ?? []
+  return tokens.some(token => !MENTION_STOP.has(token) && haystack.includes(token))
 }
 
 /**

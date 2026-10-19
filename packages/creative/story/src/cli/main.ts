@@ -10,11 +10,18 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { auditBook, BOOK_AUDIT_MAX_SPAN, defaultAuditReportPath, renderBookAudit } from '../core/audit.ts'
+import { auditBook, BOOK_AUDIT_MAX_SPAN, defaultAuditReportPath, issuesFromAudit, renderBookAudit } from '../core/audit.ts'
 import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
 import { extractChapterRules } from '../core/rules.ts'
 import { ruleAuditRelativePath, verifyRuleAudit } from '../core/rule-audit.ts'
+import { diffFacts, FACT_KINDS, queryFacts, recordFacts, staleFacts } from '../core/facts.ts'
+import { archiveReaderValue, retireContextItem } from '../core/legacy.ts'
+import { checkRhythm } from '../core/rhythm.ts'
+import { checkPlan } from '../core/plan.ts'
+import { lookupReference, writeRhythmCard } from '../core/reference.ts'
+import { checkCast } from '../core/cast.ts'
+import { measureStyleBaseline } from '../core/style.ts'
 import { type AiPatternsDocument, scanAiPatterns, aiPatternsDocument } from '../core/checks/ai-patterns.ts'
 import { scanDegeneration } from '../core/checks/degeneration.ts'
 import { checkOutlineCopy } from '../core/checks/outline-copy.ts'
@@ -71,9 +78,14 @@ function specFor(family: string, action: string): Options | undefined {
       check: { ...WORKSPACE, ...BOOK },
       context: { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' }, text: { kind: 'value' } },
       lookup: {
-        ...WORKSPACE, ...BOOK, text: { kind: 'value' }, file: { kind: 'value' }, revision: { kind: 'value' },
+        ...WORKSPACE, ...BOOK, text: { kind: 'value' }, file: { kind: 'value' }, revision: { kind: 'value' }, reference: { kind: 'flag' },
         offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: LOOKUP_DEFAULT_LIMIT },
       },
+      rhythm: { ...WORKSPACE, ...BOOK, from: { kind: 'value', type: 'int', required: true }, to: { kind: 'value', type: 'int', required: true } },
+      'plan-check': { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' } },
+      'cast-check': { ...WORKSPACE, ...BOOK, from: { kind: 'value', type: 'int' }, to: { kind: 'value', type: 'int' } },
+      'legacy-archive': { ...WORKSPACE, ...BOOK, 'reader-value': { kind: 'flag', required: true } },
+      'context-retire': { ...WORKSPACE, ...BOOK, item: { kind: 'value', required: true }, reason: { kind: 'value', required: true } },
     },
     outline: { check: { ...WORKSPACE, ...BOOK, ...CHAPTER } },
     chapter: {
@@ -92,6 +104,7 @@ function specFor(family: string, action: string): Options | undefined {
       count: { file: { kind: 'value', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, target: { kind: 'value' }, checkpoint: { kind: 'flag' }, chapter: { kind: 'value', type: 'int' }, 'case-id': { kind: 'value' } },
       check: { file: { kind: 'append', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, outline: { kind: 'value' } },
       normalize: { file: { kind: 'append', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, apply: { kind: 'flag' }, policy: { kind: 'value', choices: ['preserve', 'normalize-narration'] }, 'quote-mode': { kind: 'value', choices: ['keep', 'ascii', 'yan'], default: 'keep' } },
+      'style-baseline': { ...WORKSPACE, ...BOOK, chapters: { kind: 'value', required: true }, apply: { kind: 'flag' } },
     },
     memory: {
       init: { ...WORKSPACE },
@@ -103,6 +116,7 @@ function specFor(family: string, action: string): Options | undefined {
     analysis: {
       inspect: { ...WORKSPACE, title: { kind: 'value', required: true }, source: { kind: 'value', required: true }, input: { kind: 'value', required: true } },
       'write-cards': { ...WORKSPACE, title: { kind: 'value', required: true }, source: { kind: 'value', required: true }, input: { kind: 'value', required: true } },
+      'rhythm-card': { ...WORKSPACE, title: { kind: 'value', required: true }, chapters: { kind: 'value', required: true } },
     },
     export: { txt: { ...WORKSPACE, ...BOOK, 'out-dir': { kind: 'value', required: true } } },
     lineage: { record: { ...WORKSPACE, 'from-domain': { kind: 'value', required: true }, 'from-path': { kind: 'value', required: true }, 'to-domain': { kind: 'value', required: true }, 'to-path': { kind: 'value', required: true }, decision: { kind: 'append' }, by: { kind: 'value', default: 'agent' } } },
@@ -112,7 +126,14 @@ function specFor(family: string, action: string): Options | undefined {
         ...WORKSPACE, ...BOOK,
         from: { kind: 'value', type: 'int', required: true }, to: { kind: 'value', type: 'int', required: true },
         write: { kind: 'optional-value' },
+        issues: { kind: 'optional-value' },
       },
+    },
+    facts: {
+      record: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
+      query: { ...WORKSPACE, ...BOOK, kind: { kind: 'value', choices: FACT_KINDS }, subject: { kind: 'value' } },
+      diff: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
+      stale: { ...WORKSPACE, ...BOOK },
     },
   }
   return families[family]?.[action]
@@ -127,6 +148,18 @@ interface Parsed {
 
 function usageError(message: string): CliError {
   return new CliError(`${message}\n${EXIT_HELP}`)
+}
+
+function normalizeArgv(argv: readonly string[]): string[] {
+  const copy = [...argv]
+  const phrase = (family: string, left: string, right: string, joined: string): void => {
+    if (copy[0] === family && copy[1] === left && copy[2] === right) copy.splice(1, 2, joined)
+  }
+  phrase('project', 'plan', 'check', 'plan-check')
+  phrase('project', 'cast', 'check', 'cast-check')
+  phrase('project', 'legacy', 'archive', 'legacy-archive')
+  phrase('project', 'context', 'retire', 'context-retire')
+  return copy
 }
 
 function convert(name: string, raw: string, spec: OptionSpec): unknown {
@@ -152,10 +185,11 @@ function convert(name: string, raw: string, spec: OptionSpec): unknown {
  * @throws CliError for an unknown command, option, value or a missing required option.
  */
 export function parseArguments(argv: readonly string[]): Parsed {
-  const [family, action, ...rest] = argv
+  const normalized = normalizeArgv(argv)
+  const [family, action, ...rest] = normalized
   const spec = family === undefined || action === undefined ? undefined : specFor(family, action)
   if (spec === undefined || family === undefined || action === undefined) {
-    const known = ['project', 'outline', 'chapter', 'short', 'text', 'memory', 'analysis', 'export', 'lineage', 'detect', 'book']
+    const known = ['project', 'outline', 'chapter', 'short', 'text', 'memory', 'analysis', 'export', 'lineage', 'detect', 'book', 'facts']
     throw usageError(family === undefined || !known.includes(family)
       ? `unknown command: ${family ?? '(none)'}; choose from ${known.join(', ')}`
       : `unknown action for ${family}: ${action ?? '(none)'}`)
@@ -279,12 +313,12 @@ function containedTree(root: string, directory: string): void {
   walk(directory)
 }
 
-function reportParts(relative: string): string[] {
+function reportParts(relative: string, extension = '.md'): string[] {
   if (relative === '' || relative.includes('\0') || isAbsolute(relative)) throw new CliError(`report path must stay inside the book: ${relative}`)
   const parts = relative.replaceAll('\\', '/').split('/')
   if (parts.some(part => part === '' || part === '.' || part === '..')) throw new CliError(`report path must stay inside the book: ${relative}`)
-  if (!parts[parts.length - 1]?.endsWith('.md') || parts[0] === '追踪') {
-    throw new CliError(`report path must be a Markdown file inside the book and outside 追踪: ${relative}`)
+  if (!parts[parts.length - 1]?.endsWith(extension) || parts[0] === '追踪') {
+    throw new CliError(`report path must be a ${extension} file inside the book and outside 追踪: ${relative}`)
   }
   return parts
 }
@@ -298,10 +332,10 @@ function pathInfo(path: string, relative: string) {
 }
 
 /** Reject a report path that leaves the book, uses a symlink, or is not Markdown. Does not create directories. */
-function assertReportPath(book: string, relative: string): void {
+function assertReportPath(book: string, relative: string, extension = '.md'): void {
   const root = looseRealpath(book)
   let current = root
-  for (const part of reportParts(relative)) {
+  for (const part of reportParts(relative, extension)) {
     const next = join(current, part)
     const info = pathInfo(next, relative)
     if (info?.isSymbolicLink() === true) throw new CliError(`report path contains a symlink: ${relative}`)
@@ -315,9 +349,9 @@ function assertReportPath(book: string, relative: string): void {
 }
 
 /** Create missing parent directories and return the file to write. Rechecks symlinks. */
-function prepareReportFile(book: string, relative: string): string {
+function prepareReportFile(book: string, relative: string, extension = '.md'): string {
   const root = looseRealpath(book)
-  const parts = reportParts(relative)
+  const parts = reportParts(relative, extension)
   let current = root
   for (let index = 0; index < parts.length; index += 1) {
     const next = join(current, parts[index] ?? '')
@@ -355,7 +389,21 @@ function integer(values: Record<string, unknown>, name: string): number | undefi
   return typeof value === 'number' ? value : undefined
 }
 
+function chapterSpan(raw: string): [number, number] {
+  const matched = /^(\d+)-(\d+)$/u.exec(raw.trim())
+  if (matched?.[1] === undefined || matched[2] === undefined) throw new CliError('--chapters must be FROM-TO')
+  const from = Number(matched[1])
+  const to = Number(matched[2])
+  if (from < 1 || to < from) throw new CliError('--chapters must be a positive range')
+  return [from, to]
+}
+
 async function textCommand(action: string, values: Record<string, unknown>, project: string | undefined): Promise<[unknown, number]> {
+  if (action === 'style-baseline') {
+    if (project === undefined) throw new CliError('use --workspace and --book together when scoping a text operation')
+    const [from, to] = chapterSpan(text(values, 'chapters'))
+    return [measureStyleBaseline(project, from, to, values.apply === true), 0]
+  }
   if (action === 'count') {
     const body = readFileSync(filePath(text(values, 'file'), project), 'utf8')
     const target = values.target
@@ -420,7 +468,7 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
   const { family, action, values } = parsed
   const workspace = typeof values.workspace === 'string' ? workspacePath(values.workspace) : undefined
   let project: string | undefined
-  if (['project', 'outline', 'chapter', 'short', 'export', 'detect', 'book'].includes(family)) {
+  if (['project', 'outline', 'chapter', 'short', 'export', 'detect', 'book', 'facts'].includes(family)) {
     project = bookPath(workspace ?? '', text(values, 'book'), family === 'project' && action === 'init')
   }
   if (family === 'text') {
@@ -469,11 +517,43 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       if (hasText === hasFile) throw new CliError('project lookup requires exactly one of --text or --file')
       const queryText = hasFile ? readFileSync(filePath(text(values, 'file'), book), 'utf8') : text(values, 'text')
       const revision = typeof values.revision === 'string' ? values.revision : undefined
-      return [lookupSettings(book, queryText, {
+      const limit = integer(values, 'limit') ?? LOOKUP_DEFAULT_LIMIT
+      const settings = lookupSettings(book, queryText, {
         offset: integer(values, 'offset') ?? 0,
-        limit: integer(values, 'limit') ?? LOOKUP_DEFAULT_LIMIT,
+        limit,
         ...(revision === undefined ? {} : { expectedIndex: revision }),
-      }), 0]
+      })
+      if (values.reference !== true) return [settings, 0]
+      return [{ ...settings, references: lookupReference(workspace ?? '', book, queryText, { limit }) }, 0]
+    }
+    if (action === 'rhythm') {
+      const from = integer(values, 'from') ?? 0
+      const to = integer(values, 'to') ?? 0
+      try {
+        const report = checkRhythm(book, from, to)
+        return [report, report.findings.length > 0 ? 1 : 0]
+      } catch (error) {
+        if (error instanceof RangeError) throw new CliError(error.message)
+        throw error
+      }
+    }
+    if (action === 'plan-check') {
+      const report = checkPlan(book, integer(values, 'chapter') ?? 1)
+      return [report, report.ok ? 0 : 1]
+    }
+    if (action === 'cast-check') {
+      const from = integer(values, 'from')
+      const to = integer(values, 'to')
+      const report = checkCast(book, { ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) })
+      return [report, report.findings.length > 0 ? 1 : 0]
+    }
+    if (action === 'legacy-archive') {
+      containedTree(book, join(book, '追踪'))
+      return [archiveReaderValue(book), 0]
+    }
+    if (action === 'context-retire') {
+      containedTree(book, join(book, '追踪'))
+      return [retireContextItem(book, text(values, 'item'), text(values, 'reason')), 0]
     }
     const expectedRevision = integer(values, 'revision') ?? null
     if (action === 'status') return [projectQuery(book, { expectedRevision }), 0]
@@ -551,6 +631,10 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
   }
   if (family === 'analysis') {
     const root = workspace ?? ''
+    if (action === 'rhythm-card') {
+      const [from, to] = chapterSpan(text(values, 'chapters'))
+      return [writeRhythmCard(root, text(values, 'title'), from, to), 0]
+    }
     const source = filePath(text(values, 'source'), undefined)
     const document = readObject(text(values, 'input'))
     if (action === 'inspect') return [inspectAnalysis(root, text(values, 'title'), source, document), 0]
@@ -580,10 +664,39 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     const write = values.write
     const relative = write === undefined ? undefined : write === true ? defaultAuditReportPath(from, to) : text(values, 'write')
     if (relative !== undefined) assertReportPath(book, relative)
+    const issues = values.issues
+    const issuesRelative = issues === undefined ? undefined : issues === true ? '草稿/问题单.json' : text(values, 'issues')
+    if (issuesRelative !== undefined) assertReportPath(book, issuesRelative, '.json')
     const report = auditBook(book, { from, to })
-    const document = relative === undefined ? report : { ...report, report_path: relative }
-    if (relative !== undefined) writeFileSync(prepareReportFile(book, relative), renderBookAudit(document), 'utf8')
+    const document = {
+      ...report,
+      ...(relative === undefined ? {} : { report_path: relative }),
+      ...(issuesRelative === undefined ? {} : { issues_path: issuesRelative }),
+    }
+    if (relative !== undefined) writeFileSync(prepareReportFile(book, relative), renderBookAudit({ ...report, ...(relative === undefined ? {} : { report_path: relative }) }), 'utf8')
+    if (issuesRelative !== undefined) writeFileSync(prepareReportFile(book, issuesRelative, '.json'), `${JSON.stringify(issuesFromAudit(report), null, 2)}\n`, 'utf8')
     return [document, report.findings.some(item => item.severity === 'blocking') ? 1 : 0]
+  }
+  if (family === 'facts') {
+    const book = project ?? ''
+    if (action === 'query') {
+      const kind = typeof values.kind === 'string' ? values.kind : undefined
+      const subject = typeof values.subject === 'string' ? values.subject : undefined
+      return [queryFacts(book, { ...(kind === undefined ? {} : { kind }), ...(subject === undefined ? {} : { subject }) }), 0]
+    }
+    if (action === 'stale') {
+      const report = staleFacts(book)
+      return [report, report.stale.length > 0 || report.missing_chapters.length > 0 ? 1 : 0]
+    }
+    const chapter = integer(values, 'chapter') ?? 0
+    if (chapter < 1) throw new CliError('--chapter must be positive')
+    const input: unknown = JSON.parse(readFileSync(filePath(text(values, 'input'), book), 'utf8'))
+    if (action === 'diff') {
+      const report = diffFacts(book, chapter, input)
+      return [report, report.ok ? 0 : 1]
+    }
+    containedTree(book, join(book, '追踪'))
+    return [recordFacts(book, chapter, input), 0]
   }
   const book = project ?? ''
   const source = filePath(text(values, 'file'), book)
@@ -606,7 +719,7 @@ function emit(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value)}\n`)
 }
 
-const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'WritingCheckError', 'BookAuditError', 'SyntaxError'])
+const INPUT_ERRORS = new Set(['WordcountError', 'TrackingError', 'SettingsLookupError', 'AuthorMemoryError', 'AnalysisError', 'ExportError', 'LineageError', 'WritingCheckError', 'BookAuditError', 'FactsError', 'LegacyError', 'PlanError', 'ReferenceError', 'StyleError', 'SyntaxError'])
 
 /**
  * Run one command and report its result or structured error on stdout.
