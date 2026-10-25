@@ -14,8 +14,8 @@ import {
 import { basename, dirname, join } from 'node:path'
 import { requireChapterSourcesUnchanged } from '../wordcount.ts'
 import {
-  DELTA_MAX_BYTES, TrackingError, asInt, mergeTransaction, normalizeInitialDocument, normalizeState,
-  normalizeTransaction, require, wordcountValue, type TrackingState,
+  DELTA_MAX_BYTES, FACTS_LINK_PATH, FACTS_LINK_SCHEMA, TrackingError, asInt, emptyFactsLink, mergeTransaction,
+  normalizeInitialDocument, normalizeState, normalizeTransaction, require, wordcountValue, type FactsLink, type TrackingState,
 } from './schema.ts'
 import { renderDelta, renderViews, sizeWarnings, type TrackingViews } from './render.ts'
 
@@ -256,7 +256,8 @@ export function initialize(project: string, document: unknown): TrackingWrite {
   return withProjectWriteLock(project, () => {
     const tracking = trackingRoot(project)
     require(!existsSync(statePath(project)), 'tracking state already exists; init never overwrites project state')
-    const state = normalizeInitialDocument(document)
+    const drafted = normalizeInitialDocument(document)
+    const state = { ...drafted, facts: readFactsLink(project) }
     const views = renderViews(state)
     const payload = jsonPayload(state)
     for (const directory of ['逐章记录', '角色状态', '时间线']) mkdirSync(join(tracking, directory), { recursive: true })
@@ -277,7 +278,7 @@ export function applyTransaction(project: string, document: unknown): TrackingWr
     const tracking = trackingRoot(project)
     const state = loadState(project)
     const transaction = normalizeTransaction(project, state, document)
-    const next = mergeTransaction(state, transaction)
+    const next = { ...mergeTransaction(state, transaction), facts: readFactsLink(project) }
     const deltaPayload = renderDelta(
       transaction.chapter,
       transaction.title,
@@ -301,6 +302,62 @@ export function applyTransaction(project: string, document: unknown): TrackingWr
     // 唯一权威文件最后落盘；在此之前失败可用同一事务直接重跑。
     atomicWriteText(statePath(project), nextPayload)
     return { state: next, warnings: sizeWarnings(views, deltaPayload) }
+  })
+}
+
+/**
+ * Read the sidecar ledger into a schema-6 summary. Does not create or rewrite the ledger.
+ * @param project - the book directory.
+ */
+export function readFactsLink(project: string): FactsLink {
+  const path = join(project, '追踪', '事实账本.json')
+  if (!existsSync(path)) return emptyFactsLink()
+  try {
+    const value = JSON.parse(readFileSync(path, 'utf8')) as { schema?: unknown; entries?: unknown; covered_chapters?: unknown }
+    if (value.schema !== FACTS_LINK_SCHEMA || !Array.isArray(value.entries) || !Array.isArray(value.covered_chapters)) {
+      return { ...emptyFactsLink(), unreadable: true }
+    }
+    const covered: number[] = []
+    for (const item of value.covered_chapters) {
+      if (typeof item !== 'number' || !Number.isInteger(item) || item < 1 || covered.includes(item)) return { ...emptyFactsLink(), unreadable: true }
+      covered.push(item)
+    }
+    covered.sort((left, right) => left - right)
+    return { ledger_path: FACTS_LINK_PATH, ledger_schema: FACTS_LINK_SCHEMA, covered_chapters: covered, entry_count: value.entries.length }
+  } catch {
+    return { ...emptyFactsLink(), unreadable: true }
+  }
+}
+
+/**
+ * Move a tracking file between schema 5 and schema 6 without touching the ledger or `state_revision`.
+ * Schema 6 stores only {@link readFactsLink}. Schema 5 drops that key. Versions 4 and 5 both upgrade to 6.
+ * @param project - the book directory.
+ * @param target - `6` writes the link; `5` removes it.
+ */
+export function migrateTracking(project: string, target: 5 | 6 = 6): {
+  schema: 'story-tracking-migrate/v1'
+  from: number
+  to: 5 | 6
+  state_revision: number
+  ledger_kept: true
+} {
+  return withProjectWriteLock(project, () => {
+    const path = statePath(project)
+    require(existsSync(path), 'tracking state is missing; run init first')
+    const raw = JSON.parse(readFileSync(path, 'utf8')) as { schema_version?: unknown }
+    const from = typeof raw.schema_version === 'number' ? raw.schema_version : -1
+    const loaded = loadState(project)
+    const ledgerPath = join(project, '追踪', '事实账本.json')
+    const ledgerBefore = existsSync(ledgerPath) ? readFileSync(ledgerPath) : null
+    if (target === 6) atomicWriteText(path, jsonPayload({ ...loaded, schema_version: 6, facts: readFactsLink(project) }))
+    else {
+      const { facts: _facts, ...rest } = loaded
+      atomicWriteText(path, jsonPayload({ ...rest, schema_version: 5 }))
+    }
+    if (ledgerBefore === null) require(!existsSync(ledgerPath), 'migrate must not create a fact ledger')
+    else require(readFileSync(ledgerPath).equals(ledgerBefore), 'migrate must not rewrite the fact ledger')
+    return { schema: 'story-tracking-migrate/v1', from, to: target, state_revision: loaded.state_revision, ledger_kept: true }
   })
 }
 

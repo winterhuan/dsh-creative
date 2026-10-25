@@ -2,10 +2,10 @@
  * Tracking state schema: validation of the model's semantic JSON and the
  * in-memory merge of one chapter transaction.
  *
- * Port of the validation half of `tests/reference/tracking_commit.py`. Every label,
- * message and field name matches the Python reference so the CLI and the
- * persisted state stay byte-compatible; `renderViews` and the store own the
- * derived Markdown and the commit protocol.
+ * Port of the validation half of `tests/reference/tracking_commit.py`. Field
+ * names of the continuity card match the Python reference. Schema 6 adds a
+ * summary link to the sidecar fact ledger; schemas 4 and 5 stay readable.
+ * `renderViews` does not print that link, and the store owns the commit protocol.
  */
 import {
   type ChapterSourceSnapshot, type WordcountRecord, WordcountError,
@@ -15,8 +15,12 @@ import {
 
 /** Schema version of init and transaction input documents. */
 export const INPUT_SCHEMA_VERSION = 1
-/** Schema version written to `_tracking-state.json`; version 4 is still readable. */
-export const TRACKING_SCHEMA_VERSION = 5
+/** Schema version written to `_tracking-state.json`. Versions 4 and 5 stay readable. */
+export const TRACKING_SCHEMA_VERSION = 6
+/** Book-relative path stored on the schema-6 facts link. Entries stay in that sidecar. */
+export const FACTS_LINK_PATH = '追踪/事实账本.json'
+/** Ledger schema named by {@link FACTS_LINK_PATH}. */
+export const FACTS_LINK_SCHEMA = 'story-facts/v1'
 /** Soft and hard byte budgets of the derived views. */
 export const DELTA_TARGET_BYTES = 1536
 export const DELTA_MAX_BYTES = 3072
@@ -261,6 +265,16 @@ export interface TrackingContext {
 /** The context fields a transaction may change; recent chapters and commitments come from the delta. */
 export type TransactionContext = Pick<TrackingContext, 'position' | 'long_term_constraints' | 'active_character_names' | 'continuity_risks'>
 
+/** Summary of `追踪/事实账本.json`. The entries themselves stay in that file. */
+export interface FactsLink {
+  readonly ledger_path: typeof FACTS_LINK_PATH
+  readonly ledger_schema: typeof FACTS_LINK_SCHEMA
+  readonly covered_chapters: readonly number[]
+  readonly entry_count: number
+  /** The sidecar exists but is not a readable ledger. Counts are then zero. */
+  readonly unreadable?: true
+}
+
 /** The authoritative tracking state (`追踪/_tracking-state.json`). */
 export interface TrackingState {
   readonly schema_version: number
@@ -273,6 +287,8 @@ export interface TrackingState {
   readonly foreshadow: Record<string, ForeshadowRow>
   readonly timeline: Record<string, TimelineRow>
   readonly wordcount_records: Record<string, WordcountRecord>
+  /** Sidecar ledger summary. Absent on disk for schemas 4 and 5; present after normalize. */
+  readonly facts: FactsLink
   /** Historical review data, preserved without interpreting it as current approval. */
   readonly reader_value_records?: unknown
 }
@@ -587,8 +603,10 @@ function normalizeWordcountRecords(value: unknown, lastChapter: number): Record<
  */
 export function normalizeState(document: unknown): TrackingState {
   const root = asMapping(document, 'tracking state')
-  requireKnownKeys(root, new Set(['schema_version', 'book_title', 'last_committed_chapter', 'imported_through_chapter', 'state_revision', 'context', 'characters', 'foreshadow', 'timeline', 'wordcount_records', 'reader_value_records']), 'tracking state')
-  require(root.schema_version === 4 || root.schema_version === TRACKING_SCHEMA_VERSION, 'tracking state schema is unsupported')
+  requireKnownKeys(root, new Set(['schema_version', 'book_title', 'last_committed_chapter', 'imported_through_chapter', 'state_revision', 'context', 'characters', 'foreshadow', 'timeline', 'wordcount_records', 'reader_value_records', 'facts']), 'tracking state')
+  require(root.schema_version === 4 || root.schema_version === 5 || root.schema_version === TRACKING_SCHEMA_VERSION, 'tracking state schema is unsupported')
+  if (root.schema_version === 4) require(!Object.hasOwn(root, 'facts'), 'schema 4 tracking state cannot carry a facts link')
+  if (root.schema_version === TRACKING_SCHEMA_VERSION) require(Object.hasOwn(root, 'facts'), 'schema 6 tracking state requires facts')
   const lastChapter = asInt(root.last_committed_chapter, 'tracking state.last_committed_chapter')
   const importedThrough = asInt(root.imported_through_chapter, 'tracking state.imported_through_chapter')
   require(importedThrough <= lastChapter, 'imported chapter cutoff exceeds current chapter')
@@ -621,9 +639,28 @@ export function normalizeState(document: unknown): TrackingState {
     foreshadow,
     timeline,
     wordcount_records: wordcountRecords,
+    facts: Object.hasOwn(root, 'facts') ? normalizeFactsLink(root.facts) : emptyFactsLink(),
     // Preserve historical review data without interpreting it as current approval.
     ...(Object.hasOwn(root, 'reader_value_records') ? { reader_value_records: root.reader_value_records } : {}),
   }
+}
+
+/** Empty link used when the state file has not been migrated yet. */
+export function emptyFactsLink(): FactsLink {
+  return { ledger_path: FACTS_LINK_PATH, ledger_schema: FACTS_LINK_SCHEMA, covered_chapters: [], entry_count: 0 }
+}
+
+function normalizeFactsLink(value: unknown): FactsLink {
+  const row = asMapping(value, 'tracking state.facts')
+  requireKnownKeys(row, new Set(['ledger_path', 'ledger_schema', 'covered_chapters', 'entry_count', 'unreadable']), 'tracking state.facts')
+  require(row.ledger_path === FACTS_LINK_PATH, 'tracking state.facts.ledger_path is unsupported')
+  require(row.ledger_schema === FACTS_LINK_SCHEMA, 'tracking state.facts.ledger_schema is unsupported')
+  const covered = asList(row.covered_chapters, 'tracking state.facts.covered_chapters').map((item, index) => asInt(item, `tracking state.facts.covered_chapters[${String(index)}]`, 1))
+  require(covered.every((chapter, index) => index === 0 || (covered[index - 1] ?? 0) < chapter), 'tracking state.facts.covered_chapters must be strictly increasing')
+  const entryCount = asInt(row.entry_count, 'tracking state.facts.entry_count')
+  if (row.unreadable === undefined) return { ledger_path: FACTS_LINK_PATH, ledger_schema: FACTS_LINK_SCHEMA, covered_chapters: covered, entry_count: entryCount }
+  require(row.unreadable === true, 'tracking state.facts.unreadable must be true')
+  return { ledger_path: FACTS_LINK_PATH, ledger_schema: FACTS_LINK_SCHEMA, covered_chapters: covered, entry_count: entryCount, unreadable: true }
 }
 
 /**
@@ -665,6 +702,7 @@ export function normalizeInitialDocument(document: unknown): TrackingState {
     foreshadow,
     timeline,
     wordcount_records: {},
+    facts: emptyFactsLink(),
   })
 }
 

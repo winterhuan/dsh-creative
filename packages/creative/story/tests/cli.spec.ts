@@ -125,6 +125,8 @@ describe('packaged story CLI', () => {
     }
     const input = join(root, 'transaction.json')
     await writeFile(input, JSON.stringify(transaction))
+    await mkdir(join(project, '设定'), { recursive: true })
+    await writeFile(join(project, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'off' }))
     const stale = await call(context, root, ['chapter', 'commit', ...args, '--input', input])
     expect(stale.exitCode).toBe(2)
     expect(stale.value.message).toContain('stale')
@@ -134,7 +136,10 @@ describe('packaged story CLI', () => {
     expect(committed.exitCode, committed.stderr).toBe(0)
     expect(committed.value.tracking_committed).toBe(true)
     const verified = await call(context, root, ['project', 'check', ...scope(root, book)])
-    expect(verified.value).toEqual({ last_committed_chapter: 1, state_revision: 1 })
+    expect(verified.value).toMatchObject({
+      schema: 'story-project-check/v1', last_committed_chapter: 1, state_revision: 1,
+      facts: { present: false, covered_chapters: [], missing_chapters: [1], stale_count: 0, stale: [] },
+    })
     expect(await readdir(project)).not.toContain('__pycache__')
     const other = await call(context, root, ['project', 'init', ...scope(root, '另一部书'), '--kind', 'long'])
     expect(other.exitCode).toBe(0)

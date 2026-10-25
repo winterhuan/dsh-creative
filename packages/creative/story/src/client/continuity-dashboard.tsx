@@ -9,6 +9,7 @@ import {
   assessHealth, DEFAULT_STALE_CHARACTER_CHAPTERS, DEFAULT_STALE_PLANTED_CHAPTERS, DEFAULT_STALE_THREAD_CHAPTERS,
   type HealthItem, type HealthRisk,
 } from '../core/tracking/health.ts'
+import { StoryGatesCard } from './gates-card.tsx'
 import { selectForeshadow, type TrackingView, type ForeshadowFilter } from './tracking-view.ts'
 
 const sections = ['summary', 'characters', 'foreshadow', 'timeline', 'sources'] as const
@@ -69,7 +70,7 @@ export function ContinuityDashboard({ sessionId, workspace, workspaceError, refr
         <nav className="story-dashboard-tabs" aria-label={t('dashboard.sections')}>
           {sections.map(value => <button key={value} aria-pressed={section === value} onClick={() => setSection(value)}>{t(`dashboard.section.${value}`)}</button>)}
         </nav>
-        <DashboardContent key={`${sessionId}\0${root}\0${section}`} state={tracking.state} section={section} root={root ?? ''} workspace={workspace} onSource={onSource} t={t} />
+        <DashboardContent key={`${sessionId}\0${root}\0${section}`} sessionId={sessionId} state={tracking.state} section={section} root={root ?? ''} workspace={workspace} onSource={onSource} t={t} />
       </>}
   </section>
 }
@@ -78,8 +79,8 @@ function Lines({ values, t }: { values: readonly string[]; t: CreativeTranslate 
   return values.length ? <ul>{values.map((value, index) => <li key={index}>{value}</li>)}</ul> : <p className="story-dashboard-muted">{t('dashboard.none')}</p>
 }
 
-function DashboardContent({ state, section, root, workspace, onSource, t }: {
-  state: TrackingView; section: Section; root: string; workspace: WorkspacePayload | undefined; onSource: (path: string) => void; t: CreativeTranslate
+function DashboardContent({ sessionId, state, section, root, workspace, onSource, t }: {
+  sessionId: string; state: TrackingView; section: Section; root: string; workspace: WorkspacePayload | undefined; onSource: (path: string) => void; t: CreativeTranslate
 }) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<ForeshadowFilter>('due')
@@ -109,6 +110,7 @@ function DashboardContent({ state, section, root, workspace, onSource, t }: {
       <div><span>{t('dashboard.risks')}</span><strong>{state.context.continuity_risks.length}</strong></div>
     </div>
     <p className="story-dashboard-muted">{t('dashboard.commitMeaning')}</p>
+    <StoryGatesCard sessionId={sessionId} root={root} t={t} />
     <section className="story-dashboard-card" aria-label={t('dashboard.health.title')}>
       <h3>{t('dashboard.health.title')}</h3>
       <p className="story-dashboard-muted">{t('dashboard.health.legend', {

@@ -53,7 +53,7 @@ aliases:
 
 ## 写作检查配置
 
-`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`、`rule_audit`、`facts_diff`、`rhythm`、`style`。未知键会报错，指出那个键，并列出这些支持的键。`rule_audit` 和 `facts_diff` 各取 `off` 或 `required`，缺省都是 `off`。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
+`设定/写作检查.json` 可以只写新键。`punctuation` 缺省时按 `preserve` 处理，写出时取 `preserve` 或 `normalize-narration`。文件不存在时同样按保留处理。还可以写 `rule_sources`、`forbidden`、`era`、`void_terms`、`rule_audit`、`facts_diff`、`rhythm`、`style`、`book_audit`、`cast_body_names`。未知键会报错，指出那个键，并列出这些支持的键。`rule_audit` 和 `facts_diff` 各取 `off` 或 `required`，缺省都是 `required`。旧书用 `project migrate-gates --legacy-off` 把缺着的键写成 `off`。取值非法的 `punctuation` 仍拒绝。只有 `punctuation` 的旧文件不改变既有检查：规则提取用下面的默认来源，`forbidden`、年代词和作废词都不扫描。`tests/reference/normalize-punctuation.js` 仍要求文件里有 `punctuation`，并且不接受其他键；那份对照不覆盖缺省标点或带新键的文件。
 
 `chapter rules --workspace {工作区} --book {作品名} --chapter {N} --json` 在正文出现之前提取本章规则。结果模式是 `story-chapter-rules/v1`，含 `rules`、`scan`、`warnings`、`rules_sha256`、`omitted`，以及 `chapter` 和 `state_revision`。每条规则有 `id`、`text` 和 `source.path`、`source.line`。含末尾换行的一次结果不超过 16 KiB；放不下时从末尾依次丢掉规则、扫描行和 warning，丢掉的条数记入 `omitted`。`rules_sha256` 覆盖截断前的完整规则列表。同一输入的规则 ID 不变。来源文件或标题缺失时写入 `warnings`，命令仍成功。正文还不存在时只做提取，以及追踪里的作废词扫描。
 
@@ -142,7 +142,7 @@ JSON 含 `schema`、`body_sha256`、`rules_sha256` 和 `verdicts`。`verdicts` �
 - 通过前 rule_audit 保持 off
 ```
 
-`accepted_findings` 是事务的可选数组，每项为 `{ "rule_id", "reason" }`，最多 12 条，`rule_id` 不重复。工具把它写进该章逐章记录的 `## 接受的规则例外`，不写入 `_tracking-state.json`。不写这个键或写成空数组时，逐章记录与没有该字段的事务相同。追踪 schema 仍是版本 5。
+`accepted_findings` 是事务的可选数组，每项为 `{ "rule_id", "reason" }`，最多 12 条，`rule_id` 不重复。工具把它写进该章逐章记录的 `## 接受的规则例外`，不写入 `_tracking-state.json`。不写这个键或写成空数组时，逐章记录与没有该字段的事务相同。追踪 schema 写入版本 6，并读取版本 4 和 5。版本 6 增加 `facts` 摘要，条目仍在旁路账本。`project migrate --to 5` 去掉这个键且不删账本，也不改 `state_revision`。
 
 ---
 
@@ -169,12 +169,12 @@ JSON 含 `schema`、`range`（`from`、`to`）、`state_revision`（没有追踪
 | `facts-stale` | 范围内来源章正文或字数记录的哈希与账本 `source.body_sha256` 不一致，或字数记录里的章不在 `covered_chapters`。没有账本文件时 `skip`。 | 有过期或缺章时 `warn`。 |
 | `rhythm` | 卖点提醒间隔、爽点连续为「无」、情绪高峰间隔、同一章节定位连续超限。没有这些材料时 `skip`。 | 有提示时 `warn`。 |
 | `plan` | 卷纲章节范围不连续；离卷末不超过 10 章时下一卷卷纲不存在，或创作参考登记里下一卷主对标状态仍含「扩卷前核实」。顶部缺少可解析的「章节范围：」，或某个剧情单元块缺少该行时，另给 hint，不因此改为 blocking。没有卷纲时 `skip`。 | 有 blocking 时 `fail`。只有 hint 时 `warn`。 |
-| `cast-limits` | 力量体系超上限、禁用手段、关系阶段越过卡片上限，范围内至少三章出场仍无卡的已知名字，以及细纲「出场顺序：」里有、角色卡（含别名）没有的名字（`outline-cast`）。快照缺卡仍只由 `cast-cards` 报告。不从正文做专名识别。没有其余发现时 `skip`。 | 力量问题为 blocking，其余为 hint。 |
+| `cast-limits` | 力量体系超上限、禁用手段、关系阶段越过卡片上限，范围内至少三章出场仍无卡的已知名字，以及细纲「出场顺序：」里有、角色卡（含别名）没有的名字（`outline-cast`）。快照缺卡仍只由 `cast-cards` 报告。正文里两到三字的启发式称呼若不在卡、别名或出场名单上，是 `body-name`。单字名和单独的「道」不抽。没有其余发现时 `skip`。 | 力量问题为 blocking，其余为 hint。 |
 | `style` | `写作检查.json` 的 `style`。段长、破折号、顶针、固定比喻超限先是 hint，同一指标连续 `streak` 章（默认 3）后为 blocking。`forbid_blank_lines` 的空行当场 blocking。没有 `style` 时 `skip`。 | 有 blocking 时 `fail`。 |
 
 Markdown 报告以 `# 全书体检 第A-B章` 开头，列出 schema、修订号、范围，以及写出文件时的 `report_path`。`blocking` 逐条列出。同一章、同一 category、同一 message 的 hint 合成一行，写成「第N章 category M 处：第 2、27…行：说明」。行号按数值升序，超过 12 个时截断，总数仍写在「M 处」。64 位哈希在报告里只印前 8 位。JSON 的 findings 仍逐条保留。
 
-原生单章模板在新提交成功且章号是 10 的倍数时，于返回值放 `book_audit_hint`，建议父会话运行 `book audit --from N-9 --to N`。模板不自动运行。已提交章只做验证时不给这条提示。
+新提交成功且章号能被 `book_audit.interval` 整除时，`chapter finish` 对这段章运行 `book audit`，结果放在 `book_audit`。间隔缺省为 10，可用 `book_audit.enabled` 关掉。模板只抄回该字段。已提交章只做验证时 `ran` 为 false。
 
 ## 事实账本与规划检查
 
@@ -191,13 +191,13 @@ node {CLI} chapter finish --workspace {工作区} --book {作品名} --chapter {
 node {CLI} project gates --workspace {工作区} --book {作品名} --json
 ```
 
-`extract` 只扫描行首是七类 `kind`、后接冒号的行。`--from` 默认 `both`：细纲、本章规则原文，以及正文。后半段用 `|` 分开。`主体`、`对象`、`人物`、`角色` 写入 `subject`，不进 `attrs`。整数字段写成数字。`无`、`暂无`、`待补充` 跳过。稳定 id 前缀是场地 `VENUE-`、伤情 `INJ-`、账目 `ACCT-`、物件 `OBJ-`、能力 `SKILL-`、年代 `ERA-`、指令 `ORD-`。手写 id 可以不同；回归夹具里的账目 id 仍是 `ACC-`。同一 id 保留先出现的一行。默认写入 `草稿/事实/第NNN章.claims.json`，模式 `story-facts-claims/v1`，同时有 `claims` 和 `entries`。空数组仍是一份有效主张，表示该章已覆盖。`--dry-run` 不写文件。不从正文做专名识别，不把 `project lookup --reference` 的命中写进主张。再跑一次会覆盖默认路径；写手只在文件还不存在时抽取，手改因此留得住。
+`extract` 只扫描行首是七类 `kind`、后接冒号的行。`--from` 默认 `both`：细纲、本章规则原文，以及正文。后半段用 `|` 分开。`主体`、`对象`、`人物`、`角色` 写入 `subject`，不进 `attrs`。整数字段写成数字。`无`、`暂无`、`待补充` 跳过。稳定 id 前缀是场地 `VENUE-`、伤情 `INJ-`、账目 `ACCT-`、物件 `OBJ-`、能力 `SKILL-`、年代 `ERA-`、指令 `ORD-`。手写 id 可以不同；回归夹具里的账目 id 仍是 `ACC-`。同一 id 保留先出现的一行。默认写入 `草稿/事实/第NNN章.claims.json`，模式 `story-facts-claims/v1`，同时有 `claims` 和 `entries`。空数组仍是一份有效主张，表示该章已覆盖。`--dry-run` 不写文件。不把 `project lookup --reference` 的命中写进主张。再跑一次会覆盖默认路径；写手只在文件还不存在时抽取，手改因此留得住。
 
 `record` 要求该章已提交，且正文原始字节的 SHA-256 与字数记录一致。空 `entries` 仍把该章记入 `covered_chapters`。`diff` 对同 id 同属性、值不同、且没有本章 `change` 的主张报冲突；未知 id 放进 `unmatched`，不算冲突。有冲突时退出码 1。`stale` 列出来源章正文已变的条目，以及有字数记录但不在 `covered_chapters` 里的章；有这类结果时退出码 1。没有账本文件时 `present` 为 false，`missing_chapters` 为空。缺章不由 `project check` 报告。`facts_diff` 为 `required` 时，提交要求 `草稿/事实/第NNN章.claims.json` 存在且 `diff` 通过。缺省或 `off` 不拦提交。
 
 `chapter finish` 把一次收束收成 `story-chapter-finish/v1`。`rule_audit` 为 `required` 时先校验默认审稿；主张文件存在时做 `diff`；然后提交；提交成功且主张可读时 `record`；最后 `stale`。`chapter commit --with-facts` 走同一条路径。提交失败不写账本。记录失败不回滚正文：`committed` 为 true，`facts_recorded` 为 false，并带 `facts_error`。没有主张文件时 `facts_recorded` 为 false，`claims_present` 为 false。结果含 `phase`（`audit`、`diff`、`commit`、`record`、`done`）、`rules_sha256`、`claims_present` 和 `gates`。没有提供方字段。已提交且（无主张或已入账）时退出码为 0；未提交、主张在但未入账、或有 `facts_error` 时为 1。带外且用户接受自然长度时加 `--accept-current-length`。
 
-`project gates` 只读，模式 `story-project-gates/v1`，退出码 0。它回显 `rule_audit`、`facts_diff`、`style`（`off` 或 `active`）、`streak`（没有 `style` 时为 null，有 `style` 且未写 `streak` 时为 3）、`facts_present`、`covered_chapters` 和 `stale`。缺键等于 `off`。不改 `设定/写作检查.json`。工作台不提供把门禁改成 `required` 的开关；要看有效状态用这条命令。`project check` 仍只返回 `last_committed_chapter` 和 `state_revision`。`project status` 的形状不变。
+`project gates` 只读，模式 `story-project-gates/v1`，退出码 0。它回显 `rule_audit`、`facts_diff`、`style`（`off` 或 `active`）、`streak`（没有 `style` 时为 null，有 `style` 且未写 `streak` 时为 3）、`facts_present`、`covered_chapters` 和 `stale`。缺了 `rule_audit` 或 `facts_diff` 等于 `required`。这条命令不改文件。工作台概览可以在确认后把这本书的门禁写成 `required` 或 `off`。`project migrate-gates` 把缺着的键写上，`--legacy-off` 写成 `off`。`project check` 另返回 `facts` 缺口。`project migrate` 把追踪升到 schema 6。`project status` 的形状不变。
 
 `project context` 增加 `facts`（最多 2 KiB：年代、活跃角色未愈伤情、正文或细纲点到的主体）和 `volume`（最多 1.5 KiB：卷契约、当前单元、禁碰底牌；书旁 `拆文库/<主对标>/节奏卡/` 里盖住本章的卡片会附在同一段里）。省略顺序是设定摘录、事实、卷切片，然后才是健康摘要。`omitted.facts` 非零时用 `facts query` 补页。`--profile lite` 保留续写卡、事实上限、`rules_path`（`设定/写作检查.json`）和到期伏笔前 5 条，并附最多 4 条规划或节奏的 `signals`（blocking 在前）。角色、时间线、设定摘录和卷切片计入 `omitted`，不放进正文。`full` 的 `omitted` 仍是原来的七个计数；`lite` 另有 `omitted.signals`。缺省是 `full`。
 
@@ -212,9 +212,9 @@ node {CLI} project legacy archive --workspace {工作区} --book {作品名} --r
 node {CLI} project context retire --workspace {工作区} --book {作品名} --item {原文} --reason {原因} --json
 ```
 
-`rhythm` 的缺省是 `max_no_payoff` 1、`min_peak_gap` 5、`max_peak_gap` 8、`peak_intensity` 8、`max_same_position` 2。书可以在 `rhythm` 里改这些整数。要改一本书的密度，先改细纲的爽点，或改这本书的 `rhythm`，不改包内缺省。有发现时退出码 1，发现都是 hint。`plan check` 在离卷末不超过 10 章时要求下一卷卷纲已在，且「创作参考登记」或「对标登记」里该卷主对标的状态不含「扩卷前核实」。约第 30 章之前备好下一卷。卷级「章节范围：」只写在「剧情单元」标题之前；单元范围只写在剧情单元块内。顶部已有可解析范围时跨度用它，否则用全文最小到最大章号。缺顶部范围或缺单元范围只是 hint，不把旧书改成 blocking。卷纲批准仍由人做。`cast check` 读 `设定/世界观/力量体系.md` 的境界表，以及角色卡头的 `关系阶段：` 和 `阶段序：`。境界和手段来自账本 `kind=能力`，不改追踪 schema。出场计数只看追踪快照名和已有角色卡文件名里至少两个字的名字。细纲「出场顺序：」按顿号、分号、箭头、「与」和「和」切开；名单有、卡无（含别名）是 hint `outline-cast`。不从正文做专名识别。`lookup --reference` 只读 `拆文库/<主对标>/角色/`、`设定/` 和 `剧情/剧情单元_*.md`，跳过 `原文/`、文件名含「章节摘要汇总」的文件，以及超过 512 KiB 的文件。命中带 `source: reference`，不是本书事实，不写入主张，也不写入账本。不加 `--reference` 时结果与原来的设定检索相同。`rhythm-card` 把卡片写到 `拆文库/<书>/节奏卡/第A-B章.md`，不超过 2 KiB，并附节奏基准。默认三节按标题精确匹配：结构分布也认节奏分布、章节结构、结构段；桥段标签也认桥段、情节标签、套路框架位置；核心冲突也认核心矛盾、主要冲突。卡片标题用规范名。空节不写。`--sections` 用顿号或逗号列出标题，替换这三节，只做精确匹配。`style` 缺省不启用。启用后段长、破折号、顶针、固定比喻先是 hint，同一指标连续 `streak` 章（默认 3）后才 blocking。`forbid_blank_lines` 的空行当场 blocking。不要把每一章都设成 blocking。正文分布明显变化之后，再跑 `text style-baseline --apply` 重写这本书的 `style`。`legacy archive` 把 `reader_value_records` 移到 `追踪/_legacy/reader_value_records.json` 并删除 state 字段，`state_revision` 加 1。没有该字段时不改修订号。`context retire` 按原文从长期约束、连续性风险或下一章承诺里去掉一条，追加 `追踪/维护记录.md`，`state_revision` 加 1。修订事务本身仍不声明退役；要单独退役用这条命令。
+`rhythm` 的缺省是 `max_no_payoff` 1、`min_peak_gap` 5、`max_peak_gap` 8、`peak_intensity` 8、`max_same_position` 2。书可以在 `rhythm` 里改这些整数。要改一本书的密度，先改细纲的爽点，或改这本书的 `rhythm`，不改包内缺省。有发现时退出码 1，发现都是 hint。`plan check` 在离卷末不超过 10 章时要求下一卷卷纲已在，且「创作参考登记」或「对标登记」里该卷主对标的状态不含「扩卷前核实」。约第 30 章之前备好下一卷。卷级「章节范围：」只写在「剧情单元」标题之前；单元范围只写在剧情单元块内。顶部已有可解析范围时跨度用它，否则用全文最小到最大章号。缺顶部范围或缺单元范围只是 hint，不把旧书改成 blocking。卷纲批准仍由人做。`cast check` 读 `设定/世界观/力量体系.md` 的境界表，以及角色卡头的 `关系阶段：` 和 `阶段序：`。境界和手段来自账本 `kind=能力`，不改追踪 schema。出场计数只看追踪快照名和已有角色卡文件名里至少两个字的名字。细纲「出场顺序：」按顿号、分号、箭头、「与」和「和」切开；名单有、卡无（含别名）是 hint `outline-cast`。正文启发式人名见 `body-name`，可用 `cast_body_names` 设为 `off`、`hint` 或 `blocking`，缺省 `hint`。`lookup --reference` 只读 `拆文库/<主对标>/角色/`、`设定/` 和 `剧情/剧情单元_*.md`，跳过 `原文/`、文件名含「章节摘要汇总」的文件，以及超过 512 KiB 的文件。命中带 `source: reference`，不是本书事实，不写入主张。只有再加 `--record` 才写入账本，`kind` 为对标，`origin` 为 reference，不计入 `covered_chapters`。对标过期看参考文件哈希，不看章节正文。不加 `--reference` 时结果与原来的设定检索相同。`rhythm-card` 把卡片写到 `拆文库/<书>/节奏卡/第A-B章.md`，不超过 2 KiB，并附节奏基准。默认三节按标题精确匹配：结构分布也认节奏分布、章节结构、结构段；桥段标签也认桥段、情节标签、套路框架位置；核心冲突也认核心矛盾、主要冲突。卡片标题用规范名。空节不写。`--sections` 用顿号或逗号列出标题，替换这三节，只做精确匹配。`style` 缺省不启用。启用后段长、破折号、顶针、固定比喻先是 hint，同一指标连续 `streak` 章（默认 3）后才 blocking。`forbid_blank_lines` 的空行当场 blocking。不要把每一章都设成 blocking。正文分布明显变化之后，再跑 `text style-baseline --apply` 重写这本书的 `style`。`legacy archive` 把 `reader_value_records` 移到 `追踪/_legacy/reader_value_records.json` 并删除 state 字段，`state_revision` 加 1。没有该字段时不改修订号。`context retire` 按原文从长期约束、连续性风险或下一章承诺里去掉一条，追加 `追踪/维护记录.md`，`state_revision` 加 1。修订事务本身仍不声明退役；要单独退役用这条命令。
 
-每章用 `chapter finish` 收束。约每 10 章，新提交成功的模板返回 `book_audit_hint`，模板不自动跑体检。事实冲突走修订，不留到下一章。
+每章用 `chapter finish` 收束。约每 10 章，finish 自己跑 `book audit` 并把结果放进返回值。事实冲突走修订，不留到下一章。
 
 已提交章的改稿模板是 `workflows/revise.js`。阶段是 Locate、Plan、Rewrite、Audit、Submit。`approved` 为 false 且 Plan 返回 `needs_approval` 时停在 `needs_input`。改写后若默认主张文件不存在，运行 `facts extract`；失败是 warning，只有 `facts_diff` 为 `required` 才停下。Submit 使用 `mode=revision` 并运行 `chapter finish`。提交成功且主张文件存在时由 finish 入账，然后给出 `stale`。记录失败不回滚正文。
 

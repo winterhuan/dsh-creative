@@ -1,8 +1,9 @@
 /**
  * Read-only lookup in the workspace analysis library named by the book's registration table.
  *
- * Hits are reference material. They are not book facts. The walk skips `原文/`
- * and chapter-summary rollups, including files larger than 512 KiB.
+ * Hits are reference material. They stay out of the fact ledger unless the
+ * caller passes `--record`. The walk skips `原文/` and chapter-summary rollups,
+ * including files larger than 512 KiB.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { basename, join, relative, sep } from 'node:path'

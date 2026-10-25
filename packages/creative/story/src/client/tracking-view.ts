@@ -21,7 +21,14 @@ const timeline = z.object({
   characters: strings.default([]), first_recorded_chapter: chapter, updated_chapter: chapter,
 })
 const schema = z.object({
-  schema_version: z.union([z.literal(4), z.literal(5)]), book_title: text,
+  schema_version: z.union([z.literal(4), z.literal(5), z.literal(6)]), book_title: text,
+  facts: z.object({
+    ledger_path: z.literal('追踪/事实账本.json'),
+    ledger_schema: z.literal('story-facts/v1'),
+    covered_chapters: z.array(z.number().int().positive()),
+    entry_count: z.number().int().nonnegative(),
+    unreadable: z.literal(true).optional(),
+  }).optional(),
   last_committed_chapter: count, imported_through_chapter: count, state_revision: count,
   context: z.object({
     position: z.object({ volume: text, volume_start_chapter: chapter, story_time: text, scene: text }),

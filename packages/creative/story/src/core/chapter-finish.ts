@@ -6,12 +6,13 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { auditBook } from './audit.ts'
 import { chapterCommit, type ChapterCheck } from './chapter.ts'
 import { claimsRelativePath, diffFacts, FactsError, recordFacts, staleFacts, type FactConflict } from './facts.ts'
 import { writingGates, type GateView } from './gates.ts'
 import { ruleAuditRelativePath, verifyRuleAudit } from './rule-audit.ts'
 import { TrackingError } from './tracking/schema.ts'
-import { WritingCheckError } from './writing-check.ts'
+import { bookAuditSchedule, WritingCheckError } from './writing-check.ts'
 import { WordcountError } from './wordcount.ts'
 
 /** Schema of {@link finishChapter}. */
@@ -19,6 +20,18 @@ export const FINISH_SCHEMA = 'story-chapter-finish/v1'
 
 /** The step {@link finishChapter} stopped on, or `done` after stale. */
 export type FinishPhase = 'audit' | 'diff' | 'commit' | 'record' | 'stale' | 'done'
+
+/** Ranged book audit attached to a finish. `ran` is false except on the configured interval after a commit. */
+export interface FinishBookAudit {
+  readonly ran: boolean
+  readonly enabled: boolean
+  readonly interval: number
+  readonly from?: number
+  readonly to?: number
+  readonly status?: 'pass' | 'warn' | 'fail'
+  readonly blocking?: number
+  readonly hints?: number
+}
 
 /**
  * Commit one chapter and record its claims when that file exists.
@@ -39,6 +52,7 @@ export function finishChapter(project: string, chapter: number, inputPath: strin
   rules_sha256: string | null
   gates: GateView
   stale: ReturnType<typeof staleFacts>
+  book_audit: FinishBookAudit
   diff?: { readonly ok: boolean; readonly conflicts: readonly FactConflict[] }
   commit_error?: string
   facts_error?: string
@@ -62,7 +76,7 @@ export function finishChapter(project: string, chapter: number, inputPath: strin
   if (gates.rule_audit === 'required') {
     const verified = verifyRuleAudit(project, chapter, join(project, ruleAuditRelativePath(chapter)))
     if (!verified.verified) {
-      return { ...base, phase: 'audit', committed: false, facts_recorded: false, stale: readStale(project), commit_error: verified.reasons.join('；') }
+      return { ...base, phase: 'audit', committed: false, facts_recorded: false, stale: readStale(project), book_audit: skippedAudit(project), commit_error: verified.reasons.join('；') }
     }
     base.rules_sha256 = verified.rules_sha256
   }
@@ -70,14 +84,14 @@ export function finishChapter(project: string, chapter: number, inputPath: strin
   if (claims.present) {
     if (claims.error !== undefined) {
       if (gates.facts_diff === 'required') {
-        return { ...base, phase: 'diff', committed: false, facts_recorded: false, stale: readStale(project), commit_error: claims.error }
+        return { ...base, phase: 'diff', committed: false, facts_recorded: false, stale: readStale(project), book_audit: skippedAudit(project), commit_error: claims.error }
       }
     } else {
       const report = diffFacts(project, chapter, claims.input)
       diff = { ok: report.ok, conflicts: report.conflicts }
       if (!report.ok && gates.facts_diff === 'required') {
         return {
-          ...base, phase: 'diff', committed: false, facts_recorded: false, diff, stale: readStale(project),
+          ...base, phase: 'diff', committed: false, facts_recorded: false, diff, stale: readStale(project), book_audit: skippedAudit(project),
           commit_error: report.conflicts.map(item => item.message).join('；'),
         }
       }
@@ -90,14 +104,14 @@ export function finishChapter(project: string, chapter: number, inputPath: strin
     if (!isCommitFailure(error)) throw error
     return {
       ...base, phase: 'commit', committed: false, facts_recorded: false, ...(diff === undefined ? {} : { diff }),
-      stale: readStale(project), commit_error: error.message,
+      stale: readStale(project), book_audit: skippedAudit(project), commit_error: error.message,
     }
   }
   if (!claims.present || claims.input === undefined) {
     return {
       ...base, phase: 'done', committed: true, facts_recorded: false, ...(diff === undefined ? {} : { diff }),
       ...(claims.error === undefined ? {} : { facts_error: claims.error }),
-      stale: readStale(project), check,
+      stale: readStale(project), book_audit: rangedAudit(project, chapter), check,
     }
   }
   try {
@@ -106,13 +120,29 @@ export function finishChapter(project: string, chapter: number, inputPath: strin
     if (!isCommitFailure(error)) throw error
     return {
       ...base, phase: 'record', committed: true, facts_recorded: false, ...(diff === undefined ? {} : { diff }),
-      stale: readStale(project), facts_error: error.message, check,
+      stale: readStale(project), book_audit: rangedAudit(project, chapter), facts_error: error.message, check,
     }
   }
   return {
     ...base, phase: 'done', committed: true, facts_recorded: true, ...(diff === undefined ? {} : { diff }),
-    stale: readStale(project), check,
+    stale: readStale(project), book_audit: rangedAudit(project, chapter), check,
   }
+}
+
+function skippedAudit(project: string): FinishBookAudit {
+  const schedule = bookAuditSchedule(project)
+  return { ran: false, enabled: schedule.enabled, interval: schedule.interval }
+}
+
+function rangedAudit(project: string, chapter: number): FinishBookAudit {
+  const schedule = bookAuditSchedule(project)
+  if (!schedule.enabled || chapter % schedule.interval !== 0) return { ran: false, enabled: schedule.enabled, interval: schedule.interval }
+  const from = Math.max(1, chapter - schedule.interval + 1)
+  const report = auditBook(project, { from, to: chapter })
+  const blocking = report.counts.blocking
+  const hints = report.counts.hint
+  const status = blocking > 0 || report.counts.fail > 0 ? 'fail' : hints > 0 || report.counts.warn > 0 ? 'warn' : 'pass'
+  return { ran: true, enabled: true, interval: schedule.interval, from, to: chapter, status, blocking, hints }
 }
 
 function readStale(project: string): ReturnType<typeof staleFacts> {

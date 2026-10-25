@@ -1,7 +1,8 @@
 /**
  * Effective writing gates for one book.
  *
- * A missing `设定/写作检查.json`, or a missing key inside it, is `off`.
+ * A missing `设定/写作检查.json`, or a missing gate key inside it, is `required`.
+ * `project migrate-gates --legacy-off` writes `off` for an old book.
  * This module does not write and does not add a third mode.
  */
 import { loadFacts, staleFacts } from './facts.ts'
@@ -21,15 +22,15 @@ export interface GateView {
 /**
  * Read `rule_audit`, `facts_diff`, and whether `style` is present.
  * @param project - the book directory.
- * @returns `off` for each missing gate. `streak` is null when `style` is absent, otherwise the configured value or 3.
+ * @returns `required` for each missing gate. `streak` is null when `style` is absent, otherwise the configured value or 3.
  * @throws WritingCheckError when the writing-check file exists but is invalid.
  */
 export function writingGates(project: string): GateView {
   const file = readWritingCheck(project)
   const style = file?.style
   return {
-    rule_audit: file?.ruleAudit ?? 'off',
-    facts_diff: file?.factsDiff ?? 'off',
+    rule_audit: file?.ruleAudit ?? 'required',
+    facts_diff: file?.factsDiff ?? 'required',
     style: style === undefined ? 'off' : 'active',
     streak: style === undefined ? null : style.streak ?? 3,
   }

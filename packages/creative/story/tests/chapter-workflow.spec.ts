@@ -60,7 +60,7 @@ describe('native chapter template transitions', () => {
     expect(calls[4]!.prompt).toContain('rule_audit')
     expect(await result).toMatchObject({
       phase: 'Submit', rules_sha256: 'd'.repeat(64), claims_present: false,
-      gates: { rule_audit: 'off', facts_diff: 'off' },
+      gates: { rule_audit: 'required', facts_diff: 'required' },
     })
   })
 
@@ -162,18 +162,19 @@ describe('native chapter template transitions', () => {
     expect(calls[1]!.prompt).toContain(prepared.outline_path)
   })
 
-  it('suggests a book audit after a committed tenth chapter and does not run it', async () => {
+  it('copies the book audit finish already ran on a tenth chapter', async () => {
     const tenthArgs = {
       chapter: 10,
       body_path: '/book/正文/第010章.md',
       outline_path: '/book/大纲/细纲_第010章.md',
     }
-    const { result, calls } = run([draft, ready, cleanAudit, committed], tenthArgs, { ...prepared, ...tenthArgs })
-    expect(await result).toMatchObject({
-      status: 'committed',
-      book_audit_hint: '建议父会话运行 book audit --workspace / --book book --from 1 --to 10 --json。本模板不自动运行。',
-    })
-    expect(calls.some(call => call.prompt.includes('book audit'))).toBe(false)
+    const bookAudit = { ran: true, enabled: true, interval: 10, from: 1, to: 10, status: 'warn', blocking: 0, hints: 2 }
+    const { result, calls } = run([draft, ready, cleanAudit, { ...committed, book_audit: bookAudit }], tenthArgs, { ...prepared, ...tenthArgs })
+    expect(await result).toMatchObject({ status: 'committed', book_audit: bookAudit })
+    expect(await result).not.toHaveProperty('book_audit_hint')
+    const submit = calls.find(call => call.label === 'Submit')
+    expect(submit?.prompt).toContain('book audit')
+    expect(submit?.prompt).toContain('Do not run book audit yourself')
   })
 
   it('stops before writing when preparation needs a decision, returns null or sees a stale revision', async () => {

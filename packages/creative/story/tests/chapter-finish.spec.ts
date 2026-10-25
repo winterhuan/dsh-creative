@@ -43,6 +43,7 @@ async function workspace(context: TestContext): Promise<{ root: string; book: st
   await cp(join(fixtures, 'workflow-outline.md'), join(book, '大纲/细纲_第003章.md'))
   await cp(join(fixtures, 'workflow-body.md'), join(book, '正文/第003章_账册.md'))
   initialize(book, initialDocument)
+  await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'off' }))
   return { root, book }
 }
 
@@ -111,6 +112,7 @@ describe('chapter finish', () => {
     expect(report.facts_recorded).toBe(true)
     expect(report.claims_present).toBe(true)
     expect(report.gates).toMatchObject({ rule_audit: 'off', facts_diff: 'off', style: 'off', streak: null })
+    expect(report.book_audit).toEqual({ ran: false, enabled: true, interval: 10 })
     expect(report.stale.present).toBe(true)
     expect(report.stale.stale).toEqual([])
     expect(report.stale.missing_chapters).toEqual([])
@@ -205,7 +207,7 @@ describe('chapter finish', () => {
       claims: [{ id: 'VENUE-库房', attrs: { 地面: '水泥地' } }],
       entries: [{ id: 'VENUE-库房', kind: '场地', attrs: { 地面: '水泥地' }, reason: '地面改了' }],
     }))
-    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({ facts_diff: 'required' }))
+    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'required' }))
     const blocked = finishChapter(book, 3, input, false)
     expect(blocked.phase).toBe('diff')
     expect(blocked.committed).toBe(false)
@@ -243,6 +245,36 @@ describe('chapter finish', () => {
     expect(finished.value.facts_error).toEqual(expect.any(String))
     const checked = await runCli(['project', 'check', '--workspace', root, '--book', BOOK])
     expect(checked.code).toBe(0)
-    expect(checked.value).toEqual({ last_committed_chapter: 3, state_revision: 1 })
+    expect(checked.value).toMatchObject({
+      schema: 'story-project-check/v1', last_committed_chapter: 3, state_revision: 1,
+      facts: { present: false, missing_chapters: [3], stale_count: 0, stale: [] },
+    })
+  })
+
+  it('runs book audit on the configured interval and skips it when disabled', async context => {
+    const enabled = await workspace(context)
+    const enabledCheck = chapterCheck(enabled.book, 3)
+    const enabledInput = join(enabled.root, 'transaction.json')
+    await writeFile(enabledInput, JSON.stringify(transaction(enabledCheck)))
+    await writeFile(join(enabled.book, '设定/写作检查.json'), JSON.stringify({
+      rule_audit: 'off', facts_diff: 'off', book_audit: { interval: 1 },
+    }))
+    const ran = finishChapter(enabled.book, 3, enabledInput, false)
+    expect(ran.committed).toBe(true)
+    expect(ran.book_audit.ran).toBe(true)
+    expect(ran.book_audit.from).toBe(3)
+    expect(ran.book_audit.to).toBe(3)
+    expect(ran.book_audit.blocking).toEqual(expect.any(Number))
+
+    const disabled = await workspace(context)
+    const disabledCheck = chapterCheck(disabled.book, 3)
+    const disabledInput = join(disabled.root, 'transaction.json')
+    await writeFile(disabledInput, JSON.stringify(transaction(disabledCheck)))
+    await writeFile(join(disabled.book, '设定/写作检查.json'), JSON.stringify({
+      rule_audit: 'off', facts_diff: 'off', book_audit: { enabled: false, interval: 1 },
+    }))
+    const skipped = finishChapter(disabled.book, 3, disabledInput, false)
+    expect(skipped.committed).toBe(true)
+    expect(skipped.book_audit).toEqual({ ran: false, enabled: false, interval: 1 })
   })
 })

@@ -11,7 +11,7 @@ import { execa } from 'execa'
 import { describe, expect, it, type TestContext } from 'vitest'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../src/core/chapter.ts'
 import { projectQuery, type QueryFilter, type QueryKind } from '../src/core/tracking/query.ts'
-import { checkProject, initialize } from '../src/core/tracking/store.ts'
+import { checkProject, initialize, jsonPayload } from '../src/core/tracking/store.ts'
 
 const runtime = resolve(import.meta.dirname, 'reference')
 const fixtures = resolve(import.meta.dirname, 'fixtures')
@@ -30,6 +30,25 @@ async function workspace(context: TestContext): Promise<string> {
   const directory = await realpath(await mkdtemp(join(tmpdir(), 'dsh-story-tracking-parity-')))
   context.onTestFinished(async () => { await rm(directory, { recursive: true, force: true }) })
   return directory
+}
+
+/** Drop the schema-6 facts link so a TypeScript tree can be compared with the Python schema-5 file. */
+async function parityTree(root: string): Promise<Record<string, string>> {
+  const files = await tree(root)
+  const raw = files['_tracking-state.json']
+  if (raw === undefined) return files
+  const parsed = JSON.parse(raw) as Record<string, unknown>
+  delete parsed.facts
+  parsed.schema_version = 5
+  return { ...files, '_tracking-state.json': jsonPayload(parsed) }
+}
+
+/** `state_sha256` covers the raw state file, which now carries the facts link. */
+function withoutStateHash(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return value
+  const record = { ...(value as Record<string, unknown>) }
+  delete record.state_sha256
+  return record
 }
 
 /** Every file under a directory, keyed by relative path; lock artifacts are implementation details. */
@@ -111,7 +130,7 @@ describe('TypeScript tracking parity with the Python runtime', () => {
     expect(initA.exitCode, initA.stderr).toBe(0)
     const initB = initialize(bookB, initialDocument)
     expect(initB.state.state_revision).toBe(0)
-    expect(await tree(join(bookB, '追踪'))).toEqual(await tree(join(bookA, '追踪')))
+    expect(await parityTree(join(bookB, '追踪'))).toEqual(await parityTree(join(bookA, '追踪')))
     expect(() => initialize(bookB, initialDocument)).toThrow('never overwrites')
 
     const checkA = await cli(['chapter', 'check', ...scopeA, '--chapter', '3'], rootA)
@@ -153,13 +172,14 @@ describe('TypeScript tracking parity with the Python runtime', () => {
         阿澜: { identity: '账房学徒', location: '库房内', goal: '查纸条来历', state: '警觉', abilities_resources: ['识字'], relationships: ['伙计：旁观者'], knowledge: ['账册缺页', '夹层有纸条'], open_threads: ['钥匙去向', '纸条来历'] },
       },
     }
+    await writeFile(join(bookB, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'off' }))
     const stale = { ...transaction, expected_body_sha256: 'f'.repeat(64) }
     await writeFile(join(rootA, 'stale.json'), JSON.stringify(stale))
     const staleA = await cli(['chapter', 'commit', ...scopeA, '--chapter', '3', '--input', join(rootA, 'stale.json')], rootA)
     expect(staleA.exitCode).toBe(2)
     await writeFile(join(rootB, 'stale.json'), JSON.stringify(stale))
     expect(() => chapterCommit(bookB, 3, join(rootB, 'stale.json'), false)).toThrow((staleA.value as { message: string }).message)
-    expect(await tree(join(bookB, '追踪'))).toEqual(await tree(join(bookA, '追踪')))
+    expect(await parityTree(join(bookB, '追踪'))).toEqual(await parityTree(join(bookA, '追踪')))
 
     await writeFile(join(rootA, 'transaction.json'), JSON.stringify(transaction))
     await writeFile(join(rootB, 'transaction.json'), JSON.stringify(transaction))
@@ -167,7 +187,7 @@ describe('TypeScript tracking parity with the Python runtime', () => {
     expect(commitA.exitCode, commitA.stderr).toBe(0)
     const commitB = chapterCommit(bookB, 3, join(rootB, 'transaction.json'), false)
     expect(anonymize(commitA.value, rootA)).toEqual(anonymize(commitB, rootB))
-    expect(await tree(join(bookB, '追踪'))).toEqual(await tree(join(bookA, '追踪')))
+    expect(await parityTree(join(bookB, '追踪'))).toEqual(await parityTree(join(bookA, '追踪')))
     expect(Object.keys(await tree(join(bookB, '追踪')))).toEqual(expect.arrayContaining(['_tracking-state.json', '上下文.md', '伏笔.md', '逐章记录/第003章.md', '角色状态/阿澜.md']))
 
     const revision = {
@@ -192,7 +212,7 @@ describe('TypeScript tracking parity with the Python runtime', () => {
     expect(reviseA.exitCode, reviseA.stderr).toBe(0)
     const reviseB = chapterCommit(bookB, 3, join(rootB, 'revision.json'), false)
     expect(anonymize(reviseA.value, rootA)).toEqual(anonymize(reviseB, rootB))
-    expect(await tree(join(bookB, '追踪'))).toEqual(await tree(join(bookA, '追踪')))
+    expect(await parityTree(join(bookB, '追踪'))).toEqual(await parityTree(join(bookA, '追踪')))
 
     const verifiedA = await cli(['project', 'check', ...scopeA], rootA)
     expect(verifiedA.exitCode, verifiedA.stderr).toBe(0)
@@ -202,7 +222,7 @@ describe('TypeScript tracking parity with the Python runtime', () => {
 
     const statusA = await cli(['project', 'status', ...scopeA], rootA)
     expect(statusA.exitCode, statusA.stderr).toBe(0)
-    expect(statusA.value).toEqual(projectQuery(bookB))
+    expect(withoutStateHash(statusA.value)).toEqual(withoutStateHash(projectQuery(bookB)))
     const kinds: readonly { readonly kind: QueryKind; readonly args: readonly string[]; readonly options: Parameters<typeof projectQuery>[1] }[] = [
       { kind: 'characters', args: [], options: {} },
       { kind: 'characters', args: ['--search', '印章'], options: { search: '印章' } },
@@ -216,7 +236,7 @@ describe('TypeScript tracking parity with the Python runtime', () => {
     for (const item of kinds) {
       const queried = await cli(['project', 'query', ...scopeA, '--kind', item.kind, ...item.args], rootA)
       expect(queried.exitCode, `${item.kind} ${item.args.join(' ')}: ${queried.stderr}`).toBe(0)
-      expect(queried.value, `${item.kind} ${item.args.join(' ')}`).toEqual(projectQuery(bookB, { kind: item.kind, ...item.options }))
+      expect(withoutStateHash(queried.value), `${item.kind} ${item.args.join(' ')}`).toEqual(withoutStateHash(projectQuery(bookB, { kind: item.kind, ...item.options })))
     }
     const staleQuery = await cli(['project', 'query', ...scopeA, '--kind', 'foreshadow', '--revision', '1'], rootA)
     expect(staleQuery.exitCode).toBe(2)
@@ -232,7 +252,7 @@ describe('TypeScript tracking parity with the Python runtime', () => {
     const bookA = await prepare(rootA)
     const bookB = await prepare(rootB)
     const status = await cli(['project', 'status', '--workspace', rootA, '--book', BOOK], rootA)
-    expect(status.value).toEqual(projectQuery(bookB))
+    expect(withoutStateHash(status.value)).toEqual(withoutStateHash(projectQuery(bookB)))
     for (const [label, document] of Object.entries({
       'unknown field': { ...initialDocument, extra: 1 },
       'future reveal': { ...initialDocument, timeline_events: [{ ...initialDocument.timeline_events[1], reveal_status: '已揭示' }] },

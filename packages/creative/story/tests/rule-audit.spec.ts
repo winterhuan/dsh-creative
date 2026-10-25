@@ -195,7 +195,7 @@ describe('rule audit commit gate', () => {
   }
 
   it('commits when the gate is off and records an accepted exception only in the chapter record', async context => {
-    const { root, book, snapshot } = await readyBook(context, {})
+    const { root, book, snapshot } = await readyBook(context, { rule_audit: 'off', facts_diff: 'off' })
     const rules = extractChapterRules(book, 1)
     await writeAudit(book, 1, {
       schema: RULE_AUDIT_SCHEMA,
@@ -219,7 +219,7 @@ describe('rule audit commit gate', () => {
   })
 
   it('requires a verified file when the gate is on and lets an accepted violate through', async context => {
-    const blocked = await readyBook(context, { rule_audit: 'required' })
+    const blocked = await readyBook(context, { rule_audit: 'required', facts_diff: 'off' })
     const missing = await commit(context, blocked.root, transaction(blocked.snapshot))
     expect(missing.exitCode).toBe(2)
     expect(missing.value.message).toContain('rule audit is required')
@@ -247,7 +247,7 @@ describe('rule audit commit gate', () => {
   })
 
   it('commits a passing audit when the gate is required and ignores unclear', async context => {
-    const { root, book, snapshot } = await readyBook(context, { rule_audit: 'required' })
+    const { root, book, snapshot } = await readyBook(context, { rule_audit: 'required', facts_diff: 'off' })
     const rules = extractChapterRules(book, 1)
     await writeAudit(book, 1, {
       schema: RULE_AUDIT_SCHEMA,

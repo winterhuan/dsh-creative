@@ -33,7 +33,7 @@
 
 2026-10-24 模型设置增强新增图片输入批量操作：提供方卡片新增「图片输入」批量控件，选择仅文本、文本和图片（pi-ai 提供方还可恢复继承），勾选同一提供方下的目标模型写入草稿，与思考能力、重试修改一起保存；单模型开关仍在原生模型列表。pi-ai 写 `input`（或 `modelOverrides` 覆盖项），恢复继承移除字段；deepseek 写 `inputModalities`，改仅文本时同时移除 `imagePixelBudget` 与 `imageMaxBytes`。文案、README、子系统文档与 i18n 记录同步；`typecheck`、`build`、包内 73 项测试、文档与规范检查通过；全量 1011 项通过（story 一例为本机既有失败）。本机 web profile 已重新构建，重启 DSH 并硬刷新后生效；未在真实浏览器验证，未调用真实模型。
 
-2026-10-19 小说事实账本、节奏规划、对标检索、人物力量与文风检查：旁路文件，门禁默认关闭。见[事实账本](.agents/notes/implemented/feature/2026-10-19-story-fact-ledger.zh.md)。
+2026-10-25 小说追踪 schema 6 只挂事实账本摘要，条目仍在旁路文件。`rule_audit` 与 `facts_diff` 缺省为 required；旧书用 `project migrate-gates --legacy-off`。见[事实账本](.agents/notes/implemented/feature/2026-10-19-story-fact-ledger.zh.md)。
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 

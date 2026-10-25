@@ -1,22 +1,23 @@
 /**
  * Sidecar fact ledger at `追踪/事实账本.json`.
  *
- * The tracking schema stays at version 5. Each entry keeps the body hash of
- * the chapter that introduced it. A later change appends a `changes` row and
- * leaves the original attributes in place. Reads are lock-free. `recordFacts`
- * uses the same tracking write lock as a chapter commit.
+ * Entries stay in this sidecar. Tracking schema 6 stores only a summary link.
+ * Each book entry keeps the body hash of the chapter that introduced it.
+ * A reference entry keeps the hash of its source file. A later change appends
+ * a `changes` row and leaves the original attributes in place. Reads are
+ * lock-free. `recordFacts` uses the same tracking write lock as a chapter commit.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join, sep } from 'node:path'
 import { findChapterFile } from './wordcount.ts'
 import { atomicWriteText, jsonPayload, loadState, statePath, trackingRoot, withProjectWriteLock } from './tracking/store.ts'
-import { readWritingCheck } from './writing-check.ts'
+import { factsDiffMode } from './writing-check.ts'
 
 /** Schema of the ledger file and of {@link recordFacts} results. */
 export const FACTS_SCHEMA = 'story-facts/v1'
 /** Kinds a ledger entry may use. */
-export const FACT_KINDS = ['场地', '伤情', '账目', '物件', '能力', '年代', '指令'] as const
+export const FACT_KINDS = ['场地', '伤情', '账目', '物件', '能力', '年代', '指令', '对标'] as const
 /** Largest `facts` section inside `project context`, before the shared 16 KiB trim. */
 export const FACTS_CONTEXT_MAX_BYTES = 2048
 /** Book-relative ledger path. */
@@ -41,6 +42,10 @@ export interface FactSource {
   readonly chapter: number
   readonly line?: number
   readonly body_sha256: string
+  /** `reference` is an explicit benchmark excerpt. Absence means a book fact. */
+  readonly origin?: 'book' | 'reference'
+  /** Workspace-relative path of the benchmark file. Set only when `origin` is `reference`. */
+  readonly reference_path?: string
 }
 
 /** An appended correction. `attrs` is the full effective set after this change. */
@@ -148,22 +153,66 @@ export function loadFacts(project: string): FactsLedger & { readonly present: bo
  * @param input - `{ entries: [...] }`. An empty list still marks the chapter covered.
  * @throws FactsError when the chapter is uncommitted, the body hash disagrees with the wordcount record, or an entry is invalid.
  */
-export function recordFacts(project: string, chapter: number, input: unknown): { schema: typeof FACTS_SCHEMA; chapter: number; added: number; changed: number; covered_chapters: readonly number[] } {
+export function recordFacts(project: string, chapter: number, input: unknown, options: { readonly allowReference?: boolean } = {}): { schema: typeof FACTS_SCHEMA; chapter: number; added: number; changed: number; covered_chapters: readonly number[]; skipped_reference: number } {
   const rows = inputEntries(input)
+  const allowReference = options.allowReference === true
   return withProjectWriteLock(project, () => {
-    const hash = committedBodyHash(project, chapter)
+    const bookRows = rows.filter(row => row.origin !== 'reference')
+    const referenceRows = rows.filter(row => row.origin === 'reference')
+    if (referenceRows.length > 0 && !allowReference) {
+      // Explicit `lookup --record` or `facts record --allow-reference` is the only writer.
+    }
+    const accepted = allowReference ? rows : bookRows
+    if (accepted.length === 0 && rows.length > 0) {
+      const existing = loadFacts(project)
+      return { schema: FACTS_SCHEMA, chapter, added: 0, changed: 0, covered_chapters: existing.covered_chapters, skipped_reference: referenceRows.length }
+    }
+    const hash = bookRows.length > 0 || rows.length === 0 ? committedBodyHash(project, chapter) : ''
     const ledger = mutableLedger(loadFacts(project))
     let added = 0
     let changed = 0
-    for (const row of rows) {
-      const outcome = applyEntry(ledger, row, chapter, hash)
+    for (const row of accepted) {
+      const outcome = applyEntry(project, ledger, row, chapter, hash)
       if (outcome === 'added') added += 1
       if (outcome === 'changed') changed += 1
     }
-    if (!ledger.covered_chapters.includes(chapter)) ledger.covered_chapters.push(chapter)
-    ledger.covered_chapters.sort((left, right) => left - right)
+    if (bookRows.length > 0 || rows.length === 0) {
+      if (!ledger.covered_chapters.includes(chapter)) ledger.covered_chapters.push(chapter)
+      ledger.covered_chapters.sort((left, right) => left - right)
+    }
     writeLedger(project, ledger)
-    return { schema: FACTS_SCHEMA, chapter, added, changed, covered_chapters: ledger.covered_chapters }
+    return { schema: FACTS_SCHEMA, chapter, added, changed, covered_chapters: ledger.covered_chapters, skipped_reference: allowReference ? 0 : referenceRows.length }
+  })
+}
+
+/**
+ * Write lookup hits into the ledger. This does not mark a chapter covered.
+ * @param project - the book directory. The workspace is its parent.
+ * @param hits - excerpts already marked `source: reference`.
+ * @param libraryPrefix - `拆文库/<title>/`, joined to each hit path.
+ */
+export function recordReferenceFacts(project: string, hits: readonly { readonly path: string; readonly title: string; readonly excerpt: string; readonly line_start: number }[], libraryPrefix: string): { schema: typeof FACTS_SCHEMA; recorded: number; ids: readonly string[] } {
+  return withProjectWriteLock(project, () => {
+    const ledger = mutableLedger(loadFacts(project))
+    const ids: string[] = []
+    for (const hit of hits) {
+      const referencePath = `${libraryPrefix}${hit.path}`.replace(/\/{2,}/gu, '/')
+      const row: InputEntry = {
+        id: `REF-${createHash('sha256').update(`${referencePath}:${String(hit.line_start)}`).digest('hex').slice(0, 12)}`,
+        kind: '对标',
+        subject: hit.title.slice(0, 40) || '对标',
+        attrs: { 标题: (hit.title || '对标').slice(0, 80), 摘录: (hit.excerpt.trim() || '（空）').slice(0, 200) },
+        origin: 'reference',
+        reference_path: referencePath,
+        since: 1,
+        line: hit.line_start,
+        reason: '对标摘录',
+      }
+      applyEntry(project, ledger, row, 0, '')
+      ids.push(row.id)
+    }
+    writeLedger(project, ledger)
+    return { schema: FACTS_SCHEMA, recorded: ids.length, ids }
   })
 }
 
@@ -246,6 +295,10 @@ export function staleFacts(project: string): {
   if (!ledger.present) return { schema: 'story-facts-stale/v1', present: false, stale: [], missing_chapters: [] }
   const state = existsSync(statePath(project)) ? loadState(project) : undefined
   const stale = ledger.entries.flatMap(entry => {
+    if (entry.source.origin === 'reference') {
+      const current = referenceFileHash(project, entry.source.reference_path)
+      return current === entry.source.body_sha256 ? [] : [{ id: entry.id, chapter: entry.source.chapter, source_body_sha256: entry.source.body_sha256, current_body_sha256: current }]
+    }
     const current = readBodyHash(project, entry.source.chapter)
     const wordcount = state?.wordcount_records[String(entry.source.chapter)]?.body_sha256
     const drifted = current !== entry.source.body_sha256 || (wordcount !== undefined && wordcount !== entry.source.body_sha256)
@@ -276,16 +329,16 @@ export function contextFacts(project: string, options: { readonly chapter: numbe
     seen.add(entry.id)
     chosen.push(entry)
   }
-  for (const entry of ledger.entries) if (entry.kind === '年代') take(entry)
+  for (const entry of ledger.entries) if (entry.kind === '年代' && entry.source.origin !== 'reference') take(entry)
   for (const entry of ledger.entries) {
-    if (entry.kind !== '伤情' || entry.subject === undefined || !active.has(entry.subject)) continue
+    if (entry.source.origin === 'reference' || entry.kind !== '伤情' || entry.subject === undefined || !active.has(entry.subject)) continue
     const healed = effectiveAttrs(entry)
     const mark = healed['愈'] ?? healed['状态']
     if (typeof mark === 'string' && HEALED.has(mark)) continue
     take(entry)
   }
   for (const entry of ledger.entries) {
-    if (text !== '' && namesEntry(entry, text)) take(entry)
+    if (entry.source.origin !== 'reference' && text !== '' && namesEntry(entry, text)) take(entry)
   }
   const items: FactView[] = []
   let omitted = 0
@@ -312,7 +365,7 @@ export function earlySkillHits(project: string, chapter: number, bodyText: strin
   if (!ledger.present) return []
   const hits: { id: string; message: string; line: number }[] = []
   for (const entry of ledger.entries) {
-    if (entry.kind !== '能力' || chapter >= entry.since) continue
+    if (entry.source.origin === 'reference' || entry.kind !== '能力' || chapter >= entry.since) continue
     const token = skillToken(entry)
     if (token === undefined) continue
     const at = bodyText.indexOf(token)
@@ -334,7 +387,7 @@ export function earlySkillHits(project: string, chapter: number, bodyText: strin
  * @throws WritingCheckError when the writing-check file is invalid.
  */
 export function assertFactsDiffForCommit(project: string, chapter: number): void {
-  if (readWritingCheck(project)?.factsDiff !== 'required') return
+  if (factsDiffMode(project) !== 'required') return
   const relative = claimsRelativePath(chapter)
   const path = join(project, relative)
   if (!existsSync(path)) throw new FactsError(`facts_diff is required and ${relative} is missing`)
@@ -418,8 +471,16 @@ function mutableLedger(ledger: FactsLedger): MutableLedger {
   }
 }
 
-function applyEntry(ledger: MutableLedger, row: InputEntry, chapter: number, hash: string): 'added' | 'changed' | 'same' {
-  const source: FactSource = { chapter, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: hash }
+function applyEntry(project: string, ledger: MutableLedger, row: InputEntry, chapter: number, hash: string): 'added' | 'changed' | 'same' {
+  let source: FactSource
+  if (row.origin === 'reference') {
+    const referencePath = row.reference_path
+    const referenceHash = referenceFileHash(project, referencePath)
+    if (referenceHash === null || referencePath === undefined) throw new FactsError(`reference file is missing: ${referencePath ?? ''}`)
+    source = { chapter: 0, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: referenceHash, origin: 'reference', reference_path: referencePath }
+  } else {
+    source = { chapter, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: hash, ...(row.origin === 'book' ? { origin: 'book' as const } : {}) }
+  }
   const existing = ledger.entries.find(entry => entry.id === row.id)
   if (existing === undefined) {
     ledger.entries.push({
@@ -457,6 +518,8 @@ interface InputEntry {
   readonly since?: number
   readonly line?: number
   readonly reason: string
+  readonly origin?: 'book' | 'reference'
+  readonly reference_path?: string
 }
 
 function inputEntries(input: unknown): InputEntry[] {
@@ -483,6 +546,10 @@ function parseEntry(value: unknown, label: string): InputEntry {
   const since = row.since === undefined ? undefined : requireChapter(row.since, `${label}.since`)
   const line = row.line === undefined ? undefined : requireChapter(row.line, `${label}.line`)
   const subject = row.subject === undefined ? undefined : requireText(row.subject, `${label}.subject`)
+  const origin = row.origin === undefined ? undefined : row.origin === 'book' || row.origin === 'reference' ? row.origin : undefined
+  if (row.origin !== undefined && origin === undefined) throw new FactsError(`${label}.origin must be "book" or "reference"`)
+  const referencePath = row.reference_path === undefined ? undefined : requireText(row.reference_path, `${label}.reference_path`)
+  if (origin === 'reference' && referencePath === undefined) throw new FactsError(`${label}.reference_path is required when origin is reference`)
   return {
     id: requireId(row.id, `${label}.id`),
     kind: kind as FactKind,
@@ -491,6 +558,8 @@ function parseEntry(value: unknown, label: string): InputEntry {
     ...(since === undefined ? {} : { since }),
     ...(line === undefined ? {} : { line }),
     reason: row.reason === undefined ? '' : requireText(row.reason, `${label}.reason`),
+    ...(origin === undefined ? {} : { origin }),
+    ...(referencePath === undefined ? {} : { reference_path: referencePath }),
   }
 }
 
@@ -534,8 +603,33 @@ function normalizeSource(value: unknown, label: string): FactSource {
   const row = asObject(value, label)
   const hash = row.body_sha256
   if (typeof hash !== 'string' || !SHA256_RE.test(hash)) throw new FactsError(`${label}.body_sha256 must be 64 hex characters`)
+  const origin = row.origin === undefined ? undefined : row.origin === 'book' || row.origin === 'reference' ? row.origin : undefined
+  if (row.origin !== undefined && origin === undefined) throw new FactsError(`${label}.origin must be "book" or "reference"`)
+  const referencePath = row.reference_path === undefined ? undefined : requireText(row.reference_path, `${label}.reference_path`)
+  if (origin === 'reference' && (referencePath === undefined || referencePath.includes('..') || referencePath.startsWith('/'))) {
+    throw new FactsError(`${label}.reference_path must stay inside the workspace`)
+  }
   const line = row.line === undefined ? undefined : requireChapter(row.line, `${label}.line`)
-  return { chapter: requireChapter(row.chapter, `${label}.chapter`), ...(line === undefined ? {} : { line }), body_sha256: hash }
+  const chapter = origin === 'reference' ? requireNonNegative(row.chapter, `${label}.chapter`) : requireChapter(row.chapter, `${label}.chapter`)
+  return {
+    chapter, ...(line === undefined ? {} : { line }), body_sha256: hash,
+    ...(origin === undefined ? {} : { origin }),
+    ...(referencePath === undefined ? {} : { reference_path: referencePath }),
+  }
+}
+
+function referenceFileHash(project: string, relativePath: string | undefined): string | null {
+  if (relativePath === undefined || relativePath.includes('..') || relativePath.startsWith('/') || relativePath.includes('\\')) return null
+  const root = dirname(project)
+  const file = join(root, ...relativePath.split('/').filter(part => part !== ''))
+  if (file !== root && !file.startsWith(root + sep)) return null
+  if (!existsSync(file)) return null
+  return createHash('sha256').update(readFileSync(file)).digest('hex')
+}
+
+function requireNonNegative(value: unknown, label: string): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) throw new FactsError(`${label} must be a non-negative integer`)
+  return value
 }
 
 function requireAttrs(value: unknown, label: string): Record<string, string | number> {

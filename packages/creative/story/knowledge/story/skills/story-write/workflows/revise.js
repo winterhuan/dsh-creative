@@ -44,8 +44,8 @@ let workflowPhase = 'Locate'
 let rulesSha256 = null
 const markPhase = name => { workflowPhase = name; phase(name) }
 const gateObject = value => ({
-  rule_audit: value?.rule_audit === 'required' ? 'required' : 'off',
-  facts_diff: value?.facts_diff === 'required' ? 'required' : 'off',
+  rule_audit: value?.rule_audit === 'off' ? 'off' : 'required',
+  facts_diff: value?.facts_diff === 'off' ? 'off' : 'required',
 })
 const meta = (extra = {}) => ({
   phase: typeof extra.phase === 'string' ? extra.phase : workflowPhase,
@@ -109,7 +109,8 @@ const submitted = response(await agent(`${common()}
 Submit one mode=revision transaction. Include expected_body_sha256=${rewritten.body_sha256}, expected_outline_sha256=${rewritten.outline_sha256}, expected_state_revision=${rewritten.state_revision}.
 Run ${cli} chapter finish ${scope} --chapter ${args.chapter} --input <absolute-transaction-file> --json.
 When facts_diff is required, a conflict in 草稿/事实/第${String(args.chapter).padStart(3, '0')}章.claims.json leaves committed false. When it is off, report conflicts and do not block.
-Finish records claims when the commit succeeded and that file exists, then runs facts stale. Do not call facts record yourself. Do not roll back the chapter when record fails. facts_recorded false with no claims file means the chapter is not in the ledger; facts stale shows that once a ledger exists.
+Finish records claims when the commit succeeded and that file exists, then runs facts stale. When this chapter is a multiple of the book's book_audit interval (default 10), finish also runs book audit for that window and returns book_audit. Do not run book audit yourself. Do not call facts record yourself. Do not roll back the chapter when record fails or when the audit has blocking findings. facts_recorded false with no claims file means the chapter is not in the ledger; facts stale shows that once a ledger exists.
+Copy book_audit from the finish JSON into this result when it is present.
 A context item that the rewrite retires, and that is not part of this revision delta, uses ${cli} project context retire ${scope} --item <text> --reason <reason> --json. Old reader-value rows move with ${cli} project legacy archive ${scope} --reader-value --json.
 Downstream chapters that still cite a changed fact go back on the issue list. Do not start those chapters in this run.`, {
   label: 'Submit', schema: commitSchema,
@@ -118,4 +119,5 @@ if (submitted.status !== 'committed' || submitted.body_sha256 !== rewritten.body
   if (submitted.status === 'needs_input' || submitted.status === 'uncertain') return { status: submitted.status, summary: submitted.summary, chapter: args.chapter, ...meta(submitted) }
   throw new Error('Submission did not verify the revision')
 }
-return { status: 'committed', chapter: args.chapter, summary: submitted.summary, body_sha256: submitted.body_sha256, state_revision: submitted.state_revision, ...meta(submitted) }
+const bookAudit = typeof submitted.book_audit === 'object' && submitted.book_audit !== null ? { book_audit: submitted.book_audit } : {}
+return { status: 'committed', chapter: args.chapter, summary: submitted.summary, body_sha256: submitted.body_sha256, state_revision: submitted.state_revision, ...meta(submitted), ...bookAudit }

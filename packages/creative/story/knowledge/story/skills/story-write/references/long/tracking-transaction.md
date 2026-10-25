@@ -147,4 +147,4 @@ node {CLI} chapter accept-current-length --workspace {工作区} --book {作品�
 
 ## 旧记录兼容
 
-tracking state 继续写版本 5，并读取版本 4。已有 `reader_value_records` 原值保留为历史数据，不验证或投影成当前批准；新工程与新章节不生成该字段。旧事务的 `reader_value` 可被接收但不参与提交判断。既有事务文件和历史 Markdown 不批量改写。
+tracking state 写入版本 6，并读取版本 4 和 5。版本 6 的 `facts` 只链接 `追踪/事实账本.json`。`project migrate` 升到 6，`project migrate --to 5` 去掉链接。两次都不改 `state_revision`，也不改账本文件。打开或 `project check` 不改写状态文件。已有 `reader_value_records` 原值保留为历史数据，不验证或投影成当前批准；新工程与新章节不生成该字段。旧事务的 `reader_value` 可被接收但不参与提交判断。既有事务文件和历史 Markdown 不批量改写。
