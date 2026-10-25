@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.2.1-rc.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-rc.3; re-sync when the DSH dependency version changes.
 /**
  * Shared tsdown preset for UI plugin client bundles. Emits a closure-factory
  * artifact: the bundle calls window.__ModuleLoader__.load({id, factory})

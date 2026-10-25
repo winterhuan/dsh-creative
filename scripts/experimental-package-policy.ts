@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.2.1-rc.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-rc.3; re-sync when the DSH dependency version changes.
 /** Experimental package identities, publication policy, and retained npm names. */
 
 /** Existing npm names retained by capabilities now housed under experimental/. */
