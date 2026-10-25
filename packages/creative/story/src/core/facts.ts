@@ -472,11 +472,15 @@ function mutableLedger(ledger: FactsLedger): MutableLedger {
 }
 
 function applyEntry(project: string, ledger: MutableLedger, row: InputEntry, chapter: number, hash: string): 'added' | 'changed' | 'same' {
-  const referenceHash = row.origin === 'reference' ? referenceFileHash(project, row.reference_path) : undefined
-  if (row.origin === 'reference' && referenceHash === null) throw new FactsError(`reference file is missing: ${row.reference_path ?? ''}`)
-  const source: FactSource = row.origin === 'reference'
-    ? { chapter: 0, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: referenceHash ?? '', origin: 'reference', reference_path: row.reference_path }
-    : { chapter, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: hash, ...(row.origin === 'book' ? { origin: 'book' as const } : {}) }
+  let source: FactSource
+  if (row.origin === 'reference') {
+    const referencePath = row.reference_path
+    const referenceHash = referenceFileHash(project, referencePath)
+    if (referenceHash === null || referencePath === undefined) throw new FactsError(`reference file is missing: ${referencePath ?? ''}`)
+    source = { chapter: 0, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: referenceHash, origin: 'reference', reference_path: referencePath }
+  } else {
+    source = { chapter, ...(row.line === undefined ? {} : { line: row.line }), body_sha256: hash, ...(row.origin === 'book' ? { origin: 'book' as const } : {}) }
+  }
   const existing = ledger.entries.find(entry => entry.id === row.id)
   if (existing === undefined) {
     ledger.entries.push({

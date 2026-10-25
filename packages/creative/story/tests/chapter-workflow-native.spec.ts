@@ -254,6 +254,9 @@ async function setup(test: TestContext, mode: ChapterAdapter['mode']) {
   await writeFile(join(project, 'initial.json'), JSON.stringify({ schema_version: 1, book_title: '原生工作流', last_chapter: 0,
     context: { position: { volume: '第一卷', volume_start_chapter: 1, story_time: '清晨', scene: '门口' } } }))
   await execa(process.execPath, [cliPath, 'project', 'init', '--workspace', directory, '--book', 'book', '--kind', 'long', '--input', join(project, 'initial.json'), '--json'], { cancelSignal: test.signal })
+  // This fixture submits with chapter commit. Missing gates are required and would block that commit.
+  await mkdir(join(project, '设定'), { recursive: true })
+  await writeFile(join(project, '设定/写作检查.json'), `${JSON.stringify({ rule_audit: 'off', facts_diff: 'off' })}\n`)
   await writeFile(join(project, 'transaction.json'), JSON.stringify({ schema_version: 1, mode: 'append', chapter: 1, chapter_title: '账册', expected_state_revision: 0,
     delta: { result: '主角取回账册', character_changes: [], foreshadow_changes: [], timeline_events: [], constraints: [], next_chapter_commitments: [], retired_context_items: [], retired_characters: [] },
     context: { position: { volume: '第一卷', volume_start_chapter: 1, story_time: '清晨', scene: '屋内' }, long_term_constraints: [], active_character_names: [], continuity_risks: [] }, character_snapshots: {} }))
