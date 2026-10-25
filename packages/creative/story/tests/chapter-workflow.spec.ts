@@ -60,7 +60,7 @@ describe('native chapter template transitions', () => {
     expect(calls[4]!.prompt).toContain('rule_audit')
     expect(await result).toMatchObject({
       phase: 'Submit', rules_sha256: 'd'.repeat(64), claims_present: false,
-      gates: { rule_audit: 'off', facts_diff: 'off' },
+      gates: { rule_audit: 'required', facts_diff: 'required' },
     })
   })
 

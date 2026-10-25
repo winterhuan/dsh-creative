@@ -19,6 +19,7 @@ import { finishChapter } from '../core/chapter-finish.ts'
 import { diffFacts, queryFacts, recordFacts, recordReferenceFacts, staleFacts } from '../core/facts.ts'
 import { extractFacts, type ExtractFrom } from '../core/facts-extract.ts'
 import { projectGates } from '../core/gates.ts'
+import { migrateWritingGates } from '../core/writing-check.ts'
 import { projectCheckReport } from '../core/project-check.ts'
 import { archiveReaderValue, retireContextItem } from '../core/legacy.ts'
 import { checkRhythm } from '../core/rhythm.ts'
@@ -40,7 +41,7 @@ import { verifyOutline } from '../core/outline-contract.ts'
 import { projectQuery, type QueryFilter, type QueryKind } from '../core/tracking/query.ts'
 import { specFor, type OptionSpec } from './specs.ts'
 import { normalizeInitialDocument, type TrackingState } from '../core/tracking/schema.ts'
-import { initialize, statePath } from '../core/tracking/store.ts'
+import { initialize, migrateTracking, statePath } from '../core/tracking/store.ts'
 import { checkpointWordcount, evaluateWordcount, findChapterFile, measureWordcount } from '../core/wordcount.ts'
 import { DEFAULT_MAX_CHARS, detectChapter, readKeyPool, writeReport } from '../core/zhuque.ts'
 
@@ -422,7 +423,13 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       containedTree(book, join(book, '追踪'))
       return [projectCheckReport(book), 0]
     }
+    if (action === 'migrate') {
+      containedTree(book, join(book, '追踪'))
+      const target = values.to === '5' ? 5 : 6
+      return [migrateTracking(book, target), 0]
+    }
     if (action === 'gates') return [projectGates(book), 0]
+    if (action === 'migrate-gates') return [migrateWritingGates(book, values['legacy-off'] === true), 0]
     if (action === 'context') {
       const source = typeof values.text === 'string' ? readFileSync(filePath(values.text, book), 'utf8') : undefined
       const profile = values.profile === 'lite' ? 'lite' as const : undefined

@@ -44,6 +44,8 @@ export function specFor(family: string, action: string): Options | undefined {
         'stale-planted': { kind: 'value', type: 'int' }, 'stale-character': { kind: 'value', type: 'int' }, 'stale-thread': { kind: 'value', type: 'int' },
       },
       check: { ...WORKSPACE, ...BOOK },
+      migrate: { ...WORKSPACE, ...BOOK, to: { kind: 'value', choices: ['5', '6'], default: '6' } },
+      'migrate-gates': { ...WORKSPACE, ...BOOK, 'legacy-off': { kind: 'flag' } },
       gates: { ...WORKSPACE, ...BOOK },
       context: { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' }, text: { kind: 'value' }, profile: { kind: 'value', choices: ['full', 'lite'], default: 'full' } },
       lookup: {

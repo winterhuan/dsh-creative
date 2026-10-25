@@ -43,6 +43,7 @@ async function workspace(context: TestContext): Promise<{ root: string; book: st
   await cp(join(fixtures, 'workflow-outline.md'), join(book, '大纲/细纲_第003章.md'))
   await cp(join(fixtures, 'workflow-body.md'), join(book, '正文/第003章_账册.md'))
   initialize(book, initialDocument)
+  await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'off' }))
   return { root, book }
 }
 
@@ -206,7 +207,7 @@ describe('chapter finish', () => {
       claims: [{ id: 'VENUE-库房', attrs: { 地面: '水泥地' } }],
       entries: [{ id: 'VENUE-库房', kind: '场地', attrs: { 地面: '水泥地' }, reason: '地面改了' }],
     }))
-    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({ facts_diff: 'required' }))
+    await writeFile(join(book, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'required' }))
     const blocked = finishChapter(book, 3, input, false)
     expect(blocked.phase).toBe('diff')
     expect(blocked.committed).toBe(false)

@@ -4,11 +4,13 @@
  * `punctuation` may be omitted and then means `preserve`, so `forbidden`,
  * `era`, `void_terms`, `rule_sources`, and `rule_audit` can be set on their own.
  * Unknown keys are rejected so a typo cannot drop a check silently. A missing
- * file means the punctuation default, `rule_audit` off, and `facts_diff` off.
+ * file means the punctuation default. A missing `rule_audit` or `facts_diff`
+ * means `required`. Write `"off"` to keep the previous commit behavior.
  * The Python oracle still requires `punctuation` and rejects every other key.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { atomicWriteText } from './tracking/store.ts'
 
 /** Keys a book may set. Anything else is a configuration error. */
 export const WRITING_CHECK_KEYS = ['punctuation', 'rule_sources', 'forbidden', 'era', 'void_terms', 'rule_audit', 'facts_diff', 'rhythm', 'style', 'book_audit', 'cast_body_names'] as const
@@ -29,7 +31,7 @@ export interface BookAuditSchedule {
 /** Severity of body-name hints from `cast check`. A missing key is `hint`. */
 export type CastBodyNamesMode = typeof CAST_BODY[number]
 
-/** Whether a commit must have a verified rule audit or a clean fact diff. Absence means `off`. */
+/** Whether a commit must have a verified rule audit or a clean fact diff. A missing key means `required`. */
 export type RuleAuditMode = typeof GATE[number]
 
 /** Measurable style limits from `style`. */
@@ -157,7 +159,7 @@ export function castBodyNamesMode(project: string): CastBodyNamesMode {
 }
 
 function gateMode(value: unknown, settingsPath: string, key: string): RuleAuditMode {
-  if (value === undefined) return 'off'
+  if (value === undefined) return 'required'
   if (typeof value !== 'string' || !(GATE as readonly string[]).includes(value)) {
     throw new WritingCheckError(`${settingsPath}: ${key} must be "off" or "required"`)
   }
@@ -231,9 +233,54 @@ function assertStyle(value: unknown, settingsPath: string): StyleConfig {
 /**
  * The book's rule-audit commit mode.
  * @param project - the book directory.
- * @returns `required` only when `设定/写作检查.json` sets that value. A missing file is `off`.
+ * @returns `required` when the file or the key is absent. `"off"` is explicit.
  * @throws WritingCheckError when the writing-check file is invalid.
  */
 export function ruleAuditMode(project: string): RuleAuditMode {
-  return readWritingCheck(project)?.ruleAudit ?? 'off'
+  return readWritingCheck(project)?.ruleAudit ?? 'required'
+}
+
+/**
+ * The book's fact-diff commit mode.
+ * @param project - the book directory.
+ * @returns `required` when the file or the key is absent. `"off"` is explicit.
+ * @throws WritingCheckError when the writing-check file is invalid.
+ */
+export function factsDiffMode(project: string): RuleAuditMode {
+  return readWritingCheck(project)?.factsDiff ?? 'required'
+}
+
+/**
+ * Write the two commit gates when they are absent. Other keys stay as they are.
+ * @param project - the book directory.
+ * @param legacyOff - stamp `off` for old books. The default stamps `required`.
+ * @throws WritingCheckError when the existing file is not a writing-check object.
+ */
+export function migrateWritingGates(project: string, legacyOff = false): {
+  schema: 'story-gates-migrate/v1'
+  path: '设定/写作检查.json'
+  created: boolean
+  rule_audit: RuleAuditMode
+  facts_diff: RuleAuditMode
+} {
+  const settingsPath = join(project, '设定', '写作检查.json')
+  const mode: RuleAuditMode = legacyOff ? 'off' : 'required'
+  let existing: Record<string, unknown> = {}
+  let created = false
+  try {
+    existing = JSON.parse(readFileSync(settingsPath, 'utf8')) as Record<string, unknown>
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') created = true
+    else throw new WritingCheckError(`Unable to read ${settingsPath}: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  if (!created && (typeof existing !== 'object' || existing === null || Array.isArray(existing))) {
+    throw new WritingCheckError(`${settingsPath}: expected a JSON object; supported keys: ${WRITING_CHECK_KEYS.join(', ')}`)
+  }
+  const next = { ...existing }
+  if (next.rule_audit === undefined) next.rule_audit = mode
+  if (next.facts_diff === undefined) next.facts_diff = mode
+  atomicWriteText(settingsPath, `${JSON.stringify(next, null, 2)}\n`)
+  const read = readWritingCheck(project)
+  if (read === undefined) throw new WritingCheckError(`${settingsPath}: migrate did not write the file`)
+  return { schema: 'story-gates-migrate/v1', path: '设定/写作检查.json', created, rule_audit: read.ruleAudit, facts_diff: read.factsDiff }
 }

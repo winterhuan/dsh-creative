@@ -125,6 +125,8 @@ describe('packaged story CLI', () => {
     }
     const input = join(root, 'transaction.json')
     await writeFile(input, JSON.stringify(transaction))
+    await mkdir(join(project, '设定'), { recursive: true })
+    await writeFile(join(project, '设定/写作检查.json'), JSON.stringify({ rule_audit: 'off', facts_diff: 'off' }))
     const stale = await call(context, root, ['chapter', 'commit', ...args, '--input', input])
     expect(stale.exitCode).toBe(2)
     expect(stale.value.message).toContain('stale')

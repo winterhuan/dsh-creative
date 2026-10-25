@@ -95,8 +95,8 @@ let workflowPhase = 'Prepare'
 let rulesSha256 = null
 const markPhase = name => { workflowPhase = name; phase(name) }
 const gateObject = value => ({
-  rule_audit: value?.rule_audit === 'required' ? 'required' : 'off',
-  facts_diff: value?.facts_diff === 'required' ? 'required' : 'off',
+  rule_audit: value?.rule_audit === 'off' ? 'off' : 'required',
+  facts_diff: value?.facts_diff === 'off' ? 'off' : 'required',
 })
 const outcome = (status, summary, extra = {}) => ({
   status, chapter: args.chapter, body_path: task.body_path ?? null, outline_path: task.outline_path ?? null,
@@ -281,7 +281,7 @@ Read ${root}/references/long/tracking-transaction.md, the final body, outline an
 Required identity: ${JSON.stringify(verifiedSource)}.
 ${alreadyCommitted ? 'Verify the existing chapter, wordcount record, actual files and derived tracking views; return already_committed only when they agree.' : `Build a mode=append transaction from actual story facts. Include expected_state_revision=${verifiedSource.state_revision}, expected_body_sha256=${verifiedSource.body_sha256}, expected_outline_sha256=${verifiedSource.outline_sha256}. Do not supply wordcount or review records.
 ${acceptedFindings.length > 0 ? `Include accepted_findings ${JSON.stringify(acceptedFindings)} on the transaction. Do not invent further acceptances.` : 'Omit accepted_findings unless task data already lists them. Do not invent an acceptance.'}
-Read 设定/写作检查.json. rule_audit and facts_diff are off when the key is missing. unclear does not block a commit.
+Read 设定/写作检查.json. rule_audit and facts_diff are required when the key is missing. Write "off" to leave a commit unblocked. unclear does not block a commit.
 Run ${cli} chapter finish ${scope} --chapter ${args.chapter} --input <absolute-transaction-file>${['under', 'over'].includes(draft.length_status) ? ' --accept-current-length' : ''} --json. Never replace expected values after a rejection. Finish runs audit-verify when rule_audit is required, diffs ${claimsFile} when that file exists, commits, records when the commit succeeded and the file exists, then runs facts stale. When this chapter is a multiple of the book's book_audit interval (default 10, from 设定/写作检查.json), finish also runs book audit on that window and puts book_audit on the JSON. Do not run book audit yourself, and do not roll back the chapter when the audit has blocking findings.
 committed in that JSON must be true. facts_recorded is false when no claims file was present; say that, and keep the stale field. A facts_error after committed true is a record failure, not a reason to edit the chapter. When facts_diff is required, a conflict leaves committed false.
 Copy phase, rules_sha256, claims_present, gates and book_audit from the finish JSON into this result. Do not add a provider field.

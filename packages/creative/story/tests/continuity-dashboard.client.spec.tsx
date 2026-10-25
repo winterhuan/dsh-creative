@@ -40,6 +40,9 @@ describe('continuity display data', () => {
     state.schema_version = 4
     expect(parseTrackingView(JSON.stringify(state)).schema_version).toBe(4)
     state.schema_version = 6
+    state.facts = { ledger_path: '追踪/事实账本.json', ledger_schema: 'story-facts/v1', covered_chapters: [], entry_count: 0 }
+    expect(parseTrackingView(JSON.stringify(state)).schema_version).toBe(6)
+    state.schema_version = 7
     expect(() => parseTrackingView(JSON.stringify(state))).toThrow()
     state.schema_version = 5
     state.timeline.E001.reveal_chapter = 501

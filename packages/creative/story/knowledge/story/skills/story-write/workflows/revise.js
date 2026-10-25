@@ -44,8 +44,8 @@ let workflowPhase = 'Locate'
 let rulesSha256 = null
 const markPhase = name => { workflowPhase = name; phase(name) }
 const gateObject = value => ({
-  rule_audit: value?.rule_audit === 'required' ? 'required' : 'off',
-  facts_diff: value?.facts_diff === 'required' ? 'required' : 'off',
+  rule_audit: value?.rule_audit === 'off' ? 'off' : 'required',
+  facts_diff: value?.facts_diff === 'off' ? 'off' : 'required',
 })
 const meta = (extra = {}) => ({
   phase: typeof extra.phase === 'string' ? extra.phase : workflowPhase,

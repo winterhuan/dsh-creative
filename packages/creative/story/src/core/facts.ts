@@ -1,17 +1,18 @@
 /**
  * Sidecar fact ledger at `追踪/事实账本.json`.
  *
- * The tracking schema stays at version 5. Each entry keeps the body hash of
- * the chapter that introduced it. A later change appends a `changes` row and
- * leaves the original attributes in place. Reads are lock-free. `recordFacts`
- * uses the same tracking write lock as a chapter commit.
+ * Entries stay in this sidecar. Tracking schema 6 stores only a summary link.
+ * Each book entry keeps the body hash of the chapter that introduced it.
+ * A reference entry keeps the hash of its source file. A later change appends
+ * a `changes` row and leaves the original attributes in place. Reads are
+ * lock-free. `recordFacts` uses the same tracking write lock as a chapter commit.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, sep } from 'node:path'
 import { findChapterFile } from './wordcount.ts'
 import { atomicWriteText, jsonPayload, loadState, statePath, trackingRoot, withProjectWriteLock } from './tracking/store.ts'
-import { readWritingCheck } from './writing-check.ts'
+import { factsDiffMode } from './writing-check.ts'
 
 /** Schema of the ledger file and of {@link recordFacts} results. */
 export const FACTS_SCHEMA = 'story-facts/v1'
@@ -386,7 +387,7 @@ export function earlySkillHits(project: string, chapter: number, bodyText: strin
  * @throws WritingCheckError when the writing-check file is invalid.
  */
 export function assertFactsDiffForCommit(project: string, chapter: number): void {
-  if (readWritingCheck(project)?.factsDiff !== 'required') return
+  if (factsDiffMode(project) !== 'required') return
   const relative = claimsRelativePath(chapter)
   const path = join(project, relative)
   if (!existsSync(path)) throw new FactsError(`facts_diff is required and ${relative} is missing`)
