@@ -117,7 +117,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       pendingMistakes: summary.pendingMistakes.slice(0, 20), pendingMistakeCount: summary.pendingMistakes.length,
       teachingQueue: state.teachingQueue.slice(0, 20), teachingQueueCount: state.teachingQueue.length,
       workbookDrafts: state.workbookDrafts.slice(0, 20), workbookDraftCount: state.workbookDrafts.length,
-      more: 'Use study_status kind=progress, due, weak, curriculum or elements with offset for more records. needs-teaching means stay on that objective. A teachingQueue item without an objective is waiting to be taught. workbookDrafts wait for the parent.',
+      more: 'The study skill owns what to do next; kind=progress, due, weak or curriculum with offset pages more records.',
     }
   }
   if (kind === 'curriculum') {
@@ -143,7 +143,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
         return {
           id: objective.id, title: objective.title, goal: objective.goal, method: objective.method, unit: unitId,
           errorTypes: elements?.errorTypes ?? [], questionPoints: elements?.questionPoints ?? [], variationAxes: elements?.variationAxes ?? [],
-          misconceptions: elements?.misconceptions ?? [], examples: elements?.examples ?? [],
+          misconceptions: elements?.misconceptions ?? [], examples: elements?.examples ?? [], hintLadder: elements?.hintLadder ?? ['', '', ''],
           knowledgePoints: file.concepts.filter(concept => objective.conceptIds.includes(concept.id)).map(concept => ({
             id: concept.id, name: concept.name, definition: concept.definition, example: concept.example,
             ...((concept.ideaIds?.length ?? 0) > 0 ? { ideas: subjectIdeas(subject).filter(idea => concept.ideaIds?.includes(idea.id)).map(idea => ({ id: idea.id, name: idea.name, definition: idea.definition, example: idea.example })) } : {}),
@@ -156,13 +156,13 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     return {
       revision: state.revision, subject, objectives: page.slice(offset, offset + 20),
       nextOffset: offset + 20 < page.length ? offset + 20 : null,
-      more: 'Write each question from the knowledge points. When a point lists ideas, use each idea definition as the meaning of that concept. Ideas belong to the subject and are shared across grades and units. When a point lists facts, the answer must be checkable against those facts; do not add plot, readings, garden exercises or verse that the facts do not state. A point without facts uses only its definition and example. Also use the common mistakes and question points, and vary one axis at a time. An on-screen task may include the same figure as a worksheet item; copy that figure onto the matching record. The first hint on an ordinary try names a condition or a drawing and does not give the operation or the answer. When the learner is stuck, follow the study skill teaching steps before the next independent question. Custom goals read kind=objectives with kind=concepts.',
+      more: 'Write questions and hints from these elements and the hint ladder; the full rules live in the study skill.',
     }
   }
   if (kind === 'review-sheet') {
     if (!subject) throw new Error('巩固卷查询需要指定科目（subject）。')
     return { revision: state.revision, ...reviewPlan(state, subject, now),
-      more: 'Write one new question per pick, never the original wording (rejected): use pick.variantLevel (numeric, context, reasoning) to choose the distance, keep the errorType, and draw on pick.elements (misconceptions, examples, questionPoints, variationAxes). At most two sheet items per error cause; errorCoverage lists what the picks already cover. Write one numeric question per objectiveFill with only its objectiveId and no mistakeId. Save one worksheet of kind review. Grade or discard open sheets before reprinting their mistakes.' }
+      more: 'Write one new question per pick and one per objectiveFill; variant distance and reuse limits are schema-enforced and explained in the study skill.', }
   }
   if (kind === 'diagnose') {
     const scope = options.grade !== undefined || options.term !== undefined
@@ -172,14 +172,14 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     const diagnostics = scope && subject ? [diagnosticFor(state, subject, now, scope)] : studyInsight(state, now).diagnostics
     return { revision: state.revision, diagnostics: subject ? diagnostics.filter(plan => plan.subject === subject) : diagnostics,
       history: checkInHistory(state).filter(item => !subject || item.subject === subject),
-      more: 'Start a diagnose block with intensity light (3), standard (6) or deep (12) for the subject, ask one short task per sampled objective with objectiveId, record each answer, then study_status kind=weak shows what to strengthen. Pass grade/term (and optionally unit) for a cross-grade or single-unit check-in plan.' }
+      more: 'Ask one short task per sampled objective and record each answer; the study skill describes the flow and intensities, and grade/term narrows the scope.', }
   }
   if (kind === 'weak') {
     const insight = studyInsight(state, now)
     return { revision: state.revision, ...insightSummary(insight),
       weakPoints: insight.weakPoints.map(item => ({ id: item.id, subject: item.subject, title: item.title, goal: item.goal, level: item.level, priority: item.priority, reasons: item.reasons })),
       practised: insight.objectives.filter(item => item.attempts > 0 || item.activeMistakes > 0).map(item => ({ id: item.id, subject: item.subject, title: item.title, level: item.level, independentDays: item.independentDays, attempts: item.attempts, helpedOrWrong: item.helpedOrWrong, activeMistakes: item.activeMistakes, dueMistakes: item.dueMistakes })),
-      more: 'Use study_status kind=curriculum with a subject for units, knowledge points, objectives and relations.',
+      more: 'Use kind=curriculum with a subject for the map behind these weak points.',
     }
   }
   type CollectionItem = (StudyState['mistakes'] | StudyState['concepts'] | StudyState['objectives'] | StudyState['relations'] | StudyState['worksheets'] | StudyState['paperResults'] | StudyState['materials'] | StudyState['sessions'] | StudyState['attempts'] | ReturnType<typeof studyStatus>['progress'])[number]

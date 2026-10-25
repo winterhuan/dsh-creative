@@ -435,5 +435,16 @@ describe('error causes, understanding reminders and photo drafts', () => {
     expect(queryStudy(state, 'elements', 0, { subject: 'math', id: 'm2a-o-sub' })).toMatchObject({ objectives: [expect.objectContaining({ id: 'm2a-o-sub' })] })
     expect(queryStudy(state, 'elements', 0, { subject: 'chinese', id: 'c2a-o2' })).toMatchObject({ objectives: [expect.objectContaining({ knowledgePoints: expect.arrayContaining([expect.objectContaining({ id: 'c2a-u2-1', facts: expect.arrayContaining([expect.stringContaining('一条帆船')]) })]) })] })
   })
+
+  it('derives a three-rung hint ladder from the method, the registered slip and the question points', () => {
+    const state = updateStudy(undefined, setup, NOW)
+    const shipped = queryStudy(state, 'elements', 0, { subject: 'math', id: 'm2a-o-sub' }).objectives[0]
+    expect(shipped?.hintLadder).toHaveLength(3)
+    expect(shipped?.questionPoints.length).toBeGreaterThan(0)
+    expect(shipped?.hintLadder[0]).toContain('孩子')
+    expect(shipped?.hintLadder[2]).toContain(shipped?.questionPoints[0] ?? '')
+    const withSlip = queryStudy(state, 'elements', 0, { subject: 'math' }).objectives.find(item => item.misconceptions.length > 0)
+    expect(withSlip?.hintLadder[1]).toContain(withSlip?.misconceptions[0] ?? '')
+  })
 })
 

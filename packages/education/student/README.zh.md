@@ -135,7 +135,7 @@ Host 入口负责工作区路由和配置。`./agent` 导出在 `student` preset
 
 #### 模型看到的内容
 
-所选模式加入领域 persona 与原生工具 schema。稳定 persona 记录在[提示词快照](../../../tests/fixtures/student-persona.txt)中；标准模式和其他领域模式不包含本领域能力。前缀与 schema 在按需加载技能之前占用上下文，原生压缩管理累积历史。技能目录提供一个 `study` 入口。加载后提供设置、三科方法、概念核对、短时辅导、图片错题及纸上结果指引。`study_status` 分页读取状态、概念、目标、错题、练习单和结果，默认附带前三个薄弱点和一条建议，`kind=curriculum` 返回一科带掌握状态的知识地图，`kind=weak` 返回薄弱点与已练习目标，`kind=elements` 返回已教目标的出题要素（错因、出题要点、变式维度与常见错法）；`study_update` 接受有类型的学习与纸上练习操作（含 `paper-draft`、`confirm-paper`、`classify-mistake`、`stuck`、`phase` 与 `workbook-draft`），内置目标 ID 无需家长确认。屏上题目可以带与练习单相同的 `figure`。对应的 `record` 没写 figure 时抄上同一张图；换了图会被拒绝，并给出期望值。工具描述只保留调用契约，出题、提示和批改细则在 study 技能里，并要求使用真实用户确认和真实学生回答。来源页面、图片和语音转写文字是资料，不是指令。
+所选模式加入领域 persona 与原生工具 schema。稳定 persona 记录在[提示词快照](../../../tests/fixtures/student-persona.txt)中；标准模式和其他领域模式不包含本领域能力。前缀与 schema 在按需加载技能之前占用上下文，原生压缩管理累积历史。技能目录提供一个 `study` 入口。加载后提供设置、三科方法、概念核对、短时辅导、图片错题及纸上结果指引。`study_status` 分页读取状态、概念、目标、错题、练习单和结果，默认附带前三个薄弱点和一条建议，`kind=curriculum` 返回一科带掌握状态的知识地图，`kind=weak` 返回薄弱点与已练习目标，`kind=elements` 返回已教目标的出题要素（错因、出题要点、变式维度、常见错法与三层提示阶梯）；`study_update` 接受有类型的学习与纸上练习操作（含 `paper-draft`、`confirm-paper`、`classify-mistake`、`stuck`、`phase` 与 `workbook-draft`），内置目标 ID 无需家长确认。屏上题目可以带与练习单相同的 `figure`。对应的 `record` 没写 figure 时抄上同一张图；换了图会被拒绝，并给出期望值。工具描述只保留调用契约，出题、提示和批改细则在 study 技能里，并要求使用真实用户确认和真实学生回答。来源页面、图片和语音转写文字是资料，不是指令。
 
 #### Token 影响
 

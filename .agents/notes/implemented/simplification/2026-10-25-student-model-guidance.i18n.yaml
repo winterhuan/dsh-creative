@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-25-student-model-guidance.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-25-student-model-guidance.md
+/agent-note-one-source-for-model-guidance-and-a-structured-hint-ladder:
+  en: 6e5854c44183a51a
+  zh: ef4c07b20c3eb75d
+/agent-note-one-source-for-model-guidance-and-a-structured-hint-ladder/problem:
+  en: 4a8d8641433aa29f
+  zh: bc567bfee5f9573d
+/agent-note-one-source-for-model-guidance-and-a-structured-hint-ladder/decision:
+  en: 8f0b4560a88e7642
+  zh: e0cecf46c107c874
+/agent-note-one-source-for-model-guidance-and-a-structured-hint-ladder/alternatives-considered:
+  en: 737b4674ec102fd7
+  zh: a77e49721f0adcfd
+/agent-note-one-source-for-model-guidance-and-a-structured-hint-ladder/consequences:
+  en: 28a49b43e09a4d2d
+  zh: eedf619c5de9329d

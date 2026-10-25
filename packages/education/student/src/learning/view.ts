@@ -1,5 +1,5 @@
 import type { ErrorType, StudyState, UnitFocus, Variant, VariationAxis } from '../schema.ts'
-import { builtinObjective, builtinObjectiveAnywhere, curriculumFor, subjectIdeas, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from '../curriculum.ts'
+import { builtinObjective, builtinObjectiveAnywhere, curriculumFor, subjectIdeas, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from '../curriculum.ts'
 import { DAY, studyDay, taughtUnit } from './shared.ts'
 import { dayStart } from './schedule.ts'
 import { SUBJECT_ORDER, studyInsight, type CheckInRecord, type ObjectiveInsight, type StudyInsight } from './mastery.ts'
@@ -51,6 +51,30 @@ export interface ObjectiveElements {
   errorTypes: ErrorType[]
   questionPoints: string[]
   variationAxes: VariationAxis[]
+  /** Three hint rungs for an ordinary try: point at the givens, check the registered slip, then the steps. */
+  hintLadder: [string, string, string]
+}
+
+/** The first hint rung names a condition or a drawing, by the objective's learning method. */
+const methodCues: Record<CurriculumMethod, string> = {
+  recognize: '先让孩子在题里指一指已经给出的条件',
+  'read-evidence': '先让孩子在文中找出和问题相关的原句',
+  express: '先让孩子说一说这道题想表达什么',
+  represent: '先让孩子画一画图，把数量或关系摆出来',
+  reason: '先让孩子说说已知什么、要求什么',
+  verify: '先让孩子换一种方法再算一遍或再查一遍',
+  context: '先让孩子说说这段话里的人物在做什么',
+  listen: '先让孩子再听一遍，留意关键词',
+  speak: '先让孩子说出要用到的关键词',
+}
+
+/** Build the three-rung hint ladder from the objective's method, registered misconceptions and question points. */
+function ladderFor(method: CurriculumMethod, misconceptions: readonly string[], questionPoints: readonly string[]): [string, string, string] {
+  return [
+    methodCues[method],
+    misconceptions[0] !== undefined ? `让孩子自己核对一个常见错处：${misconceptions[0]}` : '让孩子说说这道题要用哪个方法',
+    questionPoints.length > 0 ? `给出步骤提示：${questionPoints.slice(0, 2).join('；')}` : '和孩子一起把这道题的步骤说完整',
+  ]
 }
 
 /**
@@ -65,25 +89,31 @@ export function objectiveElements(state: StudyState, objectiveId: string): Objec
   const builtin = builtinObjective(state.profile, objectiveId)
   if (builtin) {
     const concepts = curriculumFor(state.profile, builtin.subject)?.concepts.filter(concept => builtin.conceptIds.includes(concept.id)) ?? []
+    const misconceptions = [...new Set(concepts.flatMap(concept => concept.misconceptions ?? []))].slice(0, 6)
+    const questionPoints = [...(builtin.questionPoints ?? [])]
     return {
       facts: [...new Set(concepts.flatMap(concept => concept.facts ?? []))].slice(0, 24),
-      misconceptions: [...new Set(concepts.flatMap(concept => concept.misconceptions ?? []))].slice(0, 6),
+      misconceptions,
       examples: [...new Set(concepts.flatMap(concept => concept.examples ?? []))].slice(0, 6),
       errorTypes: [...(builtin.errorTypes ?? [])],
-      questionPoints: [...(builtin.questionPoints ?? [])],
+      questionPoints,
       variationAxes: [...(builtin.variationAxes ?? [])],
+      hintLadder: ladderFor(builtin.method, misconceptions, questionPoints),
     }
   }
   const custom = state.objectives.find(item => item.id === objectiveId)
   if (!custom) return undefined
   const concepts = state.concepts.filter(concept => custom.conceptIds.includes(concept.id))
+  const misconceptions = [...new Set(concepts.flatMap(concept => concept.misconceptions ?? []))].slice(0, 6)
+  const questionPoints = [...(custom.questionPoints ?? [])]
   return {
     facts: [...new Set(concepts.flatMap(concept => concept.facts ?? []))].slice(0, 24),
-    misconceptions: [...new Set(concepts.flatMap(concept => concept.misconceptions ?? []))].slice(0, 6),
+    misconceptions,
     examples: [...new Set(concepts.map(concept => concept.example))].slice(0, 6),
     errorTypes: [...(custom.errorTypes ?? [])],
-    questionPoints: [...(custom.questionPoints ?? [])],
+    questionPoints,
     variationAxes: [...(custom.variationAxes ?? [])],
+    hintLadder: ladderFor(custom.method, misconceptions, questionPoints),
   }
 }
 
