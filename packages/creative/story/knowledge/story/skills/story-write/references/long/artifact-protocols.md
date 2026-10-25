@@ -99,11 +99,11 @@ JSON 含 `schema`、`body_sha256`、`rules_sha256` 和 `verdicts`。`verdicts` �
 
 校验通过时退出码为 0，结果模式是 `story-rule-audit-verify/v1`，含 `verified: true`、两个哈希，以及 `violate` 和 `unclear` 的 ID 列表。失败时退出码为 1，`verified: false`，`reasons` 列出全部原因。缺文件也是失败。写作检查文件非法时以 2 退出。
 
-`rule_audit` 为 `off` 时，`chapter commit` 和 `chapter finish` 不要求这份文件。为 `required` 时，提交要求默认路径上的文件通过上述校验，并且每条 `violate` 的 `rule_id` 都出现在事务的 `accepted_findings` 里。`unclear` 和扫描 hint 只进入修改意见，不拦提交。门禁默认关闭。缺这个键等于 `off`。达标前不要写成 `required`。
+`rule_audit` 缺键为 `required`。`chapter commit` 和 `chapter finish` 要求默认路径上的文件通过上述校验，并且每条 `violate` 的 `rule_id` 都出现在事务的 `accepted_findings` 里。写成 `off` 才不要求这份文件。旧书用 `project migrate-gates --legacy-off` 把缺着的键写成 `off`。`unclear` 和扫描 hint 只进入修改意见，不拦提交。
 
 ### 标定
 
-试点在第 001–012 章标定之后，才考虑把这本书的 `rule_audit` 写成 `required`。标定记录放在 `草稿/审稿/_calibration.md`。它不进事实账本，也不进追踪。`violate` 和 `unclear` 分开计数。`unclear` 不计入误报上限，也不拦提交。R1–R3 必须命中。已知干净章的误报 `violate` 不超过 1 条。改了规则来源或重写审稿之后，旧标定作废，重新走 R1–R3。本仓库不改试点书正文。
+缺省 `rule_audit` 已是 `required`。标定记录放在 `草稿/审稿/_calibration.md`，用来决定这本书是否继续保持 `required`。它不进事实账本，也不进追踪。`violate` 和 `unclear` 分开计数。`unclear` 不计入误报上限，也不拦提交。R1–R3 必须命中。已知干净章的误报 `violate` 不超过 1 条。未通过时把这本书的 `rule_audit` 写成 `off`。改了规则来源或重写审稿之后，旧标定作废，重新走 R1–R3。本仓库不改试点书正文。
 
 ```markdown
 # 规则审稿标定
@@ -139,7 +139,7 @@ JSON 含 `schema`、`body_sha256`、`rules_sha256` 和 `verdicts`。`verdicts` �
 
 ## 结论
 - 通过：是 / 否
-- 通过前 rule_audit 保持 off
+- 未通过时 rule_audit 写成 off
 ```
 
 `accepted_findings` 是事务的可选数组，每项为 `{ "rule_id", "reason" }`，最多 12 条，`rule_id` 不重复。工具把它写进该章逐章记录的 `## 接受的规则例外`，不写入 `_tracking-state.json`。不写这个键或写成空数组时，逐章记录与没有该字段的事务相同。追踪 schema 写入版本 6，并读取版本 4 和 5。版本 6 增加 `facts` 摘要，条目仍在旁路账本。`project migrate --to 5` 去掉这个键且不删账本，也不改 `state_revision`。
@@ -178,13 +178,13 @@ Markdown 报告以 `# 全书体检 第A-B章` 开头，列出 schema、修订号
 
 ## 事实账本与规划检查
 
-事实账本是 `追踪/事实账本.json`，模式 `story-facts/v1`，不写入追踪 state，schema 仍是第 5 版。`kind` 为场地、伤情、账目、物件、能力、年代、指令。每条有 `source.body_sha256`。修改追加 `changes`，不覆盖原 `attrs`。写入持有 `追踪/.tracking-commit.lock/`。
+事实账本是 `追踪/事实账本.json`，模式 `story-facts/v1`。条目留在这个旁路文件。追踪 schema 6 只保存摘要链接：`ledger_path`、`ledger_schema`、`covered_chapters`、`entry_count`。`project migrate` 升到 6，`project migrate --to 5` 去掉链接，两次都不改 `state_revision`，也不改账本文件。`kind` 为场地、伤情、账目、物件、能力、年代、指令、对标。每条有 `source.body_sha256`。修改追加 `changes`，不覆盖原 `attrs`。写入持有 `追踪/.tracking-commit.lock/`。
 
 ```text
 node {CLI} facts extract --workspace {工作区} --book {作品名} --chapter {N} --from {outline|body|both} --json
 node {CLI} facts extract --workspace {工作区} --book {作品名} --chapter {N} --dry-run --json
 node {CLI} facts record --workspace {工作区} --book {作品名} --chapter {N} --input {主张JSON} --json
-node {CLI} facts query --workspace {工作区} --book {作品名} --kind {场地|伤情|账目|物件|能力|年代|指令} --subject {主体} --json
+node {CLI} facts query --workspace {工作区} --book {作品名} --kind {场地|伤情|账目|物件|能力|年代|指令|对标} --subject {主体} --json
 node {CLI} facts diff --workspace {工作区} --book {作品名} --chapter {N} --input {claims.json} --json
 node {CLI} facts stale --workspace {工作区} --book {作品名} --json
 node {CLI} chapter finish --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
@@ -193,7 +193,7 @@ node {CLI} project gates --workspace {工作区} --book {作品名} --json
 
 `extract` 只扫描行首是七类 `kind`、后接冒号的行。`--from` 默认 `both`：细纲、本章规则原文，以及正文。后半段用 `|` 分开。`主体`、`对象`、`人物`、`角色` 写入 `subject`，不进 `attrs`。整数字段写成数字。`无`、`暂无`、`待补充` 跳过。稳定 id 前缀是场地 `VENUE-`、伤情 `INJ-`、账目 `ACCT-`、物件 `OBJ-`、能力 `SKILL-`、年代 `ERA-`、指令 `ORD-`。手写 id 可以不同；回归夹具里的账目 id 仍是 `ACC-`。同一 id 保留先出现的一行。默认写入 `草稿/事实/第NNN章.claims.json`，模式 `story-facts-claims/v1`，同时有 `claims` 和 `entries`。空数组仍是一份有效主张，表示该章已覆盖。`--dry-run` 不写文件。不把 `project lookup --reference` 的命中写进主张。再跑一次会覆盖默认路径；写手只在文件还不存在时抽取，手改因此留得住。
 
-`record` 要求该章已提交，且正文原始字节的 SHA-256 与字数记录一致。空 `entries` 仍把该章记入 `covered_chapters`。`diff` 对同 id 同属性、值不同、且没有本章 `change` 的主张报冲突；未知 id 放进 `unmatched`，不算冲突。有冲突时退出码 1。`stale` 列出来源章正文已变的条目，以及有字数记录但不在 `covered_chapters` 里的章；有这类结果时退出码 1。没有账本文件时 `present` 为 false，`missing_chapters` 为空。缺章不由 `project check` 报告。`facts_diff` 为 `required` 时，提交要求 `草稿/事实/第NNN章.claims.json` 存在且 `diff` 通过。缺省或 `off` 不拦提交。
+`record` 要求该章已提交，且正文原始字节的 SHA-256 与字数记录一致。空 `entries` 仍把该章记入 `covered_chapters`。`diff` 对同 id 同属性、值不同、且没有本章 `change` 的主张报冲突；未知 id 放进 `unmatched`，不算冲突。有冲突时退出码 1。`stale` 列出来源章正文已变的条目，以及有字数记录但不在 `covered_chapters` 里的章；有这类结果时退出码 1。`facts stale` 在没有账本文件时 `present` 为 false，`missing_chapters` 为空。`project check` 仍报告 `facts`：没有账本时，有字数记录的章列入 `facts.missing_chapters`。`facts_diff` 缺键为 `required`，提交要求 `草稿/事实/第NNN章.claims.json` 存在且 `diff` 通过。写成 `off` 才不拦提交。旧书用 `project migrate-gates --legacy-off`。
 
 `chapter finish` 把一次收束收成 `story-chapter-finish/v1`。`rule_audit` 为 `required` 时先校验默认审稿；主张文件存在时做 `diff`；然后提交；提交成功且主张可读时 `record`；最后 `stale`。`chapter commit --with-facts` 走同一条路径。提交失败不写账本。记录失败不回滚正文：`committed` 为 true，`facts_recorded` 为 false，并带 `facts_error`。没有主张文件时 `facts_recorded` 为 false，`claims_present` 为 false。结果含 `phase`（`audit`、`diff`、`commit`、`record`、`done`）、`rules_sha256`、`claims_present` 和 `gates`。没有提供方字段。已提交且（无主张或已入账）时退出码为 0；未提交、主张在但未入账、或有 `facts_error` 时为 1。带外且用户接受自然长度时加 `--accept-current-length`。
 

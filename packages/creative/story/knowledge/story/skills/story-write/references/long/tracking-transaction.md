@@ -129,7 +129,7 @@ node {CLI} chapter accept-current-length --workspace {工作区} --book {作品�
 - `timeline_events.action` 可为 `upsert/delete`。`未揭示` 的 `reveal_chapter` 必须为 `null`；部分/完全揭示只能填写已经发生的实际章节。
 - `mode=revision` 时，逐章记录必须重算为修订后该章仍然成立的完整连续性记录；当前角色、伏笔、时间线和上下文则提交受影响对象截至最新已写章的当前值。
 - 修订导入截止章内的正文时，会新增或覆盖该章的逐章记录；`imported_through_chapter` 不变。
-- `accepted_findings` 可选。它是 `{ "rule_id", "reason" }` 的数组，最多 12 条，`rule_id` 不重复。非空时，工具在本章逐章记录末尾写 `## 接受的规则例外`，每行 `- rule_id｜reason`。这个字段不进入 `_tracking-state.json`。不写或写成空数组时，逐章记录与没有该字段的事务相同。`rule_audit` 为 `required` 时，提交还要求默认审稿文件通过 `chapter audit-verify`，未列入这里的 `violate` 会拒绝提交。缺省不拦。见 [规则审稿](artifact-protocols.md#规则审稿)。
+- `accepted_findings` 可选。它是 `{ "rule_id", "reason" }` 的数组，最多 12 条，`rule_id` 不重复。非空时，工具在本章逐章记录末尾写 `## 接受的规则例外`，每行 `- rule_id｜reason`。这个字段不进入 `_tracking-state.json`。不写或写成空数组时，逐章记录与没有该字段的事务相同。`rule_audit` 缺键为 `required`。提交要求默认审稿文件通过 `chapter audit-verify`，未列入这里的 `violate` 会拒绝提交。写成 `off` 才不拦。旧书用 `project migrate-gates --legacy-off`。见 [规则审稿](artifact-protocols.md#规则审稿)。
 
 ## 续写状态卡固定格式
 

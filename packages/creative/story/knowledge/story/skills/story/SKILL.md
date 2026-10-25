@@ -26,7 +26,7 @@ description: "小说创作入口：新建工程、接入已有小说、查进度
 
 已有标准工程直接继续。若当前打开的是作品本身，说明应使用的父工作区，保留文件；旧布局在明确迁移目标后单独处理。
 
-新书按 [初始化指引](references/project/initialization.md) 使用 `project init --kind long|short` 准备对应目录，保留已有文件。长篇追踪初始化只消费明确准备的初始化输入；已有正文却无追踪时先按接入流程核实事实，不能空初始化覆盖进度。短篇使用 `设定.md`、`小节大纲.md`、`正文.md`，不创建长篇追踪。工作区共享分析在 `拆文库/{来源书名}/`，作者记忆在 `.story/作者记忆/`。
+新书按 [初始化指引](references/project/initialization.md) 使用 `project init --kind long|short` 准备对应目录，保留已有文件。长篇追踪初始化只消费明确准备的初始化输入，写出 schema 6：state 只挂事实账本摘要，条目在 `追踪/事实账本.json`。已有 schema 5 用 `project migrate` 升到 6，`--to 5` 只去掉链接。已有正文却无追踪时先按接入流程核实事实，不能空初始化覆盖进度。短篇使用 `设定.md`、`小节大纲.md`、`正文.md`，不创建长篇追踪。`project check` 返回章号、修订号和 `facts` 缺口。`rule_audit` 与 `facts_diff` 缺键为 `required`；写成 `off` 才不拦提交。旧书用 `project migrate-gates --legacy-off`。`project gates` 只读。工作区共享分析在 `拆文库/{来源书名}/`，作者记忆在 `.story/作者记忆/`。
 
 只读查询不初始化、不提交；作者偏好只有收到 Author Memory Receipt 才可宣称保存。开书准备完成后按用户范围进入写作，不自动产生正文。
 

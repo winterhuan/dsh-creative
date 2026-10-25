@@ -2,6 +2,8 @@
 
 作品目录为工作区直接子目录。已有正文先核实最后完整章与事实；输入保留本次实际覆盖和缺口。用 `node {CLI} project init --workspace {工作区} --book {作品名} --kind long --input {初始化事务.json} --json` 提交，随后 `project check` 核验。已有状态不覆盖，失败保留输入。
 
+初始化写入追踪 schema 6。`facts` 只链接 `追踪/事实账本.json`，条目不进 state。已有 schema 5 用 `project migrate` 升到 6；`project migrate --to 5` 去掉链接，不改账本，也不改 `state_revision`。`project check` 返回 `last_committed_chapter`、`state_revision` 和 `facts` 缺口。`rule_audit` 与 `facts_diff` 缺键为 `required`。要让旧书提交不被审稿或主张拦住，运行 `project migrate-gates --legacy-off`。`project gates` 只回显，不改文件。
+
 
 新书从第 0 章初始化。`story` 接入已有小说时把最后完整章写入 `last_chapter=N`；第 1..N 章不伪造日更记录，常规续写从 N+1 章开始。
 

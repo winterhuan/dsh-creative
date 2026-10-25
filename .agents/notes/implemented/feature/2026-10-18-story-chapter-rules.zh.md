@@ -16,7 +16,7 @@ Status: implemented
 
 默认来源和 `设定/写作检查.json` 的可选键写在[产物协议](../../../../packages/creative/story/knowledge/story/skills/story-write/references/long/artifact-protocols.md)。写出 `rule_sources` 就整份替换默认来源。键缺失时保留默认。文件只设置 `punctuation`，且细纲没有 `出场顺序：` 字段时，章节检查保持原先的结果。缺省 `punctuation` 时按保留处理，其余键可以单独使用。同一句规范化文本保留最先出现的规则 ID。`text` 保持该句原文，其余 ID 放进可选的 `also` 数组。交给写手的一行在 `also` 非空时再接 ` also: `。`rules_sha256` 仍按接上之后的文本计算，同一输入的摘要不变。出场命中认名单原文里的名字，跳过中文引号里的名字，提示写明正文提到了名单未列的人。作废词 ID 带上该条目从 0 起的数组下标。
 
-`blocking` 只用于只有一种读法的配置模式和年代词。`hint` 报告正文里出现、但出场名单没有的人名，仍留在约束或风险里的作废词，以及其他配置的 hint。hint 不使 `chapter check` 失败。`chapter rules` 的出场扫描使用已经提取的出场规则。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章不在这次变更里。那需要以后的事实账本，追踪 schema 仍是第 5 版。[全书体检](2026-10-18-story-book-audit.zh.md) 在一段章号上复用这次章节扫描和作废词 ID。它不取代这条命令。[规则审稿](2026-10-18-story-rule-audit.zh.md) 逐条判断返回的 `rules`，并可以拦住 `chapter commit`。它也不取代这条命令。
+`blocking` 只用于只有一种读法的配置模式和年代词。`hint` 报告正文里出现、但出场名单没有的人名，仍留在约束或风险里的作废词，以及其他配置的 hint。hint 不使 `chapter check` 失败。`chapter rules` 的出场扫描使用已经提取的出场规则。`chapter check` 直接读细纲字段；`rule_sources` 去掉 `OUT-CAST` 时，检查仍找「出场顺序」，除非另一条 `OUT-CAST` 来源改了标题。能力是否早于获得章是账本 hint，由[事实账本笔记](2026-10-19-story-fact-ledger.zh.md)负责。这条命令不保存账本行。追踪 schema 6 只保存摘要链接。[全书体检](2026-10-18-story-book-audit.zh.md) 在一段章号上复用这次章节扫描和作废词 ID。它不取代这条命令。[规则审稿](2026-10-18-story-rule-audit.zh.md) 逐条判断返回的 `rules`，并可以拦住 `chapter commit`。它也不取代这条命令。
 
 原生单章模板在 Prepare 运行该命令，把最多 12000 字的 `id: text` 放进写手任务，并要求写手逐条遵守、在说明里引用 ID。欠长的草稿仍然禁止补字。
 
@@ -36,7 +36,7 @@ Status: implemented
 
 **只在 `chapter rules` 里做出场扫描。** 写手已经在跑的门禁是 chapter check。检查自己读细纲字段，所以覆盖配置拿掉出场规则之后，正文仍可被扫描。
 
-**在这次变更里用事实账本扩展追踪 schema。** 能力时序需要那份账本。这次变更保持 schema 第 5 版。
+**在章节规则里扩展追踪 schema。** 能力时序在事实账本上。schema 6 只保存摘要链接。这条命令仍然只提取规则。
 
 ## 影响
 

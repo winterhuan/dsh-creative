@@ -15,7 +15,7 @@ description: "审查小说正文、设定和大纲，指出有原文依据的问
 
 关注读者承诺、主角目标与选择、因果后果、情绪铺垫、兑现、后续期待及语言可读性。低压章允许关系变化与微期待，不强塞高潮。词频、标点、检测分数和公式不能替代阅读。
 
-默认当前会话完成；具体事实疑点需要独立核查时，委派加载 `story-review`、读取 [一致性核查员](references/roles/consistency-checker.md)，传本 Skill 和书籍路径。章节 workflow 的规则审稿另读 [规则审稿员](references/roles/rule-auditor.md)，只对 `chapter rules` 返回的 ID 给结论，不自创规则。前置任务等待结果；Team 仅用户明确要求时使用，不例行创建多名审稿者。同一 Agent 换 Role 不算独立评审。
+默认当前会话完成；具体事实疑点需要独立核查时，委派加载 `story-review`、读取 [一致性核查员](references/roles/consistency-checker.md)，传本 Skill 和书籍路径。章节 workflow 的规则审稿另读 [规则审稿员](references/roles/rule-auditor.md)，只对 `chapter rules` 返回的 ID 给结论，不自创规则，也不代替作者接受例外。结论写入 `草稿/审稿/第NNN章.rules.json` 后运行 `chapter audit-verify`。`rule_audit` 缺键为 `required`：`chapter finish` 在提交前要求这份文件通过校验，未列入事务 `accepted_findings` 的 `violate` 会停下。写成 `off` 才不拦提交。旧书用 `project migrate-gates --legacy-off`。`unclear` 不拦提交。审稿者不调用 `chapter finish`。前置任务等待结果；Team 仅用户明确要求时使用，不例行创建多名审稿者。同一 Agent 换 Role 不算独立评审。
 
 先给结论，再列有依据的问题、位置和修改方向。事实冲突指出待核实来源；没有问题则说明实际范围与限制，不为填报告制造 finding。不要求固定分数、评审 JSON 或七项证据表；用户需要报告时在本书目录保存普通 Markdown。
 

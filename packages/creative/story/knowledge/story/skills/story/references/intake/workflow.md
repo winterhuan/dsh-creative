@@ -11,7 +11,7 @@
 1. 保留源文件，在已确认的工作区直接子作品目录内组织正文。长篇确认章节边界，保留标题、顺序和正文，不能把目录、番外或未完成片段误计为完整章；边界不清时询问。短篇保持一个 `正文.md` 即可。
 2. 根据已有设定、结尾附近正文和相关前文，确认续写位置与当前人物关系、未解决事件。只追溯本次续写需要的事实，不为初始化生成逐章拆解、全书细纲或每章摘要。
 3. 把可核验的当前设定与待确认问题分开。未读范围明确标记，不把猜测写成角色快照或作者真相。用户另行要求深入分析时使用 `story-analyze`。
-4. 长篇需要正式续写且没有追踪时，读取 [初始化事务](../project/initialization.md)，通过 CLI `node {CLI} project init --kind long --workspace {工作区} --book {作品名} --input <初始化事务.json> --json` 一次初始化。`last_chapter=N` 是最后完整章号，不能写成抽样或已分析的章数；第 1..N 章不伪造逐章记录，正常续写从 N+1 开始。
+4. 长篇需要正式续写且没有追踪时，读取 [初始化事务](../project/initialization.md)，通过 CLI `node {CLI} project init --kind long --workspace {工作区} --book {作品名} --input <初始化事务.json> --json` 一次初始化。`last_chapter=N` 是最后完整章号，不能写成抽样或已分析的章数；第 1..N 章不伪造逐章记录，正常续写从 N+1 开始。初始化写出 schema 6，state 只挂事实账本摘要。随后 `project check` 核验章号、修订号和 `facts` 缺口。已有 schema 5 用 `project migrate`。`rule_audit` 与 `facts_diff` 缺键为 `required`；旧书要放行时运行 `project migrate-gates --legacy-off`。
 5. 补续写章所需细纲，进入 `story-write`。仅整理原文或导出时无需初始化追踪。短篇不建立长篇 tracking。
 
 初始化所需当前事实不足时，先补相关原文或请作者确认；已完成的正文整理仍可交付，不编造状态来强行通过校验。原著人物、世界观和本书基线留在本书工程，不自动复制成外部对标。

@@ -4,7 +4,7 @@
 
 ## 开始
 
-运行 `node {CLI} project check --workspace {工作区} --book {作品名} --json`，从紧凑结果取得 `last_committed_chapter + 1` 与 `state_revision`，核对 `追踪/上下文.md` 当前进度。已有正文却无追踪状态时，先由 `story` 接入建立必要状态，不要求完整拆文。状态损坏按 [追踪事务](tracking-transaction.md) 修复。
+运行 `node {CLI} project check --workspace {工作区} --book {作品名} --json`，从紧凑结果取得 `last_committed_chapter + 1`、`state_revision` 和 `facts` 缺口，核对 `追踪/上下文.md` 当前进度。已有正文却无追踪状态时，先由 `story` 接入建立必要状态，不要求完整拆文。状态损坏按 [追踪事务](tracking-transaction.md) 修复。
 
 将用户范围和已知约束传入每章准备；准备执行者读取卷级目标、当前剧情单元和已有细纲，确认信息边界、必要兑现及章尾停笔点。缺细纲时按 [中途补纲](workflow-setup.md#中途补纲) 创建并检查，不要求用户事先准备完整批次的细纲。已确认卷纲的实质变化应先处理，不以续写名义静默重规划。
 

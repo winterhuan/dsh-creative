@@ -27,7 +27,7 @@ description: "创作长篇或短篇小说：设定、卷纲、细纲、小节规
 - 正式长篇正文前运行 `outline check`，核对读者期待、主角目标、阻碍、关键选择、后果、局部兑现和章尾问题。缺细纲时在已确认卷纲内补建；未知关键事实不能用占位符凑齐。探索稿放本书 `草稿/`，不推进追踪。
 - 按 [写前事实](references/long/continuity-context.md) 读取健康摘要、设定摘录，并查询全部到期伏笔。设定摘录放不下时用 `project lookup` 补页。健康摘要、设定摘录和状态卡的 8 条都不能代替到期页。
 - 写正文前运行 `chapter rules`，把 `rules` 逐条交给写手，每条一行 `id: text`。`text` 是原文；`also` 非空时，这一行在格式化时再接 ` also: ` 和其余 ID。写手遵守每条，自检说明引用规则 ID。缺文件或缺标题只产生 `warnings`，不因此停写。来源和 ID 见 [写作检查配置](references/long/artifact-protocols.md#写作检查配置)。角色当前状态、读者已知和未来计划分别核实。
-- 正文写完后，整体审稿与逐条规则审稿同一轮进行。规则审稿只覆盖 `chapter rules` 返回的 ID，写入 `草稿/审稿/第NNN章.rules.json`，并用 `chapter audit-verify` 校验。未接受的 `violate` 与整体修改意见共用最多两轮修订。`rule_audit` 默认 `off`；设为 `required` 时，提交要求校验通过且没有未处理的 `violate`。作者接受的例外放进事务 `accepted_findings`，只出现在逐章记录。说明见 [规则审稿](references/long/artifact-protocols.md#规则审稿)。
+- 正文写完后，整体审稿与逐条规则审稿同一轮进行。规则审稿只覆盖 `chapter rules` 返回的 ID，写入 `草稿/审稿/第NNN章.rules.json`，并用 `chapter audit-verify` 校验。未接受的 `violate` 与整体修改意见共用最多两轮修订。`rule_audit` 缺键为 `required`，`chapter finish` 要求校验通过且没有未处理的 `violate`。写成 `off` 才放行。作者接受的例外放进事务 `accepted_findings`，只出现在逐章记录。说明见 [规则审稿](references/long/artifact-protocols.md#规则审稿)。
 - 尊重用户字数、设定、必须/禁止事项及停笔点。可调整场景组织、补动作和潜台词，不为凑数新增主线、角色或提前泄露信息。
 - 验收看连续性、主角能动性、信息归属、可读性与用户约束。技法、密度、百分比、道具次数、句式和标点不作为通用配额。
 - 对标可选；只使用明确选定的外部来源。资料分工见 [项目材料](references/long/project-context.md)，多书使用见 [跨书召回](references/cross-book-recall.md)。需要补分析时加载 `story-analyze`，不把本书分析当外部样本。
