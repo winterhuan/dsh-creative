@@ -524,7 +524,8 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     const withFacts = action === 'finish' || values['with-facts'] === true
     if (withFacts) {
       const report = finishChapter(book, chapter, inputPath, action === 'accept-current-length' || values['accept-current-length'] === true)
-      const failed = !report.committed || report.facts_error !== undefined || (report.claims_present && !report.facts_recorded)
+      const auditBlocking = report.book_audit.ran && (report.book_audit.blocking ?? 0) > 0
+      const failed = !report.committed || report.facts_error !== undefined || (report.claims_present && !report.facts_recorded) || auditBlocking
       return [report, failed ? 1 : 0]
     }
     return [chapterCommit(book, chapter, inputPath, action === 'accept-current-length'), 0]
