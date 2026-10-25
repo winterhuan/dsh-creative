@@ -1,7 +1,10 @@
+import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, type TestContext } from 'vitest'
+import { main } from '../src/cli/main.ts'
+import { contextFacts, factsPath, loadFacts, recordFacts, recordReferenceFacts, staleFacts } from '../src/core/facts.ts'
 import { lookupReference } from '../src/core/reference.ts'
 import { extractChapterRules } from '../src/core/rules.ts'
 import { initialize } from '../src/core/tracking/store.ts'
@@ -69,5 +72,55 @@ describe('reference lookup', () => {
     expect(skipped.items).toEqual([])
     const rules = extractChapterRules(book, 1)
     expect(rules.rules.map(rule => rule.id)).toEqual(expect.arrayContaining(['CANON-1', 'OWN-1', 'OWN-U1']))
+    expect(existsSync(factsPath(book))).toBe(false)
+  })
+
+  it('records a reference hit only when asked and marks it stale when the file changes', async context => {
+    const { root, book } = await layout(context)
+    const hit = lookupReference(root, book, '铁匠')
+    expect(hit.title).toBe('样例书')
+    const recorded = recordReferenceFacts(book, hit.items, `拆文库/${hit.title ?? ''}/`)
+    expect(recorded.recorded).toBeGreaterThan(0)
+    const ledger = loadFacts(book)
+    const row = ledger.entries.find(entry => entry.kind === '对标')
+    expect(row?.source.origin).toBe('reference')
+    expect(row?.source.reference_path).toContain('角色/铁匠.md')
+    expect(row?.source.chapter).toBe(0)
+    expect(ledger.covered_chapters).toEqual([])
+    const skipped = recordFacts(book, 1, {
+      entries: [{
+        id: 'REF-manual', kind: '对标', subject: '铁匠', origin: 'reference',
+        reference_path: '拆文库/样例书/角色/铁匠.md', attrs: { 摘录: '守门' }, reason: '不该自动入账',
+      }],
+    })
+    expect(skipped.skipped_reference).toBe(1)
+    expect(skipped.added).toBe(0)
+    expect(loadFacts(book).entries.some(entry => entry.id === 'REF-manual')).toBe(false)
+    expect(contextFacts(book, { chapter: 1, text: '铁匠守着北门', activeNames: [] }).items).toEqual([])
+    await writeFile(join(root, '拆文库/样例书/角色/铁匠.md'), '# 铁匠\n\n铁匠离开了北门。\n')
+    expect(staleFacts(book).stale.map(item => item.id)).toEqual(expect.arrayContaining([...recorded.ids]))
+
+    let out = ''
+    const write = process.stdout.write.bind(process.stdout)
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+      out += String(chunk)
+      return true
+    }) as typeof process.stdout.write
+    try {
+      const quiet = await main(['project', 'lookup', '--workspace', root, '--book', '样书', '--text', '铁匠', '--reference'])
+      expect(quiet).toBe(0)
+      expect(JSON.parse(out)).not.toHaveProperty('reference_recorded')
+      out = ''
+      const stored = await main(['project', 'lookup', '--workspace', root, '--book', '样书', '--text', '铁匠', '--reference', '--record'])
+      expect(stored).toBe(0)
+      const value = JSON.parse(out) as { reference_recorded?: { recorded: number } }
+      expect(value.reference_recorded?.recorded).toBeGreaterThan(0)
+      out = ''
+      const refused = await main(['project', 'lookup', '--workspace', root, '--book', '样书', '--text', '铁匠', '--record'])
+      expect(refused).toBe(2)
+      expect(JSON.parse(out)).toMatchObject({ ok: false, message: expect.stringContaining('lookup --record requires --reference') })
+    } finally {
+      process.stdout.write = write
+    }
   })
 })

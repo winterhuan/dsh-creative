@@ -49,6 +49,7 @@ export function specFor(family: string, action: string): Options | undefined {
       lookup: {
         ...WORKSPACE, ...BOOK, text: { kind: 'value' }, file: { kind: 'value' }, revision: { kind: 'value' }, reference: { kind: 'flag' },
         offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: LOOKUP_DEFAULT_LIMIT },
+        record: { kind: 'flag' },
       },
       rhythm: { ...WORKSPACE, ...BOOK, from: { kind: 'value', type: 'int', required: true }, to: { kind: 'value', type: 'int', required: true } },
       'plan-check': { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' } },
@@ -100,7 +101,7 @@ export function specFor(family: string, action: string): Options | undefined {
       },
     },
     facts: {
-      record: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
+      record: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true }, 'allow-reference': { kind: 'flag' } },
       query: { ...WORKSPACE, ...BOOK, kind: { kind: 'value', choices: FACT_KINDS }, subject: { kind: 'value' } },
       diff: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
       stale: { ...WORKSPACE, ...BOOK },

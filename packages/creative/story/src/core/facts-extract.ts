@@ -28,6 +28,7 @@ export const FACT_ID_PREFIX = {
   能力: 'SKILL',
   年代: 'ERA',
   指令: 'ORD',
+  对标: 'REF',
 } as const satisfies Record<FactKind, string>
 
 const KIND_LINE = /^(场地|伤情|账目|物件|能力|年代|指令)\s*[:：]\s*(.+)$/u

@@ -16,7 +16,7 @@ import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts
 import { extractChapterRules } from '../core/rules.ts'
 import { ruleAuditRelativePath, verifyRuleAudit } from '../core/rule-audit.ts'
 import { finishChapter } from '../core/chapter-finish.ts'
-import { diffFacts, queryFacts, recordFacts, staleFacts } from '../core/facts.ts'
+import { diffFacts, queryFacts, recordFacts, recordReferenceFacts, staleFacts } from '../core/facts.ts'
 import { extractFacts, type ExtractFrom } from '../core/facts-extract.ts'
 import { projectGates } from '../core/gates.ts'
 import { projectCheckReport } from '../core/project-check.ts'
@@ -444,8 +444,13 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
         limit,
         ...(revision === undefined ? {} : { expectedIndex: revision }),
       })
+      if (values.reference !== true && values.record === true) throw new CliError('lookup --record requires --reference')
       if (values.reference !== true) return [settings, 0]
-      return [{ ...settings, references: lookupReference(workspace ?? '', book, queryText, { limit }) }, 0]
+      const references = lookupReference(workspace ?? '', book, queryText, { limit })
+      if (values.record !== true) return [{ ...settings, references }, 0]
+      const prefix = references.title === null ? '' : `拆文库/${references.title}/`
+      const referenceRecorded = prefix === '' ? { schema: 'story-facts/v1', recorded: 0, ids: [] } : recordReferenceFacts(book, references.items, prefix)
+      return [{ ...settings, references, reference_recorded: referenceRecorded }, 0]
     }
     if (action === 'rhythm') {
       const from = integer(values, 'from') ?? 0
@@ -631,7 +636,7 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       return [report, report.ok ? 0 : 1]
     }
     containedTree(book, join(book, '追踪'))
-    return [recordFacts(book, chapter, input), 0]
+    return [recordFacts(book, chapter, input, { allowReference: values['allow-reference'] === true }), 0]
   }
   const book = project ?? ''
   const source = filePath(text(values, 'file'), book)
