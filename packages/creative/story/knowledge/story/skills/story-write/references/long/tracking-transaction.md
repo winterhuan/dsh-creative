@@ -25,14 +25,16 @@ node {CLI} project check  --workspace {工作区} --book {作品名} --json
 node {CLI} text count --checkpoint --file {前半段临时文件} --target {目标} --chapter {N} --json
 node {CLI} chapter check   --workspace {工作区} --book {作品名} --chapter {N} --json
 node {CLI} chapter commit  --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
+node {CLI} chapter finish  --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
 node {CLI} chapter accept-current-length --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
 ```
 
 - `init`：只在 `_tracking-state.json` 不存在时执行，绝不覆盖已初始化项目。
 - `text count --checkpoint`：纯测量；返回当前实际字数、用户带与剩余用户区间，不写正文、不写 tracking、不做语义判断。每章最多调用一次。
 - `chapter check`：重新读取当前正文与细纲目标，返回细纲就绪、确定性长度状态、现有 blocking quality、`state_revision` 和当前可执行动作，不保存 approval。`under` 不提供自动补写；`over` 额外返回一次净删型 `compress-once` 及进入内带/用户带所需的机器删除区间。`设定/写作检查.json` 里 `forbidden` 的 `blocking` 项和 `era.deny` 并入 blocking quality；`hint`、出场名单和 `void_terms` 只进入 advisories。分级见 [写作检查配置](artifact-protocols.md#写作检查配置)。
-- `chapter commit`：再次读取当前文件、重新计数；只接受用户带内章节，将与正文哈希绑定的字数记录和逐章事务原子提交。
-- `chapter accept-current-length`：只接受带外但 quality pass 的章节，接受动作发生时重新读取、重新计数并立即原子提交，不保存可陈旧的历史决议。
+- `chapter commit`：再次读取当前文件、重新计数；只接受用户带内章节，将与正文哈希绑定的字数记录和逐章事务原子提交。它不写事实账本。
+- `chapter finish`：在同一次结果里可选校验审稿、比对主张、提交、入账并报告 `facts stale`。`--accept-current-length` 接受带外长度。提交失败不写账本。记录失败不回滚正文。`chapter commit --with-facts` 与它相同。
+- `chapter accept-current-length`：只接受带外但 quality pass 的章节，接受动作发生时重新读取、重新计数并立即原子提交，不保存可陈旧的历史决议。加 `--with-facts` 时同时入账。
 - `check`：严格验证 state schema、逐章记录连续性/规范名/体积、固定 7 栏、角色快照硬上限、派生文件集合，以及所有派生视图与 state 的逐字一致性。
 
 每本书用目录 `追踪/.tracking-commit.lock/` 串行写事务，不是操作系统文件锁。持有者在该目录的 `pid` 文件写入进程号和取得锁的时间；提交结束（成功或失败）后删除目录，目录不常驻。另一进程在 `pid` 文件未写完、进程已退出，或取得时间早于一分钟时接管该目录。仍在运行且取得时间不满一分钟时，最多等待十秒，超时后报错，不删除对方持有的锁。取得锁之前，若同名路径是普通文件而不是目录，先删掉该文件。提交中断时先读取 `project status`：修订号未变则保留原输入重试提交，再执行 `project check`；修订号已变则重读状态和实际文件，不能盲目重放。`expected_state_revision` 再拒绝基于旧状态构造的 stale transaction。两个不同事务并发时至多一个修订成功。字数记录也在锁内对当前正文和目标重新验证，正文或目标变化会让预先构造的记录直接失败。

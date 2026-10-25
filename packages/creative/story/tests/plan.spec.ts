@@ -72,4 +72,25 @@ describe('plan check', () => {
     expect(slice.volume?.text).toContain('总闸')
     expect(Buffer.byteLength(slice.volume?.text ?? '', 'utf8')).toBeLessThanOrEqual(VOLUME_CONTEXT_MAX_BYTES)
   })
+
+  it('hints when the volume range is not labeled at the top and still uses the full span', async context => {
+    const directory = await book(context)
+    await writeFile(join(directory, '大纲/卷纲_第一卷.md'), `# 第一卷
+
+## 剧情单元 开局
+
+- 章节范围：1-20
+
+## 剧情单元 未标范围
+
+- 单元ID：U2
+`)
+    const report = checkPlan(directory, 5)
+    expect(report.ok).toBe(true)
+    expect(report.findings.map(item => item.category)).toEqual(['volume-range', 'unit-range'])
+    expect(report.findings.every(item => item.severity === 'hint')).toBe(true)
+    const covered = checkPlan(directory, 20)
+    expect(covered.findings.filter(item => item.severity === 'blocking').map(item => item.category)).toEqual(['next-volume'])
+    expect(covered.findings.filter(item => item.category === 'volume-range' || item.category === 'unit-range').every(item => item.severity === 'hint')).toBe(true)
+  })
 })

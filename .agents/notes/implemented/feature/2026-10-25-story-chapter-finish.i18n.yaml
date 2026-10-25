@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-25-story-chapter-finish.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-25-story-chapter-finish.md
+/agent-note-chapter-finish-beside-the-ledger:
+  en: 9ae4d1e3181708b0
+  zh: 70dbe4f12c810cc3
+/agent-note-chapter-finish-beside-the-ledger/problem:
+  en: 06cf56fedd010a7a
+  zh: 172e18785d77b5e8
+/agent-note-chapter-finish-beside-the-ledger/decision:
+  en: 04f29329eb55f6bb
+  zh: 42a0230354fd2b9d
+/agent-note-chapter-finish-beside-the-ledger/alternatives-considered:
+  en: 9be17c9ad1032ac1
+  zh: 707a0336f1cad6f8
+/agent-note-chapter-finish-beside-the-ledger/consequences:
+  en: 151039504bd972f8
+  zh: 86036e096acb98e2
+/agent-note-chapter-finish-beside-the-ledger/verification:
+  en: 0e829ffdd80787eb
+  zh: 7f261c5d3a09499d

@@ -12,7 +12,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CONTEXT_SETTINGS_EXCERPT_CHARS, CONTEXT_SETTINGS_LIMIT, lookupSettings, type LookupHit } from './settings-lookup.ts'
 import { contextFacts, type FactView } from './facts.ts'
-import { volumeSlice } from './plan.ts'
+import { checkPlan, volumeSlice } from './plan.ts'
+import { checkRhythm } from './rhythm.ts'
 import { assessHealth, HEALTH_SUMMARY_LIMIT, type HealthReport } from './tracking/health.ts'
 import { matchesForeshadow } from './tracking/query.ts'
 import type { CharacterSnapshot, ForeshadowRow, TimelineRow } from './tracking/schema.ts'
@@ -22,6 +23,10 @@ import { loadState, trackingRoot } from './tracking/store.ts'
 export const CONTEXT_SCHEMA = 'story-context/v1'
 /** Largest encoded context bundle; lower-priority sections are omitted first. */
 export const CONTEXT_BUNDLE_MAX_BYTES = 16_384
+/** Due foreshadow rows kept by `--profile lite` before the shared trim. */
+export const LITE_DUE_LIMIT = 5
+/** Plan and rhythm rows kept by `--profile lite`. */
+export const LITE_SIGNAL_LIMIT = 4
 
 /** One character name found in the scanned text. */
 export interface Mention {
@@ -30,12 +35,22 @@ export interface Mention {
   readonly first_line: number
 }
 
+/** One plan or rhythm row attached by `--profile lite`. */
+export interface ContextSignal {
+  readonly source: 'plan' | 'rhythm'
+  readonly severity: 'blocking' | 'hint'
+  readonly category: string
+  readonly message: string
+}
+
 /** Options of {@link buildContext}. */
 export interface ContextOptions {
   /** The chapter being written; defaults to the next uncommitted chapter. */
   readonly chapter?: number
   /** Text to scan for character mentions (draft, outline or instructions). */
   readonly text?: string
+  /** `lite` keeps the continuation card, fact cap, rules path, and the first due rows. */
+  readonly profile?: 'full' | 'lite'
 }
 
 /** The context bundle. */
@@ -62,7 +77,22 @@ export interface ContextBundle {
   readonly facts: readonly FactView[]
   /** Volume contract for this chapter. At most 1.5 KiB before the shared trim. */
   readonly volume: { readonly path: string; readonly text: string } | null
-  readonly omitted: { readonly characters: number; readonly due_foreshadow: number; readonly timeline: number; readonly health: number; readonly settings: number; readonly facts: number; readonly volume: number }
+  /** Present when `profile` is `lite`. */
+  readonly profile?: 'lite'
+  /** Book-relative writing-check path. Present when `profile` is `lite`. */
+  readonly rules_path?: string
+  /** A few blocking or hint rows from plan and rhythm. Present when `profile` is `lite`. */
+  readonly signals?: readonly ContextSignal[]
+  readonly omitted: {
+    readonly characters: number
+    readonly due_foreshadow: number
+    readonly timeline: number
+    readonly health: number
+    readonly settings: number
+    readonly facts: number
+    readonly volume: number
+    readonly signals?: number
+  }
 }
 
 /**
@@ -134,6 +164,9 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     ...(options.text === undefined ? {} : { text: options.text }),
   })
   const volume = volumeSlice(project, chapter)
+  const lite = options.profile === 'lite'
+  const dueKept = lite ? dueForeshadow.slice(0, LITE_DUE_LIMIT) : dueForeshadow
+  const signals = lite ? liteSignals(project, chapter) : undefined
   const bundle = {
     schema: CONTEXT_SCHEMA,
     book_title: state.book_title,
@@ -146,36 +179,47 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     continuity_risks: state.context.continuity_risks,
     long_term_constraints: state.context.long_term_constraints,
     mentions,
-    characters,
-    due_foreshadow: dueForeshadow,
-    timeline,
+    characters: lite ? [] : characters,
+    due_foreshadow: dueKept,
+    timeline: lite ? [] : timeline,
     health: { ...report, items: healthItems },
-    settings: settingItems,
+    settings: lite ? [] : settingItems,
     facts: factResult.items,
-    volume,
+    volume: lite ? null : volume,
+    ...(lite ? { profile: 'lite' as const, rules_path: '设定/写作检查.json', signals: signals?.items ?? [] } : {}),
     omitted: {
-      characters: 0, due_foreshadow: 0, timeline: 0, health: report.items.length - healthItems.length,
-      settings: settingsResult?.omitted ?? 0,
+      characters: lite ? characters.length : 0,
+      due_foreshadow: lite ? dueForeshadow.length - dueKept.length : 0,
+      timeline: lite ? timeline.length : 0,
+      health: report.items.length - healthItems.length,
+      settings: (settingsResult?.omitted ?? 0) + (lite ? settingItems.length : 0),
       facts: factResult.omitted,
-      volume: 0,
+      volume: lite && volume !== null ? 1 : 0,
+      ...(signals === undefined ? {} : { signals: signals.omitted }),
     },
   }
   // Setting excerpts leave first, then fact rows, then the volume slice. Due foreshadow stays longest.
   const trimmed = {
     ...bundle,
-    characters: [...characters],
-    due_foreshadow: [...dueForeshadow],
-    timeline: [...timeline],
+    characters: [...bundle.characters],
+    due_foreshadow: [...bundle.due_foreshadow],
+    timeline: [...bundle.timeline],
     health: { ...bundle.health, items: [...healthItems] },
-    settings: [...settingItems],
+    settings: [...bundle.settings],
     facts: [...factResult.items],
-    volume,
+    volume: bundle.volume,
+    ...(signals === undefined ? {} : { signals: [...signals.items] }),
     omitted: { ...bundle.omitted },
   }
   while (encodedBytes(trimmed) > CONTEXT_BUNDLE_MAX_BYTES) {
     if (trimmed.settings.length > 0) { trimmed.settings.pop(); trimmed.omitted.settings += 1; continue }
     if (trimmed.facts.length > 0) { trimmed.facts.pop(); trimmed.omitted.facts += 1; continue }
     if (trimmed.volume !== null) { trimmed.volume = null; trimmed.omitted.volume += 1; continue }
+    if (trimmed.signals !== undefined && trimmed.signals.length > 0) {
+      trimmed.signals.pop()
+      trimmed.omitted.signals = (trimmed.omitted.signals ?? 0) + 1
+      continue
+    }
     if (trimmed.health.items.length > 0) { trimmed.health.items.pop(); trimmed.omitted.health += 1; continue }
     if (trimmed.timeline.length > 0) { trimmed.timeline.pop(); trimmed.omitted.timeline += 1; continue }
     if (trimmed.characters.length > 0) { trimmed.characters.pop(); trimmed.omitted.characters += 1; continue }
@@ -183,4 +227,15 @@ export function buildContext(project: string, options: ContextOptions = {}): Con
     break
   }
   return trimmed
+}
+
+function liteSignals(project: string, chapter: number): { items: ContextSignal[]; omitted: number } {
+  const plan = checkPlan(project, chapter).findings.map(item => ({
+    source: 'plan' as const, severity: item.severity, category: item.category, message: item.message,
+  }))
+  const rhythm = checkRhythm(project, Math.max(1, chapter - 8), chapter + 2).findings.map(item => ({
+    source: 'rhythm' as const, severity: 'hint' as const, category: item.category, message: item.message,
+  }))
+  const ranked = [...plan.filter(item => item.severity === 'blocking'), ...plan.filter(item => item.severity !== 'blocking'), ...rhythm]
+  return { items: ranked.slice(0, LITE_SIGNAL_LIMIT), omitted: Math.max(0, ranked.length - LITE_SIGNAL_LIMIT) }
 }

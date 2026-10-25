@@ -40,6 +40,19 @@ if (!Number.isInteger(args.chapter) || args.chapter < 1 || typeof args.instructi
   throw new Error('Invalid chapter, instructions or approved flag')
 }
 const digest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value)
+let workflowPhase = 'Locate'
+let rulesSha256 = null
+const markPhase = name => { workflowPhase = name; phase(name) }
+const gateObject = value => ({
+  rule_audit: value?.rule_audit === 'required' ? 'required' : 'off',
+  facts_diff: value?.facts_diff === 'required' ? 'required' : 'off',
+})
+const meta = (extra = {}) => ({
+  phase: typeof extra.phase === 'string' ? extra.phase : workflowPhase,
+  rules_sha256: digest(extra.rules_sha256) ? extra.rules_sha256 : rulesSha256,
+  claims_present: extra.claims_present === true,
+  gates: gateObject(extra.gates),
+})
 const project = `${args.workspace.replace(/[\\/]+$/, '')}/${args.book}`
 const quote = value => `'${value.replaceAll("'", "'\\''")}'`
 const cli = `node ${quote(args.cli)}`
@@ -52,35 +65,36 @@ const response = (value, field, stage) => {
   return value
 }
 
-phase('Locate')
+markPhase('Locate')
 const located = response(await agent(`${common()}
 Read the issue list at 草稿/问题单.json when it exists. Otherwise run ${cli} book audit ${scope} --from ${args.chapter} --to ${args.chapter} --issues --json and use that file. Return ready with issues_path, or needs_input when the chapter cannot be located.`, {
   label: 'Locate', schema: locateSchema,
 }), 'summary', 'Locate')
-if (located.status === 'needs_input') return { status: 'needs_input', summary: located.summary, chapter: args.chapter }
+if (located.status === 'needs_input') return { status: 'needs_input', summary: located.summary, chapter: args.chapter, ...meta() }
 if (located.status !== 'ready' || typeof located.issues_path !== 'string' || !located.issues_path.trim()) throw new Error('Locate returned invalid issues_path')
 
-phase('Plan')
+markPhase('Plan')
 const planned = response(await agent(`${common()}
 Propose the rewrite from the issue list. Return needs_approval when the rewrite changes plot and args.approved is false. Return ready when the change is local or already approved. Return needs_input when a fact is missing.`, {
   label: 'Plan', schema: planSchema,
 }), 'summary', 'Plan')
 if (planned.status === 'needs_input' || (planned.status === 'needs_approval' && args.approved !== true)) {
-  return { status: 'needs_input', summary: planned.summary, chapter: args.chapter }
+  return { status: 'needs_input', summary: planned.summary, chapter: args.chapter, ...meta() }
 }
 if (planned.status !== 'ready' && planned.status !== 'needs_approval') throw new Error('Plan returned an invalid status')
 
-phase('Rewrite')
+markPhase('Rewrite')
 const rewritten = response(await agent(`${common()}
-Edit the committed body in place. Run ${cli} chapter check ${scope} --chapter ${args.chapter} --json. checked requires outline_readiness and quality to pass. Return the checked hashes and state_revision.`, {
+Edit the committed body in place. Run ${cli} chapter check ${scope} --chapter ${args.chapter} --json. checked requires outline_readiness and quality to pass. Return the checked hashes and state_revision.
+If 草稿/事实/第${String(args.chapter).padStart(3, '0')}章.claims.json is missing after the edit, run ${cli} facts extract ${scope} --chapter ${args.chapter} --from both --json. An empty claims file is valid. A failed extract is a warning unless facts_diff is required. Do not copy reference lookup hits into claims.`, {
   label: 'Rewrite', schema: rewriteSchema,
 }), 'summary', 'Rewrite')
-if (rewritten.status === 'needs_input') return { status: 'needs_input', summary: rewritten.summary, chapter: args.chapter }
+if (rewritten.status === 'needs_input') return { status: 'needs_input', summary: rewritten.summary, chapter: args.chapter, ...meta() }
 if (rewritten.status !== 'checked' || !digest(rewritten.body_sha256) || !digest(rewritten.outline_sha256) || !Number.isInteger(rewritten.state_revision)) {
   throw new Error('Rewrite returned invalid identity')
 }
 
-phase('Audit')
+markPhase('Audit')
 const audited = await agent(`${common()}
 Run ${cli} chapter rules ${scope} --chapter ${args.chapter} --json and write story-rule-audit/v1 for the rewritten body. Then run ${cli} chapter audit-verify ${scope} --chapter ${args.chapter} --json. Return the document only after verified is true. When rule_audit is off, still return the document; do not block on the gate.`, {
   label: 'Audit', schema: auditSchema,
@@ -88,19 +102,20 @@ Run ${cli} chapter rules ${scope} --chapter ${args.chapter} --json and write sto
 if (audited === null || audited === undefined || audited.schema !== 'story-rule-audit/v1' || audited.body_sha256 !== rewritten.body_sha256) {
   throw new Error('Audit failed')
 }
+if (digest(audited.rules_sha256)) rulesSha256 = audited.rules_sha256
 
-phase('Submit')
+markPhase('Submit')
 const submitted = response(await agent(`${common()}
 Submit one mode=revision transaction. Include expected_body_sha256=${rewritten.body_sha256}, expected_outline_sha256=${rewritten.outline_sha256}, expected_state_revision=${rewritten.state_revision}.
-Run ${cli} chapter commit ${scope} --chapter ${args.chapter} --input <absolute-transaction-file> --json.
-When facts_diff is required, run facts diff on 草稿/事实/第${String(args.chapter).padStart(3, '0')}章.claims.json before the commit. When it is off, report conflicts and do not block.
-After success run ${cli} facts stale ${scope} --json. Re-record changed rows with ${cli} facts record ${scope} --chapter ${args.chapter} --input <claims file> --json when that file exists.
+Run ${cli} chapter finish ${scope} --chapter ${args.chapter} --input <absolute-transaction-file> --json.
+When facts_diff is required, a conflict in 草稿/事实/第${String(args.chapter).padStart(3, '0')}章.claims.json leaves committed false. When it is off, report conflicts and do not block.
+Finish records claims when the commit succeeded and that file exists, then runs facts stale. Do not call facts record yourself. Do not roll back the chapter when record fails. facts_recorded false with no claims file means the chapter is not in the ledger; facts stale shows that once a ledger exists.
 A context item that the rewrite retires, and that is not part of this revision delta, uses ${cli} project context retire ${scope} --item <text> --reason <reason> --json. Old reader-value rows move with ${cli} project legacy archive ${scope} --reader-value --json.
 Downstream chapters that still cite a changed fact go back on the issue list. Do not start those chapters in this run.`, {
   label: 'Submit', schema: commitSchema,
 }), 'summary', 'Submit')
 if (submitted.status !== 'committed' || submitted.body_sha256 !== rewritten.body_sha256 || submitted.state_revision !== rewritten.state_revision + 1) {
-  if (submitted.status === 'needs_input' || submitted.status === 'uncertain') return { status: submitted.status, summary: submitted.summary, chapter: args.chapter }
+  if (submitted.status === 'needs_input' || submitted.status === 'uncertain') return { status: submitted.status, summary: submitted.summary, chapter: args.chapter, ...meta(submitted) }
   throw new Error('Submission did not verify the revision')
 }
-return { status: 'committed', chapter: args.chapter, summary: submitted.summary, body_sha256: submitted.body_sha256, state_revision: submitted.state_revision }
+return { status: 'committed', chapter: args.chapter, summary: submitted.summary, body_sha256: submitted.body_sha256, state_revision: submitted.state_revision, ...meta(submitted) }

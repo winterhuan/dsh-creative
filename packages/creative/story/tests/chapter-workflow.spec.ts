@@ -55,8 +55,13 @@ describe('native chapter template transitions', () => {
     expect(calls[3]!.prompt).toContain('rule-auditor.md')
     expect(calls[3]!.prompt).toContain('chapter audit-verify')
     expect(calls[4]!.prompt).toContain(`expected_body_sha256=${source.body_sha256}`)
-    expect(calls[4]!.prompt).toContain('chapter commit')
+    expect(calls[4]!.prompt).toContain('chapter finish')
+    expect(calls[1]!.prompt).toContain('facts extract')
     expect(calls[4]!.prompt).toContain('rule_audit')
+    expect(await result).toMatchObject({
+      phase: 'Submit', rules_sha256: 'd'.repeat(64), claims_present: false,
+      gates: { rule_audit: 'off', facts_diff: 'off' },
+    })
   })
 
   it('reviews the changed draft before submitting it', async () => {
@@ -86,7 +91,8 @@ describe('native chapter template transitions', () => {
     const first = run([{ ...draft, length_status: 'under' }, ready, cleanAudit, committed], { accepted_length, resume: true, compression_used: true })
     expect(await first.result).toMatchObject({ status: 'committed', compression_used: true })
     expect(first.calls[1]!.prompt).toContain('preserve the existing draft')
-    expect(first.calls[4]!.prompt).toContain('chapter accept-current-length')
+    expect(first.calls[4]!.prompt).toContain('chapter finish')
+    expect(first.calls[4]!.prompt).toContain('--accept-current-length')
     const second = run([{ ...draft, body_sha256: 'c'.repeat(64), length_status: 'under' }], { accepted_length })
     expect(await second.result).toMatchObject({ status: 'needs_input' })
   })
