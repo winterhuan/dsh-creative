@@ -243,6 +243,9 @@ describe('chapter finish', () => {
     expect(finished.value.facts_error).toEqual(expect.any(String))
     const checked = await runCli(['project', 'check', '--workspace', root, '--book', BOOK])
     expect(checked.code).toBe(0)
-    expect(checked.value).toEqual({ last_committed_chapter: 3, state_revision: 1 })
+    expect(checked.value).toMatchObject({
+      schema: 'story-project-check/v1', last_committed_chapter: 3, state_revision: 1,
+      facts: { present: false, missing_chapters: [3], stale_count: 0, stale: [] },
+    })
   })
 })

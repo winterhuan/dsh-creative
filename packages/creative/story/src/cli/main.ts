@@ -19,6 +19,7 @@ import { finishChapter } from '../core/chapter-finish.ts'
 import { diffFacts, queryFacts, recordFacts, staleFacts } from '../core/facts.ts'
 import { extractFacts, type ExtractFrom } from '../core/facts-extract.ts'
 import { projectGates } from '../core/gates.ts'
+import { projectCheckReport } from '../core/project-check.ts'
 import { archiveReaderValue, retireContextItem } from '../core/legacy.ts'
 import { checkRhythm } from '../core/rhythm.ts'
 import { checkPlan } from '../core/plan.ts'
@@ -39,7 +40,7 @@ import { verifyOutline } from '../core/outline-contract.ts'
 import { projectQuery, type QueryFilter, type QueryKind } from '../core/tracking/query.ts'
 import { specFor, type OptionSpec } from './specs.ts'
 import { normalizeInitialDocument, type TrackingState } from '../core/tracking/schema.ts'
-import { checkProject, initialize, statePath } from '../core/tracking/store.ts'
+import { initialize, statePath } from '../core/tracking/store.ts'
 import { checkpointWordcount, evaluateWordcount, findChapterFile, measureWordcount } from '../core/wordcount.ts'
 import { DEFAULT_MAX_CHARS, detectChapter, readKeyPool, writeReport } from '../core/zhuque.ts'
 
@@ -419,8 +420,7 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     }
     if (action === 'check') {
       containedTree(book, join(book, '追踪'))
-      const state = checkProject(book)
-      return [{ last_committed_chapter: state.last_committed_chapter, state_revision: state.state_revision }, 0]
+      return [projectCheckReport(book), 0]
     }
     if (action === 'gates') return [projectGates(book), 0]
     if (action === 'context') {
