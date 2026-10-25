@@ -69,7 +69,7 @@ node {CLI} project lookup --workspace {工作区} --book {作品名} --text {一
 
 别名格式见[产物模板](../../../story-write/references/long/artifact-protocols.md)的「设定文件别名」。没有别名的旧文件仍按文件名和一级标题匹配。
 
-每条结果带 `source`（相对本书的路径）、`title`、`line_start`、`line_end` 和摘录。默认 8 条，`--limit` 为 1–20。单次结果最多 16 KiB；放不下的条数计入 `omitted`，`next_offset` 非空时用它继续。`--revision` 填上一页的 `index_sha256`。库内容变化则拒绝该页，须从 offset 0 重查。`index_sha256` 只覆盖已索引的 Markdown，不是追踪修订号。空的 `设定/` 返回 `settings_present: false` 和空列表。单文件超过 512 KiB 时只索引开头，命中带 `file_truncated: true`。`--reference` 在同一结果上附加 `references`：按题材定位里的主对标只读 `拆文库/<书>/角色/`、`设定/` 和 `剧情/剧情单元_*.md`，跳过 `原文/` 和章节摘要汇总。这些命中的 `source` 是 `reference`，排在本书设定之后，不当作本书事实。不加这个旗标时不查拆文库。
+每条结果带 `source`（相对本书的路径）、`title`、`line_start`、`line_end` 和摘录。默认 8 条，`--limit` 为 1–20。单次结果最多 16 KiB；放不下的条数计入 `omitted`，`next_offset` 非空时用它继续。`--revision` 填上一页的 `index_sha256`。库内容变化则拒绝该页，须从 offset 0 重查。`index_sha256` 只覆盖已索引的 Markdown，不是追踪修订号。空的 `设定/` 返回 `settings_present: false` 和空列表。单文件超过 512 KiB 时只索引开头，命中带 `file_truncated: true`。`--reference` 在同一结果上附加 `references`：按题材定位里的主对标只读 `拆文库/<书>/角色/`、`设定/` 和 `剧情/剧情单元_*.md`，跳过 `原文/` 和章节摘要汇总。这些命中的 `source` 是 `reference`，排在本书设定之后，不当作本书事实。不加这个旗标时不查拆文库。检索只读。同时加上 `--record` 才写入账本，`kind` 为对标，`origin` 为 reference，不计入 `covered_chapters`。`--record` 不能单独使用。
 
 ## 写前上下文
 
@@ -78,9 +78,9 @@ node {CLI} project context --workspace {工作区} --book {作品名} --chapter 
 node {CLI} project context --workspace {工作区} --book {作品名} --chapter {待写章} --profile lite --json
 ```
 
-一次取齐本章写作上下文：续写状态卡、到期伏笔、`--text` 文件中提及的角色快照及其时间线事实、健康摘要、该文件命中的设定摘录、事实账本摘录和卷切片。`--chapter` 省略时取下一未提交章；`--text` 传文件路径，省略时只返回状态卡中的活跃角色，不扫描设定。`mentions` 按首次出现排序，`characters` 中活跃角色在前。健康摘要最多 8 条，`health.counts` 始终是全量。设定摘录最多 4 条。事实摘录最多 2 KiB，卷切片最多 1.5 KiB。超出条数或放不进 16 KiB 时计入对应的 `omitted`。字节预算内先省略设定摘录，再省略事实行，再丢掉卷切片，然后才省略健康条目，到期伏笔仍最后省略。`lite` 在丢掉卷切片之后、健康条目之前，还可以丢掉 `signals`。`omitted.settings` 非零时用上面的 `project lookup --file` 指向同一份细纲或草稿补页。`omitted.facts` 非零时用 `facts query` 补页。`omitted.health` 非零时用 `--kind health` 按同一修订号补页。设定摘录、事实摘录和健康摘要都不代替全部到期伏笔。单次结果最多 16 KiB；其余省略用定点查询补齐。上下文只读已提交状态、账本和设定文件，不替代 `project check`。账本缺章由 `facts stale` 报告，不由 `project check` 报告。
+一次取齐本章写作上下文：续写状态卡、到期伏笔、`--text` 文件中提及的角色快照及其时间线事实、健康摘要、该文件命中的设定摘录、事实账本摘录和卷切片。`--chapter` 省略时取下一未提交章；`--text` 传文件路径，省略时只返回状态卡中的活跃角色，不扫描设定。`mentions` 按首次出现排序，`characters` 中活跃角色在前。健康摘要最多 8 条，`health.counts` 始终是全量。设定摘录最多 4 条。事实摘录最多 2 KiB，卷切片最多 1.5 KiB。超出条数或放不进 16 KiB 时计入对应的 `omitted`。字节预算内先省略设定摘录，再省略事实行，再丢掉卷切片，然后才省略健康条目，到期伏笔仍最后省略。`lite` 在丢掉卷切片之后、健康条目之前，还可以丢掉 `signals`。`omitted.settings` 非零时用上面的 `project lookup --file` 指向同一份细纲或草稿补页。`omitted.facts` 非零时用 `facts query` 补页。`omitted.health` 非零时用 `--kind health` 按同一修订号补页。设定摘录、事实摘录和健康摘要都不代替全部到期伏笔。单次结果最多 16 KiB；其余省略用定点查询补齐。上下文只读已提交状态、账本和设定文件，不替代 `project check`。账本缺章由 `facts stale` 和 `project check` 的 `facts` 报告。没有账本文件时 `facts stale` 的 `missing_chapters` 为空；`project check` 把有字数记录的章列入 `facts.missing_chapters`。
 
-`--profile` 缺省 `full`。`lite` 保留续写卡、事实摘录上限、`rules_path`（`设定/写作检查.json`）和到期伏笔前 5 条，并附最多 4 条 `signals`：先是规划 blocking，然后规划 hint，然后节奏 hint。角色、时间线、设定摘录和卷切片计入 `omitted`。`full` 的 `omitted` 仍是 `characters`、`due_foreshadow`、`timeline`、`health`、`settings`、`facts`、`volume`。`lite` 另有 `profile`、`rules_path`、`signals` 和 `omitted.signals`。有效门禁用 `project gates` 回显，不从这里改写。
+`--profile` 缺省 `full`。`lite` 保留续写卡、事实摘录上限、`rules_path`（`设定/写作检查.json`）和到期伏笔前 5 条，并附最多 4 条 `signals`：先是规划 blocking，然后规划 hint，然后节奏 hint。角色、时间线、设定摘录和卷切片计入 `omitted`。`full` 的 `omitted` 仍是 `characters`、`due_foreshadow`、`timeline`、`health`、`settings`、`facts`、`volume`。`lite` 另有 `profile`、`rules_path`、`signals` 和 `omitted.signals`。`project gates` 只读回显有效的 `rule_audit` 与 `facts_diff`，缺键为 `required`。不从 context 改写。旧书放行用 `project migrate-gates --legacy-off`。
 
 ## 工作台与写法记忆
 

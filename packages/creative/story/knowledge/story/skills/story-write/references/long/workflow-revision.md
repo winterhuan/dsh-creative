@@ -18,7 +18,7 @@
 - 伏笔、角色和时间线变化要核对从修订章 X 到最后已写章 M 的受影响材料，提交截至 M 的当前值。删除早期埋设而后文仍引用时先报告正文冲突，不能直接删 ID。
 - 核心角色快照保留身份、位置、目标、资源、关系、已知信息与未结事项的完整当前状态，不能让一条变化覆盖其他维度。
 - 客观事实、读者截至 M 的认知与实际揭示状态在同一事件中更新；未来揭示计划仍留大纲，不手改作者/读者派生视图。
-- 修订接入截止章内的章节时产生该章覆盖记录，不改变导入截止章。revision 事务不声明当前项退役。要单独去掉一条上下文，运行 `project context retire`。旧的 `reader_value_records` 用 `project legacy archive --reader-value` 移到 `追踪/_legacy/`。提交用 `chapter finish`：成功且主张文件存在时入账，并在同一结果里给出 `facts stale`。记录失败不回滚正文。来源章变了的条目在修订事务里重新记录。已提交章的原生模板是 `workflows/revise.js`：Locate、Plan、Rewrite、Audit、Submit。未批准且方案要求批准时返回 `needs_input`。改写后若主张文件不存在，运行 `facts extract`。
+- 修订接入截止章内的章节时产生该章覆盖记录，不改变导入截止章。revision 事务不声明当前项退役。要单独去掉一条上下文，运行 `project context retire`。旧的 `reader_value_records` 用 `project legacy archive --reader-value` 移到 `追踪/_legacy/`。提交用 `chapter finish`：`rule_audit` 为 `required` 时先做审稿校验，主张文件存在时做 diff，然后提交；成功且主张文件存在时入账，并在同一结果里给出 `facts stale`。两个键缺省都是 `required`。写成 `off` 才放行。记录失败不回滚正文。来源章变了的条目在修订事务里重新记录。已提交章的原生模板是 `workflows/revise.js`：Locate、Plan、Rewrite、Audit、Submit。未批准且方案要求批准时返回 `needs_input`。改写后若主张文件不存在，运行 `facts extract`；失败是 warning，只有 `facts_diff` 为 `required` 才停下。
 - 使用最新 `expected_state_revision` ，通过 `node {CLI} chapter finish --workspace {工作区} --book {作品名} --chapter {N} --input {事务JSON路径} --json`（或用户明确接受长度后加上 `--accept-current-length`）提交。状态变更须重读重构；写入失败保留原事务重跑，成功后验证派生视图一致。事实冲突在这一章修订里处理，不留到下一章。
 
 列出具体受影响后续章节及原因，在授权范围内修复。不能把结构性冲突只记进追踪后继续写，也不因一次局部措辞修改全量重审整本。连续修多章时串行执行，前章提交成功后处理下一章。

@@ -33,4 +33,6 @@ AI 模式和标点只是复核线索，不能要求清零。复读、截断和�
 
 任务要求结构化路由时返回 recommendation 与可读 review；普通审稿仍用自然报告。提交者随后独立锁内核验预期身份，审稿者不写追踪。
 
+章节 workflow 的规则审稿只覆盖 `chapter rules` 的 ID，写入 `草稿/审稿/第NNN章.rules.json`，再跑 `chapter audit-verify`。不自创规则。`rule_audit` 缺键为 `required`，`chapter finish` 会在提交前要求校验通过。写成 `off` 才放行。审稿者不跑 finish。
+
 需要体裁问题速查时，长篇用 [章节问题](long-chapter-quality.md)，短篇用 [正文问题](short-prose-quality.md)；具体通用问题再查 [质量观察](review-quality.md)。这些列表帮助定位，不要求每次审稿全量读取或固定评分。

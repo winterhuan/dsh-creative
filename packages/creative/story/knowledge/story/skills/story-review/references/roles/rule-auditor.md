@@ -67,3 +67,5 @@ node {CLI} chapter audit-verify --workspace {工作区} --book {作品名} --cha
 ```
 
 结果不是 `verified: true` 时，按 `reasons` 改正文件再跑，不要交一份校验失败的结论。正文或规则变了，旧文件作废。
+
+`rule_audit` 缺键为 `required`。`chapter finish` 在这个值下先跑 `chapter audit-verify`，未处理的 `violate` 停在提交前。你只写结论文件。不调用 `chapter finish`，不把例外写进事务，不自创规则。要放行须由作者把这本书的 `rule_audit` 写成 `off`。旧书用 `project migrate-gates --legacy-off`。`unclear` 不拦提交。

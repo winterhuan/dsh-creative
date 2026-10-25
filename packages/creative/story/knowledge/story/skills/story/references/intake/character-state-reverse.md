@@ -79,4 +79,4 @@
 - [ ] 角色已知信息没有混入作者真相
 - [ ] 未结事项都有正文证据，未来设计仍在大纲
 - [ ] 单角色快照目标不超过 4096 字节；确有必要可放宽，但不得超过 8192 字节硬上限
-- [ ] `node {CLI} project check --workspace {工作区} --book {作品名} --json` 通过
+- [ ] `node {CLI} project check --workspace {工作区} --book {作品名} --json` 通过，并看 `facts` 缺口
