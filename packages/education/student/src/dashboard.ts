@@ -1,6 +1,8 @@
 import type { StudyState } from './schema.ts'
 import type { CurriculumSubject } from './curriculum.ts'
-import { checkInHistory, curriculumView, diagnosticFor, insightSummary, itemObjectiveId, objectiveInfo, reviewPlan, sheetOpen, studyInsight, studyStatus } from './learning.ts'
+import { diagnosticFor, insightSummary, studyInsight } from './learning/mastery.ts'
+import { studyStatus } from './learning/status.ts'
+import { checkInHistory, curriculumView, itemObjectiveId, objectiveInfo, reviewPlan, sheetOpen } from './learning/view.ts'
 
 /** Mistake-book filter for the confirmed list. */
 export type MistakeStatus = 'all' | 'due' | 'reviewing' | 'mastered'
@@ -74,7 +76,7 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
     curriculum: curriculumView(state, subject, insight, scope),
     diagnostic: insight.diagnostics.find(plan => plan.subject === subject) ?? null,
     scopedDiagnostic: options.diagGrade !== undefined || options.diagTerm !== undefined
-      ? diagnosticFor(state, subject, now, { grade: options.diagGrade ?? state.profile.grade, term: options.diagTerm ?? state.profile.term, ...(options.diagUnit !== undefined && options.diagUnit !== '' ? { units: [options.diagUnit] } : {}) })
+      ? diagnosticFor(state, subject, now, { grade: options.diagGrade ?? state.profile.grade, term: options.diagTerm ?? state.profile.term, ...(options.diagUnit !== undefined && options.diagUnit !== '' ? { units: [options.diagUnit] } : {}) }, insight)
       : null,
     scopedUnits: options.diagGrade !== undefined || options.diagTerm !== undefined
       ? (curriculumView(state, subject, insight, { grade: options.diagGrade ?? state.profile.grade, term: options.diagTerm ?? state.profile.term })?.units.map(unit => ({ id: unit.id, name: unit.name })) ?? [])

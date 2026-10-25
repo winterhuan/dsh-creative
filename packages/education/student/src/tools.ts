@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool, type ValueSchemaSpec, type ParameterSchemaSpec } from '@deepseek-ai/dsh-tools'
 import { z } from 'zod'
-import { updateNotices } from './learning.ts'
+import { updateNotices } from './learning/update/index.ts'
 import { commandSchema } from './schema.ts'
 import { queryStudy, studyStore } from './store.ts'
 

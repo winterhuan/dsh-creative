@@ -1,4 +1,4 @@
-import type { InsightReason } from '../learning.ts'
+import type { InsightReason } from '../learning/mastery.ts'
 import type { Translate } from './locales.ts'
 
 /** Shared subject order for the workbench. */

@@ -39,6 +39,7 @@ export const zh = {
   "clearGoal": "取消目标选择",
   "unclassified": "待归类",
   "linkGoal": "保存关联",
+  // worksheets and printing
   "worksheets": "纸上练习单",
   "createWorksheet": "打印练习卷",
   "printConsolidation": "打印巩固卷",
@@ -51,12 +52,14 @@ export const zh = {
   "printSheet": "打印",
   "printSheetHelp": "在打印对话框中选择打印机，或“存储为 PDF”",
   "close": "关闭",
+  // printable sheet copy
   "sheetDaily": "每日小卷",
   "sheetPractice": "练习卷",
   "sheetReview": "巩固卷",
   "sheetIdLabel": "编号",
   "sheetGoalLabel": "学习目标",
   "sheetNameDate": "姓名：____________　　日期：____________",
+  // task actions during a block
   "tutorWorking": "助手正在处理，请等待对话回复",
   "prepareTask": "请助手出题",
   "nextTask": "下一题",
@@ -76,6 +79,7 @@ export const zh = {
   "parent": "家长设置",
   "reload": "刷新",
   "setupFirst": "请先由家长确认学习档案",
+  // subjects and levels
   "chinese": "语文",
   "math": "数学",
   "english": "英语",
@@ -110,6 +114,7 @@ export const zh = {
   "phaseVary": "变一变",
   "hintedCorrect": "提示后才对",
   "reasonTeaching": "需要教学",
+  // photo intake
   "photo": "拍照录入错题",
   "photoHelp": "选择题目照片，助手会在对话中转录。核对后才加入复习",
   "workbookPhoto": "练习册照片",
@@ -129,6 +134,7 @@ export const zh = {
   "sendPhoto": "发送照片给助手",
   "photoError": "请选择不超过 8 MiB 的 PNG、JPEG 或 WebP 图片",
   "pending": "待核对错题",
+  // mistake notebook
   "due": "到期复习",
   "notebook": "已确认错题本",
   "nextReview": "下次复习",
@@ -452,6 +458,7 @@ export const en: Record<keyof typeof zh, string> = {
   "clearGoal": "Clear goal choice",
   "unclassified": "Not classified",
   "linkGoal": "Save link",
+  // worksheets and printing
   "worksheets": "Paper worksheets",
   "createWorksheet": "Print a practice sheet",
   "printConsolidation": "Print a review sheet",
@@ -464,12 +471,14 @@ export const en: Record<keyof typeof zh, string> = {
   "printSheet": "Print",
   "printSheetHelp": "Pick a printer in the print dialog, or save as PDF",
   "close": "Close",
+  // printable sheet copy
   "sheetDaily": " daily mini sheet",
   "sheetPractice": " practice sheet",
   "sheetReview": " review sheet",
   "sheetIdLabel": "No.",
   "sheetGoalLabel": "Goal",
   "sheetNameDate": "Name ______________    Date ______________",
+  // task actions during a block
   "tutorWorking": "The tutor is working. Wait for the conversation reply",
   "prepareTask": "Ask for a question",
   "nextTask": "Next question",
@@ -523,6 +532,7 @@ export const en: Record<keyof typeof zh, string> = {
   "phaseVary": "A variation",
   "hintedCorrect": "Right only after a hint",
   "reasonTeaching": "Needs teaching",
+  // photo intake
   "photo": "Add a mistake photo",
   "photoHelp": "Choose a question photo. The tutor transcribes it in chat; confirm it before review",
   "workbookPhoto": "Workbook photo",
@@ -542,6 +552,7 @@ export const en: Record<keyof typeof zh, string> = {
   "sendPhoto": "Send photo to tutor",
   "photoError": "Choose a PNG, JPEG or WebP image up to 8 MiB",
   "pending": "Awaiting confirmation",
+  // mistake notebook
   "due": "Due for review",
   "notebook": "Confirmed mistakes",
   "nextReview": "Next review",

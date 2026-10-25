@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-25-student-learning-modules.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-25-student-learning-modules.md
+/agent-note-learning-core-split-into-modules-with-action-metadata:
+  en: 550d36142d25f254
+  zh: 9d094b987fa5e41d
+/agent-note-learning-core-split-into-modules-with-action-metadata/problem:
+  en: e2014654871398eb
+  zh: 00238e6c7e974f8c
+/agent-note-learning-core-split-into-modules-with-action-metadata/decision:
+  en: fbce1675f89383b1
+  zh: 0658bdee212855d2
+/agent-note-learning-core-split-into-modules-with-action-metadata/alternatives-considered:
+  en: 05d4dd63fca7f794
+  zh: 45e4217600675de0
+/agent-note-learning-core-split-into-modules-with-action-metadata/consequences:
+  en: 74093f396e9c255f
+  zh: 1d223c3295a9d541

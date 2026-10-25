@@ -7,11 +7,12 @@ import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-typert-registry'
 import { z } from 'zod'
 import { commandSchema } from './schema.ts'
+import { panelActions } from './actions.ts'
 import { studyStore, StudyConflict } from './store.ts'
 import { dashboard } from './dashboard.ts'
+import { timeStatus } from './learning/status.ts'
 
 const mutation = z.object({ revision: z.number().int().nonnegative(), change: commandSchema }).strict()
-const allowed = new Set(['setup', 'limits', 'configure-course', 'school-progress', 'start', 'answer', 'hint', 'stuck', 'stop', 'confirm-mistake', 'confirm-concept', 'link-mistake', 'classify-mistake', 'grade-sheet', 'discard-sheet', 'confirm-paper', 'confirm-workbook', 'dismiss-teaching'])
 
 /** Browser requests must address the local DSH host and originate from the same authority. */
 export function trustedStudyRequest(request: Pick<IncomingMessage, 'headers'>): boolean {
@@ -54,6 +55,8 @@ export async function handleStudyRequest(context: Context, request: IncomingMess
     if (url.pathname !== '/student/workspace' || !['GET', 'POST'].includes(request.method ?? '')) { send(response, 404, { error: '学习接口不存在' }); return }
     const rawId = url.searchParams.get('sessionId')
     if (!rawId || rawId.length > 200) { send(response, 400, { error: '请先打开学习会话' }); return }
+    // A conditional poll names the revision it already displays; the same query with new params re-fetches in full.
+    const ifRevision = url.searchParams.has('revision') ? z.coerce.number().int().nonnegative().parse(url.searchParams.get('revision')) : undefined
     const mistakeOffset = z.coerce.number().int().min(0).max(5000).parse(url.searchParams.get('mistakeOffset') ?? '0')
     const subject = z.enum(['chinese', 'math', 'english']).parse(url.searchParams.get('subject') ?? 'math')
     const mistakeStatus = z.enum(['all', 'due', 'reviewing', 'mastered']).parse(url.searchParams.get('mistakeStatus') ?? 'all')
@@ -69,11 +72,16 @@ export async function handleStudyRequest(context: Context, request: IncomingMess
     if (request.method === 'POST') {
       if (!request.headers['content-type']?.startsWith('application/json')) { send(response, 415, { error: '请求必须使用 JSON' }); return }
       const input = mutation.parse(await body(request, 65_536))
-      if (!allowed.has(input.change.action)) { send(response, 403, { error: '该操作需要学习助手核对' }); return }
+      if (!panelActions.has(input.change.action)) { send(response, 403, { error: '该操作需要学习助手核对' }); return }
       change = input.change
       revision = input.revision
     }
     const state = await studyStore({ agent, signal: abort.signal }, change, revision)
+    if (change === undefined && ifRevision !== undefined && state !== undefined && ifRevision === state.revision) {
+      // Unchanged evidence: only the time-derived suggestion state moves with the clock.
+      send(response, 200, { serverNow: Date.now(), revision: state.revision, unchanged: true, time: timeStatus(state, Date.now()) })
+      return
+    }
     send(response, 200, dashboard(state, Date.now(), { subject, mistakeOffset, mistakeStatus, ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}), ...(diagGrade !== undefined ? { diagGrade } : {}), ...(diagTerm !== undefined ? { diagTerm } : {}), ...(diagUnit !== undefined ? { diagUnit } : {}) }))
   } catch (error) {
     const conflict = error instanceof StudyConflict || (error instanceof FsError && ['FS_STALE_VERSION', 'FS_NOT_OBSERVED'].includes(error.code))

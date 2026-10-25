@@ -1,6 +1,6 @@
 import type { Command } from '../schema.ts'
 import type { Dashboard } from '../dashboard.ts'
-import type { CheckInIntensity, ObjectiveInsight } from '../learning.ts'
+import type { CheckInIntensity, ObjectiveInsight } from '../learning/mastery.ts'
 import type { Translate } from './locales.ts'
 import { assistKeys, day, intensityHelpKeys, intensityKeys, levelKeys, reasonText, sampleKeys, type ScopeChoice, type Subject } from './display.ts'
 

@@ -24,6 +24,7 @@
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
 
 2026-10-25 小说章末收束：`facts extract` 从带标签的细纲和正文写出 `草稿/事实/第NNN章.claims.json`；`chapter finish` 在一次 JSON 里做可选审稿校验、主张 diff、提交、入账和过期检查。提交失败不写账本，入账失败不回滚正文。`project context --profile lite`、`project gates`、卷纲范围 hint、节奏卡标题别名、细纲出场名单 hint 一并落地。`rule_audit` 与 `facts_diff` 仍缺省 `off`，追踪 schema 仍是第 5 版，`project check` 仍只有两个字段。见[章末收束](.agents/notes/implemented/feature/2026-10-25-story-chapter-finish.zh.md)。
+2026-10-25 学生状态读路径缓存与掌握度口径统一：读取按文件版本缓存已校验状态，作答证据单遍索引、目标改查十二图全局索引，一次请求只算一遍洞察；轮询可携带修订号，未变化时只返回时间状态（3000 作答合成态完整 dashboard 约 17ms、未变化轮询约 0.1ms）。跨年级摸底与本期洞察共用同一掌握度规则，修复此前分叉；`queryStudy` 未知 kind 显式报错。见[读路径决策](.agents/notes/implemented/simplification/2026-10-25-student-read-path.zh.md)；包内 129 项测试通过。
 
 2026-10-25 学生练习单改为网页渲染与浏览器打印：删除 Host 端 `src/worksheet.ts`（pdfkit）、`/student/worksheet.pdf` 与 `/student/print` 接口及随包 NotoSansSC 字体（约减 17 MB）；新增客户端 `src/client/worksheet-view.tsx`，复用屏上题图的 SVG 渲染整张卷，预览后经浏览器打印对话框打印或存储为 PDF（Windows 可打印）。无 `kind` 旧卷的命名启发式改由客户端按 `sources` 判定；schema 不变。双语 README、SKILL、questions、subsystem 文档、i18n 与 Agent Note 已同步，见[练习单网页化](.agents/notes/implemented/simplification/2026-10-25-student-worksheet-html.zh.md)；包内 126 项测试通过，本机验证见第 12 节。
 
@@ -699,3 +700,11 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.3 .agents/skills | tar
 
 - 包内 8 个文件 126 项测试、文档 16 项与规范 3 项检查通过；`pnpm install` 更新锁文件（树减少 16 个包）。根 `typecheck`/`build` 与全量测试中 `ui-settings-model-options` 与 story 的失败分别为工作区另一项在途改动与本机既有问题，与本次无关。
 - `pnpm --filter @winterhuan/dsh-student build` 后 `dsh-webctl restart`；cookie 会话下页面 200，合并 bundle（4.6 MB）含新打印代码且无 `/student/print` 引用，`/student/workspace` 正常返回 JSON，`/student/worksheet.pdf` 与 `/student/print` 均为 404。浏览器打印对话框的分页与实际出纸未做人工验证；未调用真实模型。
+
+2026-10-25 学生读路径缓存：
+
+- `pnpm run typecheck`、文档 16 项、规范 3 项与包内 129 项测试通过；构建后重启 web，cookie 会话下页面与合并 bundle 正常，新条件轮询代码已在服务端 bundle 中，带 `revision` 的无会话与未知会话请求返回既有 JSON 错误。真实学习会话的端到端条件响应由 route 用例覆盖，浏览器内轮询与缓存命中行为待人工确认；未调用真实模型。
+
+2026-10-25 学习核心模块化（阶段 1）：
+
+- `src/learning.ts`（1541 行）拆为 `learning/` 六模块加 `update/` 五个处理器族，14 个引用方改显式导入；`tests/learning.spec.ts` 同边界拆为四个 spec。新增 `src/actions.ts` 以穷尽元数据声明动作的可提交面与所属族，路由白名单由它生成。129 项测试重分布到 11 个文件全过；根 typecheck、build、文档 16 项、规范 3 项通过；重启后页面、bundle 与接口正常。决策见[模块化](.agents/notes/implemented/simplification/2026-10-25-student-learning-modules.zh.md)。

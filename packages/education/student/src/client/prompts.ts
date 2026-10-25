@@ -1,4 +1,4 @@
-import type { CheckInIntensity } from '../learning.ts'
+import type { CheckInIntensity } from '../learning/mastery.ts'
 import { intensityKeys } from './display.ts'
 import type { Translate } from './locales.ts'
 

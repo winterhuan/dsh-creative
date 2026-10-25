@@ -208,6 +208,27 @@ export function builtinObjectives(scope: CurriculumScope): BuiltinObjective[] {
   return curriculumFiles(scope).flatMap(file => builtinObjectivesIn(scope, file.subject))
 }
 
+const everyShippedObjective = new Map<string, BuiltinObjective>()
+
+/** Index every shipped objective across all twelve maps, in subject, grade and term order. */
+function shippedObjectiveIndex(): Map<string, BuiltinObjective> {
+  if (everyShippedObjective.size === 0) {
+    for (const subject of SUBJECTS) for (const grade of [1, 2] as const) for (const term of ['first', 'second'] as const) {
+      for (const objective of builtinObjectivesIn({ grade, term }, subject)) if (!everyShippedObjective.has(objective.id)) everyShippedObjective.set(objective.id, objective)
+    }
+  }
+  return everyShippedObjective
+}
+
+/**
+ * Resolve one shipped objective by ID across every shipped map, current term or another.
+ * @param objectiveId - objective to resolve.
+ * @returns the resolved objective, or undefined when it is not shipped anywhere.
+ */
+export function builtinObjectiveAnywhere(objectiveId: string): BuiltinObjective | undefined {
+  return shippedObjectiveIndex().get(objectiveId)
+}
+
 /**
  * Resolve one shipped objective by ID within the profile's grade and term.
  * @param scope - learner grade and term.

@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { handleStudyRequest, trustedStudyRequest } from '../src/route.ts'
-import { updateStudy } from '../src/learning.ts'
+import { updateStudy } from '../src/learning/update/index.ts'
 import { studyStore, StudyConflict } from '../src/store.ts'
 import { NOW, DAY, mistake, setup } from './fixtures.ts'
 
@@ -73,6 +73,18 @@ describe('student workspace boundary', () => {
     expect((await request({ path: '/student/worksheet.pdf?sessionId=test&id=sheet' })).status).toBe(404)
     expect((await request({ method: 'POST', path: '/student/print?sessionId=test', body: JSON.stringify({ revision: 1, worksheetId: 'sheet', confirmed: true }) })).status).toBe(404)
     expect(studyStore).not.toHaveBeenCalled()
+  })
+  it('answers a matching conditional poll with the time state only', async () => {
+    const state = updateStudy(undefined, setup, NOW)
+    vi.mocked(studyStore).mockResolvedValue(state)
+    const conditional = await request({ path: `/student/workspace?sessionId=test&revision=${state.revision}` })
+    expect(conditional.status).toBe(200)
+    expect(conditional.result.unchanged).toBe(true)
+    expect(conditional.result.revision).toBe(state.revision)
+    expect(conditional.result.time).toMatchObject({ phase: 'ready', time: { timezone: 'Asia/Shanghai' } })
+    expect(conditional.result.study).toBeUndefined()
+    const stale = await request({ path: `/student/workspace?sessionId=test&revision=${state.revision - 1}` })
+    expect(stale.result).toMatchObject({ revision: state.revision, study: { profile: state.profile } })
   })
   it('requires revisions, bounds payloads, and disallows client-authored assessments', async () => {
     expect((await request({ method: 'POST', body: JSON.stringify({ change: setup }) })).status).toBe(400)

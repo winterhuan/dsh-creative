@@ -1,7 +1,12 @@
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import { stateSchema, type StudyState } from './schema.ts'
-import { checkInHistory, curriculumView, diagnosticFor, insightSummary, objectiveElements, reviewPlan, scheduleMistakes, studyInsight, studyStatus, taughtUnit, updateStudy } from './learning.ts'
+import { taughtUnit } from './learning/shared.ts'
+import { scheduleMistakes } from './learning/schedule.ts'
+import { diagnosticFor, insightSummary, studyInsight } from './learning/mastery.ts'
+import { studyStatus } from './learning/status.ts'
+import { checkInHistory, curriculumView, objectiveElements, reviewPlan } from './learning/view.ts'
+import { updateStudy } from './learning/update/index.ts'
 import { curriculumFor, subjectIdeas } from './curriculum.ts'
 
 const MAX_BYTES = 8_388_608
@@ -49,7 +54,11 @@ export function migrateStudyFile(parsed: unknown): unknown {
  * Read or update .study/state.json in the calling Session's filesystem.
  * Reads preserve absence; writes require the observed version and current sandbox policy.
  * A competing writer causes an error, never an automatic replay of learning evidence.
+ * Parsed states are cached per observed file version, so unchanged reads skip re-reading
+ * and re-validating the file; any write or external change drops the cache entry.
  */
+const stateCache = new Map<unknown, { version: unknown; state: StudyState }>()
+
 export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, command?: unknown, expectedRevision?: number): Promise<StudyState | undefined> {
   const agent = exec.agent
   if (!agent?.session.header.cwd) throw new Error('请先在 DSH 中打开学习工作区。')
@@ -65,10 +74,17 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
   let state: StudyState | undefined
   if (before) {
     if (before.type !== 'file') throw new Error('.study/state.json 必须是普通文件。')
-    const bytes = await fs.readBytes(target, exec.signal, MAX_BYTES)
-    const after = await fs.stat(target, exec.signal)
-    if (after?.version !== before.version) throw new Error('学习档案已更新，请查询最新状态后重试。')
-    state = scheduleMistakes(stateSchema.parse(migrateStudyFile(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))))
+    const cached = stateCache.get(target)
+    if (cached && cached.version === before.version) {
+      state = cached.state
+    } else {
+      const bytes = await fs.readBytes(target, exec.signal, MAX_BYTES)
+      const after = await fs.stat(target, exec.signal)
+      if (after?.version !== before.version) throw new Error('学习档案已更新，请查询最新状态后重试。')
+      state = scheduleMistakes(stateSchema.parse(migrateStudyFile(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))))
+      if (stateCache.size >= 8) stateCache.clear()
+      stateCache.set(target, { version: after?.version ?? before.version, state })
+    }
   }
   if (command === undefined) return state
   if (expectedRevision !== undefined && expectedRevision !== (state?.revision ?? 0)) throw new StudyConflict()
@@ -77,6 +93,7 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
   const content = `${JSON.stringify(next, null, 2)}\n`
   if (Buffer.byteLength(content) > MAX_BYTES) throw new Error('本学期学习档案已达到 8 MiB 限制，请备份并使用新工作区。')
   await fs.writeText(target, content, before ? { kind: 'replaceIfVersion', version: before.version } : { kind: 'createIfAbsent' }, exec.signal, policy.resolve({ session: agent.session }))
+  stateCache.delete(target)
   return next
 }
 
@@ -165,14 +182,19 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       more: 'Use study_status kind=curriculum with a subject for units, knowledge points, objectives and relations.',
     }
   }
-  const records = kind === 'due' ? state.mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= now)
-    : kind === 'pending' ? state.mistakes.filter(item => item.confirmedAt === undefined)
-    : kind === 'progress' ? studyStatus(state, now).progress
-    : kind === 'concepts' ? state.concepts : kind === 'objectives' ? state.objectives
-      : kind === 'relations' ? state.relations : kind === 'worksheets' ? state.worksheets.map(sheet => ({ ...sheet, drafts: state.paperDrafts.filter(draft => draft.worksheetId === sheet.id) }))
-        : kind === 'paper-results' ? state.paperResults
-    : kind === 'materials' ? state.materials : kind === 'mistakes' ? state.mistakes
-      : kind === 'sessions' ? state.sessions : state.attempts
+  type CollectionItem = (StudyState['mistakes'] | StudyState['concepts'] | StudyState['objectives'] | StudyState['relations'] | StudyState['worksheets'] | StudyState['paperResults'] | StudyState['materials'] | StudyState['sessions'] | StudyState['attempts'] | ReturnType<typeof studyStatus>['progress'])[number]
+  const collections: Record<string, CollectionItem[]> = {
+    due: state.mistakes.filter(item => item.dueAt !== undefined && item.dueAt <= now),
+    pending: state.mistakes.filter(item => item.confirmedAt === undefined),
+    progress: studyStatus(state, now).progress,
+    concepts: state.concepts, objectives: state.objectives, relations: state.relations,
+    worksheets: state.worksheets.map(sheet => ({ ...sheet, drafts: state.paperDrafts.filter(draft => draft.worksheetId === sheet.id) })),
+    'paper-results': state.paperResults, materials: state.materials, mistakes: state.mistakes,
+    sessions: state.sessions, attempts: state.attempts,
+  }
+  const chosen: CollectionItem[] | undefined = Object.hasOwn(collections, kind) ? collections[kind] : undefined
+  if (chosen === undefined) throw new Error(`未知的查询类型：${kind}。可用的类型见 study_status 工具说明。`)
+  const records = chosen
   const selected = records.filter(item => {
     if (id && (!('id' in item) || item.id !== id)) return false
     if (!subject) return true

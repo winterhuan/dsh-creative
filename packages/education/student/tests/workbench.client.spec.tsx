@@ -4,7 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ParentSettings } from '../src/client/forms.tsx'
 import { StudyDesk } from '../src/client/desk.tsx'
 import { dashboard } from '../src/dashboard.ts'
-import { updateStudy } from '../src/learning.ts'
+import { timeStatus } from '../src/learning/status.ts'
+import { updateStudy } from '../src/learning/update/index.ts'
 import { en } from '../src/client/locales.ts'
 import { NOW, MINUTE, DAY, setup, material, course, start, attempt, mistake, confirm } from './fixtures.ts'
 
@@ -22,6 +23,9 @@ function installFetch(state = initial()) {
       state = updateStudy(state, body.change, Date.now())
     }
     const query = new URL(url, 'http://localhost').searchParams
+    if (query.has('revision') && Number(query.get('revision')) === state.revision && !options?.body) {
+      return new Response(JSON.stringify({ serverNow: Date.now(), revision: state.revision, unchanged: true, time: timeStatus(state, Date.now()) }))
+    }
     const offset = Number(query.get('mistakeOffset') ?? 0)
     const subject = query.get('subject') as 'chinese' | 'math' | 'english' | null
     const status = query.get('mistakeStatus') as 'all' | 'due' | 'reviewing' | 'mastered' | null
@@ -138,6 +142,20 @@ it('keeps answers available after the suggested time and offers a start during t
     expect(signal?.aborted).toBe(true)
     await act(async () => finish(new Response(JSON.stringify(dashboard(initial(), Date.now())))))
     expect(screen.queryByText(attempt.prompt)).toBeNull()
+  })
+
+  it('polls conditionally once loaded and keeps the displayed data when evidence is unchanged', async () => {
+    const backend = installFetch(initial())
+    render(<StudyDesk sessionId="poll" visible running={false} ask={vi.fn()} t={t} />)
+    await screen.findByText(attempt.prompt)
+    expect(backend.fetch).toHaveBeenCalledTimes(1)
+    expect(String(backend.fetch.mock.calls[0]?.[0])).not.toContain('&revision=')
+    // Real clocks: the interval fires once with the revision the panel already displays.
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 3400)) })
+    const pollUrl = String(backend.fetch.mock.calls.at(-1)?.[0])
+    expect(pollUrl).toContain(`&revision=${backend.read().revision}`)
+    expect(screen.getByText(attempt.prompt)).toBeTruthy()
+    expect(backend.fetch.mock.calls.filter(([url]) => !String(url).includes('&revision='))).toHaveLength(1)
   })
 })
 

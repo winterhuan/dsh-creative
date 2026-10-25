@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Command } from '../schema.ts'
-import type { CheckInIntensity } from '../learning.ts'
+import type { CheckInIntensity } from '../learning/mastery.ts'
 import type { Translate } from './locales.ts'
 import { FigureView } from './figure-view.tsx'
 import { hintPromptFor, stuckPrompt } from './prompts.ts'

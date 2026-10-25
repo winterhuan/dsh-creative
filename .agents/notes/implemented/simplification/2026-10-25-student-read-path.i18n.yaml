@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-25-student-read-path.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-25-student-read-path.md
+/agent-note-cached-student-reads-and-one-mastery-rule:
+  en: 369d202be00beb40
+  zh: b2e5e1718735b55c
+/agent-note-cached-student-reads-and-one-mastery-rule/problem:
+  en: 742564ce7665e317
+  zh: a127e20c59ba5fa3
+/agent-note-cached-student-reads-and-one-mastery-rule/decision:
+  en: 473ed1f359aebc06
+  zh: 4075ec0443920367
+/agent-note-cached-student-reads-and-one-mastery-rule/alternatives-considered:
+  en: f9546fe85f1c6a8a
+  zh: 20ef9b4d1264cd92
+/agent-note-cached-student-reads-and-one-mastery-rule/consequences:
+  en: 3d5a287fdce04762
+  zh: 9ae04795b65b3e6c
