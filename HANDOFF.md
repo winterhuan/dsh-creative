@@ -720,3 +720,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.3 .agents/skills | tar
 2026-10-25 掌握可视化、家长周报与按标签载荷（阶段 4）：
 
 - 三个圆点抽成共享 MasteryDots 并接入地图详情与目标行，第三天独立答对落账时答题卡祝贺一次；weeklySummary 纯派生周报（时长/天数、新掌握、错题流向、到期完成、本周错因）随家长页返回；工作区接口按 tab 取数，仅地图标签携带整册地图（lite 标记）。包内 135 项测试、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常，浏览器逐标签目检待用户确认。决策见[周报与进度](.agents/notes/implemented/feature/2026-10-25-student-weekly-progress.zh.md)。
+
+2026-10-25 批量抽查批改、派生字段出文件与学期归档（阶段 5）：
+
+- `paper-draft` 增加置信度，工作台高置信题一键批量确认、低置信与答错题逐题核对；复习派生字段（stage/independentDays/dueAt）写入前剥离、读取时重放，旧文件兼容；新命令 `archive-term` 先导出全部证据到 `.study/` 归档文件再清空档案，家长设置提供按钮。包内 138 项测试（含真实文件系统归档端到端）、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常，批量确认与归档待家长真实走一遍。L4 块内交错按计划门控，待前四阶段真实使用反馈后落地。决策见[批改与归档](.agents/notes/implemented/feature/2026-10-25-student-archive-grading.zh.md)。

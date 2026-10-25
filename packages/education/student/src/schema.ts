@@ -165,7 +165,7 @@ const worksheetItem = z.object({ id, objectiveId: id.optional(), mistakeId: id.o
 const worksheet = z.object({ id, subject, kind: sheetKindSchema.optional(), objectiveId: id.optional(), items: z.array(worksheetItem).min(1).max(8) }).strict()
 const result = z.enum(['correct', 'partial', 'incorrect', 'unassessed'])
 const paperResult = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, feedback: text, answerEvidence: text, userConfirmation: text }).strict()
-const paperDraft = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, uncertainties: z.string().max(2000), errorType: errorTypeSchema.optional() }).strict()
+const paperDraft = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, uncertainties: z.string().max(2000), errorType: errorTypeSchema.optional(), confidence: z.enum(['high', 'low']).optional() }).strict()
 const gradeSheet = z.object({ worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text }).strict()
 const workbookOutcome = z.enum(['stuck', 'hinted', 'independent-wrong', 'independent-correct'])
 const workbookDraft = z.object({
@@ -206,11 +206,14 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('workbook-draft'), draft: workbookDraft }).strict(),
   z.object({ action: z.literal('confirm-workbook'), id, outcome: workbookOutcome.optional(), objectiveId: z.union([id, z.literal('')]).optional(), correction: text.optional(), explanation: text.optional(), answerEvidence: text.optional(), userConfirmation: text }).strict(),
   z.object({ action: z.literal('dismiss-teaching'), id }).strict(),
+  z.object({ action: z.literal('archive-term'), parentConfirmation: text }).strict(),
 ])
 
 /** One learner and term per workspace; previous materials and attempts are retained. */
 export const stateSchema = z.object({
   format: z.literal(1), revision: time, updatedAt: time, profile,
+  /** Set by archive-term; a state file carrying it reads as absent so a new term can be set up. */
+  archivedAt: time.optional(),
   materials: z.array(material).max(500),
   courses: z.array(course).max(3),
   sessions: z.array(z.object({
@@ -221,9 +224,11 @@ export const stateSchema = z.object({
   }).strict()).max(5000),
   attempts: z.array(attempt.extend({ at: time, materialId: id.optional(), rawResponse: text.optional(), late: z.literal(true).optional() }).strict()).max(20000),
   mistakes: z.array(mistake.extend({
-    confirmedAt: time.optional(), userConfirmation: text.optional(), dueAt: time.optional(),
+    confirmedAt: time.optional(), userConfirmation: text.optional(),
+    // Derived by replay on read; persisted copies are legacy and ignored.
+    dueAt: time.optional(),
     source: z.object({ worksheetId: id, itemId: id }).strict().optional(),
-    independentDays: z.array(z.string()), stage: z.number().int().min(0).max(4),
+    independentDays: z.array(z.string()).default([]), stage: z.number().int().min(0).max(4).default(0),
   }).strict()).max(5000),
   concepts: z.array(concept.extend({ confirmedAt: time.optional(), userConfirmation: text.optional() }).strict()).max(1000).default([]),
   objectives: z.array(objective).max(1000).default([]),
@@ -238,6 +243,8 @@ export const stateSchema = z.object({
   task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintLevel: z.number().int().min(0).max(3), stuck: z.boolean().optional() }).strict().optional(),
 }).strict()
 
+/** The archive command on its own, so the store can intercept it before applying the mutation. */
+export const archiveTermSchema = z.object({ action: z.literal('archive-term'), parentConfirmation: z.string().trim().min(1).max(2000) }).strict()
 /** A schema-validated learning mutation. */
 export type Command = z.infer<typeof commandSchema>
 /** Durable learning evidence, parsed before reads and after every mutation. */

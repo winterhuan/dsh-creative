@@ -143,6 +143,18 @@ function WorksheetActions({ worksheet, revision, change, ask, disabled, t }: { w
     } catch (reason) { setError(reason instanceof Error ? reason.message : t('networkError')) }
     finally { setSaving(false) }
   }
+  const highConfidence = worksheet.drafts.filter(draft => draft.confidence === 'high')
+  async function confirmBatch(drafts: typeof worksheet.drafts) {
+    setSaving(true); setError(''); setMessage('')
+    try {
+      await change({ action: 'confirm-paper', worksheetId: worksheet.id, userConfirmation: t('confirmPaper'), results: drafts.map(draft => ({
+        itemId: draft.itemId, result: draft.result === 'unassessed' ? 'correct' : draft.result, response: draft.response, assistance: draft.assistance,
+        ...(draft.errorType !== undefined ? { errorType: draft.errorType } : {}),
+      })) }, revision)
+      setMessage(t('confirmPaperDone'))
+    } catch (reason) { setError(reason instanceof Error ? reason.message : t('networkError')) }
+    finally { setSaving(false) }
+  }
   const paperEntries = worksheet.drafts.flatMap(draft => {
     const value = paper[draft.itemId]
     return value?.result !== undefined ? [{ itemId: draft.itemId, result: value.result, response: value.response, ...(value.errorType !== '' ? { errorType: value.errorType } : {}) }] : []
@@ -186,6 +198,7 @@ function WorksheetActions({ worksheet, revision, change, ask, disabled, t }: { w
     })}
     {worksheet.drafts.length > 0 && <fieldset className="student-grade" disabled={disabled || saving}>
       <legend>{t('draftsTitle')}</legend><p className="student-muted">{t('draftsHelp')}</p>
+      {highConfidence.length > 0 && <button type="button" disabled={disabled || saving} onClick={() => { void confirmBatch(highConfidence) }}>{t('confirmHighConfidence')} · {highConfidence.length}</button>}
       {worksheet.drafts.map(draft => {
         const index = worksheet.items.findIndex(item => item.id === draft.itemId)
         const value = paper[draft.itemId]

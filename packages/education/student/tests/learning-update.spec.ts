@@ -422,3 +422,14 @@ describe('teaching when the learner is stuck', () => {
     expect(restored.task).not.toHaveProperty('hintRequested')
   })
 })
+
+describe('archiving a term', () => {
+  it('keeps the profile, drops all evidence and marks the file archived; an active block refuses', () => {
+    const base = updateStudy(undefined, setup, NOW)
+    const archived = updateStudy(base, { action: 'archive-term', parentConfirmation: '家长确认归档' }, NOW + MINUTE)
+    expect(archived).toMatchObject({ archivedAt: NOW + MINUTE, profile: base.profile, sessions: [], attempts: [], mistakes: [], rewards: [] })
+    expect(archived.materials).toHaveLength(0)
+    // The store's read layer treats an archived file as absent, so setup opens a new term; the handler itself only guards the active block.
+    expect(() => updateStudy(updateStudy(base, start, NOW + MINUTE), { action: 'archive-term', parentConfirmation: '家长确认' }, NOW + 2 * MINUTE)).toThrow('先结束当前学习')
+  })
+})

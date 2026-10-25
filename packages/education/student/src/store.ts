@@ -1,6 +1,6 @@
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
-import { stateSchema, type StudyState } from './schema.ts'
+import { archiveTermSchema, stateSchema, type StudyState } from './schema.ts'
 import { taughtUnit } from './learning/shared.ts'
 import { scheduleMistakes } from './learning/schedule.ts'
 import { diagnosticFor, insightSummary, studyInsight } from './learning/mastery.ts'
@@ -81,16 +81,30 @@ export async function studyStore(exec: Pick<ToolExecution, 'agent' | 'signal'>, 
       const bytes = await fs.readBytes(target, exec.signal, MAX_BYTES)
       const after = await fs.stat(target, exec.signal)
       if (after?.version !== before.version) throw new Error('学习档案已更新，请查询最新状态后重试。')
-      state = scheduleMistakes(stateSchema.parse(migrateStudyFile(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))))
-      if (stateCache.size >= 8) stateCache.clear()
-      stateCache.set(target, { version: after?.version ?? before.version, state })
+      const parsed = stateSchema.parse(migrateStudyFile(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))))
+      state = parsed.archivedAt !== undefined ? undefined : scheduleMistakes(parsed)
+      if (state !== undefined) {
+        if (stateCache.size >= 8) stateCache.clear()
+        stateCache.set(target, { version: after?.version ?? before.version, state })
+      }
     }
   }
   if (command === undefined) return state
+  const archive = archiveTermSchema.safeParse(command)
+  if (archive.success) {
+    if (!state) throw new Error('请先建立学习档案，再归档学期。')
+    const name = `.study/archive-${state.profile.schoolYear.replace(/[^a-zA-Z0-9_-]/gu, '-')}-${state.profile.term}.json`
+    const archiveTarget = await fs.resolve(name, { cwd, signal: exec.signal })
+    if (!fs.contains(root, archiveTarget)) throw new Error('归档文件必须位于当前工作区内。')
+    if (await fs.stat(archiveTarget, exec.signal)) throw new Error(`归档文件已存在：${name}。请先移走旧归档再归档本学期。`)
+    await fs.writeText(archiveTarget, `${JSON.stringify(state, null, 2)}\n`, { kind: 'createIfAbsent' }, exec.signal, policy.resolve({ session: agent.session }))
+  }
   if (expectedRevision !== undefined && expectedRevision !== (state?.revision ?? 0)) throw new StudyConflict()
   const next = updateStudy(state, command, Date.now())
   if (next === state) return state
-  const content = `${JSON.stringify(next, null, 2)}\n`
+  // Derived review fields are replayed on read; keep them out of the file.
+  const stored = { ...next, mistakes: next.mistakes.map(({ stage: _stage, independentDays: _days, dueAt: _due, ...mistake }) => mistake) }
+  const content = `${JSON.stringify(stored, null, 2)}\n`
   if (Buffer.byteLength(content) > MAX_BYTES) throw new Error('本学期学习档案已达到 8 MiB 限制，请备份并使用新工作区。')
   await fs.writeText(target, content, before ? { kind: 'replaceIfVersion', version: before.version } : { kind: 'createIfAbsent' }, exec.signal, policy.resolve({ session: agent.session }))
   stateCache.delete(target)

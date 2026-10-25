@@ -55,7 +55,7 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
         objectiveTitle: titles.length <= 2 ? titles.join('、') : `${titles.slice(0, 2).join('、')}等 ${titles.length} 个目标`,
         open: sheetOpen(state, sheet),
         results: state.paperResults.filter(item => item.worksheetId === sheet.id).map(item => ({ itemId: item.itemId, result: item.result, response: item.response, assistance: item.assistance })),
-        drafts: state.paperDrafts.filter(item => item.worksheetId === sheet.id).map(item => ({ itemId: item.itemId, response: item.response, result: item.result, assistance: item.assistance, uncertainties: item.uncertainties, ...(item.errorType !== undefined ? { errorType: item.errorType } : {}) })),
+        drafts: state.paperDrafts.filter(item => item.worksheetId === sheet.id).map(item => ({ itemId: item.itemId, response: item.response, result: item.result, assistance: item.assistance, uncertainties: item.uncertainties, ...(item.errorType !== undefined ? { errorType: item.errorType } : {}), ...(item.confidence !== undefined ? { confidence: item.confidence } : {}) })),
         sources: sheet.items.map(item => {
           const mistake = item.mistakeId ? state.mistakes.find(candidate => candidate.id === item.mistakeId) : undefined
           const fromHere = mistake?.source?.worksheetId === sheet.id && mistake.source.itemId === item.id

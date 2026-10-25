@@ -11,6 +11,7 @@ import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import * as student from '../src/agent.ts'
 import { createStudySkillProvider } from '../src/skill-provider.ts'
 import { studyStore } from '../src/store.ts'
+import { scheduleMistakes } from '../src/learning/schedule.ts'
 import { stateSchema } from '../src/schema.ts'
 import { setup, material, course, start, attempt, mistake, confirm } from './fixtures.ts'
 
@@ -80,10 +81,26 @@ describe('independently loaded student plugin', () => {
     expect(state.rewards).toHaveLength(2)
     expect(state.mistakes[0]?.uncertainties).toBe('')
     expect(policy.resolve).toHaveBeenCalled()
+    expect((JSON.parse(bytes) as { mistakes: { dueAt?: number; stage?: number; independentDays?: string[] }[] }).mistakes[0]?.dueAt).toBeUndefined()
     const second = execution('study_status', new AbortController().signal, 'resumed-session')
-    expect(await studyStore(second)).toEqual(state)
+    expect(await studyStore(second)).toEqual(scheduleMistakes(structuredClone(state)))
     expect(await query()).toMatchObject({ phase: 'break', stars: 2 })
     expect(await readFile(join(cwd, '.study/state.json'), 'utf8')).toBe(bytes)
+  })
+
+  it('archives a term through the real file system and resets to setup', async () => {
+    const { ctx, execution, call, cwd } = await fixture()
+    await call(setup)
+    await call({ action: 'mistake', mistake })
+    await call(confirm)
+    await call({ action: 'archive-term', parentConfirmation: '家长确认归档本学期。' })
+    const archive = JSON.parse(await readFile(join(cwd, '.study/archive-2026-2027-first.json'), 'utf8')) as { mistakes: unknown[] }
+    expect(archive.mistakes).toHaveLength(1)
+    const after = JSON.parse(await readFile(join(cwd, '.study/state.json'), 'utf8')) as { archivedAt?: number, mistakes: unknown[] }
+    expect(after.archivedAt).toBeGreaterThan(0)
+    expect(after.mistakes).toHaveLength(0)
+    await expect(ctx.tools.get('study_status')!.execute({}, execution('study_status'))).resolves.toMatchObject({ phase: 'setup-required' })
+    await expect(call({ action: 'archive-term', parentConfirmation: 'again' })).rejects.toThrow('请先建立学习档案')
   })
 
   it('reads the shipped knowledge map and weak points through the status tool', async () => {

@@ -64,3 +64,11 @@ export function applySchoolProgress(ctx: UpdateContext<'school-progress'>): Stud
   return state
 }
 
+
+/** Archive the finished term: keep the profile for reference, drop all evidence (exported beforehand by the store) and mark the file archived. */
+export function applyArchiveTerm(ctx: UpdateContext<'archive-term'>): StudyState {
+  const { command, state, active, now } = ctx
+  requireValue(!active, '先结束当前学习，再归档学期。')
+  requireValue(command.parentConfirmation.trim().length > 0, '归档学期需要家长的确认。')
+  return stateSchema.parse({ format: 1, revision: 1, updatedAt: now, archivedAt: now, profile: state.profile, materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [], breakUntil: 0 })
+}

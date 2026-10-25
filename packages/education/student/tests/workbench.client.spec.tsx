@@ -266,6 +266,26 @@ it('previews the sheet as HTML and prints through the browser dialog', async () 
   expect(screen.queryByRole('dialog')).toBeNull()
 })
 
+it('confirms high-confidence transcriptions in one batch and leaves the rest for review', async () => {
+  const sheet = updateStudy(worksheetState(), { action: 'worksheet', worksheet: { id: 'pair', subject: 'math', objectiveId: 'add', items: [
+    { id: 'a', prompt: '请计算 3+4。', answer: '7', explanation: '加法', answerEvidence: '3+4=7' },
+    { id: 'b', prompt: '请计算 8+5。', answer: '13', explanation: '凑十', answerEvidence: '8+2+5=13' },
+  ] } }, NOW)
+  let state = sheet
+  state = updateStudy(state, { action: 'paper-draft', paperDraft: { worksheetId: 'pair', itemId: 'a', response: '7', result: 'correct', assistance: 'independent', uncertainties: '', confidence: 'high' } }, NOW)
+  state = updateStudy(state, { action: 'paper-draft', paperDraft: { worksheetId: 'pair', itemId: 'b', response: '1?', result: 'incorrect', assistance: 'independent', uncertainties: '字迹不清', confidence: 'low' } }, NOW)
+  const backend = installFetch(state)
+  render(<StudyDesk sessionId="batch" visible running={false} ask={vi.fn()} t={t} />)
+  await openDesk('Mistakes')
+  const details = screen.getAllByText('凑十加法 · 2 questions · Not checked yet 2')[0]!.closest('details')!
+  fireEvent.click(details.querySelector('summary')!)
+  fireEvent.click(within(details).getByRole('button', { name: `${en.confirmHighConfidence} · 1` }))
+  await screen.findByText(en.confirmPaperDone)
+  expect(backend.read().paperResults).toHaveLength(1)
+  expect(backend.read().paperResults[0]).toMatchObject({ itemId: 'a', result: 'correct' })
+  expect(backend.read().paperDrafts).toHaveLength(1)
+})
+
 it('requires an explicit school year and saves an empty optional course note', async () => {
   const change = vi.fn(async (command: unknown) => dashboard(updateStudy(undefined, command, NOW), NOW))
   render(<ParentSettings data={dashboard(undefined, NOW)} change={change} t={t} />)

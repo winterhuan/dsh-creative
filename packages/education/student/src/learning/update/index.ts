@@ -1,7 +1,7 @@
 import { activeSession, requireValue } from '../shared.ts'
 import { scheduleMistakes } from '../schedule.ts'
 import { commandSchema, stateSchema, type Command, type StudyState } from '../../schema.ts'
-import { applyConfigureCourse, applyCourse, applyLimits, applyMaterial, applySchoolProgress, applySetup } from './profile.ts'
+import { applyArchiveTerm, applyConfigureCourse, applyCourse, applyLimits, applyMaterial, applySchoolProgress, applySetup } from './profile.ts'
 import { applyAnswerOrHint, applyRecord, applyStart, applyStop, applyStuck, applyTask } from './session.ts'
 import { applyClassifyMistake, applyConcept, applyConfirmConcept, applyConfirmMistake, applyLinkMistake, applyMistake, applyObjective, applyRelation } from './mistakes.ts'
 import { applyConfirmPaper, applyConfirmWorkbook, applyDiscardSheet, applyDismissTeaching, applyGradeSheet, applyPaperDraft, applyWorksheet, applyWorkbookDraft } from './paper.ts'
@@ -31,6 +31,7 @@ export function rawApply(previous: StudyState, command: Command, now: number): S
   switch (command.action) {
     case 'setup': result = applySetup(command, now); break
     case 'configure-course': result = applyConfigureCourse({ ...base, command }); break
+    case 'archive-term': result = applyArchiveTerm({ ...base, command }); break
     case 'limits': result = applyLimits({ ...base, command }); break
     case 'material': result = applyMaterial({ ...base, command }); break
     case 'course': result = applyCourse({ ...base, command }); break

@@ -129,6 +129,14 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
           </div>
         </form> : <p>{t('schoolProgressNeedsCourse')}</p>}
       </>}
+      {data.study && <div>
+        <h3>{t('archiveTerm')}</h3>
+        <p className="student-muted">{t('archiveTermHelp')}</p>
+        <button type="button" disabled={!!study.active} onClick={() => {
+          if (!window.confirm(t('archiveTermConfirm'))) return
+          void change({ action: 'archive-term', parentConfirmation: t('archiveTermConfirmation') }, data.revision).catch(() => {})
+        }}>{t('archiveTerm')}</button>
+      </div>}
     </>}
   </section>
 }

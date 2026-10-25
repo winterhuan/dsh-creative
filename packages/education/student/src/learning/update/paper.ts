@@ -54,6 +54,7 @@ export function applyPaperDraft(ctx: UpdateContext<'paper-draft'>): StudyState {
     worksheetId: draft.worksheetId, itemId: draft.itemId, response: draft.response, result: draft.result, assistance: draft.assistance,
     uncertainties: draft.uncertainties ?? existing?.uncertainties ?? '',
     ...(draft.errorType !== undefined ? { errorType: draft.errorType } : existing?.errorType !== undefined ? { errorType: existing.errorType } : {}),
+    ...(draft.confidence !== undefined ? { confidence: draft.confidence } : existing?.confidence !== undefined ? { confidence: existing.confidence } : {}),
   }
   if (existing) {
     const { receivedAt: _existingAt, ...before } = existing

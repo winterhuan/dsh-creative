@@ -16,6 +16,7 @@ export const actionMeta: Record<Command['action'], ActionMeta> = {
   course: { panel: false, group: 'profile' },
   'configure-course': { panel: true, group: 'profile' },
   'school-progress': { panel: true, group: 'profile' },
+  'archive-term': { panel: true, group: 'profile' },
   start: { panel: true, group: 'session' },
   task: { panel: false, group: 'session' },
   answer: { panel: true, group: 'session' },
