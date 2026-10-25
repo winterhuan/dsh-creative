@@ -3,23 +3,23 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/model-options.md
 /:
-  en: 4188d073f2a698cc
-  zh: 6d29e1e59ced1b80
+  en: d61e074797b1656c
+  zh: 1f87576e27d95760
 /model-options:
   en: 09c82421b326d750
   zh: fbd4c193e9e8e10b
 /model-options/summary:
-  en: acbd173d1a796e38
-  zh: f6271ce2ee2659b7
+  en: 61fb0c4ab22590d6
+  zh: fe3e7d889f926906
 /model-options/table-of-contents:
   en: a568e66cade159fb
   zh: c20156244fcf5973
 /model-options/package-and-integration:
-  en: cabf8a9f3e0d153f
-  zh: 334562a0ab72143c
+  en: eaebe1abb95f6388
+  zh: cfb7a526fe1d3501
 /model-options/drafts-and-save-boundaries:
-  en: 1a5b98d7a6199ad8
-  zh: f6db8371264238c9
+  en: b51f20d46d5e852d
+  zh: 5c6b0dba4408fc54
 /model-options/related-contracts:
   en: 1860b40877a5e4e6
   zh: 0644dc3137dfee72

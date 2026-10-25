@@ -1,4 +1,4 @@
-/** Reasoning and retry drafts translated into revision-fenced, field-only settings edits. */
+/** Model capabilities and retry drafts translated into revision-fenced, field-only settings edits. */
 import type { ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { ModelCatalogModel, SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
 import type { PiAiModelProfile } from '@deepseek-ai/dsh-llm-pi-ai'
@@ -13,11 +13,26 @@ const levels: Record<ThinkingLevel, true> = {
 /** Canonical order of the adapter's selectable thinking levels. */
 export const THINKING_LEVELS = Object.keys(levels) as ThinkingLevel[]
 
+/**
+ * What the batch control stages when thinking is enabled: the common
+ * OpenAI-compatible levels with their own names as request values, and Off
+ * sending nothing — the same initial shape the official model list offers.
+ */
+export const STANDARD_REASONING: ReasoningDraft = { mode: 'custom', efforts: { off: '', low: 'low', medium: 'medium', high: 'high' } }
+
 /** A model's capability declaration; an empty off value means omit the request parameter. */
 export interface ReasoningDraft {
   mode: 'inherit' | 'disabled' | 'custom'
   efforts: Partial<Record<ThinkingLevel, string>>
 }
+
+/** A model's image input declaration; inheritance removes the field so the adapter default applies. */
+export interface ImageDraft {
+  mode: 'inherit' | 'text' | 'textAndImage'
+}
+
+/** Adapter-owned settings key carrying a model's input modalities. */
+export type ImageField = 'input' | 'inputModalities'
 
 /** Restore the inherited retry limit or set a finite number of additional attempts. */
 export type RetryDraft = { mode: 'inherit' } | { mode: 'normal'; count: string }
@@ -29,6 +44,7 @@ const DEFAULT_RETRYABLE_CODES = ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIME
 export interface OptionsDraft {
   snapshot: ConfigFormSnapshot<unknown>
   reasoning: ReadonlyMap<string, ReasoningDraft>
+  image: ReadonlyMap<string, ImageDraft>
   retry?: RetryDraft
   retryInvalidRequests?: boolean
   retryAuthErrors?: boolean
@@ -42,6 +58,10 @@ export interface ModelOption {
   name: string
   path: string[]
   reasoning: unknown
+  /** Stored input-modality declaration, or undefined when the adapter supplies it. */
+  image: unknown
+  /** Adapter-owned settings key that carries the input modalities. */
+  imageField: ImageField
 }
 
 /** Bound settings service reader, also usable by pure draft operations. */
@@ -65,9 +85,10 @@ export function retryableCodes(value: unknown, providerPath: readonly string[], 
  * @param profile - resolved provider settings.
  * @param catalog - current models reported by the Host.
  * @param read - settings-owned path reader.
+ * @param imageField - adapter-owned key that carries each model's input modalities.
  * @returns declared models, or catalog models and retained overrides when no list is configured.
  */
-export function modelOptions(profile: unknown, catalog: readonly ModelCatalogModel[], read: ReadPath): ModelOption[] {
+export function modelOptions(profile: unknown, catalog: readonly ModelCatalogModel[], read: ReadPath, imageField: ImageField = 'input'): ModelOption[] {
   const configured = read(profile, ['models'])
   if (Array.isArray(configured) && configured.length > 0) {
     return configured.flatMap((model: unknown, index) => {
@@ -76,6 +97,7 @@ export function modelOptions(profile: unknown, catalog: readonly ModelCatalogMod
       return typeof id === 'string' ? [{
         id, name: typeof name === 'string' ? name : id,
         path: ['models', String(index)], reasoning: read(model, ['reasoningEfforts']),
+        image: read(model, [imageField]), imageField,
       }] : []
     })
   }
@@ -87,6 +109,7 @@ export function modelOptions(profile: unknown, catalog: readonly ModelCatalogMod
   return [...ids].map(id => ({
     id, name: catalog.find(model => model.id === id)?.name ?? id,
     path: ['modelOverrides', id], reasoning: read(overrides, [id, 'reasoningEfforts']),
+    image: read(overrides, [id, imageField]), imageField,
   }))
 }
 
@@ -105,6 +128,16 @@ export function reasoningDraft(value: unknown): ReasoningDraft {
     else if (level === 'off' && wire === null) efforts.off = ''
   }
   return { mode: 'custom', efforts }
+}
+
+/**
+ * Decode a persisted input-modality declaration into an editable capability.
+ * @param value - a model's adapter-owned input list.
+ * @returns inherited when absent or empty, otherwise text-only or multimodal.
+ */
+export function imageDraft(value: unknown): ImageDraft {
+  if (!Array.isArray(value) || value.length === 0) return { mode: 'inherit' }
+  return value.includes('image') ? { mode: 'textAndImage' } : { mode: 'text' }
 }
 
 /**
@@ -142,7 +175,7 @@ export function reasoningError(reasoning: ReasoningDraft): 'missingLevel' | 'mis
  * @param providerPath - provider's address within its settings namespace.
  * @param models - model addresses read from that snapshot.
  * @param read - settings-owned reader for inherited retry settings.
- * @returns field operations preserving other model fields, credentials, backoff, and unselected retry classes.
+ * @returns field operations preserving other model fields, credentials, backoff, used image budgets, and unselected retry classes.
  * @throws when a draft is invalid or a selected model is absent.
  */
 export function optionOperations(draft: OptionsDraft, providerPath: readonly string[], models: readonly ModelOption[], read: ReadPath): SettingsPathOpView[] {
@@ -196,6 +229,18 @@ export function optionOperations(draft: OptionsDraft, providerPath: readonly str
         if (wire !== undefined) value[level] = level === 'off' && wire.trim() === '' ? null : wire
       }
       ops.push({ op: 'set', path, value })
+    }
+  }
+  for (const [id, image] of draft.image) {
+    const model = models.find(candidate => candidate.id === id)
+    if (model === undefined) throw new Error(`Model ${id} is absent from the settings draft`)
+    const path = [...providerPath, ...model.path, model.imageField]
+    if (image.mode === 'inherit') ops.push({ op: 'unset', path })
+    else ops.push({ op: 'set', path, value: image.mode === 'textAndImage' ? ['text', 'image'] : ['text'] })
+    // llm-deepseek refuses image request limits on a model that does not accept images.
+    if (model.imageField === 'inputModalities' && image.mode !== 'textAndImage') {
+      ops.push({ op: 'unset', path: [...providerPath, ...model.path, 'imagePixelBudget'] })
+      ops.push({ op: 'unset', path: [...providerPath, ...model.path, 'imageMaxBytes'] })
     }
   }
   return ops

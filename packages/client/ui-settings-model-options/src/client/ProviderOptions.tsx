@@ -1,13 +1,13 @@
 /** Provider-card controls; drafts remain local until one atomic settings save succeeds. */
 import { useEffect, useId, useRef, useState } from 'react'
-import { IconLoadingOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { ModelCatalogModel } from '@deepseek-ai/dsh-api-remotes/client'
-import { THINKING_LEVELS, draftError, modelOptions, optionOperations, reasoningDraft, reasoningError, retryableCodes } from './options.ts'
-import type { OptionsDraft, ReasoningDraft, RetryDraft } from './options.ts'
+import { STANDARD_REASONING, draftError, imageDraft, modelOptions, optionOperations, reasoningDraft, retryableCodes } from './options.ts'
+import type { ImageDraft, ImageField, OptionsDraft, ReasoningDraft, RetryDraft } from './options.ts'
 import type { ProviderOptionsFace } from './operations.ts'
 import { BatchReasoning, reasoningSummary } from './BatchReasoning.tsx'
+import { BatchImage, imageSummary } from './BatchImage.tsx'
 import css from './options.module.css'
 
 /** Provider identity, translated copy, settings snapshot, and Host actions supplied by the slot. */
@@ -29,17 +29,22 @@ export function ProviderOptions(props: ProviderOptionsProps) {
   </details>
 }
 
+/** One capability staged for a batch apply, with the snapshot the panel opened against. */
+interface CapabilityBatch<T> {
+  capability: T
+  snapshot: ConfigFormSnapshot<unknown>
+}
+
 function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnapshot<unknown> }) {
   const { snapshot, provider, read, t, loadModels, save } = props
   const id = useId()
   const [draft, setDraft] = useState<OptionsDraft | null>(null)
-  const [batch, setBatch] = useState<{
-    id: string; name: string; reasoning: ReasoningDraft; snapshot: ConfigFormSnapshot<unknown>
-  } | null>(null)
-  const [selected, setSelected] = useState('')
+  const [reasoningMode, setReasoningMode] = useState<ReasoningDraft['mode']>('custom')
+  const [reasoningBatch, setReasoningBatch] = useState<CapabilityBatch<ReasoningDraft> | null>(null)
+  const [imageMode, setImageMode] = useState<ImageDraft['mode']>('textAndImage')
+  const [imageBatch, setImageBatch] = useState<CapabilityBatch<ImageDraft> | null>(null)
   const [catalog, setCatalog] = useState<readonly ModelCatalogModel[]>([])
   const [catalogError, setCatalogError] = useState<string | null>(null)
-  const [catalogLoaded, setCatalogLoaded] = useState(false)
   const [reload, setReload] = useState(0)
   const [saving, setSaving] = useState(false)
   const [conflicted, setConflicted] = useState(false)
@@ -54,18 +59,16 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
     let current = true
     void loadModels(provider.provider).then(result => {
       if (!current) return
-      setCatalogLoaded(true)
       if (result.ok) { setCatalog(result.models); setCatalogError(null) }
       else setCatalogError(result.message)
     })
     return () => { current = false }
   }, [piAi, loadModels, provider.provider, snapshot.revision, reload])
 
-  const source = draft?.snapshot ?? batch?.snapshot ?? snapshot
+  const source = draft?.snapshot ?? reasoningBatch?.snapshot ?? imageBatch?.snapshot ?? snapshot
   const profile = read(source.value, provider.settingsPath)
-  const models = modelOptions(profile, catalog, read)
-  const model = models.find(candidate => candidate.id === selected) ?? models[0]
-  const reasoning = model === undefined ? undefined : draft?.reasoning.get(model.id) ?? reasoningDraft(model.reasoning)
+  const imageField: ImageField = piAi ? 'input' : 'inputModalities'
+  const models = modelOptions(profile, catalog, read, imageField)
   const stale = conflicted || source.revision !== snapshot.revision
   const error = draft === null ? undefined : draftError(draft)
   const blocked = saving || !snapshot.writable || stale || snapshot.status !== 'ready'
@@ -83,19 +86,21 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
   const retryUnclassified = unlimited || (draft?.retryUnclassifiedErrors ?? codes.includes('PI_AI_ERROR'))
 
   const edit = (change: (current: OptionsDraft) => OptionsDraft): void => {
-    setDraft(current => change(current ?? { snapshot: source, reasoning: new Map() }))
+    setDraft(current => change(current ?? { snapshot: source, reasoning: new Map(), image: new Map() }))
   }
   const editRetry = (next: RetryDraft): void => { edit(current => ({ ...current, retry: next })) }
-  const editReasoning = (next: ReasoningDraft): void => {
-    if (model !== undefined) edit(current => ({ ...current, reasoning: new Map(current.reasoning).set(model.id, next) }))
-  }
   const summaries = models.map(item => {
     const pending = draft?.reasoning.get(item.id)
     const summary = reasoningSummary(pending ?? reasoningDraft(item.reasoning), t)
-    return { ...item, summary: pending === undefined ? summary : t('pendingSummary', { summary }) }
+    return { id: item.id, name: item.name, summary: pending === undefined ? summary : t('pendingSummary', { summary }) }
+  })
+  const imageSummaries = models.map(item => {
+    const pending = draft?.image.get(item.id)
+    const summary = imageSummary(pending ?? imageDraft(item.image), t)
+    return { id: item.id, name: item.name, summary: pending === undefined ? summary : t('pendingSummary', { summary }) }
   })
   const submit = async (): Promise<void> => {
-    if (draft === null || batch !== null || blocked || error !== undefined || draft.snapshot.revision === undefined) return
+    if (draft === null || reasoningBatch !== null || imageBatch !== null || blocked || error !== undefined || draft.snapshot.revision === undefined) return
     setSaving(true)
     const result = await save(optionOperations(draft, provider.settingsPath, models, read), draft.snapshot.revision)
     if (!active.current) return
@@ -107,77 +112,68 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
   if (snapshot.status !== 'ready') return <p role="status">{t('unavailable')}</p>
   return <div className={css.editor}>
     {!snapshot.writable ? <p className={css.notice} role="status">{t('readOnly')}</p> : null}
-    {piAi ? <fieldset className={css.group} disabled={blocked}>
+    {piAi && catalogError !== null ? <div className={css.notice} role="status">
+      {t('catalogFailed', { message: catalogError })}
+      <button type="button" className={css.link} onClick={() => { setReload(value => value + 1) }}>{t('reload')}</button>
+    </div> : null}
+    {piAi && models.length > 0 ? <fieldset className={css.group} disabled={blocked || imageBatch !== null}>
       <legend>{t('reasoning')}</legend>
-      <p className={css.hint}>{t('reasoningHint')}</p>
-      {catalogError === null ? null : <div className={css.notice} role="status">
-        {t('catalogFailed', { message: catalogError })}
-        <button type="button" className={css.link} onClick={() => { setReload(value => value + 1) }}>{t('reload')}</button>
-      </div>}
-      {batch !== null ? <BatchReasoning sourceName={batch.name} reasoning={batch.reasoning}
-        targets={summaries.filter(item => item.id !== batch.id)} t={t}
-        onCancel={() => { setBatch(null) }} onApply={ids => {
-          if (blocked) return
+      {reasoningBatch !== null ? <BatchReasoning reasoning={reasoningBatch.capability} targets={summaries} t={t}
+        onCancel={() => { setReasoningBatch(null) }} onApply={ids => {
           edit(current => {
             const next = new Map(current.reasoning)
-            for (const target of ids) next.set(target, { mode: batch.reasoning.mode, efforts: { ...batch.reasoning.efforts } })
+            for (const target of ids) next.set(target, reasoningBatch.capability)
             return { ...current, reasoning: next }
           })
-          setBatch(null)
-        }} /> : model === undefined || reasoning === undefined ? catalogLoaded
-        ? <p className={css.hint}>{t('noModels')}</p>
-        : <div className={css.loading} role="status" aria-label={t('loadingModels')}><IconLoadingOutlineRegular className={css.spinner} /></div>
-        : <>
+          setReasoningBatch(null)
+        }} /> : <>
+        <p className={css.hint}>{t('reasoningHint')}</p>
         <div className={css.field}>
-          <label htmlFor={`${id}-model`}>{t('model')}</label>
-          <select id={`${id}-model`} value={model.id} onChange={event => { setSelected(event.target.value) }}>
-            {summaries.map(item => <option key={item.id} value={item.id}>{t('modelOption', {
-              model: item.name === item.id ? item.id : `${item.name} (${item.id})`, summary: item.summary,
-            })}</option>)}
-          </select>
-        </div>
-        <div className={css.field}>
-          <label htmlFor={`${id}-reasoning`}>{t('reasoning')}</label>
-          <select id={`${id}-reasoning`} value={reasoning.mode} onChange={event => {
+          <label htmlFor={`${id}-reasoning`}>{t('reasoningTarget')}</label>
+          <select id={`${id}-reasoning`} value={reasoningMode} onChange={event => {
             const mode = event.target.value
-            if (mode === 'inherit' || mode === 'disabled' || mode === 'custom') editReasoning({ ...reasoning, mode })
+            if (mode === 'inherit' || mode === 'disabled' || mode === 'custom') setReasoningMode(mode)
           }}>
-            <option value="inherit">{t('inherit')}</option>
+            <option value="custom">{t('reasoningEnabled')}</option>
             <option value="disabled">{t('disabled')}</option>
-            <option value="custom">{t('custom')}</option>
+            <option value="inherit">{t('inherit')}</option>
           </select>
         </div>
-        {reasoning.mode === 'custom' ? <>
-          <fieldset className={css.levels}>
-            <legend>{t('levels')}</legend>
-            {THINKING_LEVELS.map(level => <label className={css.check} key={level}>
-              <input type="checkbox" checked={reasoning.efforts[level] !== undefined} onChange={event => {
-                const efforts = { ...reasoning.efforts }
-                if (event.target.checked) efforts[level] = level === 'off' ? '' : level
-                else delete efforts[level]
-                editReasoning({ mode: 'custom', efforts })
-              }} />
-              {t(level)}
-            </label>)}
-          </fieldset>
-          <details className={css.mapping}>
-            <summary>{t('mapping')}</summary>
-            <p className={css.hint}>{t('mappingHint')}</p>
-            {THINKING_LEVELS.filter(level => reasoning.efforts[level] !== undefined).map(level => <label className={css.field} key={level}>
-              <span>{t('wireValue', { level: t(level) })}</span>
-              <input type="text" value={reasoning.efforts[level] ?? ''} onChange={event => {
-                editReasoning({ mode: 'custom', efforts: { ...reasoning.efforts, [level]: event.target.value } })
-              }} />
-            </label>)}
-          </details>
-        </> : null}
-        <button type="button" className={css.link} onClick={() => { editReasoning({ mode: 'inherit', efforts: {} }) }}>
-          {t('inheritedReasoning')}
-        </button>
-        {models.length > 1 ? <button type="button" className={css.discard} disabled={reasoningError(reasoning) !== undefined} onClick={() => {
-          setBatch({ id: model.id, name: model.name === model.id ? model.id : `${model.name} (${model.id})`,
-            reasoning: { mode: reasoning.mode, efforts: { ...reasoning.efforts } }, snapshot: source })
-        }}>{t('batchTitle')}</button> : null}
+        <button type="button" className={css.discard} onClick={() => {
+          setReasoningBatch({
+            capability: reasoningMode === 'custom' ? { ...STANDARD_REASONING, efforts: { ...STANDARD_REASONING.efforts } }
+              : { mode: reasoningMode, efforts: {} },
+            snapshot: source,
+          })
+        }}>{t('reasoningBatchTitle')}</button>
+      </>}
+    </fieldset> : null}
+    {models.length > 0 ? <fieldset className={css.group} disabled={blocked || reasoningBatch !== null}>
+      <legend>{t('imageInput')}</legend>
+      {imageBatch !== null ? <BatchImage image={imageBatch.capability} targets={imageSummaries} t={t}
+        onCancel={() => { setImageBatch(null) }} onApply={ids => {
+          edit(current => {
+            const next = new Map(current.image)
+            for (const target of ids) next.set(target, { mode: imageBatch.capability.mode })
+            return { ...current, image: next }
+          })
+          setImageBatch(null)
+        }} /> : <>
+        <p className={css.hint}>{t('imageInputHint')}</p>
+        <div className={css.field}>
+          <label htmlFor={`${id}-image`}>{t('imageTarget')}</label>
+          <select id={`${id}-image`} value={imageMode} onChange={event => {
+            const mode = event.target.value
+            if (mode === 'inherit' || mode === 'text' || mode === 'textAndImage') setImageMode(mode)
+          }}>
+            <option value="textAndImage">{t('imageTextAndImage')}</option>
+            <option value="text">{t('imageText')}</option>
+            {piAi ? <option value="inherit">{t('imageInherit')}</option> : null}
+          </select>
+        </div>
+        <button type="button" className={css.discard} onClick={() => {
+          setImageBatch({ capability: { mode: imageMode }, snapshot: source })
+        }}>{t('imageBatchTitle')}</button>
       </>}
     </fieldset> : null}
     <fieldset className={css.group} disabled={blocked}>
@@ -222,10 +218,10 @@ function OptionsEditor(props: ProviderOptionsProps & { snapshot: ConfigFormSnaps
       {stale ? <p role="alert">{t('conflict')}</p> : error === undefined ? null : <p role="alert">{t(error)}</p>}
     </div>
     <div className={css.actions}>
-      <button type="button" className={css.save} disabled={blocked || draft === null || batch !== null || error !== undefined} onClick={() => { void submit() }}>
+      <button type="button" className={css.save} disabled={blocked || draft === null || reasoningBatch !== null || imageBatch !== null || error !== undefined} onClick={() => { void submit() }}>
         {saving ? t('saving') : t('save')}
       </button>
-      <button type="button" className={css.discard} disabled={saving || draft === null && batch === null} onClick={() => { setDraft(null); setBatch(null); setConflicted(false) }}>
+      <button type="button" className={css.discard} disabled={saving || draft === null && reasoningBatch === null && imageBatch === null} onClick={() => { setDraft(null); setReasoningBatch(null); setImageBatch(null); setConflicted(false) }}>
         {t('discard')}
       </button>
     </div>

@@ -1,6 +1,6 @@
 {
   "name": "@winterhuan/dsh-client-ui-settings-model-options",
-  "description": "Model reasoning capabilities and provider retry settings in the DSH Models page",
+  "description": "Model thinking, image input, and provider retry settings in the DSH Models page",
   "version": "0.1.7-rc.2",
   "publishConfig": {
     "access": "public"
@@ -49,22 +49,22 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-api-settings-controller": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-store": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-test-runtime": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-api-settings-controller": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-store": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-test-runtime": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
     "@types/react": "~18.3.1",
     "react": "^18.2.0",
-    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings-models": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.2"
+    "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-settings-models": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3"
   },
   "files": [
     "lib/index.js",

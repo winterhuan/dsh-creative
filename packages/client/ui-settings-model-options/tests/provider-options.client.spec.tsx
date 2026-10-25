@@ -10,9 +10,15 @@ import { en, zh } from '../src/client/locales.ts'
 
 afterEach(cleanup)
 
-function bench(locale: 'zh' | 'en' = 'en', models: readonly { id: string; name?: string; reasoningEfforts?: unknown }[] = [
+/** The owning label's text for a target checkbox: id plus its capability summary. */
+function targetLabel(panel: ReturnType<typeof within>, name: string): string {
+  const label = panel.getByLabelText(name).closest('label')
+  return label?.textContent ?? ''
+}
+
+function bench(locale: 'zh' | 'en' = 'en', models: readonly ({ id: string; name?: string } & Record<string, unknown>)[] = [
   { id: 'a' }, { id: 'b', reasoningEfforts: { high: 'ultra' } },
-]) {
+], settingsNs: 'llm-pi-ai' | 'llm-deepseek' = 'llm-pi-ai') {
   const snapshot: ConfigFormSnapshot<unknown> = {
     status: 'ready', revision: 7, writable: true, mode: 'host', base: {}, user: {},
     value: { providers: { gateway: { models } } },
@@ -20,7 +26,7 @@ function bench(locale: 'zh' | 'en' = 'en', models: readonly { id: string; name?:
   const save = vi.fn<ProviderOptionsProps['save']>().mockResolvedValue({ ok: true })
   const loadModels = vi.fn<ProviderOptionsProps['loadModels']>().mockResolvedValue({ ok: true, models: [] })
   const props = {
-    provider: { provider: 'gateway', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'gateway'], displayName: 'Gateway' },
+    provider: { provider: 'gateway', settingsNs, settingsPath: ['providers', 'gateway'], displayName: 'Gateway' },
     configured: true, keyConfigured: true,
     useSettings: <T,>(select: (value: ConfigFormSnapshot<unknown>) => T): T => select(snapshot),
     read: (value: unknown, path: readonly string[]) => path.reduce<unknown>((node, key) =>
@@ -32,19 +38,16 @@ function bench(locale: 'zh' | 'en' = 'en', models: readonly { id: string; name?:
   const open = async () => {
     fireEvent.click(screen.getByText(props.t('title')))
     await screen.findByRole('spinbutton')
-    await waitFor(() => { expect(loadModels).toHaveBeenCalled() })
+    if (settingsNs === 'llm-pi-ai') await waitFor(() => { expect(loadModels).toHaveBeenCalled() })
   }
   return { props, snapshot, save, loadModels, view, open }
 }
 
 describe('provider options', () => {
-  it.each(['en', 'zh'] as const)('stages both controls and sends one fenced save in %s', async locale => {
+  it.each(['en', 'zh'] as const)('stages retry controls and thinking batches in one fenced save in %s', async locale => {
     const b = bench(locale)
     await b.open()
     const t = b.props.t
-    fireEvent.change(screen.getByLabelText(t('reasoning')), { target: { value: 'custom' } })
-    expect(screen.getByRole('button', { name: t('save') })).toHaveProperty('disabled', true)
-    fireEvent.click(screen.getByLabelText(t('high')))
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } })
     fireEvent.click(screen.getByLabelText(t('retryInvalidRequests')))
     expect(b.save).not.toHaveBeenCalled()
@@ -54,7 +57,6 @@ describe('provider options', () => {
       { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
       { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'maxRetries'], value: 3 },
       { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'retryableCodes'], value: ['EMPTY_RESPONSE', 'RATE_LIMIT', 'SERVER', 'TIMEOUT', 'TRANSPORT', 'INVALID_REQUEST'] },
-      { op: 'set', path: ['providers', 'gateway', 'models', '0', 'reasoningEfforts'], value: { high: 'high' } },
     ], 7)
   })
 
@@ -178,75 +180,59 @@ describe('provider options', () => {
     expect(screen.getByText(b.props.t('retryDefaultsRestored'))).toBeTruthy()
   })
 
-  it('retains each model draft when switching the selected model', async () => {
-    const b = bench()
-    await b.open()
-    fireEvent.change(screen.getByLabelText('Thinking capability'), { target: { value: 'disabled' } })
-    fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'b' } })
-    expect(screen.getByLabelText('High')).toHaveProperty('checked', true)
-    fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'a' } })
-    expect(screen.getByLabelText('Thinking capability')).toHaveProperty('value', 'disabled')
-  })
-
-  it('shows off omission distinctly from an explicit wire value', async () => {
-    const b = bench()
-    await b.open()
-    fireEvent.change(screen.getByLabelText('Thinking capability'), { target: { value: 'custom' } })
-    fireEvent.click(screen.getByLabelText('Off'))
-    fireEvent.click(screen.getByLabelText('High'))
-    fireEvent.click(screen.getByText('Request parameter values'))
-    expect(screen.getByLabelText('Off parameter value')).toHaveProperty('value', '')
-    fireEvent.change(screen.getByLabelText('Off parameter value'), { target: { value: 'none' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await waitFor(() => { expect(b.save).toHaveBeenCalled() })
-    expect(b.save.mock.calls[0]?.[0][0]).toMatchObject({ value: { off: 'none', high: 'high' } })
-  })
-
-  it.each(['en', 'zh'] as const)('previews and stages selected models with exact mappings in %s', async locale => {
-    const b = bench(locale, [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd', reasoningEfforts: false }])
+  it.each(['en', 'zh'] as const)('stages one thinking capability on selected models in %s', async locale => {
+    const b = bench(locale, [{ id: 'a' }, { id: 'b', reasoningEfforts: { high: 'ultra' } }, { id: 'c', reasoningEfforts: false }])
     await b.open()
     const t = b.props.t
-    expect(screen.getByRole('option', { name: t('modelOption', { model: 'a', summary: t('summaryInherit') }) })).toBeTruthy()
-    expect(screen.getByRole('option', { name: t('modelOption', { model: 'd', summary: t('disabled') }) })).toBeTruthy()
-    fireEvent.change(screen.getByLabelText(t('reasoning')), { target: { value: 'custom' } })
-    fireEvent.click(screen.getByLabelText(t('off')))
-    fireEvent.click(screen.getByLabelText(t('high')))
-    fireEvent.click(screen.getByText(t('mapping')))
-    fireEvent.change(screen.getByLabelText(t('wireValue', { level: t('high') })), { target: { value: 'ultra' } })
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } })
-    fireEvent.click(screen.getByRole('button', { name: t('batchTitle') }))
-    const panel = within(screen.getByRole('group', { name: t('batchTitle') }))
-    expect(panel.getByText('ultra')).toBeTruthy()
-    expect(panel.getByText(t('omitParameter'))).toBeTruthy()
-    expect(panel.queryByLabelText(t('selectTarget', { model: 'a' }))).toBeNull()
-    expect(panel.getAllByRole('checkbox').every(input => !(input as HTMLInputElement).checked)).toBe(true)
+    expect(screen.getByLabelText(t('reasoningTarget'))).toHaveProperty('value', 'custom')
+    fireEvent.click(screen.getByRole('button', { name: t('reasoningBatchTitle') }))
+    const panel = within(screen.getByRole('group', { name: t('reasoningBatchTitle') }))
+    expect(panel.getByText(t('reasoningBatchPreview', {
+      capability: [t('off'), t('low'), t('medium'), t('high')].join(' / '),
+    }))).toBeTruthy()
+    expect(targetLabel(panel, t('selectTarget', { model: 'a' }))).toContain(t('summaryInherit'))
+    expect(targetLabel(panel, t('selectTarget', { model: 'b' }))).toContain(t('high'))
+    expect(targetLabel(panel, t('selectTarget', { model: 'c' }))).toContain(t('disabled'))
     expect(panel.getByRole('button', { name: t('applyTargets', { count: '0' }) })).toHaveProperty('disabled', true)
     expect(screen.getByRole('button', { name: t('save') })).toHaveProperty('disabled', true)
-    fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'b' })))
+    fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'a' })))
     fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'c' })))
     fireEvent.click(panel.getByRole('button', { name: t('applyTargets', { count: '2' }) }))
     expect(b.save).not.toHaveBeenCalled()
-    expect(screen.getByRole('option', { name: t('modelOption', {
-      model: 'b', summary: t('pendingSummary', { summary: `${t('off')} / ${t('high')}` }),
-    }) })).toBeTruthy()
-    fireEvent.change(screen.getByLabelText(t('model')), { target: { value: 'b' } })
-    fireEvent.change(screen.getByLabelText(t('wireValue', { level: t('high') })), { target: { value: 'deep' } })
     fireEvent.click(screen.getByRole('button', { name: t('save') }))
-    await waitFor(() => { expect(b.save).toHaveBeenCalledTimes(1) })
-    expect(b.save).toHaveBeenCalledWith([
-      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'mode'], value: 'normal' },
-      { op: 'set', path: ['providers', 'gateway', 'retryPolicy', 'maxRetries'], value: 3 },
-      { op: 'set', path: ['providers', 'gateway', 'models', '0', 'reasoningEfforts'], value: { off: null, high: 'ultra' } },
-      { op: 'set', path: ['providers', 'gateway', 'models', '1', 'reasoningEfforts'], value: { off: null, high: 'deep' } },
-      { op: 'set', path: ['providers', 'gateway', 'models', '2', 'reasoningEfforts'], value: { off: null, high: 'ultra' } },
-    ], 7)
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'models', '0', 'reasoningEfforts'], value: { off: null, low: 'low', medium: 'medium', high: 'high' } },
+      { op: 'set', path: ['providers', 'gateway', 'models', '2', 'reasoningEfforts'], value: { off: null, low: 'low', medium: 'medium', high: 'high' } },
+    ], 7) })
+  })
+
+  it('applies not-supported and inherited thinking capabilities without custom levels', async () => {
+    const b = bench()
+    await b.open()
+    const t = b.props.t
+    fireEvent.change(screen.getByLabelText(t('reasoningTarget')), { target: { value: 'disabled' } })
+    fireEvent.click(screen.getByRole('button', { name: t('reasoningBatchTitle') }))
+    const disabled = within(screen.getByRole('group', { name: t('reasoningBatchTitle') }))
+    expect(disabled.getByText(t('reasoningBatchPreview', { capability: t('disabled') }))).toBeTruthy()
+    fireEvent.click(disabled.getByRole('button', { name: t('cancelBatch') }))
+    fireEvent.change(screen.getByLabelText(t('reasoningTarget')), { target: { value: 'inherit' } })
+    fireEvent.click(screen.getByRole('button', { name: t('reasoningBatchTitle') }))
+    const inherited = within(screen.getByRole('group', { name: t('reasoningBatchTitle') }))
+    expect(inherited.getByText(t('reasoningBatchPreview', { capability: t('summaryInherit') }))).toBeTruthy()
+    fireEvent.click(inherited.getByRole('button', { name: t('selectVisible') }))
+    fireEvent.click(inherited.getByRole('button', { name: t('applyTargets', { count: '2' }) }))
+    fireEvent.click(screen.getByRole('button', { name: t('save') }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'unset', path: ['providers', 'gateway', 'models', '0', 'reasoningEfforts'] },
+      { op: 'unset', path: ['providers', 'gateway', 'models', '1', 'reasoningEfforts'] },
+    ], 7) })
   })
 
   it('selects only filtered results and retains hidden selections', async () => {
     const b = bench('en', [{ id: 'a' }, { id: 'b', name: 'Beta' }, { id: 'c', name: 'Gamma' }, { id: 'd', name: 'Delta' }])
     await b.open()
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
-    const panel = within(screen.getByRole('group', { name: 'Apply to other models' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Apply thinking capability to models' }))
+    const panel = within(screen.getByRole('group', { name: 'Apply thinking capability to models' }))
     fireEvent.click(panel.getByLabelText('Select Gamma (c)'))
     fireEvent.change(panel.getByRole('searchbox'), { target: { value: 'BETA' } })
     fireEvent.click(panel.getByRole('button', { name: 'Select all results' }))
@@ -259,76 +245,67 @@ describe('provider options', () => {
     fireEvent.click(panel.getByRole('button', { name: 'Apply to 1 models' }))
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
-      { op: 'unset', path: ['providers', 'gateway', 'models', '2', 'reasoningEfforts'] },
+      { op: 'set', path: ['providers', 'gateway', 'models', '2', 'reasoningEfforts'], value: { off: null, low: 'low', medium: 'medium', high: 'high' } },
     ], 7) })
   })
 
-  it('copies a stored catalog override without changing the source or replacing the catalog', async () => {
+  it('writes catalog overrides without pinning the catalog as an explicit model list', async () => {
     const b = bench('en', [])
     b.snapshot.value = { providers: { gateway: { modelOverrides: { a: { reasoningEfforts: { off: 'none', high: 'ultra' } } } } } }
     b.loadModels.mockResolvedValue({ ok: true, models: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }] })
     await b.open()
-    await screen.findByRole('button', { name: 'Apply to other models' })
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
-    expect(screen.getByText('none')).toBeTruthy()
-    fireEvent.click(screen.getByLabelText('Select B (b)'))
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to 1 models' }))
+    await screen.findByRole('button', { name: 'Apply thinking capability to models' })
+    fireEvent.click(screen.getByRole('button', { name: 'Apply thinking capability to models' }))
+    const panel = within(screen.getByRole('group', { name: 'Apply thinking capability to models' }))
+    expect(targetLabel(panel, 'Select A (a)')).toContain('High')
+    fireEvent.click(panel.getByLabelText('Select B (b)'))
+    fireEvent.click(panel.getByRole('button', { name: 'Apply to 1 models' }))
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
-      { op: 'set', path: ['providers', 'gateway', 'modelOverrides', 'b', 'reasoningEfforts'], value: { off: 'none', high: 'ultra' } },
+      { op: 'set', path: ['providers', 'gateway', 'modelOverrides', 'b', 'reasoningEfforts'], value: { off: null, low: 'low', medium: 'medium', high: 'high' } },
     ], 7) })
   })
 
   it('cancels recipient selection without losing drafts and discards applied changes together', async () => {
     const b = bench()
     await b.open()
-    fireEvent.change(screen.getByLabelText('Thinking capability'), { target: { value: 'disabled' } })
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '2' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
-    fireEvent.click(screen.getByLabelText('Select b'))
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(screen.getByLabelText('Thinking capability')).toHaveProperty('value', 'disabled')
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('reasoningBatchTitle') }))
+    fireEvent.click(screen.getByLabelText(b.props.t('selectTarget', { model: 'b' })))
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('cancelBatch') }))
     expect(screen.getByRole('spinbutton')).toHaveProperty('value', '2')
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
-    expect(screen.getByLabelText('Select b')).toHaveProperty('checked', false)
-    fireEvent.click(screen.getByLabelText('Select b'))
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to 1 models' }))
-    fireEvent.change(screen.getByLabelText('Model'), { target: { value: 'b' } })
-    expect(screen.getByLabelText('Thinking capability')).toHaveProperty('value', 'disabled')
-    fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
-    expect(screen.getByLabelText('High')).toHaveProperty('checked', true)
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('reasoningBatchTitle') }))
+    const panel = within(screen.getByRole('group', { name: b.props.t('reasoningBatchTitle') }))
+    expect(targetLabel(panel, b.props.t('selectTarget', { model: 'b' }))).toContain(b.props.t('high'))
+    expect(panel.getAllByRole('checkbox').every(input => !(input as HTMLInputElement).checked)).toBe(true)
+    fireEvent.click(panel.getByLabelText(b.props.t('selectTarget', { model: 'b' })))
+    fireEvent.click(panel.getByRole('button', { name: b.props.t('applyTargets', { count: '1' }) }))
+    expect(b.save).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('reasoningBatchTitle') }))
+    const applied = within(screen.getByRole('group', { name: b.props.t('reasoningBatchTitle') }))
+    expect(targetLabel(applied, b.props.t('selectTarget', { model: 'b' }))).toContain(b.props.t('pendingSummary', {
+      summary: [b.props.t('off'), b.props.t('low'), b.props.t('medium'), b.props.t('high')].join(' / '),
+    }))
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('discard') }))
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('reasoningBatchTitle') }))
+    expect(targetLabel(within(screen.getByRole('group', { name: b.props.t('reasoningBatchTitle') })), b.props.t('selectTarget', { model: 'b' }))).toContain(b.props.t('high'))
     expect(screen.getByRole('spinbutton')).toHaveProperty('value', '5')
     expect(b.save).not.toHaveBeenCalled()
-  })
-
-  it('cannot copy missing levels or blank thinking parameter values', async () => {
-    const b = bench()
-    await b.open()
-    fireEvent.change(screen.getByLabelText('Thinking capability'), { target: { value: 'custom' } })
-    const copy = screen.getByRole('button', { name: 'Apply to other models' })
-    expect(copy).toHaveProperty('disabled', true)
-    fireEvent.click(screen.getByLabelText('Off'))
-    expect(copy).toHaveProperty('disabled', true)
-    fireEvent.click(screen.getByLabelText('High'))
-    expect(copy).toHaveProperty('disabled', false)
-    fireEvent.click(screen.getByText('Request parameter values'))
-    fireEvent.change(screen.getByLabelText('High parameter value'), { target: { value: ' ' } })
-    expect(copy).toHaveProperty('disabled', true)
   })
 
   it('fences a batch opened before the first draft against concurrent settings changes', async () => {
     const b = bench()
     await b.open()
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to other models' }))
-    fireEvent.click(screen.getByLabelText('Select b'))
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('reasoningBatchTitle') }))
+    fireEvent.click(screen.getByLabelText(b.props.t('selectTarget', { model: 'a' })))
     b.props.useSettings = select => select({ ...b.snapshot, revision: 8 })
     b.view.rerender(<ProviderOptions {...b.props} />)
     expect(screen.getByRole('alert').textContent).toContain('Settings changed elsewhere')
-    expect(screen.getByRole('button', { name: 'Apply to 1 models' }).closest('fieldset')).toHaveProperty('disabled', true)
-    expect(screen.getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true)
-    fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
+    expect(screen.getByRole('button', { name: b.props.t('applyTargets', { count: '1' }) }).closest('fieldset')).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: b.props.t('save') })).toHaveProperty('disabled', true)
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('discard') }))
     expect(screen.queryByRole('alert')).toBeNull()
-    expect(screen.queryByRole('group', { name: 'Apply to other models' })).toBeNull()
+    expect(screen.queryByRole('group', { name: b.props.t('reasoningBatchTitle') })).toBeNull()
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => { expect(b.save.mock.calls[0]?.[1]).toBe(8) })
@@ -382,6 +359,81 @@ describe('provider options', () => {
     expect(screen.getByText('Model settings are read-only')).toBeTruthy()
     expect(screen.getByRole('spinbutton').closest('fieldset')).toHaveProperty('disabled', true)
     b.view.rerender(<ProviderOptions {...b.props} configured={false} />)
-    expect(screen.queryByText('Thinking and retries')).toBeNull()
+    expect(screen.queryByText(b.props.t('title'))).toBeNull()
+  })
+
+  it.each(['en', 'zh'] as const)('stages one image capability on selected models in %s', async locale => {
+    const b = bench(locale)
+    await b.open()
+    const t = b.props.t
+    expect(screen.getByLabelText(t('imageTarget'))).toHaveProperty('value', 'textAndImage')
+    fireEvent.click(screen.getByRole('button', { name: t('imageBatchTitle') }))
+    const panel = within(screen.getByRole('group', { name: t('imageBatchTitle') }))
+    expect(panel.getByText(t('imageBatchPreview', { capability: t('imageTextAndImage') }))).toBeTruthy()
+    expect(panel.getByRole('button', { name: t('applyTargets', { count: '0' }) })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: t('save') })).toHaveProperty('disabled', true)
+    fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'a' })))
+    fireEvent.click(panel.getByLabelText(t('selectTarget', { model: 'b' })))
+    fireEvent.click(panel.getByRole('button', { name: t('applyTargets', { count: '2' }) }))
+    expect(b.save).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: t('imageBatchTitle') }))
+    const reopened = within(screen.getByRole('group', { name: t('imageBatchTitle') }))
+    expect(reopened.getAllByText(t('pendingSummary', { summary: t('imageTextAndImage') }))).toHaveLength(2)
+    fireEvent.click(reopened.getByRole('button', { name: t('cancelBatch') }))
+    fireEvent.click(screen.getByRole('button', { name: t('save') }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'models', '0', 'input'], value: ['text', 'image'] },
+      { op: 'set', path: ['providers', 'gateway', 'models', '1', 'input'], value: ['text', 'image'] },
+    ], 7) })
+  })
+
+  it('offers inherited image input on pi-ai providers only', async () => {
+    const b = bench()
+    await b.open()
+    const t = b.props.t
+    const select = within(screen.getByLabelText(t('imageTarget')))
+    expect(select.getByRole('option', { name: t('imageInherit') })).toBeTruthy()
+    b.props = { ...b.props, provider: { ...b.props.provider, settingsNs: 'llm-deepseek' } }
+    b.view.rerender(<ProviderOptions {...b.props} />)
+    const deepseek = within(screen.getByLabelText(t('imageTarget')))
+    expect(deepseek.queryByRole('option', { name: t('imageInherit') })).toBeNull()
+    expect(screen.queryByLabelText(t('reasoningTarget'))).toBeNull()
+  })
+
+  it('clears deepseek image request limits when applying text-only', async () => {
+    const b = bench('en', [
+      { id: 'a', inputModalities: ['text', 'image'], imagePixelBudget: 'low', imageMaxBytes: 2048 },
+      { id: 'b', inputModalities: ['text', 'image'] },
+    ], 'llm-deepseek')
+    await b.open()
+    fireEvent.change(screen.getByLabelText(b.props.t('imageTarget')), { target: { value: 'text' } })
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('imageBatchTitle') }))
+    const panel = within(screen.getByRole('group', { name: b.props.t('imageBatchTitle') }))
+    expect(panel.getByText(b.props.t('imageBatchPreview', { capability: b.props.t('imageText') }))).toBeTruthy()
+    fireEvent.click(panel.getByRole('button', { name: b.props.t('selectVisible') }))
+    fireEvent.click(panel.getByRole('button', { name: b.props.t('applyTargets', { count: '2' }) }))
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('save') }))
+    await waitFor(() => { expect(b.save).toHaveBeenCalledWith([
+      { op: 'set', path: ['providers', 'gateway', 'models', '0', 'inputModalities'], value: ['text'] },
+      { op: 'unset', path: ['providers', 'gateway', 'models', '0', 'imagePixelBudget'] },
+      { op: 'unset', path: ['providers', 'gateway', 'models', '0', 'imageMaxBytes'] },
+      { op: 'set', path: ['providers', 'gateway', 'models', '1', 'inputModalities'], value: ['text'] },
+      { op: 'unset', path: ['providers', 'gateway', 'models', '1', 'imagePixelBudget'] },
+      { op: 'unset', path: ['providers', 'gateway', 'models', '1', 'imageMaxBytes'] },
+    ], 7) })
+  })
+
+  it('fences an image batch opened before the first draft against concurrent settings changes', async () => {
+    const b = bench()
+    await b.open()
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('imageBatchTitle') }))
+    fireEvent.click(screen.getByLabelText(b.props.t('selectTarget', { model: 'a' })))
+    b.props.useSettings = select => select({ ...b.snapshot, revision: 8 })
+    b.view.rerender(<ProviderOptions {...b.props} />)
+    expect(screen.getByRole('alert').textContent).toContain('Settings changed elsewhere')
+    expect(screen.getByRole('button', { name: b.props.t('applyTargets', { count: '1' }) }).closest('fieldset')).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: b.props.t('save') })).toHaveProperty('disabled', true)
+    fireEvent.click(screen.getByRole('button', { name: b.props.t('discard') }))
+    expect(screen.queryByRole('group', { name: b.props.t('imageBatchTitle') })).toBeNull()
   })
 })
