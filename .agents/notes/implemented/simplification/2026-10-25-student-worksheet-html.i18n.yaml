@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-25-student-worksheet-html.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-10-25-student-worksheet-html.md
+/agent-note-student-worksheets-render-as-html-and-print-from-the-browser:
+  en: 05673b82e2a71db3
+  zh: d9542e7f0fe9fe1a
+/agent-note-student-worksheets-render-as-html-and-print-from-the-browser/problem:
+  en: d08aaef899e08ef0
+  zh: d9961dda374b63ec
+/agent-note-student-worksheets-render-as-html-and-print-from-the-browser/decision:
+  en: 69e74fad73ec9993
+  zh: 4fa4767e08d90875
+/agent-note-student-worksheets-render-as-html-and-print-from-the-browser/alternatives-considered:
+  en: c1f5037df33f964c
+  zh: a20c3271ff003a88
+/agent-note-student-worksheets-render-as-html-and-print-from-the-browser/consequences:
+  en: 3173189e419bf8db
+  zh: a5fbc281956fb619

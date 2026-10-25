@@ -41,7 +41,6 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
   return { serverNow: now, revision: state.revision, study: {
     ...status,
     progress: status.progress.filter(item => item.subject === subject).slice(-20),
-    printAvailable: process.platform !== 'win32',
     concepts: state.concepts.filter(item => item.subject === subject).slice(-20).reverse(),
     objectives: state.objectives.filter(item => item.subject === subject).slice(-20).reverse(),
     relations: state.relations.filter(item => state.concepts.some(concept => concept.id === item.fromId && concept.subject === subject)).slice(-20),

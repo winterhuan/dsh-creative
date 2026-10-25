@@ -16,7 +16,6 @@ const initial = () => updateStudy(updateStudy(updateStudy(undefined, setup, Date
 function installFetch(state = initial()) {
   const requests: { revision: number; change: unknown }[] = []
   const fetch = vi.fn(async (url: string, options?: RequestInit) => {
-    if (url.startsWith('/student/print?')) return new Response(JSON.stringify({ receipt: 'request id is HP_DeskJet_4900-123' }))
     if (options?.body) {
       const body = JSON.parse(String(options.body)); requests.push(body)
       if (body.revision !== state.revision) return new Response(JSON.stringify({ error: '学习档案已更新' }), { status: 409 })
@@ -231,23 +230,22 @@ it('starts foundation practice with the learner-selected knowledge goal', async 
   expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'foundation' })
 })
 
-it.skipIf(process.platform === 'win32')('requires PDF preview and confirmation before submitting a print job', async () => {
-  const confirmPrint = vi.fn().mockReturnValueOnce(false).mockReturnValue(true)
-  vi.stubGlobal('confirm', confirmPrint)
+it('previews the sheet as HTML and prints through the browser dialog', async () => {
+  const print = vi.fn()
+  vi.stubGlobal('print', print)
   const backend = installFetch(worksheetState())
   render(<StudyDesk sessionId="paper" visible running={false} ask={vi.fn()} t={t} />)
   await openDesk('Mistakes')
   fireEvent.click(screen.getByText('凑十加法 · 1 questions · Not checked yet 1'))
-  const print = screen.getByRole('button', { name: 'Send to printer' }) as HTMLButtonElement
-  expect(print.disabled).toBe(true)
-  fireEvent.click(screen.getByRole('link', { name: 'Preview PDF' }))
-  expect(print.disabled).toBe(false)
-  fireEvent.click(print)
+  fireEvent.click(screen.getByRole('button', { name: en.previewPrintSheet }))
+  const dialog = await screen.findByRole('dialog', { name: 'Math review sheet' })
+  expect(within(dialog).getByText('1. 请计算 9+6。')).toBeTruthy()
+  expect(within(dialog).getAllByText((_, element) => element?.textContent === en.sheetNameDate)).toHaveLength(1)
   expect(backend.fetch.mock.calls.some(([url]) => String(url).startsWith('/student/print?'))).toBe(false)
-  fireEvent.click(print)
-  await screen.findByText('Queued: request id is HP_DeskJet_4900-123')
-  expect(confirmPrint).toHaveBeenCalledTimes(2)
-  expect(backend.fetch).toHaveBeenCalledWith(expect.stringContaining('/student/print?'), expect.objectContaining({ method: 'POST', body: expect.stringContaining('"confirmed":true') }))
+  fireEvent.click(within(dialog).getByRole('button', { name: en.printSheet }))
+  expect(print).toHaveBeenCalledTimes(1)
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(screen.queryByRole('dialog')).toBeNull()
 })
 
 it('requires an explicit school year and saves an empty optional course note', async () => {

@@ -5,6 +5,7 @@ import { MistakeConfirmation, type ChangeStudy } from './forms.tsx'
 import type { Translate } from './locales.ts'
 import { mistakePhotoPrompt, paperPhotoPrompt, practiceSheetPrompt, reviewSheetPrompt, workbookPhotoPrompt } from './prompts.ts'
 import { errorTypesBySubject, type ErrorTypeValue } from '../vocabulary.ts'
+import { WorksheetPrint } from './worksheet-view.tsx'
 import type { Subject } from './display.ts'
 
 type Study = NonNullable<Dashboard['study']>
@@ -13,7 +14,7 @@ type Mark = 'correct' | 'partial' | 'incorrect'
 const markKeys = { correct: 'markCorrect', partial: 'markPartial', incorrect: 'markWrong' } as const
 
 /** Parent practice page: the mistake notebook, printed sheets, and due review. */
-export function PracticeView({ study, now, subject, goals, mistakeStatus, setMistakeStatus, setMistakeOffset, sessionId, revision, disabled, running, change, ask, onReview, epoch, t }: {
+export function PracticeView({ study, now, subject, goals, mistakeStatus, setMistakeStatus, setMistakeOffset, revision, disabled, running, change, ask, onReview, epoch, t }: {
   study: Study
   now: number
   subject: Subject
@@ -21,7 +22,6 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
   mistakeStatus: MistakeStatus
   setMistakeStatus: (status: MistakeStatus) => void
   setMistakeOffset: (offset: number) => void
-  sessionId: string
   revision: number
   disabled: boolean
   running: boolean
@@ -58,7 +58,7 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
       <button type="button" disabled={disabled || running || goals.length === 0} onClick={() => { void ask(practiceSheetPrompt(subject)).catch(() => {}) }}>{t('createWorksheet')}</button>
       <button type="button" disabled={disabled || running || study.reviewPlan.picks === 0} onClick={() => { void ask(reviewSheetPrompt(subject)).catch(() => {}) }}>{t('printConsolidation')}</button>
       {study.worksheets.length === 0 && <p>{t('empty')}</p>}
-      {study.worksheets.map(sheet => <WorksheetActions key={sheet.id} worksheet={sheet} sessionId={sessionId} revision={revision} canPrint={study.printAvailable} change={change} ask={ask} disabled={disabled || running} t={t} />)}
+      {study.worksheets.map(sheet => <WorksheetActions key={sheet.id} worksheet={sheet} revision={revision} change={change} ask={ask} disabled={disabled || running} t={t} />)}
     </section>
     <section><h3>{t('due')} · {study.dueCount}</h3>{study.dueMistakes.length === 0 && <p>{t('empty')}</p>}
       {study.dueMistakes.map(item => <p key={item.id}>{t(item.subject)} · {item.topic}</p>)}
@@ -101,9 +101,8 @@ function MistakeObjective({ mistake, objectives, change, t }: { mistake: Study['
   </>
 }
 
-function WorksheetActions({ worksheet, sessionId, revision, canPrint, change, ask, disabled, t }: { worksheet: Study['worksheets'][number]; sessionId: string; revision: number; canPrint: boolean; change: ChangeStudy; ask: AskTutor; disabled: boolean; t: Translate }) {
-  const [previewed, setPreviewed] = useState(false)
-  const [printing, setPrinting] = useState(false)
+function WorksheetActions({ worksheet, revision, change, ask, disabled, t }: { worksheet: Study['worksheets'][number]; revision: number; change: ChangeStudy; ask: AskTutor; disabled: boolean; t: Translate }) {
+  const [previewing, setPreviewing] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [marks, setMarks] = useState<Record<string, Mark>>(() => Object.fromEntries(worksheet.results.flatMap(item => item.result === 'unassessed' ? [] : [[item.itemId, item.result]])))
@@ -168,23 +167,10 @@ function WorksheetActions({ worksheet, sessionId, revision, canPrint, change, as
     try { await change({ action: 'discard-sheet', worksheetId: worksheet.id }, revision) }
     catch (reason) { setError(reason instanceof Error ? reason.message : t('networkError')) }
   }
-  const href = `/student/worksheet.pdf?sessionId=${encodeURIComponent(sessionId)}&id=${encodeURIComponent(worksheet.id)}`
-  async function print() {
-    if (!previewed || !window.confirm(t('printConfirm'))) return
-    setPrinting(true); setMessage(''); setError('')
-    try {
-      const response = await fetch(`/student/print?sessionId=${encodeURIComponent(sessionId)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ revision, worksheetId: worksheet.id, confirmed: true }) })
-      const result = await response.json() as { receipt?: string; error?: string }
-      if (!response.ok) throw new Error(result.error ?? t('printError'))
-      setMessage(`${t('queued')}: ${result.receipt ?? ''}`)
-    } catch (reason) { setError(reason instanceof Error ? reason.message : t('printError')) }
-    finally { setPrinting(false) }
-  }
   return <details><summary>{worksheet.objectiveTitle} · {worksheet.items.length} {t('questions')} · {worksheet.open ? `${t('notGraded')} ${worksheet.items.length - worksheet.results.length}` : `${t('graded')} ${worksheet.results.length}/${worksheet.items.length}`}</summary>
     <p className="student-muted">{t('createdAt')}: {new Date(worksheet.createdAt).toLocaleDateString()} · {t('gradeHelp')}</p>
-    <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => setPreviewed(true)}>{t('previewPdf')}</a>
-    <button type="button" disabled={!canPrint || !previewed || printing} onClick={() => { void print() }}>{t('printWorksheet')}</button>
-    {!canPrint && <p>{t('printUnavailable')}</p>}
+    <button type="button" disabled={disabled} onClick={() => { setPreviewing(true); setMessage('') }}>{t('previewPrintSheet')}</button>
+    {previewing && <WorksheetPrint worksheet={worksheet} onClose={() => setPreviewing(false)} t={t} />}
     <button type="button" disabled={disabled || saving} onClick={markAllRight}>{t('markAllCorrect')}</button>
     {worksheet.items.map((item, index) => {
       const source = worksheet.sources.find(candidate => candidate.itemId === item.id)
