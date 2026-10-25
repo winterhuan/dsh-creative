@@ -7,6 +7,7 @@ import { describe, expect, it, type TestContext } from 'vitest'
 import { main } from '../src/cli/main.ts'
 import { buildContext } from '../src/core/context.ts'
 import { diffFacts, earlySkillHits, effectiveAttrs, loadFacts, queryFacts, recordFacts, staleFacts } from '../src/core/facts.ts'
+import { extractFacts } from '../src/core/facts-extract.ts'
 import { extractChapterRules } from '../src/core/rules.ts'
 import { initialize } from '../src/core/tracking/store.ts'
 import { countVisibleChars, evaluateWordcount } from '../src/core/wordcount.ts'
@@ -162,3 +163,75 @@ describe('fact ledger', () => {
     expect(quiet.value.total).toBe(1)
   })
 })
+
+describe('facts extract', () => {
+  const labeled = `# 细纲
+
+- 场地：铁笼 | 地面：铁板
+- 伤情：陆峥-肩 | 主体：陆峥 | 程度：轻
+- 账目：陆峥-赵管事 | 欠：12
+- 物件：签押 | 持有：阿澜
+- 能力：半套桩 | 主体：陆峥
+- 年代：光绪 | 年号：光绪
+- 指令：封门 | 对象：管事
+- 场地：无
+- 能力：待补充
+她走进铁笼，账房还在数钱。
+- 出场顺序：甲、账房
+`
+
+  async function outlineBook(context: TestContext, outline: string, body?: string): Promise<string> {
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'dsh-story-extract-')))
+    context.onTestFinished(async () => { await rm(root, { recursive: true, force: true }) })
+    const directory = join(root, '样书')
+    await mkdir(join(directory, '大纲'), { recursive: true })
+    await mkdir(join(directory, '正文'), { recursive: true })
+    await writeFile(join(directory, '大纲/细纲_第001章.md'), outline)
+    if (body !== undefined) await writeFile(join(directory, '正文/第001章.md'), body)
+    return directory
+  }
+
+  it('writes stable ids for the seven kinds and skips unlabeled prose', async context => {
+    const directory = await outlineBook(context, labeled, '场地：后巷 | 地面：湿\n叙事里没有标签。\n')
+    const first = extractFacts(directory, 1)
+    expect(first.wrote).toBe(true)
+    expect(first.replaced).toBe(false)
+    expect(first.path).toBe('草稿/事实/第001章.claims.json')
+    expect(first.entries.map(entry => entry.id)).toEqual([
+      'ACCT-陆峥-赵管事', 'ERA-光绪', 'INJ-陆峥-肩', 'OBJ-签押', 'ORD-封门', 'SKILL-半套桩', 'VENUE-后巷', 'VENUE-铁笼',
+    ])
+    expect(first.entries.find(entry => entry.id === 'ACCT-陆峥-赵管事')?.attrs).toEqual({ 欠: 12 })
+    expect(first.entries.find(entry => entry.id === 'INJ-陆峥-肩')?.subject).toBe('陆峥')
+    expect(first.entries.find(entry => entry.id === 'INJ-陆峥-肩')?.attrs).toEqual({ 程度: '轻' })
+    expect(first.claims.every(claim => !('kind' in claim))).toBe(true)
+    const file = JSON.parse(await readFile(join(directory, first.path), 'utf8')) as { schema: string; claims: unknown[]; entries: unknown[] }
+    expect(file.schema).toBe('story-facts-claims/v1')
+    expect(file.claims).toHaveLength(first.claims.length)
+    expect(file.entries).toHaveLength(first.entries.length)
+    const outlineOnly = extractFacts(directory, 1, { from: 'outline', dryRun: true })
+    expect(outlineOnly.dry_run).toBe(true)
+    expect(outlineOnly.wrote).toBe(false)
+    expect(outlineOnly.entries.map(entry => entry.id)).not.toContain('VENUE-后巷')
+    expect(outlineOnly.entries.map(entry => entry.id)).toContain('VENUE-铁笼')
+    const again = extractFacts(directory, 1, { from: 'outline' })
+    expect(again.replaced).toBe(true)
+    expect(again.entries.map(entry => entry.id)).toEqual(outlineOnly.entries.map(entry => entry.id))
+  })
+
+  it('keeps the first id, writes an empty file, and does not record', async context => {
+    const directory = await outlineBook(context, '- 场地：铁笼 | 地面：铁板\n- 场地：铁笼 | 地面：水泥地\n')
+    const extracted = extractFacts(directory, 1)
+    expect(extracted.entries).toEqual([expect.objectContaining({ id: 'VENUE-铁笼', attrs: { 地面: '铁板' } })])
+    expect(extracted.warnings.some(item => item.includes('VENUE-铁笼'))).toBe(true)
+    const empty = await outlineBook(context, '# 细纲\n\n她只是走路。\n')
+    const blank = extractFacts(empty, 1)
+    expect(blank.entries).toEqual([])
+    expect(blank.claims).toEqual([])
+    expect(existsClaims(empty)).toBe(true)
+    expect(loadFacts(empty).present).toBe(false)
+  })
+})
+
+function existsClaims(directory: string): boolean {
+  return readFileSync(join(directory, '草稿/事实/第001章.claims.json'), 'utf8').includes('"claims"')
+}

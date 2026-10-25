@@ -63,4 +63,18 @@ describe('cast check', () => {
     expect(report.findings.some(item => item.category === 'relationship')).toBe(true)
     expect(report.ok).toBe(false)
   })
+
+  it('hints when the outline cast list names someone without a card', async context => {
+    const root = await realpath(await mkdtemp(join(tmpdir(), 'dsh-story-cast-list-')))
+    context.onTestFinished(async () => { await rm(root, { recursive: true, force: true }) })
+    const directory = join(root, '样书')
+    await mkdir(join(directory, '设定/角色'), { recursive: true })
+    await mkdir(join(directory, '大纲'), { recursive: true })
+    await writeFile(join(directory, '设定/角色/甲.md'), '# 甲\n\n定位：主角\n别名：阿甲\n')
+    await writeFile(join(directory, '大纲/细纲_第001章.md'), '# 细纲\n\n- 出场顺序：甲、账房、阿甲\n')
+    const report = checkCast(directory, { from: 1, to: 1 })
+    const hints = report.findings.filter(item => item.category === 'outline-cast')
+    expect(hints.map(item => item.evidence)).toEqual(['账房'])
+    expect(hints.every(item => item.severity === 'hint')).toBe(true)
+  })
 })

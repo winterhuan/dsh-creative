@@ -79,6 +79,7 @@ const chapterCheck = `${cli} chapter check ${scope} --chapter ${args.chapter} --
 const chapterRules = `${cli} chapter rules ${scope} --chapter ${args.chapter} --json`
 const outlineCheck = `${cli} outline check ${scope} --chapter ${args.chapter} --json`
 const snapshot = `${cli} chapter snapshot ${scope} --chapter ${args.chapter} --json`
+const claimsFile = `草稿/事实/第${String(args.chapter).padStart(Math.max(3, String(args.chapter).length), '0')}章.claims.json`
 let task = { ...args, project }
 const common = () => `One formal long chapter only. Task data: ${JSON.stringify(task)}
 Use native read for actual files and instructions. Resource paths are based at ${root}.
@@ -90,9 +91,20 @@ Finish this stage by calling structured_output with its schema fields, including
 let revisions = 0
 let compressionUsed = args.compression_used
 let lastReview = ''
+let workflowPhase = 'Prepare'
+let rulesSha256 = null
+const markPhase = name => { workflowPhase = name; phase(name) }
+const gateObject = value => ({
+  rule_audit: value?.rule_audit === 'required' ? 'required' : 'off',
+  facts_diff: value?.facts_diff === 'required' ? 'required' : 'off',
+})
 const outcome = (status, summary, extra = {}) => ({
   status, chapter: args.chapter, body_path: task.body_path ?? null, outline_path: task.outline_path ?? null,
   revisions, compression_used: compressionUsed, summary, review: lastReview, ...extra,
+  phase: typeof extra.phase === 'string' ? extra.phase : workflowPhase,
+  rules_sha256: digest(extra.rules_sha256) ? extra.rules_sha256 : rulesSha256,
+  claims_present: extra.claims_present === true,
+  gates: gateObject(extra.gates),
 })
 const response = (value, field, stage, limit) => {
   if (value === null || value === undefined) {
@@ -127,10 +139,11 @@ const readAudit = (value, bodyHash) => {
       throw new Error(`Audit violate ${item.rule_id} lacks evidence`)
     }
   }
+  rulesSha256 = value.rules_sha256
   return value
 }
 
-phase('Prepare')
+markPhase('Prepare')
 const prepared = response(await agent(`${common()}
 You prepare this chapter. Call the skill tool with the exact name story-write before other actions. You are already inside that skill's chapter workflow: follow only this preparation stage, and do not read the workflow template or start another workflow. Then read the preparation section of ${root}/references/long/workflow-chapter.md; use ${root}/references/long/workflow-setup.md for a missing outline.
 Run through bash: ${trackingCheck}
@@ -174,7 +187,7 @@ task = { ...args, project, body_path: prepared.body_path, outline_path: prepared
 const matchesPreparation = source => source.state_revision === prepared.state_revision && source.outline_sha256 === prepared.outline_sha256
 const write = async feedback => {
   const label = revisions ? `Revise ${revisions}` : 'Write'
-  phase(label)
+  markPhase(label)
   const result = response(await agent(`${common()}
 You are the narrative-writer. Call the skill tool with the exact name story-write before other actions, and read ${root}/references/roles/narrative-writer.md. You are already inside the chapter workflow: follow only this writing stage, and do not read the workflow template or start another workflow.
 First run this tracking check through bash: ${trackingCheck}
@@ -184,10 +197,11 @@ ${!revisions && !args.resume ? 'If an uncommitted body already exists, return ne
 If already committed, do not edit: run the chapter check below and return already_committed with the current checked identity for independent verification.
 ${args.resume && !revisions ? 'Resume: preserve the existing draft, check it and return it for review before any rewrite.' : 'Write only the assigned uncommitted body, or revise it using the findings below.'}
 Use scene_execution_plan from the prepared task data. Follow every line of task.chapter_rules. Each line is one rule id and its text. A trailing \` also: \` lists other ids of the same sentence. Do not release an item a rule forbids, add a character absent from the cast rule, or cross an execution boundary. In the summary, cite the rule ids you checked. If chapter_rules is missing, return needs_input.
-Follow the chapter writing and length procedure. This workflow assigns final checks to you; tracking and submission belong to a separate stage. Never change the outline, write tracking or submit.
+Follow the chapter writing and length procedure. This workflow assigns final checks to you; tracking and submission belong to a separate stage. Do not change the outline, write tracking, or submit. The only extra file this stage may write is the default claims file, and only through facts extract.
 Compression already used: ${compressionUsed}. At most one compression pass across this run and resumed work; never pad an underlength draft.
 After your final edit, run through bash: ${chapterCheck}
 Use the documented CLI, not imports of script internals. checked requires outline_readiness.status=pass and quality.status=pass, exact hashes and state_revision from that command, and an allowed length. Return its length.status as length_status. Otherwise return needs_input with the concrete decision or failed check.
+When that check passes and ${claimsFile} is missing, run ${cli} facts extract ${scope} --chapter ${args.chapter} --from both --json. An empty claims array is valid; write it. A failed extract is a warning in the summary. Stop the stage only when 设定/写作检查.json facts_diff is "required". Do not copy project lookup --reference hits into claims. Do not run facts record here.
 Explicit length acceptance applies only to args.accepted_length's exact hashes. Return whether compression has been used.
 Review findings: ${feedback || '(initial draft)'}`, { label, schema: draftSchema }), 'summary', label, 1600)
   compressionUsed = compressionUsed || result.compression_used
@@ -214,7 +228,7 @@ if (alreadyCommitted) {
     if (!inBand && (!['under', 'over'].includes(draft.length_status) || !accepted)) {
       return outcome('needs_input', 'Current length requires the user’s decision; retain the draft without padding.')
     }
-    phase('Review')
+    markPhase('Review')
     const auditPath = `${task.project}/草稿/审稿/第${String(args.chapter).padStart(Math.max(3, String(args.chapter).length), '0')}章.rules.json`
     const round = revisions ? ` ${revisions}` : ''
     const [reviewValue, auditValue] = await Promise.all([
@@ -258,7 +272,7 @@ If it is not verified, correct the file from its reasons and run it again. Retur
   }
 }
 
-phase(alreadyCommitted ? 'Verify' : 'Submit')
+markPhase(alreadyCommitted ? 'Verify' : 'Submit')
 const submitted = response(await agent(`${common()}
 You own tracking verification${alreadyCommitted ? ' only; do not write or resubmit this chapter' : ' and the single append transaction'}.
 Call the skill tool with exact name story-write before other actions. Follow only this submission stage; do not read the workflow template or start another workflow.
@@ -266,10 +280,11 @@ Read ${root}/references/long/tracking-transaction.md, the final body, outline an
 Required identity: ${JSON.stringify(verifiedSource)}.
 ${alreadyCommitted ? 'Verify the existing chapter, wordcount record, actual files and derived tracking views; return already_committed only when they agree.' : `Build a mode=append transaction from actual story facts. Include expected_state_revision=${verifiedSource.state_revision}, expected_body_sha256=${verifiedSource.body_sha256}, expected_outline_sha256=${verifiedSource.outline_sha256}. Do not supply wordcount or review records.
 ${acceptedFindings.length > 0 ? `Include accepted_findings ${JSON.stringify(acceptedFindings)} on the transaction. Do not invent further acceptances.` : 'Omit accepted_findings unless task data already lists them. Do not invent an acceptance.'}
-Read 设定/写作检查.json. When rule_audit is "required", run ${cli} chapter audit-verify ${scope} --chapter ${args.chapter} --json before the commit. Commit only when that result is verified and every violate rule_id is listed in accepted_findings. When the key is missing or "off", do not block on the audit file. unclear does not block a commit.
-If 草稿/事实/第${String(args.chapter).padStart(Math.max(3, String(args.chapter).length), '0')}章.claims.json exists, run ${cli} facts diff ${scope} --chapter ${args.chapter} --input <that file> --json. When facts_diff is "required", conflicts block the commit. When the file is missing or facts_diff is missing or "off", report conflicts in the summary and do not block.
-Run ${cli} chapter ${['under', 'over'].includes(draft.length_status) ? 'accept-current-length' : 'commit'} ${scope} --chapter ${args.chapter} --input <absolute-transaction-file> --json. Never replace expected values after a rejection.
-After success run ${trackingCheck} and inspect the persisted wordcount record and current source hashes. committed requires last_committed_chapter equal to this chapter and state_revision=${verifiedSource.state_revision + 1}, with the same body and outline hashes. If the claims file exists, run ${cli} facts record ${scope} --chapter ${args.chapter} --input <that file> --json, then ${cli} facts stale ${scope} --json. A missing ledger chapter is reported by facts stale, not by project check.`}
+Read 设定/写作检查.json. rule_audit and facts_diff are off when the key is missing. unclear does not block a commit.
+Run ${cli} chapter finish ${scope} --chapter ${args.chapter} --input <absolute-transaction-file>${['under', 'over'].includes(draft.length_status) ? ' --accept-current-length' : ''} --json. Never replace expected values after a rejection. Finish runs audit-verify when rule_audit is required, diffs ${claimsFile} when that file exists, commits, records when the commit succeeded and the file exists, then runs facts stale. Do not call facts record yourself. Do not roll back the chapter when record fails.
+committed in that JSON must be true. facts_recorded is false when no claims file was present; say that, and keep the stale field. A facts_error after committed true is a record failure, not a reason to edit the chapter. When facts_diff is required, a conflict leaves committed false.
+Copy phase, rules_sha256, claims_present and gates from the finish JSON into this result. Gates stay off unless this book set them. Do not add a provider field.
+After success run ${trackingCheck} and inspect the persisted wordcount record and current source hashes. committed requires last_committed_chapter equal to this chapter and state_revision=${verifiedSource.state_revision + 1}, with the same body and outline hashes. A missing ledger chapter is reported by facts stale, not by project check. project check still returns only those two fields.`}
 Do not edit prose or outline. On failure inspect actual state before reporting: an ambiguous outcome is uncertain, a stale source or revision is needs_input. Never retry a commit blindly.
 Return verified hashes and revision only after successful verification.`, {
   label: alreadyCommitted ? 'Verify' : 'Submit', schema: commitSchema,
@@ -284,4 +299,11 @@ if (submitted.status !== (alreadyCommitted ? 'already_committed' : 'committed') 
 const bookAuditHint = !alreadyCommitted && args.chapter % 10 === 0
   ? `建议父会话运行 book audit --workspace ${args.workspace} --book ${args.book} --from ${args.chapter - 9} --to ${args.chapter} --json。本模板不自动运行。`
   : undefined
-return outcome(submitted.status, submitted.summary, { ...finalSource, ...(bookAuditHint === undefined ? {} : { book_audit_hint: bookAuditHint }) })
+return outcome(submitted.status, submitted.summary, {
+  ...finalSource,
+  ...(bookAuditHint === undefined ? {} : { book_audit_hint: bookAuditHint }),
+  claims_present: submitted.claims_present === true,
+  gates: submitted.gates,
+  phase: typeof submitted.phase === 'string' ? submitted.phase : workflowPhase,
+  rules_sha256: digest(submitted.rules_sha256) ? submitted.rules_sha256 : rulesSha256,
+})

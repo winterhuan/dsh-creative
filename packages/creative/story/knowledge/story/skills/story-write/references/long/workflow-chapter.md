@@ -58,10 +58,10 @@ node {CLI} chapter check --workspace {工作区} --book {作品名} --chapter {N
 按 [追踪事务](tracking-transaction.md) 从最终正文构造 `delta`、完整当前 `context`、必要角色快照，使用最新 `state_revision` 作为 `expected_state_revision`；事务不手填 `wordcount`。只记录对未来有用的事实与承诺，不把质检统计、引用材料或未来计划混入当前状态。
 
 ```text
-node {CLI} chapter commit --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
+node {CLI} chapter finish --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
 ```
 
-带外且用户明确接受自然长度时改用 `chapter accept-current-length`，同样要通过质量检查与读者价值评审。`设定/写作检查.json` 的 `rule_audit` 为 `required` 时，提交前还要让默认路径上的规则审稿通过 `audit-verify`，未处理的 `violate` 须列入 `accepted_findings`。缺省 `off` 不拦提交。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
+`chapter finish` 在一次 JSON 里完成可选审稿校验、主张 diff、提交、入账和 `facts stale`。主张文件不存在时不入账。提交失败不写账本。记录失败不回滚正文。`chapter check` 通过且 `草稿/事实/第NNN章.claims.json` 还不存在时，先运行 `facts extract --from both`。空主张有效。抽取失败是 warning；只有这本书的 `facts_diff` 为 `required` 才停下。不要把对标检索写进主张。带外且用户明确接受自然长度时给 `chapter finish` 加上 `--accept-current-length`，同样要通过质量检查与读者价值评审。`chapter commit` 仍只提交、不入账；`chapter commit --with-facts` 与 finish 相同。`设定/写作检查.json` 的 `rule_audit` 为 `required` 时，finish 要求默认路径上的规则审稿通过 `audit-verify`，未处理的 `violate` 须列入 `accepted_findings`。缺省 `off` 不拦提交。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
 
 提交在锁内重读正文和目标，校验字数记录哈希与修订号并原子发布状态及派生视图。失败不推进下一章；写入失败保留原事务重跑，校验失败按报错修事务，状态已变化则重读重构。成功后运行一次 `node {CLI} project check --workspace {工作区} --book {作品名} --json`；按需保留审稿意见，可删除临时正文片段；机械提交成功不代表文学质量通过。正文、事实、摘要与实际执行方式向用户如实汇报。
 

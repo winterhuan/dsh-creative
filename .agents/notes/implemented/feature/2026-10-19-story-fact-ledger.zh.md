@@ -14,7 +14,7 @@ Status: implemented
 
 `project check` 仍只返回 `last_committed_chapter` 和 `state_revision`。账本缺章是 `facts stale` 的一行，也是全书体检 `facts-stale` 的 hint。这样 `tests/ts-port-parity-tracking.spec.ts` 继续对着 Python 基准。`facts_diff` 与 `rule_audit` 相同：都是 `off`，除非 `设定/写作检查.json` 写成 `required`。试点书可以写成 `required`。其他书不写。
 
-`project context` 在设定摘录之后、健康摘要之前加入最多 2 KiB 的 `facts`，然后是最多 1.5 KiB 的 `volume`。省略顺序是设定、事实、卷切片、健康、时间线、角色、到期伏笔。Prepare 运行 `project rhythm`，范围是第 N-8 章到第 N+2 章，并运行 `project plan check`。爽点、卖点或规划 blocking 在写正文前停下。新提交成功后，主张文件存在时单章模板运行 `facts record`，然后运行 `facts stale`。
+`project context` 在设定摘录之后、健康摘要之前加入最多 2 KiB 的 `facts`，然后是最多 1.5 KiB 的 `volume`。省略顺序是设定、事实、卷切片、健康、时间线、角色、到期伏笔。Prepare 运行 `project rhythm`，范围是第 N-8 章到第 N+2 章，并运行 `project plan check`。爽点、卖点或规划 blocking 在写正文前停下。新提交成功后，单章模板运行 `chapter finish`。主张文件存在时该命令入账，然后报告过期。抽取、收束顺序和只读门禁回显见[章末收束](2026-10-25-story-chapter-finish.zh.md)。
 
 `project rhythm` 的缺省是小爽点至少隔章一次（`max_no_payoff` 为 1），强度不低于 8 的高峰相隔 5 到 8 章。书可以在 `rhythm` 里改这些整数。`project plan check` 要求卷纲范围首尾相接。离卷末不超过 10 章时，下一卷文件必须存在，登记状态也不能仍含「扩卷前核实」。`OUT-NNN-PAY` 来自细纲「爽点」。`CANON-n` 和 `OWN-n` 来自卷纲「原著事实校正与改编边界」和「第一卷写作口径」，并且只在本章细纲或正文提到该条里的章号或两到四字专名时进入清单。`OWN-<单元ID>` 来自「兑现方式与归属」。这些标题缺失不产生 warning。
 
@@ -22,7 +22,7 @@ Status: implemented
 
 境界和能力留在 `kind` 能力。`project cast check` 拿这些行对照 `设定/世界观/力量体系.md`，并拿卡片上的 `关系阶段：` 对照 `阶段序：`。没有角色卡的快照仍由体检的 `cast-cards` 报告。出场计数只统计至少两个字、且在三章及以上文件里出现的快照名或角色卡文件名。它不从正文里发明名字。`text style-baseline` 测量段长中位数、破折号、顶针（前句末 2 到 4 字等于后句开头）、固定比喻和空行。漂移先是 hint，同一指标连续 `streak` 章（默认 3）超限后变为 blocking。设置了 `forbid_blank_lines` 时空行当场 blocking。
 
-`project legacy archive --reader-value` 把 `reader_value_records` 移到 `追踪/_legacy/reader_value_records.json`。只有该字段存在时才把 `state_revision` 加 1。`project context retire` 不随章节追加，按原文从当前上下文列表去掉一条，追加 `追踪/维护记录.md`，并把 `state_revision` 加 1。`mode=revision` 事务仍重交当前上下文，不在事务里退役。`workflows/revise.js` 的阶段是 Locate、Plan、Rewrite、Audit、Submit。方案仍要批准时 Plan 返回 `needs_input`。Submit 使用 `mode=revision`，然后运行 `facts stale`；主张文件存在时再 `facts record`。
+`project legacy archive --reader-value` 把 `reader_value_records` 移到 `追踪/_legacy/reader_value_records.json`。只有该字段存在时才把 `state_revision` 加 1。`project context retire` 不随章节追加，按原文从当前上下文列表去掉一条，追加 `追踪/维护记录.md`，并把 `state_revision` 加 1。`mode=revision` 事务仍重交当前上下文，不在事务里退役。`workflows/revise.js` 的阶段是 Locate、Plan、Rewrite、Audit、Submit。方案仍要批准时 Plan 返回 `needs_input`。Submit 使用 `mode=revision` 和 `chapter finish`。该命令报告过期，主张文件存在时入账。顺序见[章末收束](2026-10-25-story-chapter-finish.zh.md)。
 
 全书体检保持 pass、warn、fail、skip，默认只读。`--issues` 把 `story-issues/v1` 写到 `草稿/问题单.json`。[全书体检笔记](2026-10-18-story-book-audit.zh.md) 仍负责这份报告。[章节规则笔记](2026-10-18-story-chapter-rules.zh.md) 仍负责默认提取。[规则审稿笔记](2026-10-18-story-rule-audit.zh.md) 仍负责逐条结论。本笔记不取代它们。
 

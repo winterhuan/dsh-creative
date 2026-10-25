@@ -53,7 +53,8 @@ export function checkPlan(project: string, chapter: number): {
 } {
   if (!Number.isInteger(chapter) || chapter < 1) throw new PlanError('--chapter must be positive')
   const volumes = volumeSpans(project)
-  if (volumes.length === 0) return { schema: PLAN_SCHEMA, chapter, applicable: false, ok: true, findings: [] }
+  const hints = rangeHints(project)
+  if (volumes.length === 0) return { schema: PLAN_SCHEMA, chapter, applicable: hints.length > 0, ok: true, findings: hints }
   const findings: PlanFinding[] = []
   const ordered = [...volumes].sort((left, right) => left.from - right.from || left.path.localeCompare(right.path, 'zh'))
   for (let index = 1; index < ordered.length; index += 1) {
@@ -78,6 +79,7 @@ export function checkPlan(project: string, chapter: number): {
       }
     }
   }
+  findings.push(...hints)
   return { schema: PLAN_SCHEMA, chapter, applicable: true, ok: findings.every(item => item.severity !== 'blocking'), findings }
 }
 
@@ -200,6 +202,50 @@ function nextRegistration(project: string, nextTitle: string | undefined): strin
 function volumeToken(title: string): string {
   const matched = /第.+卷/u.exec(title)
   return matched?.[0] ?? title
+}
+
+function rangeHints(project: string): PlanFinding[] {
+  const directory = join(project, '大纲')
+  if (!existsSync(directory)) return []
+  const findings: PlanFinding[] = []
+  for (const name of readdirSync(directory).filter(item => item.startsWith('卷纲') && item.endsWith('.md')).sort((left, right) => left.localeCompare(right, 'zh'))) {
+    let text: string
+    try {
+      text = readFileSync(join(directory, name), 'utf8')
+    } catch {
+      continue
+    }
+    const lines = textLines(text)
+    const title = markdownHeading(lines[0]?.text ?? '')?.text ?? name.replace(/\.md$/u, '')
+    const top = lines.slice(0, unitStart(lines))
+    if (!top.some(line => explicitRange(line.text))) {
+      findings.push({
+        severity: 'hint',
+        category: 'volume-range',
+        message: `${title} 顶部没有「章节范围：」。卷级范围只写在剧情单元之前；未写时仍按全文最小到最大章号计算，不因此改为 blocking`,
+      })
+    }
+    const headings: number[] = []
+    lines.forEach((line, index) => {
+      if (markdownHeading(line.text)?.text.includes('剧情单元') === true) headings.push(index)
+    })
+    for (let index = 0; index < headings.length; index += 1) {
+      const start = headings[index] ?? 0
+      const end = headings[index + 1] ?? lines.length
+      if (lines.slice(start, end).some(line => explicitRange(line.text))) continue
+      const heading = markdownHeading(lines[start]?.text ?? '')?.text ?? '剧情单元'
+      findings.push({
+        severity: 'hint',
+        category: 'unit-range',
+        message: `${title} 的「${heading}」没有「章节范围：」。单元范围只写在剧情单元块内`,
+      })
+    }
+  }
+  return findings
+}
+
+function explicitRange(line: string): boolean {
+  return /章节范围\s*[:：]/u.test(line) && rangePair(line) !== undefined
 }
 
 function rangePair(line: string): [number, number] | undefined {

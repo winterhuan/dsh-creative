@@ -71,14 +71,22 @@ export function lookupReference(workspace: string, project: string, query: strin
   }
 }
 
+/** Canonical card sections and headings that may supply them. */
+const RHYTHM_SECTIONS: readonly { readonly title: string; readonly names: readonly string[] }[] = [
+  { title: '结构分布', names: ['结构分布', '节奏分布', '章节结构', '结构段'] },
+  { title: '桥段标签', names: ['桥段标签', '桥段', '情节标签', '套路框架位置'] },
+  { title: '核心冲突', names: ['核心冲突', '核心矛盾', '主要冲突'] },
+]
+
 /**
  * Build a rhythm card from plot-unit files and write it under `节奏卡/`.
  * @param workspace - the workspace that holds `拆文库/`.
  * @param title - the analysis-library title.
  * @param from - the first chapter.
  * @param to - the last chapter.
+ * @param options - `sections` replaces the default three headings. Otherwise a heading matches its canonical name or a short alias.
  */
-export function writeRhythmCard(workspace: string, title: string, from: number, to: number): {
+export function writeRhythmCard(workspace: string, title: string, from: number, to: number, options: { readonly sections?: readonly string[] } = {}): {
   schema: 'story-rhythm-card/v1'
   path: string
   bytes: number
@@ -99,11 +107,7 @@ export function writeRhythmCard(workspace: string, title: string, from: number, 
     const range = lines.map(line => rangePair(line.text)).find(item => item !== undefined)
     if (range !== undefined && (range[1] < from || range[0] > to)) continue
     const block = ['', `## ${name.replace(/\.md$/u, '')}`]
-    for (const heading of ['结构分布', '桥段标签', '核心冲突']) {
-      const section = sectionRange(lines, heading)
-      if (section === undefined) continue
-      block.push(`### ${heading}`, ...lines.slice(section.start, section.end).map(line => line.text).filter(line => line.trim() !== ''))
-    }
+    block.push(...rhythmSections(lines, options.sections))
     if (block.length === 2) continue
     const next = `${parts.join('\n')}${block.join('\n')}\n`
     if (Buffer.byteLength(next, 'utf8') > 2048) {
@@ -122,6 +126,25 @@ export function writeRhythmCard(workspace: string, title: string, from: number, 
   const relative = `拆文库/${title.trim()}/节奏卡/第${String(from)}-${String(to)}章.md`
   atomicWriteText(join(workspace, relative), card)
   return { schema: 'story-rhythm-card/v1', path: relative, bytes: Buffer.byteLength(card, 'utf8'), omitted, baseline }
+}
+
+function rhythmSections(lines: ReturnType<typeof textLines>, sections: readonly string[] | undefined): string[] {
+  const groups = sections === undefined || sections.length === 0
+    ? RHYTHM_SECTIONS
+    : sections.map(title => ({ title, names: [title] }))
+  const block: string[] = []
+  for (const group of groups) {
+    let section: ReturnType<typeof sectionRange> = undefined
+    for (const name of group.names) {
+      section = sectionRange(lines, name)
+      if (section !== undefined) break
+    }
+    if (section === undefined) continue
+    const body = lines.slice(section.start, section.end).map(line => line.text).filter(line => line.trim() !== '')
+    if (body.length === 0) continue
+    block.push(`### ${group.title}`, ...body)
+  }
+  return block
 }
 
 function baselineOf(root: string): { max_no_payoff: number; min_peak_gap: number; max_peak_gap: number; source: string } {

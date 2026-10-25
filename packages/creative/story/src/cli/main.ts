@@ -15,7 +15,10 @@ import { inspectAnalysis, writeAnalysisCards } from '../core/analysis.ts'
 import { chapterCheck, chapterCommit, chapterSnapshot } from '../core/chapter.ts'
 import { extractChapterRules } from '../core/rules.ts'
 import { ruleAuditRelativePath, verifyRuleAudit } from '../core/rule-audit.ts'
-import { diffFacts, FACT_KINDS, queryFacts, recordFacts, staleFacts } from '../core/facts.ts'
+import { finishChapter } from '../core/chapter-finish.ts'
+import { diffFacts, queryFacts, recordFacts, staleFacts } from '../core/facts.ts'
+import { extractFacts, type ExtractFrom } from '../core/facts-extract.ts'
+import { projectGates } from '../core/gates.ts'
 import { archiveReaderValue, retireContextItem } from '../core/legacy.ts'
 import { checkRhythm } from '../core/rhythm.ts'
 import { checkPlan } from '../core/plan.ts'
@@ -31,13 +34,14 @@ import { buildContext } from '../core/context.ts'
 import { LOOKUP_DEFAULT_LIMIT, lookupSettings } from '../core/settings-lookup.ts'
 import { exportNovel } from '../core/export.ts'
 import { LEDGER_NAME, recordEdge } from '../core/lineage.ts'
-import { MEMORY_KINDS, memoryCheck, memoryCommit, memoryInit, memoryQuery, memoryRecord, memoryRoot } from '../core/memory.ts'
+import { memoryCheck, memoryCommit, memoryInit, memoryQuery, memoryRecord, memoryRoot } from '../core/memory.ts'
 import { verifyOutline } from '../core/outline-contract.ts'
-import { QUERY_FILTERS, QUERY_KINDS, projectQuery, type QueryFilter, type QueryKind } from '../core/tracking/query.ts'
+import { projectQuery, type QueryFilter, type QueryKind } from '../core/tracking/query.ts'
+import { specFor, type OptionSpec } from './specs.ts'
 import { normalizeInitialDocument, type TrackingState } from '../core/tracking/schema.ts'
 import { checkProject, initialize, statePath } from '../core/tracking/store.ts'
 import { checkpointWordcount, evaluateWordcount, findChapterFile, measureWordcount } from '../core/wordcount.ts'
-import { DEFAULT_MAX_CHARS, DEFAULT_TARGET, detectChapter, readKeyPool, writeReport } from '../core/zhuque.ts'
+import { DEFAULT_MAX_CHARS, detectChapter, readKeyPool, writeReport } from '../core/zhuque.ts'
 
 const RESERVED_BOOKS = new Set(['长篇', '短篇', '拆文库', '正文', '大纲', '设定', '追踪', '对标', '参考资料'])
 const EXIT_HELP = 'Exit codes: 0 success, 1 check findings, 2 invalid input, 3 execution failure. Zhuque also uses 4 for service errors. Results are JSON.'
@@ -48,95 +52,6 @@ export class CliError extends Error {
     super(message)
     this.name = 'CliError'
   }
-}
-
-interface OptionSpec {
-  readonly kind: 'flag' | 'value' | 'append' | 'optional-value'
-  readonly required?: boolean
-  readonly choices?: readonly string[]
-  readonly type?: 'int' | 'float'
-  readonly default?: unknown
-}
-
-type Options = Record<string, OptionSpec>
-
-const WORKSPACE: Options = { workspace: { kind: 'value', required: true } }
-const BOOK: Options = { book: { kind: 'value', required: true } }
-const CHAPTER: Options = { chapter: { kind: 'value', type: 'int', required: true } }
-
-function specFor(family: string, action: string): Options | undefined {
-  const families: Record<string, Record<string, Options>> = {
-    project: {
-      init: { ...WORKSPACE, ...BOOK, kind: { kind: 'value', choices: ['long', 'short'], required: true }, input: { kind: 'value' } },
-      status: { ...WORKSPACE, ...BOOK, revision: { kind: 'value', type: 'int' } },
-      query: {
-        ...WORKSPACE, ...BOOK, revision: { kind: 'value', type: 'int' }, kind: { kind: 'value', choices: QUERY_KINDS, required: true },
-        search: { kind: 'value', default: '' }, filter: { kind: 'value', choices: QUERY_FILTERS, default: 'all' },
-        chapter: { kind: 'value', type: 'int' }, offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: 20 },
-        'stale-planted': { kind: 'value', type: 'int' }, 'stale-character': { kind: 'value', type: 'int' }, 'stale-thread': { kind: 'value', type: 'int' },
-      },
-      check: { ...WORKSPACE, ...BOOK },
-      context: { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' }, text: { kind: 'value' } },
-      lookup: {
-        ...WORKSPACE, ...BOOK, text: { kind: 'value' }, file: { kind: 'value' }, revision: { kind: 'value' }, reference: { kind: 'flag' },
-        offset: { kind: 'value', type: 'int', default: 0 }, limit: { kind: 'value', type: 'int', default: LOOKUP_DEFAULT_LIMIT },
-      },
-      rhythm: { ...WORKSPACE, ...BOOK, from: { kind: 'value', type: 'int', required: true }, to: { kind: 'value', type: 'int', required: true } },
-      'plan-check': { ...WORKSPACE, ...BOOK, chapter: { kind: 'value', type: 'int' } },
-      'cast-check': { ...WORKSPACE, ...BOOK, from: { kind: 'value', type: 'int' }, to: { kind: 'value', type: 'int' } },
-      'legacy-archive': { ...WORKSPACE, ...BOOK, 'reader-value': { kind: 'flag', required: true } },
-      'context-retire': { ...WORKSPACE, ...BOOK, item: { kind: 'value', required: true }, reason: { kind: 'value', required: true } },
-    },
-    outline: { check: { ...WORKSPACE, ...BOOK, ...CHAPTER } },
-    chapter: {
-      check: { ...WORKSPACE, ...BOOK, ...CHAPTER },
-      rules: { ...WORKSPACE, ...BOOK, ...CHAPTER },
-      snapshot: { ...WORKSPACE, ...BOOK, ...CHAPTER, 'outline-only': { kind: 'flag' } },
-      commit: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
-      'accept-current-length': { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
-      'audit-verify': { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value' } },
-    },
-    short: {
-      'plan-check': { ...WORKSPACE, ...BOOK },
-      'delivery-check': { ...WORKSPACE, ...BOOK, 'min-chars': { kind: 'value', type: 'int', required: true }, 'max-chars': { kind: 'value', type: 'int', required: true }, sections: { kind: 'value', type: 'int', required: true } },
-    },
-    text: {
-      count: { file: { kind: 'value', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, target: { kind: 'value' }, checkpoint: { kind: 'flag' }, chapter: { kind: 'value', type: 'int' }, 'case-id': { kind: 'value' } },
-      check: { file: { kind: 'append', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, outline: { kind: 'value' } },
-      normalize: { file: { kind: 'append', required: true }, workspace: { kind: 'value' }, book: { kind: 'value' }, apply: { kind: 'flag' }, policy: { kind: 'value', choices: ['preserve', 'normalize-narration'] }, 'quote-mode': { kind: 'value', choices: ['keep', 'ascii', 'yan'], default: 'keep' } },
-      'style-baseline': { ...WORKSPACE, ...BOOK, chapters: { kind: 'value', required: true }, apply: { kind: 'flag' } },
-    },
-    memory: {
-      init: { ...WORKSPACE },
-      query: { ...WORKSPACE, kind: { kind: 'append', choices: MEMORY_KINDS }, book: { kind: 'value' }, genre: { kind: 'value' }, workflow: { kind: 'value' } },
-      record: { ...WORKSPACE, input: { kind: 'value', required: true } },
-      commit: { ...WORKSPACE, input: { kind: 'value', required: true } },
-      check: { ...WORKSPACE },
-    },
-    analysis: {
-      inspect: { ...WORKSPACE, title: { kind: 'value', required: true }, source: { kind: 'value', required: true }, input: { kind: 'value', required: true } },
-      'write-cards': { ...WORKSPACE, title: { kind: 'value', required: true }, source: { kind: 'value', required: true }, input: { kind: 'value', required: true } },
-      'rhythm-card': { ...WORKSPACE, title: { kind: 'value', required: true }, chapters: { kind: 'value', required: true } },
-    },
-    export: { txt: { ...WORKSPACE, ...BOOK, 'out-dir': { kind: 'value', required: true } } },
-    lineage: { record: { ...WORKSPACE, 'from-domain': { kind: 'value', required: true }, 'from-path': { kind: 'value', required: true }, 'to-domain': { kind: 'value', required: true }, 'to-path': { kind: 'value', required: true }, decision: { kind: 'append' }, by: { kind: 'value', default: 'agent' } } },
-    detect: { zhuque: { ...WORKSPACE, ...BOOK, file: { kind: 'value', required: true }, out: { kind: 'value' }, target: { kind: 'value', type: 'float', default: DEFAULT_TARGET }, 'max-chars': { kind: 'value', type: 'int', default: DEFAULT_MAX_CHARS }, 'credential-pool-stdin': { kind: 'flag' } } },
-    book: {
-      audit: {
-        ...WORKSPACE, ...BOOK,
-        from: { kind: 'value', type: 'int', required: true }, to: { kind: 'value', type: 'int', required: true },
-        write: { kind: 'optional-value' },
-        issues: { kind: 'optional-value' },
-      },
-    },
-    facts: {
-      record: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
-      query: { ...WORKSPACE, ...BOOK, kind: { kind: 'value', choices: FACT_KINDS }, subject: { kind: 'value' } },
-      diff: { ...WORKSPACE, ...BOOK, ...CHAPTER, input: { kind: 'value', required: true } },
-      stale: { ...WORKSPACE, ...BOOK },
-    },
-  }
-  return families[family]?.[action]
 }
 
 /** Parsed arguments keyed by option name (with dashes), plus the command pair. */
@@ -507,9 +422,15 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       const state = checkProject(book)
       return [{ last_committed_chapter: state.last_committed_chapter, state_revision: state.state_revision }, 0]
     }
+    if (action === 'gates') return [projectGates(book), 0]
     if (action === 'context') {
       const source = typeof values.text === 'string' ? readFileSync(filePath(values.text, book), 'utf8') : undefined
-      return [buildContext(book, { ...(integer(values, 'chapter') === undefined ? {} : { chapter: integer(values, 'chapter') as number }), ...(source === undefined ? {} : { text: source }) }), 0]
+      const profile = values.profile === 'lite' ? 'lite' as const : undefined
+      return [buildContext(book, {
+        ...(integer(values, 'chapter') === undefined ? {} : { chapter: integer(values, 'chapter') as number }),
+        ...(source === undefined ? {} : { text: source }),
+        ...(profile === undefined ? {} : { profile }),
+      }), 0]
     }
     if (action === 'lookup') {
       const hasText = typeof values.text === 'string'
@@ -599,7 +520,14 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       return [result, result.outline_readiness.status === 'pass' && result.quality.status === 'pass' ? 0 : 1]
     }
     containedTree(book, join(book, '追踪'))
-    return [chapterCommit(book, chapter, filePath(text(values, 'input'), undefined), action === 'accept-current-length'), 0]
+    const inputPath = filePath(text(values, 'input'), undefined)
+    const withFacts = action === 'finish' || values['with-facts'] === true
+    if (withFacts) {
+      const report = finishChapter(book, chapter, inputPath, action === 'accept-current-length' || values['accept-current-length'] === true)
+      const failed = !report.committed || report.facts_error !== undefined || (report.claims_present && !report.facts_recorded)
+      return [report, failed ? 1 : 0]
+    }
+    return [chapterCommit(book, chapter, inputPath, action === 'accept-current-length'), 0]
   }
   if (family === 'short') {
     const book = project ?? ''
@@ -633,7 +561,8 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     const root = workspace ?? ''
     if (action === 'rhythm-card') {
       const [from, to] = chapterSpan(text(values, 'chapters'))
-      return [writeRhythmCard(root, text(values, 'title'), from, to), 0]
+      const sections = sectionNames(values.sections)
+      return [writeRhythmCard(root, text(values, 'title'), from, to, sections === undefined ? {} : { sections }), 0]
     }
     const source = filePath(text(values, 'source'), undefined)
     const document = readObject(text(values, 'input'))
@@ -688,6 +617,11 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
       const report = staleFacts(book)
       return [report, report.stale.length > 0 || report.missing_chapters.length > 0 ? 1 : 0]
     }
+    if (action === 'extract') {
+      const chapter = integer(values, 'chapter') ?? 0
+      if (chapter < 1) throw new CliError('--chapter must be positive')
+      return [extractFacts(book, chapter, { from: values.from as ExtractFrom, dryRun: values['dry-run'] === true }), 0]
+    }
     const chapter = integer(values, 'chapter') ?? 0
     if (chapter < 1) throw new CliError('--chapter must be positive')
     const input: unknown = JSON.parse(readFileSync(filePath(text(values, 'input'), book), 'utf8'))
@@ -713,6 +647,13 @@ async function run(parsed: Parsed): Promise<[unknown, number]> {
     }
   }
   return [outcome.report, outcome.exitCode]
+}
+
+function sectionNames(value: unknown): string[] | undefined {
+  if (typeof value !== 'string') return undefined
+  const names = value.split(/[、,，]/u).map(item => item.trim()).filter(item => item !== '')
+  if (names.length === 0) throw new CliError('--sections needs at least one heading')
+  return names
 }
 
 function emit(value: unknown): void {

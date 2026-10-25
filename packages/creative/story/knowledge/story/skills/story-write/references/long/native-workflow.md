@@ -36,10 +36,10 @@
 | 阶段 | 工作与交接 |
 |---|---|
 | Prepare | 按[单章准备](workflow-chapter.md#1-准备本章)核对追踪和唯一实际路径，读取 `project context` 的健康摘要、设定摘录、事实摘录和卷切片。`omitted.settings` 非零时补查 `project lookup`，`omitted.facts` 非零时补查 `facts query`，`omitted.health` 非零时补查 `--kind health`，并按[补纲规则](workflow-setup.md#中途补纲)复用或补建细纲。设定摘录、事实摘录和健康摘要都不代替全部到期伏笔。补纲后运行 `project rhythm --from N-8 --to N+2` 和 `project plan check --chapter N`。爽点、卖点或规划 blocking 先改细纲或卷纲。运行 `chapter rules`，把 `rules` 以 `id: text` 交给写手；`also` 非空时该行再接 ` also: ` 和其余 ID。缺标题只记 warning。交回场景计划、规则清单、细纲哈希、修订号，以及本次读到的文件清单。准备者用原生进度反馈展示清单与修订号；模板继续下一阶段，不依赖父会话插入回合。缺关键事实时停下；已有正文缺细纲时只恢复原批准版本。 |
-| Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`，交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
+| Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`。检查通过且默认主张文件不存在时运行 `facts extract --from both`。空主张有效。抽取失败是 warning；只有 `facts_diff` 为 `required` 才停下。不把对标命中写进主张，不在这一阶段 `facts record`。交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
 | Review | 读取实际材料，前后运行 `chapter snapshot` 核对原始字节哈希、文件版本和追踪修订号；返回 `ready / revise / needs_input` 及有来源的可读意见。 |
 | Audit | 与 Review 同一轮启动。读取 [规则审稿](../../../story-review/references/roles/rule-auditor.md)，只对 `chapter rules` 返回的 ID 给结论，写入 `草稿/审稿/第NNN章.rules.json`，并运行 `chapter audit-verify`。不自创规则，不代替作者接受例外。 |
-| Submit / Verify | 按[追踪事务](tracking-transaction.md)提交与审稿版本一致的正文，再核对实际状态和持久记录。`rule_audit` 为 `required` 时，提交前确认默认审稿文件已通过校验，且每条 `violate` 都在 `accepted_findings` 里。主张文件存在时运行 `facts diff`。`facts_diff` 为 `required` 时冲突拦提交；缺省或 `off` 时把冲突写进摘要，不拦提交。新提交成功后，主张文件存在则 `facts record`，再运行 `facts stale`。缺章由 `facts stale` 报告。已提交章直接验证，不重写或重复提交。 |
+| Submit / Verify | 按[追踪事务](tracking-transaction.md)运行 `chapter finish`，提交与审稿版本一致的正文，再核对实际状态和持久记录。`rule_audit` 为 `required` 时，finish 先确认默认审稿文件已通过校验，且每条 `violate` 都在 `accepted_findings` 里。主张文件存在时 finish 做 `facts diff`。`facts_diff` 为 `required` 时冲突不提交；缺省或 `off` 时把冲突写进摘要，不拦提交。提交成功且主张文件存在则入账，然后给出 `facts stale`。提交失败不写账本。记录失败不回滚正文。没有主张文件时 `facts_recorded` 为 false。缺章由 `facts stale` 报告。已提交章直接验证，不重写或重复提交。 |
 
 每个子 Agent 用原生 `structured_output` 返回模板要求的字段，普通消息里的 JSON 或进度说明不算完成。Review 与 Audit 在同一阶段里一起启动。当前 DSH 的 `agent()` 在并发上限至少为 2 时重叠执行；上限为 1 时排队，两步仍都会跑完。初稿后最多两轮局部修订，每轮重检、重做整体审稿和规则审稿。未接受的 `violate` 计入同一上限。到上限时返回 `revision_limit`，`unresolved_rule_ids` 列出仍未接受的 ID，并提示作者接受例外、改规则来源或改细纲。`unclear` 只进入修改意见。带外自然长度必须得到用户对准确正文、细纲哈希的接受；欠长不填充，超长最多使用一次压缩机会。细纲或追踪变化后须重新准备，不能悄悄替换预期值。
 

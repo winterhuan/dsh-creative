@@ -64,7 +64,14 @@ export function checkCast(project: string, options: { readonly from?: number; re
   }
   const relationships = relationshipFindings(project, options.from, options.to)
   findings.push(...relationships)
-  const applicable = stateNames.length > 0 || realms.length > 0 || relationships.length > 0 || repeated || cards.header
+  const listed = outlineCastNames(project, options.from, options.to)
+  let listedWithoutCard = false
+  for (const name of listed) {
+    if (cards.has(name)) continue
+    listedWithoutCard = true
+    findings.push({ severity: 'hint', category: 'outline-cast', message: `细纲出场名单有「${name}」，没有同名或别名角色卡`, evidence: name })
+  }
+  const applicable = stateNames.length > 0 || realms.length > 0 || relationships.length > 0 || repeated || cards.header || listedWithoutCard
   return {
     schema: CAST_SCHEMA,
     applicable,
@@ -202,6 +209,39 @@ function appearanceCounts(project: string, from: number | undefined, to: number 
     if (count > 0) counts.set(name, count)
   }
   return counts
+}
+
+function outlineCastNames(project: string, from: number | undefined, to: number | undefined): string[] {
+  const names = new Set<string>()
+  const start = from ?? 1
+  const end = to ?? 200
+  let misses = 0
+  for (let chapter = start; chapter <= end; chapter += 1) {
+    let path: string
+    try {
+      path = findChapterFile(join(project, '大纲'), chapter, { outline: true, allowMissing: true })
+    } catch {
+      misses += 1
+      if (to === undefined && misses >= 15) break
+      continue
+    }
+    if (!existsSync(path)) {
+      misses += 1
+      if (to === undefined && misses >= 15) break
+      continue
+    }
+    misses = 0
+    const field = fieldValue(textLines(readFileSync(path, 'utf8')), '出场顺序')
+    if (field === undefined || field.value.trim() === '' || field.value.trim() === '无' || field.value.includes('待补充')) continue
+    for (const token of castListTokens(field.value)) names.add(token)
+  }
+  return [...names].sort((left, right) => left.localeCompare(right, 'zh'))
+}
+
+/** Same separators as the outline cast list: ideographic comma, semicolon, arrows, 与, and 和. */
+function castListTokens(text: string): string[] {
+  const stripped = text.replace(/（[^）]*）/gu, ' ').replace(/\([^)]*\)/gu, ' ')
+  return stripped.split(/->|[、，,；;／/|·→与和\s]+/u).map(part => part.trim()).filter(part => part.length >= 2)
 }
 
 function looseNames(project: string): string[] {

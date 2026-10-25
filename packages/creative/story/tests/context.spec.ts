@@ -122,4 +122,34 @@ describe('writing context', () => {
     expect(tight.due_foreshadow.map(row => row.id)).toContain('F001')
     expect(Buffer.byteLength(JSON.stringify(tight), 'utf8')).toBeLessThanOrEqual(CONTEXT_BUNDLE_MAX_BYTES)
   })
+
+  it('keeps a continuation card, a fact cap, and a few plan or rhythm rows on the lite profile', async context => {
+    const directory = await book(context)
+    await mkdir(join(directory, '大纲'), { recursive: true })
+    await writeFile(join(directory, '大纲/卷纲_第一卷.md'), `# 第一卷
+
+## 剧情单元 开局
+
+- 章节范围：1-40
+`)
+    const full = buildContext(directory, { chapter: 9, text: '管事把钥匙收进袖口。' })
+    expect(full).not.toHaveProperty('profile')
+    expect(full).not.toHaveProperty('signals')
+    expect(full).not.toHaveProperty('rules_path')
+    expect(full.omitted).toEqual({ characters: 0, due_foreshadow: 0, timeline: 0, health: 0, settings: 0, facts: 0, volume: 0 })
+    const lite = buildContext(directory, { chapter: 9, text: '管事把钥匙收进袖口。', profile: 'lite' })
+    expect(lite.profile).toBe('lite')
+    expect(lite.rules_path).toBe('设定/写作检查.json')
+    expect(lite.characters).toEqual([])
+    expect(lite.timeline).toEqual([])
+    expect(lite.settings).toEqual([])
+    expect(lite.volume).toBeNull()
+    expect(lite.hot_context.length).toBeGreaterThan(0)
+    expect(lite.due_foreshadow.length).toBeLessThanOrEqual(5)
+    expect(lite.omitted.characters).toBeGreaterThan(0)
+    expect(lite.omitted.volume).toBe(1)
+    expect(lite.signals?.some(item => item.category === 'volume-range' && item.source === 'plan')).toBe(true)
+    expect(lite.omitted.signals).toEqual(expect.any(Number))
+    expect(JSON.stringify(lite)).not.toContain('provider')
+  })
 })

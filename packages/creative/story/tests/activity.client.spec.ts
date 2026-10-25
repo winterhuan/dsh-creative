@@ -41,7 +41,11 @@ describe('story file refresh signals', () => {
     expect(latestSettledMutation(snapshot(settled('retire', 'bash', { command: 'dsh-story project context retire --item 旧港 --reason 作废' })))).toBe('retire\0追踪/_tracking-state.json')
     expect(latestSettledMutation(snapshot(settled('card', 'bash', { command: 'dsh-story analysis rhythm-card --title 样书 --chapters 1-3' })))).toBe('card\0拆文库/节奏卡.md')
     expect(latestSettledMutation(snapshot(settled('style', 'bash', { command: 'dsh-story text style-baseline --chapters 1-7 --apply' })))).toBe('style\0设定/写作检查.json')
+    expect(latestSettledMutation(snapshot(settled('extract', 'bash', { command: 'dsh-story facts extract --chapter 1 --from both' })))).toBe('extract\0草稿/事实/claims.json')
+    expect(latestSettledMutation(snapshot(settled('dry', 'bash', { command: 'dsh-story facts extract --chapter 1 --dry-run' })))).toBeUndefined()
+    expect(latestSettledMutation(snapshot(settled('finish', 'bash', { command: 'dsh-story chapter finish --chapter 1 --input txn.json' })))).toBe('finish\0追踪/_tracking-state.json')
     expect(latestSettledMutation(snapshot(settled('quiet', 'bash', { command: 'dsh-story facts query --kind 场地' })))).toBeUndefined()
+    expect(latestSettledMutation(snapshot(settled('gates', 'bash', { command: 'dsh-story project gates' })))).toBeUndefined()
     expect(latestSettledMutation(snapshot(settled('quiet-style', 'bash', { command: 'dsh-story text style-baseline --chapters 1-7' })))).toBeUndefined()
   })
   it('refreshes after a chapter transaction, while read-only queries leave the signal unchanged', () => {
