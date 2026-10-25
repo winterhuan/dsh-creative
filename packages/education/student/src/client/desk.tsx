@@ -41,8 +41,9 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   const scopeOf = (target: Subject): ScopeChoice => scopeChoice[target] ?? {}
   const activeScope = scopeOf(subject)
   const showMap = view === 'parent' && parentTab === 'map'
+  const tab = view === 'student' ? 'today' : parentTab === 'map' || parentTab === 'ideas' ? 'map' : parentTab === 'mistakes' ? 'mistakes' : 'parent'
   const showBook = view === 'parent' && (parentTab === 'map' || parentTab === 'ideas')
-  const workspace = useStudy(sessionId, visible, t('networkError'), { offset: mistakeOffset, subject, status: mistakeStatus, ...(showBook && mapGrade !== undefined ? { mapGrade } : {}), ...(showBook && mapTerm !== undefined ? { mapTerm } : {}), ...(activeScope.grade !== undefined ? { diagGrade: activeScope.grade } : {}), ...(activeScope.term !== undefined ? { diagTerm: activeScope.term } : {}), ...(activeScope.unit ? { diagUnit: activeScope.unit } : {}) })
+  const workspace = useStudy(sessionId, visible, t('networkError'), { tab, offset: mistakeOffset, subject, status: mistakeStatus, ...(showBook && mapGrade !== undefined ? { mapGrade } : {}), ...(showBook && mapTerm !== undefined ? { mapTerm } : {}), ...(activeScope.grade !== undefined ? { diagGrade: activeScope.grade } : {}), ...(activeScope.term !== undefined ? { diagTerm: activeScope.term } : {}), ...(activeScope.unit ? { diagUnit: activeScope.unit } : {}) })
   const { data, busy, change } = workspace
   const [activity, setActivity] = useState<Activity>({ subject: storedSubject(), mode: 'foundation' })
   const [selectedObjectiveId, setSelectedObjectiveId] = useState('')
@@ -148,7 +149,13 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
 }
 
 function Growth({ study, curriculum, subject, goals, t }: { study: Study; curriculum: Study['curriculum'] | null; subject: Subject; goals: Goal[]; t: Translate }) {
+  const weekly = study.weekly
   return <>
+    {weekly && <section><h3>{t('weeklyTitle')}</h3>
+      <p>{t('weeklyTime')}: {weekly.minutesByDay.reduce((sum, item) => sum + item.minutes, 0)} {t('minuteUnit')} · {t('weeklyActiveDays')} {weekly.activeDays}/7</p>
+      <p>{t('weeklyMastered')} {weekly.masteredGoals} · {t('weeklyPractised')} {weekly.practisedGoals} · {t('weeklyMistakesNew')} {weekly.newMistakes} · {t('weeklyConsolidated')} {weekly.consolidatedMistakes}</p>
+      <p>{t('weeklyDueDone')} {weekly.dueCompletion.done}/{weekly.dueCompletion.total}{weekly.errorCauses.length > 0 ? ` · ${t('weeklyCauses')}: ${weekly.errorCauses.map(cause => `${t(cause.type)} ×${cause.count}`).join('、')}` : ''}</p>
+    </section>}
     <section><h3>{t('stars')}: {study.stars}</h3><p>{t('starsHelp')}</p></section>
     {curriculum && curriculum.scope.current && <section><h3>{t('masteryOverview')} · {t(subject)}</h3>
       <p>{t('levelMastered')}: {curriculum.summary.mastered} · {t('levelPractising')}: {curriculum.summary.practising + curriculum.summary.stalled} · {t('levelWeak')}: {curriculum.summary.weak + curriculum.summary.due} · {t('levelUntouched')}: {curriculum.summary.untouched}</p>

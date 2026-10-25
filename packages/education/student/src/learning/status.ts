@@ -1,6 +1,7 @@
-import { MINUTE, activeSession, beijingClock, formatDuration, studyDay, todaySpent } from './shared.ts'
+import { DAY, MINUTE, activeSession, beijingClock, formatDuration, studyDay, todaySpent, type Outcome } from './shared.ts'
+import type { ErrorType, StudyState } from '../schema.ts'
+import type { StudyInsight } from './mastery.ts'
 import { objectiveInfo, questionObjectiveId } from './view.ts'
-import type { StudyState } from '../schema.ts'
 
 /** One time-derived suggestion state; suggestions never reject a later call. */
 export type StudyPhase = 'ready' | 'studying' | 'stop-required' | 'break' | 'daily-complete'
@@ -87,4 +88,65 @@ export function studyStatus(state: StudyState, now: number) {
     pendingMistakes: state.mistakes.filter(mistake => mistake.confirmedAt === undefined).map(mistake => mistake.id),
     progress: [...progress.values()].map(item => ({ ...item, level: item.independentDays.length >= 3 ? 'independent-on-three-days' : 'practising' })),
   }
+}
+
+/** One week of derived parent-facing summary; every number comes from stored evidence. */
+export interface WeeklySummary {
+  minutesByDay: { day: string; minutes: number }[]
+  activeDays: number
+  practisedGoals: number
+  masteredGoals: number
+  newMistakes: number
+  consolidatedMistakes: number
+  dueCompletion: { done: number; total: number }
+  errorCauses: { type: ErrorType; count: number }[]
+  suggestion: StudyInsight['recommendation']
+}
+
+/**
+ * Summarise the last seven calendar days for the parent: minutes per day, goals practised and
+ * newly mastered, mistake flow, due-review completion and this week's top error causes.
+ * Purely derived from stored evidence; nothing is stored per week.
+ * @param state - current durable learning state.
+ * @param now - host wall-clock time in milliseconds.
+ * @param insight - precomputed insight for the same state and time, when the caller already has one.
+ */
+export function weeklySummary(state: StudyState, now: number, insight: StudyInsight): WeeklySummary {
+  const days = Array.from({ length: 7 }, (_, index) => studyDay(now - (6 - index) * DAY))
+  const daySet = new Set(days)
+  const minutesByDay = days.map(day => ({
+    day,
+    minutes: Math.round(state.sessions.filter(session => studyDay(session.startedAt) === day)
+      .reduce((sum, session) => sum + (session.spentMs ?? Math.max(0, (session.endedAt ?? now) - session.startedAt)), 0) / 60_000),
+  }))
+  const windowStart = now - 7 * DAY
+  const outcomesByGoal = new Map<string, Outcome[]>()
+  const add = (key: string | undefined, outcome: Outcome) => { if (key !== undefined) outcomesByGoal.set(key, [...(outcomesByGoal.get(key) ?? []), outcome]) }
+  for (const attempt of state.attempts) add(attempt.objectiveId, { at: attempt.at, result: attempt.result, assistance: attempt.assistance })
+  for (const result of state.paperResults) {
+    const sheet = state.worksheets.find(item => item.id === result.worksheetId)
+    const item = sheet?.items.find(candidate => candidate.id === result.itemId)
+    const goal = item?.objectiveId ?? (item?.mistakeId !== undefined ? state.mistakes.find(mistake => mistake.id === item.mistakeId)?.objectiveId : undefined) ?? sheet?.objectiveId
+    add(goal, { at: result.receivedAt, result: result.result, assistance: result.assistance })
+  }
+  let practisedGoals = 0
+  let masteredGoals = 0
+  for (const goal of insight.objectives) {
+    const history = outcomesByGoal.get(goal.id) ?? []
+    if (!history.some(item => item.at >= windowStart)) continue
+    practisedGoals += 1
+    const independentDays = new Set(history.filter(item => item.at >= windowStart && item.result === 'correct' && item.assistance === 'independent').map(item => studyDay(item.at)))
+    if (goal.independentDays >= 3 && independentDays.size > 0) masteredGoals += 1
+  }
+  const newMistakes = state.mistakes.filter(mistake => mistake.confirmedAt !== undefined && mistake.confirmedAt >= windowStart).length
+  const consolidatedMistakes = state.mistakes.filter(mistake => mistake.stage >= 4 && (mistake.independentDays.at(-1) !== undefined) && daySet.has(mistake.independentDays.at(-1) ?? '')).length
+  const dueInWindow = state.mistakes.filter(mistake => mistake.confirmedAt !== undefined && mistake.dueAt !== undefined && mistake.dueAt >= windowStart && mistake.dueAt <= now)
+  const dueCompletion = { done: dueInWindow.filter(mistake => state.attempts.some(attempt => attempt.mistakeId === mistake.id && attempt.at >= (mistake.dueAt ?? 0)) || state.paperResults.some(result => result.receivedAt >= (mistake.dueAt ?? 0) && state.worksheets.some(sheet => sheet.id === result.worksheetId && sheet.items.some(item => item.id === result.itemId && item.mistakeId === mistake.id)))).length, total: dueInWindow.length }
+  const causeCounts = new Map<ErrorType, number>()
+  for (const mistake of state.mistakes) {
+    if (mistake.confirmedAt === undefined || mistake.confirmedAt < windowStart || mistake.errorType === undefined) continue
+    causeCounts.set(mistake.errorType, (causeCounts.get(mistake.errorType) ?? 0) + 1)
+  }
+  const errorCauses = [...causeCounts.entries()].map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count || a.type.localeCompare(b.type)).slice(0, 3)
+  return { minutesByDay, activeDays: minutesByDay.filter(item => item.minutes > 0).length, practisedGoals, masteredGoals, newMistakes, consolidatedMistakes, dueCompletion, errorCauses, suggestion: insight.recommendation }
 }

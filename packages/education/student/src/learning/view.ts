@@ -271,6 +271,8 @@ export interface CurriculumView {
   summary: { concepts: number; objectives: number; mastered: number; practising: number; weak: number; due: number; stalled: number; untouched: number }
   scope: { grade: number; term: 'first' | 'second'; current: boolean }
   order: string[]
+  /** True when heavy collections (concepts, relations, ideas, order) were dropped for a lighter payload. */
+  lite: boolean
 }
 
 /**
@@ -335,7 +337,7 @@ export function curriculumView(state: StudyState, subject: CurriculumSubject, in
     order.push(ready)
     remaining.splice(remaining.indexOf(ready), 1)
   }
-  return { id: file.id, title: file.title, basis: file.basis, units, ideas: subjectIdeas(file.subject), concepts, objectives, summary, scope: { grade: target.grade, term: target.term, current }, order,
+  return { id: file.id, title: file.title, basis: file.basis, units, ideas: subjectIdeas(file.subject), concepts, objectives, summary, scope: { grade: target.grade, term: target.term, current }, order, lite: false,
     relations: file.relations.map(relation => ({ id: relation.id, fromId: relation.fromId, toId: relation.toId, kind: relation.kind, explanation: relation.explanation })) }
 }
 

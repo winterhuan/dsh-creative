@@ -2,6 +2,7 @@ import type { Command } from '../schema.ts'
 import type { Dashboard } from '../dashboard.ts'
 import type { CheckInIntensity, ObjectiveInsight } from '../learning/mastery.ts'
 import type { Translate } from './locales.ts'
+import { MasteryDots } from './mastery-dots.tsx'
 import { assistKeys, day, intensityHelpKeys, intensityKeys, levelKeys, reasonText, sampleKeys, type ScopeChoice, type Subject } from './display.ts'
 
 type Study = NonNullable<Dashboard['study']>
@@ -73,7 +74,7 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
         {selectedConcept.facts !== undefined && selectedConcept.facts.length > 0 && <ul>{selectedConcept.facts.map(fact => <li key={fact}>{t('facts')}: {fact}</li>)}</ul>}
         <p className="student-muted">{t('source')}: {selectedConcept.source}</p>
         {selectedConcept.lastAt !== undefined && <p className="student-muted">{t('lastPractised')}: {day(selectedConcept.lastAt)}{selectedConcept.activeMistakes > 0 ? ` · ${t('bookReviewing')} ${selectedConcept.activeMistakes}` : ''}</p>}
-        {curriculum.objectives.filter(item => item.conceptIds.includes(selectedConcept.id)).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><p className="student-muted">{item.goal}</p>
+        {curriculum.objectives.filter(item => item.conceptIds.includes(selectedConcept.id)).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><MasteryDots days={curriculum.scope.current ? item.independentDays : undefined} t={t} /><p className="student-muted">{item.goal}</p>
           {item.reasons.length > 0 && item.level !== 'untouched' && <p className="student-muted">{reasonText(item.reasons, t)}</p>}
           {curriculum.scope.current && <button type="button" disabled={active} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
         </div>)}
@@ -89,7 +90,7 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
         <StackedBar counts={countLevels(own)} t={t} />
         <p className="student-muted">{unit.summary}</p>
         <div className="student-chips">{own.map(item => <button key={item.id} type="button" className="student-chip" aria-pressed={selectedConceptId === item.id} onClick={() => setSelectedConceptId(item.id)}><span className={`student-dot student-level-${item.level}`} />{item.name}</button>)}</div>
-        {curriculum.objectives.filter(item => item.unit === unit.id).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><p className="student-muted">{item.goal}</p>
+        {curriculum.objectives.filter(item => item.unit === unit.id).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><MasteryDots days={curriculum.scope.current ? item.independentDays : undefined} t={t} /><p className="student-muted">{item.goal}</p>
           {curriculum.scope.current && <button type="button" disabled={active} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
         </div>)}
       </details> })}

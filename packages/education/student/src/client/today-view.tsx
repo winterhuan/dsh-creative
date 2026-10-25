@@ -3,6 +3,7 @@ import type { Command } from '../schema.ts'
 import type { CheckInIntensity } from '../learning/mastery.ts'
 import type { Translate } from './locales.ts'
 import { FigureView } from './figure-view.tsx'
+import { MasteryDots } from './mastery-dots.tsx'
 import { hintPromptFor, stuckPrompt } from './prompts.ts'
 import { assistKeys, clock, day, focusKeys, intensityHelpKeys, intensityKeys, planKeys, reasonText, reminderKeys, type Activity, type Mode, type ScopeChoice, type Subject } from './display.ts'
 import type { Dashboard } from '../dashboard.ts'
@@ -195,11 +196,11 @@ const phaseKeys = { demo: 'phaseDemo', guide: 'phaseGuide', try: 'phaseTry', var
 function Task({ study, goalTitle: title, days, disabled, t, act }: { study: Study; goalTitle: string | undefined; days: number | undefined; disabled: boolean; t: Translate; act: Act }) {
   const task = study.task
   if (!task) return null
-  const lit = Math.min(3, days ?? 0)
   const hintLabel = task.hintLevel > 0 ? t('hintMore') : t('hint')
   return <><h3>{task.topic}</h3>{title && <p className="student-muted">{t('learningGoal')}: {title}</p>}
     {task.phase && <p className="student-muted">{t(phaseKeys[task.phase])}</p>}
-    {days !== undefined && <p className="student-mastery" aria-label={`${t('masteryProgress')} ${lit}/3`}>{[0, 1, 2].map(index => <span key={index} className={index < lit ? 'student-level-mastered' : 'student-level-untouched'} />)}</p>}
+    <MasteryDots days={days} t={t} />
+    {days === 3 && study.feedback?.id === task.id && <p className="student-result">{t('goalMastered')}</p>}
     <p className="student-question">{task.prompt}</p>
     {task.figure && <FigureView figure={task.figure} t={t} />}
     {task.response !== undefined && <p>{t('answer')}: {task.response}</p>}

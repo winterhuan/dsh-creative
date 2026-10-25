@@ -716,3 +716,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.3 .agents/skills | tar
 2026-10-25 前置链教学与错因感知间隔（阶段 3）：
 
 - 需要教学的目标沿同科前置边找最近的未掌握前置，建议重定向（新理由码 prerequisite-gap、携带 redirectedFrom，前置补完自动回落）；同一错题确认后再答错隔两天复习，同目标同错因两条活跃错题把巩固卷变式下限提到换情境。包内 133 项测试、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常。决策见[前置与间隔](.agents/notes/implemented/feature/2026-10-25-student-prerequisite-spacing.zh.md)。
+
+2026-10-25 掌握可视化、家长周报与按标签载荷（阶段 4）：
+
+- 三个圆点抽成共享 MasteryDots 并接入地图详情与目标行，第三天独立答对落账时答题卡祝贺一次；weeklySummary 纯派生周报（时长/天数、新掌握、错题流向、到期完成、本周错因）随家长页返回；工作区接口按 tab 取数，仅地图标签携带整册地图（lite 标记）。包内 135 项测试、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常，浏览器逐标签目检待用户确认。决策见[周报与进度](.agents/notes/implemented/feature/2026-10-25-student-weekly-progress.zh.md)。

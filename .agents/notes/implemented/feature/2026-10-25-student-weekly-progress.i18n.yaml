@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-25-student-weekly-progress.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-25-student-weekly-progress.md
+/agent-note-mastery-progress-on-display-a-parent-weekly-summary-and-per-tab-payloads:
+  en: 03f4f7ee3c115e8e
+  zh: f81b19d54d4a17dd
+/agent-note-mastery-progress-on-display-a-parent-weekly-summary-and-per-tab-payloads/problem:
+  en: 0530fe76d76fc0d2
+  zh: f15f41add86ae275
+/agent-note-mastery-progress-on-display-a-parent-weekly-summary-and-per-tab-payloads/decision:
+  en: 6fc68df3f03f3dad
+  zh: aa64396a3ef0064b
+/agent-note-mastery-progress-on-display-a-parent-weekly-summary-and-per-tab-payloads/alternatives-considered:
+  en: a4ba3fe5191d8cfc
+  zh: dcbc691c8d15b88b
+/agent-note-mastery-progress-on-display-a-parent-weekly-summary-and-per-tab-payloads/consequences:
+  en: e4deb44791b38770
+  zh: dfcf04f4ad9cf7a5

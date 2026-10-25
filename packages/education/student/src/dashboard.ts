@@ -1,11 +1,13 @@
 import type { StudyState } from './schema.ts'
 import type { CurriculumSubject } from './curriculum.ts'
 import { diagnosticFor, insightSummary, studyInsight } from './learning/mastery.ts'
-import { studyStatus } from './learning/status.ts'
+import { studyStatus, weeklySummary } from './learning/status.ts'
 import { checkInHistory, curriculumView, itemObjectiveId, objectiveInfo, reviewPlan, sheetOpen } from './learning/view.ts'
 
 /** Mistake-book filter for the confirmed list. */
 export type MistakeStatus = 'all' | 'due' | 'reviewing' | 'mastered'
+/** The workbench tab a payload is built for; the map tab carries the full knowledge map, others a lite one. */
+export type StudyTab = 'today' | 'map' | 'mistakes' | 'parent'
 
 /**
  * Bounded sidebar projection: status, the selected subject's knowledge map with mastery,
@@ -15,7 +17,7 @@ export type MistakeStatus = 'all' | 'due' | 'reviewing' | 'mastered'
  * @param options - selected subject, notebook offset and status filter, an optional grade and term to browse another knowledge map, and an optional check-in scope (grade, term, unit).
  * @returns the dashboard payload served to the workbench.
  */
-export function dashboard(state: StudyState | undefined, now: number, options: { subject?: CurriculumSubject; mistakeOffset?: number; mistakeStatus?: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second'; diagGrade?: number; diagTerm?: 'first' | 'second'; diagUnit?: string } = {}) {
+export function dashboard(state: StudyState | undefined, now: number, options: { subject?: CurriculumSubject; mistakeOffset?: number; mistakeStatus?: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second'; diagGrade?: number; diagTerm?: 'first' | 'second'; diagUnit?: string; tab?: StudyTab } = {}) {
   if (!state) return { serverNow: now, revision: 0, study: null }
   const subject = options.subject ?? 'math'
   const mistakeOffset = options.mistakeOffset ?? 0
@@ -73,7 +75,7 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
       mastered: book.filter(item => item.stage >= 4).length,
       pending: pending.length,
     },
-    curriculum: curriculumView(state, subject, insight, scope),
+    curriculum: (() => { const view = curriculumView(state, subject, insight, scope); return view === null ? null : lighten(view, options.tab) })(),
     diagnostic: insight.diagnostics.find(plan => plan.subject === subject) ?? null,
     scopedDiagnostic: options.diagGrade !== undefined || options.diagTerm !== undefined
       ? diagnosticFor(state, subject, now, { grade: options.diagGrade ?? state.profile.grade, term: options.diagTerm ?? state.profile.term, ...(options.diagUnit !== undefined && options.diagUnit !== '' ? { units: [options.diagUnit] } : {}) }, insight)
@@ -83,12 +85,19 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
       : [],
     checkIns: checkInHistory(state),
     ...insightSummary(insight),
+    weekly: weeklySummary(state, now, insight),
     diagnostics: insight.diagnostics,
     materials: state.materials.filter(item => state.courses.some(course => course.materialId === item.id)),
     workbookDrafts: state.workbookDrafts.filter(item => item.subject === subject).slice(-20).reverse(),
     teachingQueue: state.teachingQueue.filter(item => item.subject === subject).slice(-20).reverse(),
     recentAttempts: state.attempts.filter(item => item.subject === subject).slice(-20).reverse(),
   } }
+}
+
+/** Drop the heavy map collections unless the map tab asked for them; objectives, units and summary stay for progress dots and goal lists. */
+function lighten(view: NonNullable<ReturnType<typeof curriculumView>>, tab: StudyTab | undefined) {
+  if (tab === undefined || tab === 'map') return view
+  return { ...view, concepts: [], relations: [], ideas: [], order: [], lite: true }
 }
 
 /** Shared HTTP response shape; client imports this type without host runtime code. */
