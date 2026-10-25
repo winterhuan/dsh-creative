@@ -712,3 +712,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.3 .agents/skills | tar
 2026-10-25 模型指引单源化与提示阶梯（阶段 2）：
 
 - 工具描述与 queryStudy 的 `more` 收敛为纯契约与指向 study 技能的指针（`change` 描述约 1300 → 330 字符）；`objectiveElements` 新增三层 `hintLadder`（方法提示条件/画图、对照登记错法自查、出题要点作步骤），`kind=elements` 返回，技能提示段按层执行。包内 130 项测试、文档 16 项、规范 3 项与根 typecheck/build 通过；构建重启后接口正常。提示质量需一次真实学习会话抽查，验证人：用户。决策见[模型指引](.agents/notes/implemented/simplification/2026-10-25-student-model-guidance.zh.md)。HANDOFF 词数预算一次性上调至 4700（后续阶段仍需记录）。
+
+2026-10-25 前置链教学与错因感知间隔（阶段 3）：
+
+- 需要教学的目标沿同科前置边找最近的未掌握前置，建议重定向（新理由码 prerequisite-gap、携带 redirectedFrom，前置补完自动回落）；同一错题确认后再答错隔两天复习，同目标同错因两条活跃错题把巩固卷变式下限提到换情境。包内 133 项测试、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常。决策见[前置与间隔](.agents/notes/implemented/feature/2026-10-25-student-prerequisite-spacing.zh.md)。

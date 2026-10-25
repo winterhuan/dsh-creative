@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { updateStudy } from '../src/learning/update/index.ts'
 import { studyStatus } from '../src/learning/status.ts'
 import { queryStudy } from '../src/store.ts'
+import { scheduleMistakes } from '../src/learning/schedule.ts'
 import { studyDay } from '../src/learning/shared.ts'
 import { stateSchema } from '../src/schema.ts'
 import { NOW, MINUTE, DAY, setup, start, attempt, mistake, confirm } from './fixtures.ts'
@@ -59,3 +60,25 @@ describe('photo mistakes and spaced review', () => {
   })
 })
 
+
+describe('error-aware review spacing', () => {
+  it('waits one day after a first slip and two days once the wrong repeats', () => {
+    let state = updateStudy(undefined, setup, NOW)
+    state = updateStudy(state, { action: 'mistake', mistake }, NOW)
+    state = updateStudy(state, confirm, NOW)
+    state = updateStudy(state, { action: 'link-mistake', mistakeId: mistake.id, objectiveId: 'm2a-o-sub' }, NOW)
+    const wrong = (round: number, at: number) => {
+      const id = `r${round}`
+      state = updateStudy(state, { action: 'start', id, subject: 'math', mode: 'review' }, at)
+      state = updateStudy(state, { action: 'task', task: { id, sessionId: id, subject: 'math', topic: mistake.topic, prompt: mistake.prompt, mistakeId: mistake.id, objectiveId: 'm2a-o-sub' } }, at)
+      state = updateStudy(state, { action: 'answer', taskId: id, response: '14' }, at + MINUTE)
+      state = updateStudy(state, { action: 'record', attempt: { id, sessionId: id, subject: 'math', topic: mistake.topic, prompt: mistake.prompt, response: '14', result: 'incorrect', assistance: 'independent', feedback: '再试一次', answerEvidence: '错', mistakeId: mistake.id, objectiveId: 'm2a-o-sub' } }, at + 2 * MINUTE)
+      state = updateStudy(state, { action: 'stop', sessionId: id, reflection: '' }, at + 3 * MINUTE)
+      return state
+    }
+    const once = scheduleMistakes(structuredClone(wrong(1, NOW + 2 * DAY)))
+    expect(once.mistakes[0]?.dueAt).toBe(dueDay(NOW + 2 * DAY + 2 * MINUTE, 1))
+    const twice = scheduleMistakes(structuredClone(wrong(2, NOW + 5 * DAY)))
+    expect(twice.mistakes[0]?.dueAt).toBe(dueDay(NOW + 5 * DAY + 2 * MINUTE, 2))
+  })
+})

@@ -9,7 +9,7 @@ const RECHECK_AFTER = 30 * DAY
 
 /** Why an objective needs attention; codes are localized by the workbench and read by the model. */
 export interface InsightReason {
-  code: 'due-mistakes' | 'open-mistakes' | 'recent-help-or-error' | 'recurring-error' | 'not-practised-recently' | 'not-started' | 'diagnosis-due' | 'preview' | 'school-pace' | 'needs-teaching'
+  code: 'due-mistakes' | 'open-mistakes' | 'recent-help-or-error' | 'recurring-error' | 'not-practised-recently' | 'not-started' | 'diagnosis-due' | 'preview' | 'school-pace' | 'needs-teaching' | 'prerequisite-gap'
   count: number
 }
 
@@ -84,7 +84,15 @@ export interface StudyInsight {
   objectives: ObjectiveInsight[]
   weakPoints: ObjectiveInsight[]
   diagnostics: DiagnosticPlan[]
-  recommendation: { kind: 'review' | 'practice' | 'diagnose' | 'learn' | 'preview' | 'hold'; subject: CurriculumSubject; objectiveId?: string; title?: string; reason: InsightReason } | null
+  recommendation: {
+    kind: 'review' | 'practice' | 'diagnose' | 'learn' | 'preview' | 'hold'
+    subject: CurriculumSubject
+    objectiveId?: string
+    title?: string
+    reason: InsightReason
+    /** When practice redirects to an unmet prerequisite, the goal that raised the need. */
+    redirectedFrom?: { id: string; title: string }
+  } | null
   errorProfile: { subject: CurriculumSubject; type: ErrorType; count: number; objectiveIds: string[] }[]
   understandingReminders: UnderstandingReminder[]
 }
@@ -225,6 +233,39 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
       coverage: { probed: pool.length - untouched.length, total: pool.length }, recommendedIntensity, sample: samples.standard, samples, ...(scope !== undefined ? { scope } : {}) }
   }
   const diagnostics: DiagnosticPlan[] = SUBJECT_ORDER.map(subject => diagnosticPlan(subject, objectives.filter(item => item.subject === subject && taughtUnit(state, subject, item.unit))))
+  // Teaching follows prerequisite edges: a goal that needs teaching may rest on an earlier unmet goal,
+  // and practice then redirects there first, nearest prerequisite ahead.
+  const objectivesByConcept = new Map<string, ObjectiveInsight[]>()
+  for (const item of objectives) for (const conceptId of item.conceptIds) objectivesByConcept.set(conceptId, [...(objectivesByConcept.get(conceptId) ?? []), item])
+  const prerequisiteGap = (goal: ObjectiveInsight): ObjectiveInsight | undefined => {
+    const file = curriculumFor(state.profile, goal.subject)
+    if (!file) return undefined
+    const seen = new Set<string>([goal.id])
+    const queue = [...goal.conceptIds]
+    while (queue.length > 0) {
+      const conceptId = queue.shift()
+      if (conceptId === undefined) break
+      for (const relation of file.relations) {
+        if (relation.kind !== 'prerequisite' || relation.toId !== conceptId) continue
+        for (const candidate of objectivesByConcept.get(relation.fromId) ?? []) {
+          if (seen.has(candidate.id)) continue
+          seen.add(candidate.id)
+          if (candidate.level !== 'mastered' && candidate.level !== 'due' && taughtUnit(state, candidate.subject, candidate.unit)) return candidate
+          queue.push(...candidate.conceptIds)
+        }
+      }
+    }
+    return undefined
+  }
+  const gapRedirects = new Map<string, { id: string; title: string }>()
+  for (const goal of objectives) {
+    if (!goal.reasons.some(reason => reason.code === 'needs-teaching')) continue
+    const gap = prerequisiteGap(goal)
+    if (gap === undefined || gap.id === goal.id) continue
+    if (!gap.reasons.some(reason => reason.code === 'prerequisite-gap')) gap.reasons.push({ code: 'prerequisite-gap', count: 1 })
+    gap.priority += 30
+    if (!gapRedirects.has(goal.id)) gapRedirects.set(goal.id, { id: gap.id, title: gap.title })
+  }
   const weakPoints = objectives.filter(item => (item.level === 'due' || item.level === 'weak' || item.level === 'stalled') && taughtUnit(state, item.subject, item.unit))
     .sort((a, b) => b.priority - a.priority).slice(0, 5)
   const dueMistake = (item: StudyState['mistakes'][number]) => {
@@ -243,8 +284,11 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
   const teachingGoal = objectives.filter(item => item.reasons.some(reason => reason.code === 'needs-teaching') && taughtUnit(state, item.subject, item.unit))
     .sort((a, b) => b.priority - a.priority)[0]
   const queued = state.teachingQueue.filter(item => item.objectiveId === undefined).sort((a, b) => a.confirmedAt - b.confirmedAt)[0]
+  const redirect = teachingGoal ? gapRedirects.get(teachingGoal.id) : undefined
   const recommendation: StudyInsight['recommendation'] = first
     ? { kind: 'review', subject: first.subject, reason: { code: 'due-mistakes', count: first.count } }
+    : teachingGoal && redirect
+      ? { kind: 'practice', subject: teachingGoal.subject, objectiveId: redirect.id, title: redirect.title, reason: { code: 'prerequisite-gap', count: 1 }, redirectedFrom: { id: teachingGoal.id, title: teachingGoal.title } }
     : teachingGoal
       ? { kind: 'practice', subject: teachingGoal.subject, objectiveId: teachingGoal.id, title: teachingGoal.title, reason: { code: 'needs-teaching', count: 1 } }
       : queued

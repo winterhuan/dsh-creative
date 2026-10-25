@@ -28,12 +28,15 @@ export function scheduleMistakes(state: StudyState): StudyState {
     const confirmedAt = mistake.confirmedAt
     let stage = 0
     let days: string[] = []
+    let wrongs = 0
     let due = studyDay(confirmedAt + DAY)
     for (const item of (evidence.get(mistake.id) ?? []).filter(entry => entry.at >= confirmedAt).sort((a, b) => a.at - b.at)) {
       if (item.result === 'unassessed' || item.result === 'stuck') continue
       const day = studyDay(item.at)
       if (item.result !== 'correct' || item.assistance !== 'independent') {
-        due = studyDay(item.at + DAY)
+        // A repeated wrong or helped answer waits an extra day; one slip only resets to the next day.
+        wrongs += 1
+        due = studyDay(item.at + (wrongs >= 2 ? 2 : 1) * DAY)
         continue
       }
       if (days.includes(day)) continue

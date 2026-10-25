@@ -78,6 +78,7 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
     {!active && <section className="student-plan"><h3>{t('todayPlan')}</h3>
       {recommendation ? <><p>{t(planKeys[recommendation.kind])} · {t(recommendation.subject)}{recommendation.title ? ` · ${recommendation.title}` : ''}</p>
         <p className="student-muted">{reasonText([recommendation.reason], t)}</p>
+        {recommendation.redirectedFrom && <p className="student-muted">{t('prerequisiteFor')}: {recommendation.redirectedFrom.title}</p>}
         {recommendation.kind === 'hold' ? <button type="button" onClick={openParent}>{t('updateSchoolProgress')}</button>
           : <button type="button" className="student-primary" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button>}
         {recommendation.kind !== 'hold' && study.phase !== 'ready' && <p className="student-muted">{t('planBlocked')}</p>}

@@ -114,6 +114,8 @@ export const zh = {
   "phaseVary": "变一变",
   "hintedCorrect": "提示后才对",
   "reasonTeaching": "需要教学",
+  "reasonPrerequisite": "先补这个前置目标",
+  "prerequisiteFor": "补好这个目标后，再学",
   // photo intake
   "photo": "拍照录入错题",
   "photoHelp": "选择题目照片，助手会在对话中转录。核对后才加入复习",
@@ -532,6 +534,8 @@ export const en: Record<keyof typeof zh, string> = {
   "phaseVary": "A variation",
   "hintedCorrect": "Right only after a hint",
   "reasonTeaching": "Needs teaching",
+  "reasonPrerequisite": "Strengthen this earlier goal first",
+  "prerequisiteFor": "After this goal, continue with",
   // photo intake
   "photo": "Add a mistake photo",
   "photoHelp": "Choose a question photo. The tutor transcribes it in chat; confirm it before review",

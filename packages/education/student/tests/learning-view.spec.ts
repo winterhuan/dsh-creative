@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { updateStudy } from '../src/learning/update/index.ts'
 import { queryStudy } from '../src/store.ts'
-import { NOW, MINUTE, setup, start, attempt, mistake, confirm } from './fixtures.ts'
+import { NOW, MINUTE, DAY, setup, start, attempt, mistake, confirm } from './fixtures.ts'
 
 describe('printed review sheets and the mistake schedule', () => {
   const evening = Date.parse('2026-10-10T22:15:00+08:00')
@@ -123,3 +123,16 @@ describe('printed review sheets and the mistake schedule', () => {
   })
 })
 
+
+describe('review-sheet variant floor', () => {
+  it('raises a stage-zero pick to a context variant when the goal carries a recurring error cause', () => {
+    let state = updateStudy(undefined, setup, NOW - DAY)
+    for (const id of ['error-a', 'error-b']) {
+      state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id, objectiveId: 'm2a-o-sub', errorType: 'carry-borrow', uncertainties: '' } }, NOW - DAY)
+      state = updateStudy(state, { action: 'confirm-mistake', id, prompt: mistake.prompt, correction: '15', explanation: '退位', answerEvidence: 'evidence', userConfirmation: '家长确认' }, NOW - DAY)
+    }
+    const plan = queryStudy(state, 'review-sheet', 0, { subject: 'math' })
+    expect(plan.picks.length).toBeGreaterThanOrEqual(2)
+    for (const pick of plan.picks.filter(item => item.objectiveId === 'm2a-o-sub')) expect(pick.variantLevel).toBe('context')
+  })
+})

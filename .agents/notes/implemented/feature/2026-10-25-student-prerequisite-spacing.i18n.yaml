@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-25-student-prerequisite-spacing.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-25-student-prerequisite-spacing.md
+/agent-note-teaching-walks-prerequisite-chains-and-review-spacing-senses-recurrence:
+  en: 73818b62f87a54e5
+  zh: b7de879bcfe94177
+/agent-note-teaching-walks-prerequisite-chains-and-review-spacing-senses-recurrence/problem:
+  en: d57b6bb5167d7f93
+  zh: ad42c00c532538f6
+/agent-note-teaching-walks-prerequisite-chains-and-review-spacing-senses-recurrence/decision:
+  en: d7fd2cfd55c595b1
+  zh: 4390f5922c77134f
+/agent-note-teaching-walks-prerequisite-chains-and-review-spacing-senses-recurrence/alternatives-considered:
+  en: c7e77e9bf4ac0c78
+  zh: 4ea2d11abcecb947
+/agent-note-teaching-walks-prerequisite-chains-and-review-spacing-senses-recurrence/consequences:
+  en: 652ef7ff71fd1fb7
+  zh: b966ceb0c3ca3bca

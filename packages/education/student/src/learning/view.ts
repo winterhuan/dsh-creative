@@ -147,8 +147,15 @@ export interface ObjectiveFill {
 }
 
 /** Ladder level for one review question: numeric retests first, then context, then reasoning. */
-function variantLevelFor(stage: number): Variant {
-  return stage >= 3 ? 'reasoning' : stage >= 2 ? 'context' : 'numeric'
+function variantLevelFor(stage: number, recurringCause = false): Variant {
+  const level = stage >= 3 ? 'reasoning' : stage >= 2 ? 'context' : 'numeric'
+  return recurringCause && level === 'numeric' ? 'context' : level
+}
+
+/** Whether the mistake's goal carries a recurring error cause: two or more active mistakes sharing it. */
+function recurringCauseOn(state: StudyState, mistake: StudyState['mistakes'][number]): boolean {
+  if (mistake.objectiveId === undefined || mistake.errorType === undefined) return false
+  return state.mistakes.filter(other => other.confirmedAt !== undefined && other.objectiveId === mistake.objectiveId && other.stage < 4 && other.errorType === mistake.errorType).length >= 2
 }
 
 /**
@@ -183,7 +190,7 @@ export function reviewPlan(state: StudyState, subject: CurriculumSubject, now: n
     picks.push({
       kind: 'mistake', id: item.id, objectiveId: item.objectiveId ?? '', objectiveTitle: objectiveInfo(state, item.objectiveId ?? '')?.title ?? '',
       topic: item.topic, prompt: item.prompt, learnerAnswer: item.learnerAnswer, correction: item.correction, explanation: item.explanation,
-      stage: item.stage, dueToday: (item.dueAt ?? 0) <= now, variantLevel: variantLevelFor(item.stage),
+      stage: item.stage, dueToday: (item.dueAt ?? 0) <= now, variantLevel: variantLevelFor(item.stage, recurringCauseOn(state, item)),
       ...(item.errorType !== undefined ? { errorType: item.errorType } : {}),
       ...(elements !== undefined ? { elements } : {}),
     })

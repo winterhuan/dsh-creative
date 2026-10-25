@@ -436,6 +436,29 @@ describe('error causes, understanding reminders and photo drafts', () => {
     expect(queryStudy(state, 'elements', 0, { subject: 'chinese', id: 'c2a-o2' })).toMatchObject({ objectives: [expect.objectContaining({ knowledgePoints: expect.arrayContaining([expect.objectContaining({ id: 'c2a-u2-1', facts: expect.arrayContaining([expect.stringContaining('一条帆船')]) })]) })] })
   })
 
+  it('redirects teaching to the nearest unmet prerequisite and back once it is mastered', () => {
+    const stuckBlock = (base: ReturnType<typeof updateStudy>, at: number) => {
+      let state = updateStudy(base, start, at)
+      state = updateStudy(state, { action: 'task', task: { id: 'gap-task', sessionId: start.id, subject: 'math', topic: '乘法口诀', prompt: '背口诀', objectiveId: 'm2a-o-tables' } }, at)
+      state = updateStudy(state, { action: 'stuck', taskId: 'gap-task' }, at + MINUTE)
+      return updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, at + 2 * MINUTE)
+    }
+    const redirected = studyInsight(stuckBlock(updateStudy(undefined, setup, NOW), NOW), NOW + 3 * MINUTE).recommendation
+    expect(redirected).toMatchObject({ kind: 'practice', objectiveId: 'm2a-o-meaning', reason: { code: 'prerequisite-gap' }, redirectedFrom: { id: 'm2a-o-tables' } })
+    let mastered = updateStudy(undefined, setup, NOW - 4 * DAY)
+    for (const [index, day] of [4, 3, 2].entries()) {
+      const at = NOW - day * DAY
+      mastered = updateStudy(mastered, { action: 'start', id: `mastery-${index}`, subject: 'math', mode: 'foundation' }, at)
+      mastered = updateStudy(mastered, { action: 'task', task: { id: `mastery-${index}`, sessionId: `mastery-${index}`, subject: 'math', topic: '乘法意义', prompt: '说口诀', objectiveId: 'm2a-o-meaning' } }, at)
+      mastered = updateStudy(mastered, { action: 'answer', taskId: `mastery-${index}`, response: attempt.response }, at + MINUTE)
+      mastered = updateStudy(mastered, { action: 'record', attempt: { id: `mastery-${index}`, sessionId: `mastery-${index}`, subject: 'math', topic: '乘法意义', prompt: '说口诀', response: attempt.response, result: 'correct', assistance: 'independent', feedback: '说对了', answerEvidence: attempt.answerEvidence, objectiveId: 'm2a-o-meaning' } }, at + 2 * MINUTE)
+      mastered = updateStudy(mastered, { action: 'stop', sessionId: `mastery-${index}`, reflection: '' }, at + 3 * MINUTE)
+    }
+    const restored = studyInsight(stuckBlock(mastered, NOW), NOW + 3 * MINUTE)
+    expect(restored.objectives.find(item => item.id === 'm2a-o-meaning')?.level).toBe('mastered')
+    expect(restored.recommendation).toMatchObject({ kind: 'practice', objectiveId: 'm2a-o-tables', reason: { code: 'needs-teaching' } })
+  })
+
   it('derives a three-rung hint ladder from the method, the registered slip and the question points', () => {
     const state = updateStudy(undefined, setup, NOW)
     const shipped = queryStudy(state, 'elements', 0, { subject: 'math', id: 'm2a-o-sub' }).objectives[0]
