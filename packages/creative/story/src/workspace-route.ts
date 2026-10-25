@@ -299,12 +299,14 @@ async function handle(context: Context, request: IncomingMessage, response: Serv
       if (path === null) throw new WorkspaceHttpError(400, '缺少文件路径。')
       const input = await jsonBody(request, options.maxBytes * 6 + 1_024)
       if (typeof input.content !== 'string') throw new WorkspaceHttpError(400, 'content 必须是字符串。')
-      if (typeof input.baseVersion !== 'string' || input.baseVersion === '') throw new WorkspaceHttpError(400, 'baseVersion 必须是有效版本。')
       if (Buffer.byteLength(input.content) > options.maxBytes) throw new WorkspaceHttpError(413, '文件超过工作台大小限制。')
+      const creating = input.intent === 'create'
+      if (input.intent !== undefined && !creating) throw new WorkspaceHttpError(400, 'intent 只能是 create。')
+      if (!creating && (typeof input.baseVersion !== 'string' || input.baseVersion === '')) throw new WorkspaceHttpError(400, 'baseVersion 必须是有效版本。')
       const outcome = await realm.fs.writeText(
         await creativeTarget(realm, path),
         input.content,
-        { kind: 'replaceIfVersion', version: input.baseVersion as FsVersion },
+        creating ? { kind: 'createIfAbsent' } : { kind: 'replaceIfVersion', version: input.baseVersion as FsVersion },
         undefined,
         realm.sandboxPolicy.resolve({ session: realm.agent.session }),
       )

@@ -49,7 +49,16 @@ function fixture(cwd = '/ws') {
     stat: async ({ displayPath }: { displayPath: string }) => directories[displayPath] ? { type: 'directory', version: 'v1' } : directories[displayPath.slice(0, displayPath.lastIndexOf('/'))]?.includes(displayPath.slice(displayPath.lastIndexOf('/') + 1)) ? { type: 'file', size: 4, version: `v${versions[displayPath] ?? 1}` } : undefined,
     listDir: vi.fn(async ({ displayPath }: { displayPath: string }) => (directories[displayPath] ?? []).map(name => ({ name, target: target(`${displayPath}/${name}`), type: directories[`${displayPath}/${name}`] ? 'directory' : 'file' }))),
     readBytes: vi.fn(async ({ displayPath }: { displayPath: string }) => Buffer.from(contents[displayPath] ?? `Chapter at ${displayPath}`)),
-    writeText: vi.fn(async ({ displayPath }: { displayPath: string }, content: string, condition: { kind: string; version: string }) => {
+    writeText: vi.fn(async ({ displayPath }: { displayPath: string }, content: string, condition: { kind: string; version?: string }) => {
+      if (condition.kind === 'createIfAbsent') {
+        const parent = displayPath.slice(0, displayPath.lastIndexOf('/'))
+        const name = displayPath.slice(displayPath.lastIndexOf('/') + 1)
+        if ((directories[parent] ?? []).includes(name)) throw new FsError('Already exists', 'FS_NOT_OBSERVED')
+        directories[parent] = [...(directories[parent] ?? []), name]
+        contents[displayPath] = content
+        versions[displayPath] = 1
+        return { after: content, version: 'v1', operation: 'create' }
+      }
       const version = versions[displayPath] ?? 1
       if (condition.version !== `v${version}`) throw new FsError('Version changed', 'FS_STALE_VERSION')
       contents[displayPath] = content
@@ -69,7 +78,7 @@ function fixture(cwd = '/ws') {
   registerWorkspaceRoute(context, { maxBytes: 2_097_152 })
   return {
     fs, directories, contents, dispose, unload: () => cleanup!(),
-    request: async (endpoint: string, path?: string, input?: { content: string; baseVersion: string }) => {
+    request: async (endpoint: string, path?: string, input?: { content: string; baseVersion?: string; intent?: string }) => {
       let status = 0
       let body = ''
       const reply = { writeHead: (code: number) => { status = code }, end: (data: string) => { body = data } } as ServerResponse
@@ -127,6 +136,8 @@ describe('standalone story routes', () => {
     expect((await request('file', 'other/正文/chapter.md')).body.content).toBe('Chapter at /ws/other/正文/chapter.md')
     expect(fs.writeText).toHaveBeenCalledWith(expect.objectContaining({ displayPath: '/ws/book/正文/chapter.md' }), 'Revised chapter', { kind: 'replaceIfVersion', version: 'v1' }, undefined, {})
     expect((await request('file', 'book/正文/chapter.md', { content: 'Stale chapter', baseVersion: 'v1' })).status).toBe(412)
+    expect((await request('file', 'book/设定/写作检查.json', { content: '{"rule_audit":"required"}\n', intent: 'create' })).status).toBe(200)
+    expect(fs.writeText).toHaveBeenCalledWith(expect.objectContaining({ displayPath: '/ws/book/设定/写作检查.json' }), '{"rule_audit":"required"}\n', { kind: 'createIfAbsent' }, undefined, {})
     expect((await request('file', 'book/正文/chapter.md')).body.content).toBe('Revised chapter')
   })
   it('recognizes a directly nested novel whose folder is named 短篇', async () => {

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ContinuityDashboard } from '../src/client/continuity-dashboard.tsx'
+import { writingCheckWithGate } from '../src/client/gates-card.tsx'
 import { parseTrackingView, selectForeshadow } from '../src/client/tracking-view.ts'
 import { en, zh, type CreativeTranslate } from '../src/client/locales/index.ts'
 import type { WorkspacePayload } from '../src/client/workspace-client.ts'
@@ -289,6 +290,35 @@ describe('read-only continuity dashboard', () => {
     fireEvent.click(view.getByRole('button', { name: '下一页' }))
     expect(view.getByText('21–25 / 共 25 条')).toBeTruthy()
     expect(view.getByText('F025 · 逾期线索25')).toBeTruthy()
+  })
+
+  it('writes required onto this book only after confirmation', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (input, init) => {
+      const path = new URL(String(input), 'http://localhost').searchParams.get('path') ?? ''
+      if (path.endsWith('写作检查.json')) {
+        if (init?.method === 'PUT') {
+          const body = JSON.parse(String(init.body)) as { content: string; intent?: string }
+          return new Response(JSON.stringify({ content: body.content, version: 'v2' }))
+        }
+        return new Response(JSON.stringify({ error: 'missing' }), { status: 404 })
+      }
+      return response()
+    })
+    vi.stubGlobal('fetch', fetcher)
+    const view = harness()
+    await view.findByText('雾港来信')
+    fireEvent.click(view.getByText('写作门禁'))
+    expect(await view.findByText('只改这本书的设定/写作检查.json，不改其他作品')).toBeTruthy()
+    const setRequired = view.getAllByRole('button', { name: '设为 required' })[0]!
+    fireEvent.click(setRequired)
+    fireEvent.click(view.getByRole('button', { name: '确认修改这本书' }))
+    await waitFor(() => expect(fetcher.mock.calls.some(([, init]) => init?.method === 'PUT')).toBe(true))
+    const saved = fetcher.mock.calls.find(([, init]) => init?.method === 'PUT')
+    const body = JSON.parse(String(saved?.[1]?.body)) as { content: string; intent?: string }
+    expect(body.intent).toBe('create')
+    expect(JSON.parse(body.content)).toEqual({ rule_audit: 'required' })
+    expect(new URL(String(saved?.[0]), 'http://localhost').searchParams.get('path')).toBe('神机诸天录/设定/写作检查.json')
+    expect(writingCheckWithGate('{"punctuation":"preserve"}\n', 'facts_diff', 'off')).toContain('"facts_diff": "off"')
   })
 
   it('preserves source project paths and explains incomplete discovery', async () => {
