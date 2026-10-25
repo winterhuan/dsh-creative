@@ -3,12 +3,22 @@
  *
  * Realm and ability values stay in the fact ledger (`kind` 能力). This module
  * only reads those rows and the card headers. It does not change tracking state.
+ *
+ * Body names are a local heuristic: two or three Han characters before a speech
+ * or glance marker, `叫` plus a name, or a short honorific. There is no model
+ * call. Bare `道` is not a marker, because it collides with words such as
+ * `知道`. Names longer than three characters, and names that never sit in those
+ * slots, are missed. A one-character name such as `甲` is missed unless it
+ * carries an honorific. A stop list drops a few common words; other ordinary
+ * words can still be reported. `设定/写作检查.json` key `cast_body_names` is
+ * `hint` when absent, `off` to skip, or `blocking`.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { loadFacts, type FactEntry, effectiveAttrs } from './facts.ts'
 import { fieldValue, firstTable, sectionRange, textLines } from './markdown-scan.ts'
 import { declaredAliases } from './settings-lookup.ts'
+import { castBodyNamesMode } from './writing-check.ts'
 import { findChapterFile } from './wordcount.ts'
 
 /** Schema of {@link checkCast}. */
@@ -71,7 +81,17 @@ export function checkCast(project: string, options: { readonly from?: number; re
     listedWithoutCard = true
     findings.push({ severity: 'hint', category: 'outline-cast', message: `细纲出场名单有「${name}」，没有同名或别名角色卡`, evidence: name })
   }
-  const applicable = stateNames.length > 0 || realms.length > 0 || relationships.length > 0 || repeated || cards.header || listedWithoutCard
+  const bodyMode = castBodyNamesMode(project)
+  const known = new Set(listed)
+  let bodyNamed = false
+  if (bodyMode !== 'off') {
+    for (const name of bodyPersonNames(chapterProse(project, options.from, options.to))) {
+      if (cards.has(name) || known.has(name)) continue
+      bodyNamed = true
+      findings.push({ severity: bodyMode, category: 'body-name', message: `正文里像人名的「${name}」不在角色卡、别名或细纲出场名单`, evidence: name })
+    }
+  }
+  const applicable = stateNames.length > 0 || realms.length > 0 || relationships.length > 0 || repeated || cards.header || listedWithoutCard || bodyNamed
   return {
     schema: CAST_SCHEMA,
     applicable,
@@ -275,4 +295,61 @@ function chapterBodies(project: string, from: number | undefined, to: number | u
 
 function chapterText(project: string, from: number | undefined, to: number | undefined): string {
   return chapterBodies(project, from, to).join('\n')
+}
+
+const BODY_NAME_STOP = new Set([
+  '什么', '怎么', '这个', '那个', '一个', '他们', '她们', '我们', '你们', '自己', '别人', '大家',
+  '这里', '那里', '然后', '于是', '突然', '忽然', '已经', '可是', '但是', '因为', '所以', '如果',
+  '虽然', '不过', '还有', '没有', '不是', '就是', '只是', '还是', '或者', '以及', '时候', '地方',
+  '东西', '事情', '声音', '眼神', '目光', '心里', '手里', '身边', '面前', '身后', '门口', '屋里',
+  '外面', '里面', '知道', '觉得', '看到', '听到', '有人', '无人', '为何', '如何', '这位', '那位',
+  '哪位', '谁也', '回来', '过去', '出来', '进去',
+])
+
+/**
+ * Possible person tokens in chapter prose.
+ * @param text - concatenated chapter bodies, not outlines.
+ */
+function bodyPersonNames(text: string): string[] {
+  const found = new Set<string>()
+  const take = (name: string | undefined): void => {
+    if (name === undefined || name.length < 2 || BODY_NAME_STOP.has(name)) return
+    found.add(name)
+  }
+  for (const match of text.matchAll(/(?:^|[^\u4e00-\u9fff])([\u4e00-\u9fff]{2,3})(?:说道|看向|问道|笑道|喊道)/gu)) take(match[1])
+  for (const match of text.matchAll(/(?:^|[^\u4e00-\u9fff])([\u4e00-\u9fff]{2,3})([说问笑喊道])(?=[：:「“"'])/gu)) {
+    const name = match[1]
+    if (match[2] === '道' && name !== undefined && /[说问笑喊知报味门]$/u.test(name)) continue
+    take(name)
+  }
+  for (const match of text.matchAll(/(?:^|[^\u4e00-\u9fff])叫(?!做|作|了|一声|着)([\u4e00-\u9fff]{2,3})(?![\u4e00-\u9fff])/gu)) take(match[1])
+  for (const match of text.matchAll(/(?:^|[^\u4e00-\u9fff])([\u4e00-\u9fff]{1,2})(先生|小姐|姑娘|公子|大人|师父|师傅)/gu)) {
+    take(`${match[1] ?? ''}${match[2] ?? ''}`)
+  }
+  return [...found].sort((left, right) => left.localeCompare(right, 'zh'))
+}
+
+function chapterProse(project: string, from: number | undefined, to: number | undefined): string {
+  const texts: string[] = []
+  const start = from ?? 1
+  const end = to ?? 200
+  let misses = 0
+  for (let chapter = start; chapter <= end; chapter += 1) {
+    let path: string
+    try {
+      path = findChapterFile(join(project, '正文'), chapter, { outline: false, allowMissing: true })
+    } catch {
+      misses += 1
+      if (to === undefined && misses >= 15) break
+      continue
+    }
+    if (!existsSync(path)) {
+      misses += 1
+      if (to === undefined && misses >= 15) break
+      continue
+    }
+    misses = 0
+    texts.push(readFileSync(path, 'utf8'))
+  }
+  return texts.join('\n')
 }
