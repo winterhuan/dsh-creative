@@ -61,8 +61,8 @@ node {CLI} chapter check --workspace {工作区} --book {作品名} --chapter {N
 node {CLI} chapter finish --workspace {工作区} --book {作品名} --chapter {N} --input {逐章事务.json} --json
 ```
 
-`chapter finish` 在一次 JSON 里完成可选审稿校验、主张 diff、提交、入账和 `facts stale`。主张文件不存在时不入账。提交失败不写账本。记录失败不回滚正文。`chapter check` 通过且 `草稿/事实/第NNN章.claims.json` 还不存在时，先运行 `facts extract --from both`。空主张有效。抽取失败是 warning；只有这本书的 `facts_diff` 为 `required` 才停下。不要把对标检索写进主张。带外且用户明确接受自然长度时给 `chapter finish` 加上 `--accept-current-length`，同样要通过质量检查与读者价值评审。`chapter commit` 仍只提交、不入账；`chapter commit --with-facts` 与 finish 相同。`设定/写作检查.json` 的 `rule_audit` 为 `required` 时，finish 要求默认路径上的规则审稿通过 `audit-verify`，未处理的 `violate` 须列入 `accepted_findings`。缺省 `off` 不拦提交。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
+`chapter finish` 在一次 JSON 里完成可选审稿校验、主张 diff、提交、入账和 `facts stale`。主张文件不存在时不入账。提交失败不写账本。记录失败不回滚正文。`chapter check` 通过且 `草稿/事实/第NNN章.claims.json` 还不存在时，先运行 `facts extract --from both`。空主张有效。抽取失败是 warning；只有这本书的 `facts_diff` 为 `required` 才停下。不要把对标检索写进主张。带外且用户明确接受自然长度时给 `chapter finish` 加上 `--accept-current-length`，同样要通过质量检查与读者价值评审。`chapter commit` 仍只提交、不入账；`chapter commit --with-facts` 与 finish 相同。`设定/写作检查.json` 的 `rule_audit` 为 `required` 时，finish 要求默认路径上的规则审稿通过 `audit-verify`，未处理的 `violate` 须列入 `accepted_findings`。缺省 `required` 会拦提交。写成 `off` 才放行。已提交章修订用 `mode=revision`，按 [修订流程](workflow-revision.md) 核对截至最后已写章的当前状态。
 
 提交在锁内重读正文和目标，校验字数记录哈希与修订号并原子发布状态及派生视图。失败不推进下一章；写入失败保留原事务重跑，校验失败按报错修事务，状态已变化则重读重构。成功后运行一次 `node {CLI} project check --workspace {工作区} --book {作品名} --json`；按需保留审稿意见，可删除临时正文片段；机械提交成功不代表文学质量通过。正文、事实、摘要与实际执行方式向用户如实汇报。
 
-章号是 10 的倍数且本次是新提交时，原生模板在返回值放 `book_audit_hint`，建议父会话运行 `node {CLI} book audit --workspace {工作区} --book {作品名} --from {N-9} --to {N} --json`。普通路径在向用户汇报时给出同一条建议。两边都不自动运行。已提交章只做验证时不给这条建议。报告格式见 [全书体检](artifact-protocols.md#全书体检)。
+章号能被间隔整除且本次是新提交时，`chapter finish` 运行 `book audit`，结果在 `book_audit`。间隔缺省为 10。模板只抄回该字段。已提交章只做验证时 `ran` 为 false。报告格式见 [全书体检](artifact-protocols.md#全书体检)。

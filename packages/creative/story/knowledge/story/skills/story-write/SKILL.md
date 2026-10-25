@@ -31,9 +31,9 @@ description: "创作长篇或短篇小说：设定、卷纲、细纲、小节规
 - 尊重用户字数、设定、必须/禁止事项及停笔点。可调整场景组织、补动作和潜台词，不为凑数新增主线、角色或提前泄露信息。
 - 验收看连续性、主角能动性、信息归属、可读性与用户约束。技法、密度、百分比、道具次数、句式和标点不作为通用配额。
 - 对标可选；只使用明确选定的外部来源。资料分工见 [项目材料](references/long/project-context.md)，多书使用见 [跨书召回](references/cross-book-recall.md)。需要补分析时加载 `story-analyze`，不把本书分析当外部样本。
-- 正式长篇依次 `chapter check` → 加载 `story-review` 做整体审稿，并在同一轮做规则审稿 → 必要修订和重检 → `chapter finish`。检查通过且默认主张文件不存在时运行 `facts extract`；空主张有效，失败是 warning，只有这本书的 `facts_diff` 为 `required` 才停下。检查失败或不可用不算通过；正文变化后旧审稿不能批准新版本。`unclear` 不拦提交。`rule_audit` 和 `facts_diff` 缺省都是 `off`。
+- 正式长篇依次 `chapter check` → 加载 `story-review` 做整体审稿，并在同一轮做规则审稿 → 必要修订和重检 → `chapter finish`。检查通过且默认主张文件不存在时运行 `facts extract`；空主张有效，失败是 warning，只有这本书的 `facts_diff` 为 `required` 才停下。检查失败或不可用不算通过；正文变化后旧审稿不能批准新版本。`unclear` 不拦提交。`rule_audit` 和 `facts_diff` 缺省都是 `required`。要放行须写成 `off`。
 - `追踪/_tracking-state.json` 是唯一事实状态，派生 Markdown 不手写。提交携带最新修订号，准确正文和细纲哈希按 [追踪事务](references/long/tracking-transaction.md) 校验；不把未来计划沉淀为既成事实。
-- 章号是 10 的倍数且本章新提交成功后，原生模板在返回值给出 `book_audit_hint`，建议父会话运行 `book audit --from N-9 --to N`。模板不自动运行。用法见 [全书体检](references/long/artifact-protocols.md#全书体检)。
+- 章号是间隔的倍数且本章新提交成功后，`chapter finish` 运行 `book audit` 并把结果放进返回值。间隔缺省为 10。模板不自己运行。用法见 [全书体检](references/long/artifact-protocols.md#全书体检)。
 
 已有作者记忆时直接运行 `memory query --workspace {工作区} --book {作品名} --json`，仅把匹配的 active 写法交给实际写手；当前请求、本书设定和质量要求优先，不自动学习审稿告警。保存或忘掉偏好加载 `story`。
 

@@ -39,13 +39,13 @@
 | Write / Revise | 按 Role 和准备结果写正文，运行 `chapter check`。检查通过且默认主张文件不存在时运行 `facts extract --from both`。空主张有效。抽取失败是 warning；只有 `facts_diff` 为 `required` 才停下。不把对标命中写进主张，不在这一阶段 `facts record`。交回实际哈希、长度及压缩使用情况；不改细纲或追踪。恢复稿先检查再审稿。 |
 | Review | 读取实际材料，前后运行 `chapter snapshot` 核对原始字节哈希、文件版本和追踪修订号；返回 `ready / revise / needs_input` 及有来源的可读意见。 |
 | Audit | 与 Review 同一轮启动。读取 [规则审稿](../../../story-review/references/roles/rule-auditor.md)，只对 `chapter rules` 返回的 ID 给结论，写入 `草稿/审稿/第NNN章.rules.json`，并运行 `chapter audit-verify`。不自创规则，不代替作者接受例外。 |
-| Submit / Verify | 按[追踪事务](tracking-transaction.md)运行 `chapter finish`，提交与审稿版本一致的正文，再核对实际状态和持久记录。`rule_audit` 为 `required` 时，finish 先确认默认审稿文件已通过校验，且每条 `violate` 都在 `accepted_findings` 里。主张文件存在时 finish 做 `facts diff`。`facts_diff` 为 `required` 时冲突不提交；缺省或 `off` 时把冲突写进摘要，不拦提交。提交成功且主张文件存在则入账，然后给出 `facts stale`。提交失败不写账本。记录失败不回滚正文。没有主张文件时 `facts_recorded` 为 false。缺章由 `facts stale` 报告。已提交章直接验证，不重写或重复提交。 |
+| Submit / Verify | 按[追踪事务](tracking-transaction.md)运行 `chapter finish`，提交与审稿版本一致的正文，再核对实际状态和持久记录。`rule_audit` 为 `required` 时，finish 先确认默认审稿文件已通过校验，且每条 `violate` 都在 `accepted_findings` 里。主张文件存在时 finish 做 `facts diff`。`facts_diff` 为 `required` 时冲突不提交；写成 `off` 时把冲突写进摘要，不拦提交。缺省是 `required`。提交成功且主张文件存在则入账，然后给出 `facts stale`。提交失败不写账本。记录失败不回滚正文。没有主张文件时 `facts_recorded` 为 false。缺章由 `facts stale` 报告。已提交章直接验证，不重写或重复提交。 |
 
 每个子 Agent 用原生 `structured_output` 返回模板要求的字段，普通消息里的 JSON 或进度说明不算完成。Review 与 Audit 在同一阶段里一起启动。当前 DSH 的 `agent()` 在并发上限至少为 2 时重叠执行；上限为 1 时排队，两步仍都会跑完。初稿后最多两轮局部修订，每轮重检、重做整体审稿和规则审稿。未接受的 `violate` 计入同一上限。到上限时返回 `revision_limit`，`unresolved_rule_ids` 列出仍未接受的 ID，并提示作者接受例外、改规则来源或改细纲。`unclear` 只进入修改意见。带外自然长度必须得到用户对准确正文、细纲哈希的接受；欠长不填充，超长最多使用一次压缩机会。细纲或追踪变化后须重新准备，不能悄悄替换预期值。
 
 ## 结果与恢复
 
-父会话读取工具结果的业务 `result.status`：`committed` 为提交并验证完成，`already_committed` 为已提交章本次只验证，两者带实际哈希、修订号及路径。本次新提交成功且章号是 10 的倍数时，结果另含 `book_audit_hint`，建议父会话对第 N-9 章到第 N 章运行 `book audit`。已提交章只验证时没有这条字段。模板不自动运行。`needs_input`、`revision_limit` 保留草稿和问题，停止后续章；`uncertain` 先核查真实追踪、事务与文件，不能盲目重试。子会话失败、null 或无效响应使运行失败。原生运行完成本身不等于章节提交。
+父会话读取工具结果的业务 `result.status`：`committed` 为提交并验证完成，`already_committed` 为已提交章本次只验证，两者带实际哈希、修订号及路径。本次新提交成功且章号是间隔的倍数时，结果含 `book_audit`。间隔缺省为 10。已提交章只验证时 `ran` 为 false。模板不自己运行体检。`needs_input`、`revision_limit` 保留草稿和问题，停止后续章；`uncertain` 先核查真实追踪、事务与文件，不能盲目重试。子会话失败、null 或无效响应使运行失败。原生运行完成本身不等于章节提交。
 
 Prepare 尚未解析实际路径时，结果的 `body_path`、`outline_path` 可为 null。普通缺细纲由 Prepare 内部处理；返回 `needs_input` 时依据具体缺口补充事实或作者决定，再重新调用同一章。已有正文须使用 `resume=true` 并保留实际压缩记录，重新经过准备、检查和审稿；不能只重试缺文件的调用。
 
