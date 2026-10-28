@@ -37,7 +37,7 @@ export function useStudy(sessionId: string, visible: boolean, networkError: stri
       if (alive.current && sequence === latest.current) {
         offset.current = value.serverNow - Date.now()
         if (value.unchanged === true && value.time !== undefined) {
-          setData(previous => previous && previous.study ? { ...previous, serverNow: value.serverNow, study: { ...previous.study, ...value.time } } : previous)
+          setData(previous => previous && previous.study ? { ...previous, serverNow: value.serverNow, ...(value.interactiveLessons !== undefined ? { interactiveLessons: value.interactiveLessons } : {}), study: { ...previous.study, ...value.time } } : previous)
         } else {
           seenSignature.current = signature
           seenRevision.current = value.revision

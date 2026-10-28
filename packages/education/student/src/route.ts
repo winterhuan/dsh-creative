@@ -11,6 +11,7 @@ import { panelActions } from './actions.ts'
 import { studyStore, StudyConflict } from './store.ts'
 import { dashboard } from './dashboard.ts'
 import { timeStatus } from './learning/status.ts'
+import { readInteractiveLessons } from './openmaic.ts'
 
 const mutation = z.object({ revision: z.number().int().nonnegative(), change: commandSchema }).strict()
 
@@ -78,12 +79,16 @@ export async function handleStudyRequest(context: Context, request: IncomingMess
       revision = input.revision
     }
     const state = await studyStore({ agent, signal: abort.signal }, change, revision)
+    // The browser never calls OpenMAIC. A cross-origin fetch to :3000 would drop the anonymous cookie.
+    // The tutor shell writes the lesson log; this response only reads it, including on an unchanged poll,
+    // because that write does not bump the study revision.
+    const interactiveLessons = await readInteractiveLessons(agent, abort.signal, state?.openmaic?.baseUrl)
     if (change === undefined && ifRevision !== undefined && state !== undefined && ifRevision === state.revision) {
-      // Unchanged evidence: only the time-derived suggestion state moves with the clock.
-      send(response, 200, { serverNow: Date.now(), revision: state.revision, unchanged: true, time: timeStatus(state, Date.now()) })
+      // Unchanged evidence: only the time-derived suggestion state moves with the clock. The lesson log still refreshes.
+      send(response, 200, { serverNow: Date.now(), revision: state.revision, unchanged: true, time: timeStatus(state, Date.now()), interactiveLessons })
       return
     }
-    send(response, 200, dashboard(state, Date.now(), { subject, mistakeOffset, mistakeStatus, ...(tab !== undefined ? { tab } : {}), ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}), ...(diagGrade !== undefined ? { diagGrade } : {}), ...(diagTerm !== undefined ? { diagTerm } : {}), ...(diagUnit !== undefined ? { diagUnit } : {}) }))
+    send(response, 200, { ...dashboard(state, Date.now(), { subject, mistakeOffset, mistakeStatus, ...(tab !== undefined ? { tab } : {}), ...(mapGrade !== undefined ? { mapGrade } : {}), ...(mapTerm !== undefined ? { mapTerm } : {}), ...(diagGrade !== undefined ? { diagGrade } : {}), ...(diagTerm !== undefined ? { diagTerm } : {}), ...(diagUnit !== undefined ? { diagUnit } : {}) }), interactiveLessons })
   } catch (error) {
     const conflict = error instanceof StudyConflict || (error instanceof FsError && ['FS_STALE_VERSION', 'FS_NOT_OBSERVED'].includes(error.code))
     send(response, conflict ? 409 : error instanceof Error && error.message === '提交内容过长' ? 413 : 400, { error: error instanceof z.ZodError ? '请填写完整且有效的学习资料' : error instanceof Error ? error.message : '学习档案暂时无法读取' })

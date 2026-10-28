@@ -1,4 +1,5 @@
 import { DAY, MINUTE, activeSession, beijingClock, formatDuration, studyDay, todaySpent, type Outcome } from './shared.ts'
+import { effectiveOpenmaicBase, OPENMAIC_COOKIE_PATH, OPENMAIC_LESSONS_PATH } from '../openmaic.ts'
 import type { ErrorType, StudyState } from '../schema.ts'
 import type { StudyInsight } from './mastery.ts'
 import { objectiveInfo, questionObjectiveId } from './view.ts'
@@ -82,6 +83,12 @@ export function studyStatus(state: StudyState, now: number) {
   return {
     task: state.task ?? null, feedback: state.task ? state.attempts.find(item => item.id === state.task?.id) ?? null : null,
     revision: state.revision, profile: state.profile, ...time, active: activeSession(state) ?? null,
+    openmaic: {
+      baseUrl: effectiveOpenmaicBase(state.openmaic?.baseUrl, process.env.OPENMAIC_BASE),
+      savedBaseUrl: state.openmaic?.baseUrl ?? '',
+      lessonsPath: OPENMAIC_LESSONS_PATH,
+      cookiePath: OPENMAIC_COOKIE_PATH,
+    },
     courses: state.courses, unconfirmedSubjects: ['chinese', 'math', 'english'].filter(subject => !state.courses.some(course => course.subject === subject)),
     stars: state.rewards.length, todayStars: state.rewards.filter(reward => reward.day === studyDay(now)).length,
     dueMistakes: state.mistakes.filter(mistake => mistake.dueAt !== undefined && mistake.dueAt <= now).map(mistake => ({ id: mistake.id, subject: mistake.subject, topic: mistake.topic })),

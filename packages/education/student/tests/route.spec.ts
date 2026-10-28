@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { handleStudyRequest, trustedStudyRequest } from '../src/route.ts'
+import { effectiveOpenmaicBase } from '../src/openmaic.ts'
 import { updateStudy } from '../src/learning/update/index.ts'
 import { studyStore, StudyConflict } from '../src/store.ts'
 import { NOW, DAY, mistake, setup } from './fixtures.ts'
@@ -83,6 +84,7 @@ describe('student workspace boundary', () => {
     expect(conditional.result.revision).toBe(state.revision)
     expect(conditional.result.time).toMatchObject({ phase: 'ready', time: { timezone: 'Asia/Shanghai' } })
     expect(conditional.result.study).toBeUndefined()
+    expect(conditional.result.interactiveLessons).toMatchObject({ baseUrl: effectiveOpenmaicBase(undefined, process.env.OPENMAIC_BASE), lessons: [], lessonsPath: '.study/openmaic-lessons.json' })
     const stale = await request({ path: `/student/workspace?sessionId=test&revision=${state.revision - 1}` })
     expect(stale.result).toMatchObject({ revision: state.revision, study: { profile: state.profile } })
   })
@@ -113,6 +115,7 @@ describe('student workspace boundary', () => {
       { action: 'stuck', taskId: 'q' },
       { action: 'confirm-workbook', id: 'wb', userConfirmation: '家长确认练习册。' },
       { action: 'dismiss-teaching', id: 'tq-wb' },
+      { action: 'openmaic-settings', baseUrl: 'http://localhost:3000', parentConfirmation: '家长确认 OpenMAIC 地址。' },
     ]) expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change }) })).status).toBe(200)
   })
   it('passes the observed revision and reports conflicts without retrying writes', async () => {

@@ -73,5 +73,21 @@ export function paperPhotoPrompt(worksheetId: string): string {
   return `请加载 study 技能，读取练习单 ${worksheetId} 的作答照片，按题号用 paper-draft 保存转录草稿。不要直接入库。`
 }
 
+/** Ask the tutor to generate one local OpenMAIC lesson for the selected subject. */
+export function openmaicGeneratePrompt(subjectLabel: string, objectiveId?: string): string {
+  const goal = objectiveId ? `围绕学习目标 ${objectiveId}。` : '围绕今日建议或孩子要点的知识点。'
+  return `请加载 study 技能，阅读 references/openmaic.md。为${subjectLabel}生成一节 OpenMAIC 互动课。${goal}用 shell 和 curl 调用本机服务，不要用 web_fetch 访问 localhost。成功后把课堂 URL 单独一行原文发给我，并写入 .study/openmaic-lessons.json。`
+}
+
+/** Ask the tutor to retry a failed generation without resubmitting the requirement. */
+export function openmaicRetryPrompt(runId: string): string {
+  return `请加载 study 技能，阅读 references/openmaic.md。互动课生成失败且可以重试。用同一 cookie jar 对 runId ${runId} 调用 retry，不要重新提交 requirement。把结果写回 .study/openmaic-lessons.json。成功后把课堂 URL 单独一行原文发给我。`
+}
+
+/** Ask the tutor to pull the stage outline and write a few consolidation questions. */
+export function openmaicReviewPrompt(classroomId: string): string {
+  return `请加载 study 技能，阅读 references/openmaic.md 和 references/questions.md。孩子上完互动课 ${classroomId}。用同一 cookie jar GET /api/stages/${classroomId}，把大纲和场景摘要写回 .study/openmaic-lessons.json 的 summary。再按摘要出 2 到 5 道巩固题，走现有出题和作答，不要嵌播放器。`
+}
+
 /** Transcribe a workbook photo that is not tied to a saved worksheet. */
 export const workbookPhotoPrompt = '请加载 study 技能。这是练习册照片，事先没有练习单。用 workbook-draft 按题保存草稿：不会用 stuck，提示后才对用 hinted，独立做错用 independent-wrong，独立做对用 independent-correct。能对应目标就写 objectiveId。不要直接入库，等家长确认。'

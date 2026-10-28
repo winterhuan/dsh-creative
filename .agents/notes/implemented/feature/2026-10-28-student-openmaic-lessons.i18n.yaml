@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-28-student-openmaic-lessons.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-28-student-openmaic-lessons.md
+/agent-note-openmaic-lessons-stay-outside-the-learning-record:
+  en: a8f55d1f69e7daa0
+  zh: 2fe66a3ecc9d7ac5
+/agent-note-openmaic-lessons-stay-outside-the-learning-record/problem:
+  en: a434ff394e5de406
+  zh: 60a73b998b4ecc83
+/agent-note-openmaic-lessons-stay-outside-the-learning-record/decision:
+  en: c85a441d38e2c3df
+  zh: ebe5b51efa9ce49a
+/agent-note-openmaic-lessons-stay-outside-the-learning-record/alternatives-considered:
+  en: 1aa9e2a85f846edd
+  zh: 2113d70e00cdc83f
+/agent-note-openmaic-lessons-stay-outside-the-learning-record/consequences:
+  en: e19458c33fc41b49
+  zh: 2f78abdcd882acea

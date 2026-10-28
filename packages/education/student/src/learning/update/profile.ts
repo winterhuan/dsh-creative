@@ -2,6 +2,7 @@ import { canonical, requireValue, sameScope } from '../shared.ts'
 import { duplicate } from './context.ts'
 import { rawApply, type UpdateContext } from './index.ts'
 import { curriculumFor } from '../../curriculum.ts'
+import { normalizeOpenmaicBase } from '../../openmaic.ts'
 import { stateSchema, type Command, type StudyState } from '../../schema.ts'
 
 /** Create the first learner profile for a workspace. */
@@ -64,6 +65,21 @@ export function applySchoolProgress(ctx: UpdateContext<'school-progress'>): Stud
   return state
 }
 
+
+/**
+ * Save or clear the parent OpenMAIC origin.
+ * An empty base removes the override. An active learning block does not block this; the address is not learning evidence.
+ */
+export function applyOpenmaicSettings(ctx: UpdateContext<'openmaic-settings'>): StudyState {
+  const { command, previous, state } = ctx
+  const normalized = normalizeOpenmaicBase(command.baseUrl)
+  requireValue(normalized !== undefined, 'OpenMAIC 地址需要是 http 或 https 原点，例如 http://localhost:3000。不要在地址里写账号或密码。')
+  const current = state.openmaic?.baseUrl ?? ''
+  if (current === normalized) return previous
+  if (normalized === '') delete state.openmaic
+  else state.openmaic = { baseUrl: normalized, parentConfirmation: command.parentConfirmation }
+  return state
+}
 
 /** Archive the finished term: keep the profile for reference, drop all evidence (exported beforehand by the store) and mark the file archived. */
 export function applyArchiveTerm(ctx: UpdateContext<'archive-term'>): StudyState {

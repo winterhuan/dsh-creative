@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-25。
+最后更新：2026-10-28。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -22,6 +22,8 @@
 ## 1. 现状速览
 
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
+
+2026-10-28 学生学习插件接入本机 OpenMAIC 互动课：study 技能与 `references/openmaic.md` 约定用 shell 和 curl（约 60 秒轮询、同一 cookie jar）生成、重试和拉取 stage，课记录在 `.study/openmaic-lessons.json`，不写入 `state.json`，也不调用 OpenMAIC 的 web_fetch。工作台今日页列出最近的课并可在浏览器打开，失败且可重试时请助手重试，课后巩固走现有出题。家长设置可保存 base URL，默认 `http://localhost:3000`；访问码只读环境变量 `OPENMAIC_ACCESS_CODE`，不入库。Host 路由仍只接受本机同源，不代理 `:3000`。未在真实 DSH 浏览器验证，未调用真实 OpenMAIC。
 
 2026-10-25 六个小说 Skill 与 CLI 对齐：缺键的 `rule_audit` 与 `facts_diff` 为 `required`，schema 6 只挂事实账本摘要，`project check` 报告 `facts` 缺口。见[Skill 同步](.agents/notes/implemented/process/2026-10-25-story-skill-cli-sync.zh.md)。
 

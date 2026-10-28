@@ -1,4 +1,5 @@
 import type { StudyState } from './schema.ts'
+import { interactiveLessonsView, type InteractiveLessons } from './openmaic.ts'
 import type { CurriculumSubject } from './curriculum.ts'
 import { diagnosticFor, insightSummary, studyInsight } from './learning/mastery.ts'
 import { studyStatus, weeklySummary } from './learning/status.ts'
@@ -17,8 +18,8 @@ export type StudyTab = 'today' | 'map' | 'mistakes' | 'parent'
  * @param options - selected subject, notebook offset and status filter, an optional grade and term to browse another knowledge map, and an optional check-in scope (grade, term, unit).
  * @returns the dashboard payload served to the workbench.
  */
-export function dashboard(state: StudyState | undefined, now: number, options: { subject?: CurriculumSubject; mistakeOffset?: number; mistakeStatus?: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second'; diagGrade?: number; diagTerm?: 'first' | 'second'; diagUnit?: string; tab?: StudyTab } = {}) {
-  if (!state) return { serverNow: now, revision: 0, study: null }
+export function dashboard(state: StudyState | undefined, now: number, options: { subject?: CurriculumSubject; mistakeOffset?: number; mistakeStatus?: MistakeStatus; mapGrade?: number; mapTerm?: 'first' | 'second'; diagGrade?: number; diagTerm?: 'first' | 'second'; diagUnit?: string; tab?: StudyTab } = {}, interactiveLessons: InteractiveLessons = interactiveLessonsView(state?.openmaic?.baseUrl)) {
+  if (!state) return { serverNow: now, revision: 0, study: null, interactiveLessons }
   const subject = options.subject ?? 'math'
   const mistakeOffset = options.mistakeOffset ?? 0
   const mistakeStatus = options.mistakeStatus ?? 'all'
@@ -91,7 +92,7 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
     workbookDrafts: state.workbookDrafts.filter(item => item.subject === subject).slice(-20).reverse(),
     teachingQueue: state.teachingQueue.filter(item => item.subject === subject).slice(-20).reverse(),
     recentAttempts: state.attempts.filter(item => item.subject === subject).slice(-20).reverse(),
-  } }
+  }, interactiveLessons }
 }
 
 /** Drop the heavy map collections unless the map tab asked for them; objectives, units and summary stay for progress dots and goal lists. */

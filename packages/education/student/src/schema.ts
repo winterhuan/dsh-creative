@@ -207,6 +207,7 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('confirm-workbook'), id, outcome: workbookOutcome.optional(), objectiveId: z.union([id, z.literal('')]).optional(), correction: text.optional(), explanation: text.optional(), answerEvidence: text.optional(), userConfirmation: text }).strict(),
   z.object({ action: z.literal('dismiss-teaching'), id }).strict(),
   z.object({ action: z.literal('archive-term'), parentConfirmation: text }).strict(),
+  z.object({ action: z.literal('openmaic-settings'), baseUrl: z.string().trim().max(200), parentConfirmation: text }).strict(),
 ])
 
 /** One learner and term per workspace; previous materials and attempts are retained. */
@@ -238,6 +239,8 @@ export const stateSchema = z.object({
   paperDrafts: z.array(paperDraft.extend({ receivedAt: time }).strict()).max(500).default([]),
   workbookDrafts: z.array(workbookDraft.extend({ receivedAt: time }).strict()).max(500).default([]),
   teachingQueue: z.array(teachingItem).max(500).default([]),
+  /** Parent override for the OpenMAIC origin. Absent means the environment or the localhost default. */
+  openmaic: z.object({ baseUrl: z.string().trim().min(1).max(200), parentConfirmation: text }).strict().optional(),
   rewards: z.array(z.object({ day: z.string(), reason: z.enum(['participation', 'reflection']) }).strict()).max(1000),
   breakUntil: time,
   task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintLevel: z.number().int().min(0).max(3), stuck: z.boolean().optional() }).strict().optional(),

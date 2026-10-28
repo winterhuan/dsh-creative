@@ -129,6 +129,13 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
           </div>
         </form> : <p>{t('schoolProgressNeedsCourse')}</p>}
       </>}
+      <h3>{t('openmaicTitle')}</h3>
+      <p className="student-muted">{t('openmaicBaseHelp')}</p>
+      <p>{t('openmaicEffective')}: {data.interactiveLessons.baseUrl}</p>
+      <SaveForm revision={data.revision} t={t} submit={(form, revision) => change({ action: 'openmaic-settings', baseUrl: read(form, 'baseUrl'), parentConfirmation: t('openmaicConfirm') }, revision)}>
+        <Field name="baseUrl" label={t('openmaicBase')} value={study.openmaic?.savedBaseUrl ?? ''} required={false} />
+        <p className="student-muted">{t('openmaicAccessHint')}</p>
+      </SaveForm>
       {data.study && <div>
         <h3>{t('archiveTerm')}</h3>
         <p className="student-muted">{t('archiveTermHelp')}</p>
