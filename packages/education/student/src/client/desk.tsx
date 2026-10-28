@@ -10,8 +10,8 @@ import { intensityKeys, levelKeys, subjects, type Activity, type Mode, type Scop
 import { IdeasView } from './ideas-view.tsx'
 import { MapView } from './map-view.tsx'
 import { PracticeView } from './practice-view.tsx'
-import { LessonsPanel } from './lessons-view.tsx'
-import { continuePrompt, dailySheetPrompt, diagnosePrompt, dictationPrompt, goalPrompt, openmaicGeneratePrompt, openmaicRetryPrompt, openmaicReviewPrompt, organizePrompt, previewPrompt, reviewPrompt, teachPrompt, teachQueuePrompt } from './prompts.ts'
+import { LessonsPanel, openClassroom } from './lessons-view.tsx'
+import { continuePrompt, dailySheetPrompt, diagnosePrompt, dictationPrompt, dueClearPrompt, goalPrompt, interestPracticePrompt, openmaicGeneratePrompt, openmaicRetryPrompt, openmaicReviewPrompt, organizePrompt, previewPrompt, reviewPrompt, teachPrompt, teachQueuePrompt } from './prompts.ts'
 import { TodayView } from './today-view.tsx'
 
 type Study = NonNullable<Dashboard['study']>
@@ -108,6 +108,38 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     const prompt = next === 'review' ? reviewPrompt : selectedObjectiveId ? goalPrompt(selectedObjectiveId) : continuePrompt
     return act({ action: 'start', id: crypto.randomUUID(), subject: target, mode: next, ...((next === 'foundation' || next === 'school') ? scopeCommand(target) : {}) }, true, prompt)
   }
+  function lessonRequest() {
+    const recommendation = study?.recommendation
+    const objectiveId = recommendation?.objectiveId || selectedObjectiveId || undefined
+    const subjectKey = recommendation?.objectiveId ? recommendation.subject : subject
+    const progress = study?.courses.find(item => item.subject === subjectKey)?.progress
+    const unitName = recommendation?.objectiveId ? recommendation.unitName : (progress ? curriculum?.units.find(unit => unit.id === progress.unitId)?.name : undefined)
+    return {
+      objectiveId,
+      unitName,
+      subjectLabel: t(subjectKey),
+      tags: study?.interests ?? [],
+      focus: study?.interestFocus ?? '',
+    }
+  }
+  function startInterest() {
+    const recommendation = study?.recommendation
+    if (!recommendation || active || recommendation.kind === 'hold' || !study) return
+    const mode: Mode = resolveMode(recommendation.subject, 'foundation')
+    const request = lessonRequest()
+    selectSubject(recommendation.subject); setActivity({ subject: recommendation.subject, mode }); setSelectedObjectiveId(recommendation.objectiveId ?? ''); setMistakeOffset(0)
+    const teaching = recommendation.reason.code === 'needs-teaching' || recommendation.reason.code === 'prerequisite-gap'
+    const scene = interestPracticePrompt(request.objectiveId, request.tags, request.focus, request.unitName)
+    const prompt = teaching && recommendation.objectiveId ? `${teachPrompt(recommendation.objectiveId)}${scene}` : scene
+    void act({ action: 'start', id: crypto.randomUUID(), subject: recommendation.subject, mode }, true, prompt)
+  }
+  function startDue() {
+    const items = study?.dueToday ?? []
+    const first = items[0]
+    if (!study || active || !first) return
+    selectSubject(first.subject); setActivity({ subject: first.subject, mode: 'review' }); setSelectedObjectiveId(''); setMistakeOffset(0)
+    void act({ action: 'start', id: crypto.randomUUID(), subject: first.subject, mode: 'review' }, true, dueClearPrompt(items.map(item => item.id)))
+  }
   function startRecommended() {
     const recommendation = study?.recommendation
     if (!recommendation || active || recommendation.kind === 'hold' || !study) return
@@ -139,8 +171,8 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     {workspace.error && <p role="alert">{workspace.error}</p>}
     {sendError && <p role="alert">{sendError}</p>}
     {!data ? !workspace.error && <progress aria-label={t('busy')} /> : !study && view !== 'parent' ? <section><p>{t('setupFirst')}</p><button onClick={() => { setView('parent'); setParentTab('parent') }}>{t('parent')}</button></section> : subjectLoading && !parentSettings ? <progress aria-label={t('busy')} /> : <>
-      {study && view === 'student' && <TodayView study={study} now={now} serverNow={data.serverNow} remaining={Math.max(0, (study.remainingMs ?? 0) - (active && data ? Math.max(0, Math.min(now, active.deadline) - data.serverNow) : 0))} subject={subject} activity={activity} setActivity={setActivity} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} curriculum={curriculum} selectedObjectiveId={selectedObjectiveId} chooseGoal={chooseGoal} intensityLabel={`${t(intensityKeys[chosenIntensity(subject)])} · ${planOf(subject)?.samples[chosenIntensity(subject)].length ?? 0}`} openParent={() => { setView('parent'); setParentTab('parent') }} openCheckins={() => { setView('parent'); setParentTab('map') }} scope={activeScope} setScope={next => setScopeChoice(previous => ({ ...previous, [subject]: next }))} scopeUnits={study.scopedUnits ?? []} start={start} startRecommended={startRecommended} startDiagnosis={startDiagnosis} chosenIntensity={chosenIntensity(subject)} disabled={disabled} running={running} act={act} tutor={tutor} t={t} prompts={{ daily: dailySheetPrompt(subject), dictation: dictationPrompt(subject) }} />}
-      {study && view === 'student' && data.interactiveLessons && <LessonsPanel lessons={data.interactiveLessons.lessons} {...(data.interactiveLessons.error !== undefined ? { error: data.interactiveLessons.error } : {})} disabled={disabled} running={running} t={t} onGenerate={() => { void tutor(openmaicGeneratePrompt(t(subject), selectedObjectiveId || undefined)).catch(() => {}) }} onRetry={runId => { void tutor(openmaicRetryPrompt(runId)).catch(() => {}) }} onReview={classroomId => { void tutor(openmaicReviewPrompt(classroomId)).catch(() => {}) }} />}
+      {study && view === 'student' && <TodayView study={study} now={now} serverNow={data.serverNow} remaining={Math.max(0, (study.remainingMs ?? 0) - (active && data ? Math.max(0, Math.min(now, active.deadline) - data.serverNow) : 0))} subject={subject} activity={activity} setActivity={setActivity} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} curriculum={curriculum} selectedObjectiveId={selectedObjectiveId} chooseGoal={chooseGoal} intensityLabel={`${t(intensityKeys[chosenIntensity(subject)])} · ${planOf(subject)?.samples[chosenIntensity(subject)].length ?? 0}`} openParent={() => { setView('parent'); setParentTab('parent') }} openCheckins={() => { setView('parent'); setParentTab('map') }} scope={activeScope} setScope={next => setScopeChoice(previous => ({ ...previous, [subject]: next }))} scopeUnits={study.scopedUnits ?? []} start={start} startRecommended={startRecommended} startDiagnosis={startDiagnosis} chosenIntensity={chosenIntensity(subject)} disabled={disabled} running={running} act={act} tutor={tutor} t={t} prompts={{ daily: dailySheetPrompt(subject), dictation: dictationPrompt(subject) }} lessons={data.interactiveLessons?.lessons ?? []} onInterestPractice={startInterest} onOpenLesson={() => { const request = lessonRequest(); void tutor(openmaicGeneratePrompt(request.subjectLabel, request.objectiveId, request.tags, request.focus, request.unitName)).catch(() => {}) }} onClearDue={startDue} onOpenClassroom={openClassroom} />}
+      {study && view === 'student' && data.interactiveLessons && <LessonsPanel lessons={data.interactiveLessons.lessons} {...(data.interactiveLessons.error !== undefined ? { error: data.interactiveLessons.error } : {})} disabled={disabled} running={running} t={t} onRetry={runId => { void tutor(openmaicRetryPrompt(runId)).catch(() => {}) }} onReview={classroomId => { void tutor(openmaicReviewPrompt(classroomId)).catch(() => {}) }} />}
       {study && showMap && <MapView study={study} curriculum={curriculum} subject={subject} selectedConceptId={selectedConceptId} setSelectedConceptId={setSelectedConceptId} selectedObjectiveId={selectedObjectiveId} clearGoal={() => setSelectedObjectiveId('')} chooseGoal={chooseGoal} active={!!active} scopeGrade={scopeGrade} scopeTerm={scopeTerm} setMapGrade={setMapGrade} setMapTerm={setMapTerm} clearBrowse={() => { setMapGrade(undefined); setMapTerm(undefined) }} intensities={intensities} setIntensity={(target, level) => setIntensities(previous => ({ ...previous, [target]: level }))} scopeOf={scopeOf} setScope={(target, next) => setScopeChoice(previous => ({ ...previous, [target]: next }))} selectSubject={selectSubject} startDiagnosis={startDiagnosis} disabled={disabled} running={running} organize={() => { void tutor(organizePrompt(subject)).catch(() => {}) }} change={command => change(command).then(() => undefined)} t={t} />}
       {study && view === 'parent' && parentTab === 'ideas' && <IdeasView study={study} curriculum={curriculum} t={t} />}
       {study && view === 'parent' && parentTab === 'mistakes' && <PracticeView study={study} now={now} subject={subject} goals={goals} mistakeStatus={mistakeStatus} setMistakeStatus={setMistakeStatus} setMistakeOffset={setMistakeOffset} revision={data.revision} disabled={disabled} running={running} change={change} ask={tutor} onReview={item => { selectSubject(item); setActivity({ subject: item, mode: 'review' }); setSelectedObjectiveId(''); setView('student') }} epoch={epoch} t={t} />}

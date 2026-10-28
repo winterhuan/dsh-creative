@@ -3,6 +3,7 @@ import type { Command } from '../schema.ts'
 import type { CheckInIntensity } from '../learning/mastery.ts'
 import type { Translate } from './locales.ts'
 import { FigureView } from './figure-view.tsx'
+import { classroomUrl } from './lessons-view.tsx'
 import { MasteryDots } from './mastery-dots.tsx'
 import { hintPromptFor, stuckPrompt } from './prompts.ts'
 import { assistKeys, clock, day, focusKeys, intensityHelpKeys, intensityKeys, planKeys, reasonText, reminderKeys, type Activity, type Mode, type ScopeChoice, type Subject } from './display.ts'
@@ -14,7 +15,7 @@ type Goal = { id: string; title: string }
 type Act = (command: Command, withTutor?: boolean, prompt?: string) => Promise<void>
 
 /** The learner's page: one recommended next step, the current question, and a folded set of other ways to practise. */
-export function TodayView({ study, now, serverNow, remaining, subject, activity, setActivity, goal, clearGoal, curriculum, selectedObjectiveId, chooseGoal, intensityLabel, openParent, openCheckins, scope, setScope, scopeUnits, start, startRecommended, startDiagnosis, chosenIntensity, disabled, running, act, tutor, t, prompts }: {
+export function TodayView({ study, now, serverNow, remaining, subject, activity, setActivity, goal, clearGoal, curriculum, selectedObjectiveId, chooseGoal, intensityLabel, openParent, openCheckins, scope, setScope, scopeUnits, start, startRecommended, startDiagnosis, chosenIntensity, disabled, running, act, tutor, t, prompts, lessons, onInterestPractice, onOpenLesson, onClearDue, onOpenClassroom }: {
   study: Study
   now: number
   serverNow: number
@@ -43,6 +44,11 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
   tutor: (text: string) => Promise<void>
   t: Translate
   prompts: { daily: string; dictation: string }
+  lessons: Dashboard['interactiveLessons']['lessons']
+  onInterestPractice: () => void
+  onOpenLesson: () => void
+  onClearDue: () => void
+  onOpenClassroom: (url: string) => void
 }) {
   const active = study.active
   const task = study.task?.sessionId === active?.id ? study.task : undefined
@@ -55,7 +61,17 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
   const homeUnit = curriculum?.scope.current ? [...curriculum.units].reverse().find(unit => curriculum.concepts.some(concept => concept.unit === unit.id && concept.level !== 'untouched')) : undefined
   const objectiveDays = curriculum?.scope.current ? curriculum.objectives.find(item => item.id === task?.objectiveId)?.independentDays : undefined
   const explain = study.understandingReminders[0]
+  const generating = lessons.find(item => item.status === 'generating')
+  const ready = lessons.find(item => item.status === 'ready' && item.objectiveId !== undefined && item.objectiveId === recommendation?.objectiveId && classroomUrl(item.url))
+    ?? lessons.find(item => item.status === 'ready' && classroomUrl(item.url))
+  const readyUrl = classroomUrl(ready?.url)
+  const goalPractice = recommendation?.kind === 'practice' || recommendation?.kind === 'learn' || recommendation?.kind === 'preview' || (recommendation?.kind === 'review' && recommendation.objectiveId !== undefined)
   return <>
+    {(generating || readyUrl) && <section>
+      {generating && <p role="status">{t('openmaicGenerating')} · {generating.title}</p>}
+      {readyUrl && <div className="student-segments"><button type="button" className="student-primary" onClick={() => onOpenClassroom(readyUrl)}>{t('goToClass')}</button></div>}
+      {ready && <p className="student-muted">{ready.title}</p>}
+    </section>}
     <section className="student-status"><h3>{t('goal')}</h3><p>{study.profile.nickname} · {t('todayStars')}: {study.todayStars}</p>
       <p className="student-timer">{t('dailyRemaining')}: {clock(remaining)} · {t('due')}: {study.dueCount} · {t('weakPoints')}: {study.weakPoints.length}</p>
       {schoolUnit && <p>{t('schoolFrontier')}: {schoolUnit.name} · {t(progress?.posture === 'catch-up' ? 'catchUp' : 'keepUp')}{progress?.pace === 'review' ? ` · ${t('reviewWeek')}` : ''} · {t('homeProgress')}: {homeUnit?.name ?? t('homeNotStarted')}</p>}
@@ -79,9 +95,15 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
     {!active && <section className="student-plan"><h3>{t('todayPlan')}</h3>
       {recommendation ? <><p>{t(planKeys[recommendation.kind])} · {t(recommendation.subject)}{recommendation.title ? ` · ${recommendation.title}` : ''}</p>
         <p className="student-muted">{reasonText([recommendation.reason], t)}</p>
+        {study.interestFocus && <p className="student-muted">{t('interestFocusLabel')}: {study.interestFocus}</p>}
         {recommendation.redirectedFrom && <p className="student-muted">{t('prerequisiteFor')}: {recommendation.redirectedFrom.title}</p>}
         {recommendation.kind === 'hold' ? <button type="button" onClick={openParent}>{t('updateSchoolProgress')}</button>
-          : <button type="button" className="student-primary" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button>}
+          : <div className="student-segments">
+            {goalPractice && <button type="button" className="student-primary" disabled={disabled || running} onClick={onInterestPractice}>{t('interestPractice')}</button>}
+            {recommendation.kind === 'diagnose' && <button type="button" className="student-primary" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button>}
+            {recommendation.kind === 'review' && study.dueToday.length === 0 && <button type="button" className="student-primary" disabled={disabled || running} onClick={startRecommended}>{t('startNow')}</button>}
+            <button type="button" disabled={disabled || running || generating !== undefined} onClick={onOpenLesson}>{t('openLesson')}</button>
+          </div>}
         {recommendation.kind !== 'hold' && study.phase !== 'ready' && <p className="student-muted">{t('planBlocked')}</p>}
       </> : <p>{t('allDone')}</p>}
       {goal && <p>{t('learningGoal')}: {goal.title} <button type="button" onClick={clearGoal}>{t('clearGoal')}</button></p>}
@@ -90,6 +112,13 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
           <button type="button" disabled={disabled || running} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>
         </div>)}
       </details>}
+    </section>}
+    {!active && study.dueToday.length > 0 && <section>
+      <h3>{t('dueTodayTitle')}</h3>
+      <p className="student-muted">{t('dueTodayHelp')}</p>
+      {study.dueToday.map(item => <p key={item.id}>{t(item.subject)} · {item.topic}</p>)}
+      <button type="button" disabled={disabled || running} onClick={onClearDue}>{t('clearDue').replace('{count}', String(study.dueToday.length))}</button>
+      {study.dueBacklog > study.dueToday.length && <p className="student-muted">{t('dueLater').replace('{count}', String(study.dueBacklog - study.dueToday.length))}</p>}
     </section>}
     {!active && <Alternate study={study} activity={activity} setActivity={setActivity} disabled={disabled || running} t={t} goal={goal} intensityLabel={intensityLabel} openCheckins={openCheckins} scope={scope} setScope={setScope} scopeUnits={scopeUnits} start={start} />}
     {!active && (() => {

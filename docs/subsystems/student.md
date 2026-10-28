@@ -28,7 +28,7 @@ The independently installed [student package](../../packages/education/student/R
 <a id="evidence"></a>
 ## Materials and learner evidence
 
-One workspace identifies one learner's term. Material records carry region, grade, term, school year, school system, subject and edition evidence. A confirmed school course must match the learner profile and retain an actual parent statement. Unknown books permit foundation practice, not claims of school alignment. Materials keep their identities across course changes so historical work remains attributable.
+Parent interest tags live on the learning state. Questions and OpenMAIC requirements use them as scenes; checkable facts stay on the knowledge map. The daily recommendation teaches, then practises a weak goal, then a due check-in, then a new goal. At most two due mistakes are listed beside that goal. One workspace identifies one learner's term. Material records carry region, grade, term, school year, school system, subject and edition evidence. A confirmed school course must match the learner profile and retain an actual parent statement. Unknown books permit foundation practice, not claims of school alignment. Materials keep their identities across course changes so historical work remains attributable.
 
 For grade two, first term, the Skill uses bundled Chinese or mathematics pages when no textbook is supplied for that subject; user materials take priority. Defaults supply learning content without creating a school course or parent confirmation. The [package README](../../packages/education/student/README.md#use-default-textbooks) owns edition details and reading instructions.
 

@@ -48,9 +48,11 @@ describe('interactive lesson desk', () => {
     const ask = vi.fn().mockResolvedValue(undefined)
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(dashboard(updateStudy(undefined, setup, Date.now()), Date.now())), { headers: { 'content-type': 'application/json' } })))
     render(<StudyDesk sessionId="om" visible running={false} ask={ask} t={t} />)
-    fireEvent.click(await screen.findByRole('button', { name: en.openmaicGenerate }))
+    fireEvent.click(await screen.findByRole('button', { name: en.openLesson }))
     await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('references/openmaic.md'), undefined))
     expect(String(ask.mock.calls[0]?.[0])).toContain('单独一行')
+    expect(String(ask.mock.calls[0]?.[0])).toContain('购物超市钱')
+    expect(String(ask.mock.calls[0]?.[0])).toContain('interest-hooks.md')
     expect(String(ask.mock.calls[0]?.[0])).not.toContain('](')
   })
 
@@ -64,5 +66,30 @@ describe('interactive lesson desk', () => {
     fireEvent.click(within(form).getByRole('button', { name: 'Save' }))
     await screen.findAllByText('Saved')
     expect(change).toHaveBeenCalledWith({ action: 'openmaic-settings', baseUrl: 'http://127.0.0.1:3000/', parentConfirmation: en.openmaicConfirm }, 1)
+  })
+
+  it('pins go to class when a lesson is ready and shows generating', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null)
+    const base = dashboard(updateStudy(undefined, setup, Date.now()), Date.now())
+    const generating = { ...ready, id: 'om-gen', status: 'generating' as const, title: '正在生成', url: undefined, classroomId: undefined, summary: undefined }
+    const body = { ...base, interactiveLessons: { ...base.interactiveLessons, lessons: [ready, generating] } }
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } })))
+    render(<StudyDesk sessionId="ready-lesson" visible running={false} ask={vi.fn()} t={t} />)
+    expect(await screen.findByText(/Generating · 正在生成/)).toBeTruthy()
+    expect((screen.getByRole('button', { name: en.openLesson }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: en.goToClass }))
+    expect(open).toHaveBeenCalledWith(ready.url, '_blank', 'noopener,noreferrer')
+  })
+
+  it('saves interest tags from parent setup', async () => {
+    const change = vi.fn(async (command: unknown) => dashboard(updateStudy(updateStudy(undefined, setup, NOW), command, NOW + 1), NOW))
+    render(<ParentSettings data={dashboard(updateStudy(undefined, setup, NOW), NOW)} change={change} t={t} />)
+    const input = screen.getByLabelText('Tag 6')
+    fireEvent.change(input, { target: { value: '天文观测' } })
+    const form = input.closest('form')
+    if (!form) throw new Error('missing form')
+    fireEvent.click(within(form).getByRole('button', { name: 'Save' }))
+    await screen.findAllByText('Saved')
+    expect(change).toHaveBeenCalledWith({ action: 'interests', tags: ['购物超市钱', '运动球类', '动物宠物', '故事角色动画', '积木拼搭手工', '天文观测'], parentConfirmation: en.interestConfirm }, 1)
   })
 })

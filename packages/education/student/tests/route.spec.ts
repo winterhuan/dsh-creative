@@ -116,6 +116,7 @@ describe('student workspace boundary', () => {
       { action: 'confirm-workbook', id: 'wb', userConfirmation: '家长确认练习册。' },
       { action: 'dismiss-teaching', id: 'tq-wb' },
       { action: 'openmaic-settings', baseUrl: 'http://localhost:3000', parentConfirmation: '家长确认 OpenMAIC 地址。' },
+      { action: 'interests', tags: ['购物超市钱', '运动球类', '动物宠物'], parentConfirmation: '家长确认兴趣标签。' },
     ]) expect((await request({ method: 'POST', body: JSON.stringify({ revision: 0, change }) })).status).toBe(200)
   })
   it('passes the observed revision and reports conflicts without retrying writes', async () => {

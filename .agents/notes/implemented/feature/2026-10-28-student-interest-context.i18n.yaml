@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-28-student-interest-context.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-28-student-interest-context.md
+/agent-note-interest-tags-wrap-practice-and-overdue-review-stays-short:
+  en: 3891220b08d9b433
+  zh: 40f52f5e45007b1c
+/agent-note-interest-tags-wrap-practice-and-overdue-review-stays-short/problem:
+  en: 9bf2d6eaeb6ad661
+  zh: 79b58101722cb2a4
+/agent-note-interest-tags-wrap-practice-and-overdue-review-stays-short/decision:
+  en: 655089237ec07784
+  zh: a0af6d3a71e26044
+/agent-note-interest-tags-wrap-practice-and-overdue-review-stays-short/alternatives-considered:
+  en: 2951d42adb095cce
+  zh: 27d57c04dc5082e4
+/agent-note-interest-tags-wrap-practice-and-overdue-review-stays-short/consequences:
+  en: 8d7883c81006b04e
+  zh: 8420ebc68db9cc49

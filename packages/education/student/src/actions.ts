@@ -18,6 +18,7 @@ export const actionMeta: Record<Command['action'], ActionMeta> = {
   'school-progress': { panel: true, group: 'profile' },
   'archive-term': { panel: true, group: 'profile' },
   'openmaic-settings': { panel: true, group: 'profile' },
+  interests: { panel: true, group: 'profile' },
   start: { panel: true, group: 'session' },
   task: { panel: false, group: 'session' },
   answer: { panel: true, group: 'session' },

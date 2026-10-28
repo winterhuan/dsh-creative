@@ -4,6 +4,10 @@
 
 数字、单位、口诀和字词停在该目标的例子之内。二年级上册数学不出现表内除法，也不出现三位数。学校还停在前面几句口诀时，不提前考后面的口诀。
 
+## 兴趣情境
+
+出题前读 `references/interest-hooks.md`。`study_status` 的 `interests` 是家长标签，`interestFocus` 是今天优先套的一个。情境题、`context` 变式、每日小卷和互动课 brief 都要套一层标签里的生活场景，可以换另一个标签。校内单元名（例如欢乐购物街）可以写进题干场景，但不能改知识点。`facts` 仍是唯一核对依据。
+
 告诉家长卷子是自编练习，不是学校试卷，也不把课页上的原题照抄过来。先自己算出唯一答案，或写明可以接受的答案范围，再保存。`answer` 是卷面上应有的结果，家长在面板上对照它批改，所以要写到一眼能比对的程度。`explanation` 是给家长看的一句原因，`answerEvidence` 写可复查的推导、计数或地图里的定义。开放题写明怎样算对，不编一个唯一答案。
 
 纸上卷只用 `worksheet` 保存，工作台把它渲染成网页并打印。不要在对话里另写整张 HTML 或图片卷：那样的卷没有记录，做完无法批改，也不算复习。
@@ -67,7 +71,7 @@
 
 先查 `study_status kind=review-sheet`（带 `subject`）。系统按到期时间和复习阶段挑出这张卷要收的错题，最多 8 条，其中留两个位置给薄弱目标的补题；跳过已经印在还没批改的卷上的错题，也跳过家长确认的学校进度之外的单元。只给 `picks` 和 `objectiveFills` 里的条目出题，不增不减；同一类错因最多两道，`errorCoverage` 说明本卷覆盖的错因，`remaining` 是这轮装不下、下次再出的数量。`unlinkedDue` 是到期但还没归类的错题，请家长先归类。`openSheets` 是还没批改的卷，请家长先在面板批改或作废，那些错题才会再被挑出来。
 
-`picks` 每条只出一道变式，写上它的 `mistakeId` 和 `objectiveId`，并按 `variantLevel` 决定距离：`numeric` 只换数字；`context` 换一个生活情境或问法；`reasoning` 要求说理、解释或验算。看 `prompt`、`learnerAnswer` 和 `explanation`，弄清孩子当时错在哪一步，例如退位、单位、比多少的方向，或某一句口诀；新题保留错题 `errorType` 指出的错误类型，参考 `elements` 里的易错点和出题要点。原题有图时用同类 `figure`。绝不照抄原错题题面：系统会逐题比较，题面照抄会被拒绝；也不换成另一个知识点。题干里不出现已经保存的答案。
+`picks` 每条只出一道变式，写上它的 `mistakeId` 和 `objectiveId`，并按 `variantLevel` 决定距离：`numeric` 只换数字；`context` 必须换一个 `interests` 里的生活场景或问法，壳子见 `references/interest-hooks.md`，不能只改数字；`reasoning` 要求说理、解释或验算。看 `prompt`、`learnerAnswer` 和 `explanation`，弄清孩子当时错在哪一步，例如退位、单位、比多少的方向，或某一句口诀；新题保留错题 `errorType` 指出的错误类型，参考 `elements` 里的易错点和出题要点。原题有图时用同类 `figure`。绝不照抄原错题题面：系统会逐题比较，题面照抄会被拒绝；也不换成另一个知识点。题干里不出现已经保存的答案。
 
 `objectiveFills` 每条出一道新的数字题，只写 `objectiveId`、不写 `mistakeId`，围绕该目标的要素。保存时 `kind` 写 `review`。
 

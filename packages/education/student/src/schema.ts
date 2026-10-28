@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { INTEREST_TAG } from './interests.ts'
 import { chineseErrorTypes, chineseFocus, englishErrorTypes, englishFocus, mathErrorTypes, mathFocus } from './vocabulary.ts'
 
 const text = z.string().trim().min(1).max(2000)
@@ -208,6 +209,7 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('dismiss-teaching'), id }).strict(),
   z.object({ action: z.literal('archive-term'), parentConfirmation: text }).strict(),
   z.object({ action: z.literal('openmaic-settings'), baseUrl: z.string().trim().max(200), parentConfirmation: text }).strict(),
+  z.object({ action: z.literal('interests'), tags: z.array(z.string().trim().regex(INTEREST_TAG)).min(3).max(8), parentConfirmation: text }).strict(),
 ])
 
 /** One learner and term per workspace; previous materials and attempts are retained. */
@@ -241,6 +243,8 @@ export const stateSchema = z.object({
   teachingQueue: z.array(teachingItem).max(500).default([]),
   /** Parent override for the OpenMAIC origin. Absent means the environment or the localhost default. */
   openmaic: z.object({ baseUrl: z.string().trim().min(1).max(200), parentConfirmation: text }).strict().optional(),
+  /** Parent theme tags. Absent profiles still read the example list; facts stay on the knowledge map. */
+  interests: z.object({ tags: z.array(z.string().trim().regex(INTEREST_TAG)).min(3).max(8), parentConfirmation: text }).strict().optional(),
   rewards: z.array(z.object({ day: z.string(), reason: z.enum(['participation', 'reflection']) }).strict()).max(1000),
   breakUntil: time,
   task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintLevel: z.number().int().min(0).max(3), stuck: z.boolean().optional() }).strict().optional(),
