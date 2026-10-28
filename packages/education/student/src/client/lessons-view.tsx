@@ -26,6 +26,11 @@ export function openClassroom(url: string) {
   window.open(href, '_blank', 'noopener,noreferrer')
 }
 
+/** Lessons for the open subject. A row with no subject stays visible; a row for another subject does not. */
+export function lessonsForSubject<T extends { subject?: 'chinese' | 'math' | 'english' | undefined }>(lessons: readonly T[], subject: 'chinese' | 'math' | 'english'): T[] {
+  return lessons.filter(lesson => lesson.subject === undefined || lesson.subject === subject)
+}
+
 /** Recent OpenMAIC lessons: open or copy the URL, and ask the tutor to generate, retry or review. */
 export function LessonsPanel({ lessons, error, disabled, running, t, onGenerate, onRetry, onReview }: {
   lessons: Lesson[]

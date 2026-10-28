@@ -4,6 +4,7 @@ import { diagnosticFor, studyInsight } from '../src/learning/mastery.ts'
 import { checkInHistory } from '../src/learning/view.ts'
 import { studyStatus } from '../src/learning/status.ts'
 import { curriculumView } from '../src/learning/view.ts'
+import { dashboard } from '../src/dashboard.ts'
 import { queryStudy } from '../src/store.ts'
 import { stateSchema } from '../src/schema.ts'
 import { NOW, MINUTE, DAY, setup, material, course, start, attempt, mistake, confirm } from './fixtures.ts'
@@ -113,6 +114,32 @@ describe('shipped knowledge map objectives and insight', () => {
     expect(insight.recommendation).toMatchObject({ kind: 'learn' })
     expect(insight.dueToday.map(item => item.id)).toEqual(['due-0', 'due-1'])
     expect(insight.dueBacklog).toBe(3)
+  })
+
+  it('scopes the desk step to the selected subject', () => {
+    let state = updateStudy(undefined, setup, NOW - 3 * DAY)
+    state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id: 'math-due', objectiveId: 'm2a-o-tables', topic: '口诀错题' } }, NOW - 2 * DAY)
+    state = updateStudy(state, { ...confirm, id: 'math-due' }, NOW - 2 * DAY + MINUTE)
+    state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id: 'zh-due', subject: 'chinese', topic: '生字错题', prompt: '哪一个字？' } }, NOW - 2 * DAY + 2 * MINUTE)
+    state = updateStudy(state, { action: 'confirm-mistake', id: 'zh-due', prompt: '哪一个字？', correction: '明', explanation: '日加月。', answerEvidence: '课页。', userConfirmation: '家长确认。' }, NOW - 2 * DAY + 3 * MINUTE)
+    state = updateStudy(state, { ...start, id: 'check', mode: 'diagnose' }, NOW)
+    state = updateStudy(state, { action: 'task', task: { id: 'p1', sessionId: 'check', subject: 'math', topic: '摸底', prompt: '第 1 题', objectiveId: 'm2a-o-tables' } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'answer', taskId: 'p1', response: '答' }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'p1', sessionId: 'check', topic: '摸底', prompt: '第 1 题', response: '答', result: 'incorrect', objectiveId: 'm2a-o-tables' } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'stop', sessionId: 'check', reflection: '' }, NOW + 2 * MINUTE)
+    const at = NOW + 3 * MINUTE
+    const math = dashboard(state, at, { subject: 'math' }).study
+    const chinese = dashboard(state, at, { subject: 'chinese' }).study
+    const english = dashboard(state, at, { subject: 'english' }).study
+    expect(math?.recommendation?.subject).toBe('math')
+    expect(chinese?.recommendation?.subject).toBe('chinese')
+    expect(chinese?.recommendation?.objectiveId).not.toBe(math?.recommendation?.objectiveId)
+    expect(english?.recommendation?.subject).toBe('english')
+    expect(math?.dueToday.map(item => item.topic)).toEqual(['口诀错题'])
+    expect(chinese?.dueToday.map(item => item.topic)).toEqual(['生字错题'])
+    expect(math?.weakPoints.every(item => item.subject === 'math')).toBe(true)
+    expect(chinese?.weakPoints.every(item => item.subject === 'chinese')).toBe(true)
+    expect(studyInsight(state, at).recommendation?.subject).toBe('chinese')
   })
 
   it('saves three to eight interest tags and reads the examples when none are saved', () => {
