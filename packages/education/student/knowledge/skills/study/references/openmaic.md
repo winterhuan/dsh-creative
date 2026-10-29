@@ -17,9 +17,9 @@
 ## 拼 requirement
 
 1. 读 `study_status` 的 `recommendation` 和 `timeNotice`。把 `timeNotice` 原样告诉孩子；时长只提醒，不因此取消生成。
-2. 家长或孩子指定了学习目标就用那个 `objectiveId`，否则用今日建议里的目标。用 `kind=curriculum` 或 `kind=elements` 取标题、定义和可考事实，不要把整册地图或课页塞进 requirement。
-3. 在工作区根目录和 `.study/` 查找 `openmaic-requirement-*.md`。有多份时用修改时间最新的一份，把正文并进去。没有简报就只用目标和事实。
-4. `requirement` 写成一段中文：年级、科目、目标、两三条可考事实、希望孩子在课上做什么。`materialIds` 只有用户已经给出 OpenMAIC 材料 id 时才附上，不要编造。
+2. 家长或孩子指定了学习目标就用那个 `objectiveId`，否则用今日建议里的目标。用 `kind=curriculum` 或 `kind=elements` 取标题、定义和可考事实，不要把整册地图或课页塞进 requirement。若建议带 `unitName`，或学校进度能对上单元名（例如欢乐购物街），把这个单元名写进场景。
+3. 在工作区根目录和 `.study/` 查找 `openmaic-requirement-*.md`。有多份时用修改时间最新的一份，把正文并进去。没有简报就只用目标、事实、兴趣标签和单元名。
+4. `requirement` 写成一段中文：年级、科目、目标、两三条可考事实、`interests` 里的一个标签（优先 `interestFocus`，下一节课可以换）、已知的校内单元名、希望孩子在课上做什么。场景壳子见 `interest-hooks.md`。事实仍只核知识地图，不把兴趣写成知识点。`materialIds` 只有用户已经给出 OpenMAIC 材料 id 时才附上，不要编造。
 
 ## 生成和轮询
 

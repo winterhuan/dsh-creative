@@ -86,6 +86,17 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
       : [],
     checkIns: checkInHistory(state),
     ...insightSummary(insight),
+    // The status tool keeps one cross-subject recommendation. The desk shows only the open subject.
+    ...(() => {
+      const step = insight.subjectSteps[subject]
+      return {
+        recommendation: step.recommendation,
+        dueToday: step.dueToday,
+        dueBacklog: step.dueBacklog,
+        weakPoints: step.weakPoints.slice(0, 3).map(item => ({ id: item.id, subject: item.subject, title: item.title, level: item.level, priority: item.priority, reasons: item.reasons })),
+        understandingReminders: insight.understandingReminders.filter(item => item.subject === subject),
+      }
+    })(),
     weekly: weeklySummary(state, now, insight),
     diagnostics: insight.diagnostics,
     materials: state.materials.filter(item => state.courses.some(course => course.materialId === item.id)),

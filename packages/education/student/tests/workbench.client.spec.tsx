@@ -368,6 +368,44 @@ it('uses the server clock immediately without showing more than the block limit'
   expect(screen.getByText('Suggested time left today: 20:00 · Due for review: 0 · Weak points: 0')).toBeTruthy()
 })
 
+it('keeps math goals and lessons off the Chinese today page', async () => {
+  window.localStorage.clear()
+  let state = updateStudy(undefined, setup, NOW - 3 * DAY)
+  state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id: 'math-due', objectiveId: 'm2a-o-tables', topic: '口诀错题' } }, NOW - 2 * DAY)
+  state = updateStudy(state, { ...confirm, id: 'math-due' }, NOW - 2 * DAY + MINUTE)
+  state = updateStudy(state, { ...start, id: 'check', mode: 'diagnose' }, NOW)
+  state = updateStudy(state, { action: 'task', task: { id: 'p1', sessionId: 'check', subject: 'math', topic: '摸底', prompt: '第 1 题', objectiveId: 'm2a-o-tables' } }, NOW + MINUTE)
+  state = updateStudy(state, { action: 'answer', taskId: 'p1', response: '答' }, NOW + MINUTE)
+  state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'p1', sessionId: 'check', topic: '摸底', prompt: '第 1 题', response: '答', result: 'incorrect', objectiveId: 'm2a-o-tables' } }, NOW + MINUTE)
+  state = updateStudy(state, { action: 'stop', sessionId: 'check', reflection: '' }, NOW + 2 * MINUTE)
+  const lessons = [
+    { id: 'om-math', status: 'ready' as const, createdAt: '2026-10-28T06:00:00.000Z', updatedAt: '2026-10-28T06:05:00.000Z', title: '数学乘法课', requirement: '练乘法', subject: 'math' as const, objectiveId: 'm2a-o-tables', base: 'http://localhost:3000', classroomId: 'room-math', url: 'http://localhost:3000/classroom/math' },
+    { id: 'om-zh', status: 'ready' as const, createdAt: '2026-10-28T06:00:00.000Z', updatedAt: '2026-10-28T06:06:00.000Z', title: '语文识字课', requirement: '认生字', subject: 'chinese' as const, base: 'http://localhost:3000', classroomId: 'room-zh', url: 'http://localhost:3000/classroom/zh' },
+  ]
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    const subject = new URL(url, 'http://localhost').searchParams.get('subject') as 'chinese' | 'math' | 'english' | null
+    const body = dashboard(state, NOW + 3 * MINUTE, { subject: subject ?? 'math' })
+    return new Response(JSON.stringify({ ...body, interactiveLessons: { ...body.interactiveLessons, lessons } }))
+  }))
+  const ask = vi.fn().mockResolvedValue(undefined)
+  render(<StudyDesk sessionId="subjects" visible running={false} ask={ask} t={t} />)
+  expect((await screen.findAllByText(/熟记并运用2～9的乘法口诀/)).length).toBeGreaterThan(0)
+  expect(screen.getByText('数学乘法课')).toBeTruthy()
+  expect(screen.queryByText('语文识字课')).toBeNull()
+  expect(screen.getByText(/口诀错题/)).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Chinese' }))
+  await screen.findByText('语文识字课')
+  expect(screen.queryByText(/熟记并运用2～9的乘法口诀/)).toBeNull()
+  expect(screen.queryByText('数学乘法课')).toBeNull()
+  expect(screen.queryByText(/口诀错题/)).toBeNull()
+  expect(screen.queryByText('http://localhost:3000/classroom/math')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: en.openLesson }))
+  await waitFor(() => expect(ask).toHaveBeenCalled())
+  const prompt = String(ask.mock.calls.at(-1)?.[0])
+  expect(prompt).not.toContain('m2a-o-tables')
+  expect(prompt).toContain('Chinese')
+})
+
 it('shows the knowledge map and mistake book on the main tab and starts the recommended review', async () => {
   vi.spyOn(Date, 'now').mockReturnValue(NOW)
   let state = updateStudy(undefined, setup, NOW - DAY)
@@ -376,7 +414,8 @@ it('shows the knowledge map and mistake book on the main tab and starts the reco
   const backend = installFetch(state)
   const ask = vi.fn().mockResolvedValue(undefined)
   render(<StudyDesk sessionId="main" visible running={false} ask={ask} t={t} />)
-  await screen.findByText('Review due mistakes first · Math')
+  await screen.findByText('Start with a check-in to find direction · Math')
+  await screen.findByRole('heading', { name: 'Clear today' })
   expect(screen.queryByRole('heading', { name: 'Knowledge map · Math' })).toBeNull()
   await openDesk('Knowledge map')
   await screen.findByRole('heading', { name: '数学二年级上册知识地图' })
@@ -390,9 +429,10 @@ it('shows the knowledge map and mistake book on the main tab and starts the reco
   fireEvent.click(screen.getByText('100 以内数的加减法（二） · Mastered 0/3'))
   expect(screen.getAllByRole('img', { name: 'Mastered 0 · Practising 0 · Not practised lately 0 · Needs work 0 · Review due 0 · Not started 3' }).length).toBeGreaterThan(0)
   fireEvent.click(screen.getByRole('button', { name: 'Today' }))
-  fireEvent.click(await screen.findByRole('button', { name: 'Start now' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Clear these 1' }))
   await waitFor(() => expect(ask).toHaveBeenCalledOnce())
   expect(ask.mock.calls[0]?.[0]).toContain('到期错题')
+  expect(ask.mock.calls[0]?.[0]).toContain('error-1')
   expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'review' })
 })
 
@@ -542,7 +582,7 @@ it('offers a recurring check-in and starts it as a diagnose block', async () => 
   expect(screen.getByText(/No check-in yet · Coverage: 0 \/ 8/)).toBeTruthy()
   expect(screen.getByText(/Check-in intensity: Standard · 6 questions, mostly choices/)).toBeTruthy()
   expect(screen.getByText(/A check-in is suggested · This round probes: 计算100以内不退位和退位减法并用加法验算/)).toBeTruthy()
-  expect(screen.getByText('Start with a check-in to find direction · Chinese')).toBeTruthy()
+  expect(screen.getByText('Start with a check-in to find direction · Math')).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'Start check-in' }))
   await waitFor(() => expect(ask).toHaveBeenCalledWith(expect.stringContaining('kind=diagnose'), undefined))
   expect(backend.read().sessions[0]).toMatchObject({ subject: 'math', mode: 'diagnose' })

@@ -1,4 +1,5 @@
 import { DAY, MINUTE, activeSession, beijingClock, formatDuration, studyDay, todaySpent, type Outcome } from './shared.ts'
+import { interestFocus, interestTagsOf } from '../interests.ts'
 import { effectiveOpenmaicBase, OPENMAIC_COOKIE_PATH, OPENMAIC_LESSONS_PATH } from '../openmaic.ts'
 import type { ErrorType, StudyState } from '../schema.ts'
 import type { StudyInsight } from './mastery.ts'
@@ -80,9 +81,10 @@ export function studyStatus(state: StudyState, now: number) {
     const objective = objectiveId ? objectiveInfo(state, objectiveId) : undefined
     if (worksheet && objective && objectiveId) includeEvidence(worksheet.subject, objective.title, result.receivedAt, result.result, result.assistance, undefined, objectiveId)
   }
+  const interests = interestTagsOf(state.interests?.tags)
   return {
     task: state.task ?? null, feedback: state.task ? state.attempts.find(item => item.id === state.task?.id) ?? null : null,
-    revision: state.revision, profile: state.profile, ...time, active: activeSession(state) ?? null,
+    revision: state.revision, profile: state.profile, interests, interestFocus: interestFocus(interests, studyDay(now)), ...time, active: activeSession(state) ?? null,
     openmaic: {
       baseUrl: effectiveOpenmaicBase(state.openmaic?.baseUrl, process.env.OPENMAIC_BASE),
       savedBaseUrl: state.openmaic?.baseUrl ?? '',

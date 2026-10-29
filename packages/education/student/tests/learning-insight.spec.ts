@@ -4,6 +4,7 @@ import { diagnosticFor, studyInsight } from '../src/learning/mastery.ts'
 import { checkInHistory } from '../src/learning/view.ts'
 import { studyStatus } from '../src/learning/status.ts'
 import { curriculumView } from '../src/learning/view.ts'
+import { dashboard } from '../src/dashboard.ts'
 import { queryStudy } from '../src/store.ts'
 import { stateSchema } from '../src/schema.ts'
 import { NOW, MINUTE, DAY, setup, material, course, start, attempt, mistake, confirm } from './fixtures.ts'
@@ -62,7 +63,9 @@ describe('shipped knowledge map objectives and insight', () => {
     state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, objectiveId: 'm2a-o-tables' } }, NOW - 3 * DAY)
     state = updateStudy(state, confirm, NOW - 3 * DAY)
     let insight = studyInsight(state, NOW)
-    expect(insight.recommendation).toMatchObject({ kind: 'review', subject: 'math', reason: { code: 'due-mistakes', count: 1 } })
+    expect(insight.recommendation).toMatchObject({ kind: 'diagnose', subject: 'chinese' })
+    expect(insight.dueToday).toEqual([expect.objectContaining({ id: 'error-1', subject: 'math', objectiveId: 'm2a-o-tables' })])
+    expect(insight.dueBacklog).toBe(1)
     expect(insight.weakPoints[0]).toMatchObject({ id: 'm2a-o-tables', level: 'due', reasons: [{ code: 'due-mistakes', count: 1 }, { code: 'open-mistakes', count: 1 }] })
     let view = curriculumView(state, 'math', insight)
     expect(view?.concepts.find(item => item.id === 'm2a-table7')).toMatchObject({ level: 'due', dueMistakes: 1 })
@@ -88,8 +91,69 @@ describe('shipped knowledge map objectives and insight', () => {
     expect(insight.weakPoints.map(item => item.id)).toEqual(['m2a-o-shop', 'm2a-o-tables'])
     expect(studyInsight(state, at + 15 * DAY).objectives.find(item => item.id === 'm2a-o-shop')).toMatchObject({ level: 'weak', reasons: [{ code: 'needs-teaching', count: 1 }] })
     expect(studyInsight(state, at + 15 * DAY).objectives.find(item => item.id === 'm2a-o-meaning')?.level).toBe('mastered')
-    expect(queryStudy(state, 'weak', 0)).toMatchObject({ recommendation: { kind: 'review' }, practised: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-meaning', level: 'mastered' })]) })
-    expect(queryStudy(state, 'status', 0)).toMatchObject({ recommendation: { kind: 'review', subject: 'math' }, weakPoints: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-tables' })]) })
+    expect(queryStudy(state, 'weak', 0)).toMatchObject({ recommendation: { kind: 'practice', objectiveId: 'm2a-o-shop', reason: { code: 'needs-teaching' } }, practised: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-meaning', level: 'mastered' })]) })
+    expect(queryStudy(state, 'status', 0)).toMatchObject({ recommendation: { kind: 'practice', subject: 'math', objectiveId: 'm2a-o-shop' }, interests: expect.arrayContaining(['购物超市钱']), dueToday: expect.any(Array), weakPoints: expect.arrayContaining([expect.objectContaining({ id: 'm2a-o-tables' })]) })
+  })
+
+  it('keeps a long overdue list off the main path and clears at most two', () => {
+    let state = updateStudy(undefined, setup, NOW - 3 * DAY)
+    for (const [index, objectiveId] of ['m2a-o-tables', 'm2a-o-meaning', 'm2a-o-shop'].entries()) {
+      const id = `due-${index}`
+      const at = NOW - 3 * DAY + (index + 1) * MINUTE
+      state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id, objectiveId, prompt: `题 ${id}` } }, at)
+      state = updateStudy(state, { ...confirm, id, prompt: `题 ${id}` }, at + 1)
+    }
+    let at = NOW - DAY
+    for (const subject of ['chinese', 'math', 'english'] as const) {
+      const id = `diag-${subject}`
+      state = updateStudy(state, { action: 'start', id, subject, mode: 'diagnose' }, at)
+      state = updateStudy(state, { action: 'stop', sessionId: id, reflection: '' }, at + MINUTE)
+      at += 2 * MINUTE
+    }
+    const insight = studyInsight(state, NOW)
+    expect(insight.recommendation).toMatchObject({ kind: 'learn' })
+    expect(insight.dueToday.map(item => item.id)).toEqual(['due-0', 'due-1'])
+    expect(insight.dueBacklog).toBe(3)
+  })
+
+  it('scopes the desk step to the selected subject', () => {
+    let state = updateStudy(undefined, setup, NOW - 3 * DAY)
+    state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id: 'math-due', objectiveId: 'm2a-o-tables', topic: '口诀错题' } }, NOW - 2 * DAY)
+    state = updateStudy(state, { ...confirm, id: 'math-due' }, NOW - 2 * DAY + MINUTE)
+    state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id: 'zh-due', subject: 'chinese', topic: '生字错题', prompt: '哪一个字？' } }, NOW - 2 * DAY + 2 * MINUTE)
+    state = updateStudy(state, { action: 'confirm-mistake', id: 'zh-due', prompt: '哪一个字？', correction: '明', explanation: '日加月。', answerEvidence: '课页。', userConfirmation: '家长确认。' }, NOW - 2 * DAY + 3 * MINUTE)
+    state = updateStudy(state, { ...start, id: 'check', mode: 'diagnose' }, NOW)
+    state = updateStudy(state, { action: 'task', task: { id: 'p1', sessionId: 'check', subject: 'math', topic: '摸底', prompt: '第 1 题', objectiveId: 'm2a-o-tables' } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'answer', taskId: 'p1', response: '答' }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'p1', sessionId: 'check', topic: '摸底', prompt: '第 1 题', response: '答', result: 'incorrect', objectiveId: 'm2a-o-tables' } }, NOW + MINUTE)
+    state = updateStudy(state, { action: 'stop', sessionId: 'check', reflection: '' }, NOW + 2 * MINUTE)
+    const at = NOW + 3 * MINUTE
+    const math = dashboard(state, at, { subject: 'math' }).study
+    const chinese = dashboard(state, at, { subject: 'chinese' }).study
+    const english = dashboard(state, at, { subject: 'english' }).study
+    expect(math?.recommendation?.subject).toBe('math')
+    expect(chinese?.recommendation?.subject).toBe('chinese')
+    expect(chinese?.recommendation?.objectiveId).not.toBe(math?.recommendation?.objectiveId)
+    expect(english?.recommendation?.subject).toBe('english')
+    expect(math?.dueToday.map(item => item.topic)).toEqual(['口诀错题'])
+    expect(chinese?.dueToday.map(item => item.topic)).toEqual(['生字错题'])
+    expect(math?.weakPoints.every(item => item.subject === 'math')).toBe(true)
+    expect(chinese?.weakPoints.every(item => item.subject === 'chinese')).toBe(true)
+    expect(studyInsight(state, at).recommendation?.subject).toBe('chinese')
+  })
+
+  it('saves three to eight interest tags and reads the examples when none are saved', () => {
+    const fresh = updateStudy(undefined, setup, NOW)
+    expect(fresh.interests?.tags).toEqual(['购物超市钱', '运动球类', '动物宠物', '故事角色动画', '积木拼搭手工', '美食做饭'])
+    expect(studyStatus(fresh, NOW).interests).toHaveLength(6)
+    expect(studyStatus(fresh, NOW).interestFocus.length).toBeGreaterThan(0)
+    const saved = updateStudy(fresh, { action: 'interests', tags: ['动物宠物', '美食做饭', '运动球类'], parentConfirmation: '家长确认兴趣标签' }, NOW + 1)
+    expect(studyStatus(saved, NOW + 1).interests).toEqual(['动物宠物', '美食做饭', '运动球类'])
+    const legacy = { ...saved, interests: undefined }
+    expect(studyStatus(legacy, NOW + 1).interests).toContain('购物超市钱')
+    expect(() => updateStudy(saved, { action: 'interests', tags: ['动物宠物', '动物宠物', '美食做饭'], parentConfirmation: '太少' }, NOW + 2)).toThrow('3 到 8')
+    const started = updateStudy(saved, start, NOW + 3)
+    expect(() => updateStudy(started, { action: 'interests', tags: ['动物宠物', '美食做饭', '积木拼搭手工'], parentConfirmation: '学习中' }, NOW + 4)).toThrow('先结束当前学习')
   })
 
   it('supports cross-grade objectives while unshipped grades stay on custom goals', () => {
@@ -278,7 +342,7 @@ describe('school progress frontier', () => {
     expect(math?.sample.map(item => item.unit).every(unit => taught.includes(unit))).toBe(true)
     expect(math?.sample.some(item => item.id === 'm2a-o-home')).toBe(false)
     const quiet = recentCheckIns(state, NOW + MINUTE)
-    expect(studyInsight(quiet.state, quiet.at).recommendation).toMatchObject({ kind: 'learn', subject: 'math', objectiveId: 'm2a-o-meaning' })
+    expect(studyInsight(quiet.state, quiet.at).recommendation).toMatchObject({ kind: 'learn', subject: 'math', objectiveId: 'm2a-o-meaning', unitName: '表内乘法' })
     const catchingUp = recentCheckIns(frontier('catch-up', 'm2a-u-mul', 'teaching', false), NOW + MINUTE)
     expect(studyInsight(catchingUp.state, catchingUp.at).recommendation).toMatchObject({ kind: 'learn', objectiveId: 'm2a-o-sub' })
     const reviewing = recentCheckIns(frontier('keep-up', 'm2a-u-mul', 'review', false), NOW + MINUTE)

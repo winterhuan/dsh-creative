@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { INTEREST_TAG } from '../interests.ts'
 import type { Command, StudyState } from '../schema.ts'
 import { errorTypesBySubject } from '../vocabulary.ts'
 import type { Dashboard } from '../dashboard.ts'
@@ -129,6 +130,7 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
           </div>
         </form> : <p>{t('schoolProgressNeedsCourse')}</p>}
       </>}
+      <InterestsForm tags={study.interests} revision={data.revision} active={!!study.active} change={change} t={t} />
       <h3>{t('openmaicTitle')}</h3>
       <p className="student-muted">{t('openmaicBaseHelp')}</p>
       <p>{t('openmaicEffective')}: {data.interactiveLessons.baseUrl}</p>
@@ -146,6 +148,25 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
       </div>}
     </>}
   </section>
+}
+
+/** Parent theme tags. The saved list is edited here; an empty profile shows the example tags from status. */
+function InterestsForm({ tags, revision, active, change, t }: { tags: string[]; revision: number; active: boolean; change: ChangeStudy; t: Translate }) {
+  const [draft, setDraft] = useState(tags)
+  return <SaveForm revision={revision} t={t} disabled={active} submit={(_form, nextRevision) => {
+    const next = [...new Set(draft.map(tag => tag.trim()).filter(tag => tag !== ''))]
+    if (next.length < 3 || next.length > 8) throw new Error(t('interestCount'))
+    if (next.some(tag => !INTEREST_TAG.test(tag))) throw new Error(t('interestShape'))
+    return change({ action: 'interests', tags: next, parentConfirmation: t('interestConfirm') }, nextRevision)
+  }}>
+    <h3>{t('interestsTitle')}</h3>
+    <p className="student-muted">{t('interestsHelp')}</p>
+    {draft.map((tag, index) => <label key={index}>{t('interestTag')} {index + 1}<input aria-label={`${t('interestTag')} ${index + 1}`} value={tag} required minLength={2} maxLength={16} onChange={event => setDraft(draft.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} /></label>)}
+    <div className="student-segments">
+      {draft.length < 8 && <button type="button" onClick={() => setDraft([...draft, ''])}>{t('addInterest')}</button>}
+      {draft.length > 3 && <button type="button" onClick={() => setDraft(draft.slice(0, -1))}>{t('removeInterest')}</button>}
+    </div>
+  </SaveForm>
 }
 
 /** Confirmation retains the unedited image transcription until a user explicitly saves it. */

@@ -27,6 +27,19 @@ export function teachQueuePrompt(title: string): string {
 export const stuckPrompt = '请加载 study 技能，阅读 references/teaching.md 的「不会做时先教」。孩子说不会。先用 demo 示范方法，再进入 guide。摸底段只记下不会，不讲课。'
 export const mistakePhotoPrompt = '请加载 study 技能，读取这张题目照片，用 mistake 保存待确认错题。能对应知识地图时写上 objectiveId。不要替我确认。'
 
+/** Practise the current goal inside one interest scene. Facts stay on the knowledge map. */
+export function interestPracticePrompt(objectiveId: string | undefined, tags: string[], focus: string, unitName?: string): string {
+  const goal = objectiveId ? `学习目标 ${objectiveId}` : '今日建议的目标'
+  const scene = tags.length > 0 ? `兴趣标签：${tags.join('、')}。本题优先用「${focus}」套壳，下一题可以换一个标签。` : '用 study_status 的 interests 套壳。'
+  const unit = unitName ? `校内单元「${unitName}」。` : ''
+  return `请加载 study 技能，阅读 references/interest-hooks.md 和 references/questions.md。本段用趣味情境练${goal}。${scene}${unit}事实只核知识地图的 facts，不把兴趣写成知识点。一次一题，task 写 objectiveId。`
+}
+
+/** Clear only the one or two due mistakes named for today. */
+export function dueClearPrompt(ids: string[]): string {
+  return `请加载 study 技能，阅读 references/interest-hooks.md。今天只清 dueToday 里的这 ${ids.length} 条到期错题（${ids.join('、')}），其余到期错题留到以后。先做变式，不展示已保存答案。task 写 mistakeId 和 objectiveId。情境用 interests 里的标签套壳，事实只核知识地图。一次一题。`
+}
+
 /** Continue around one shipped or custom learning goal. */
 export function goalPrompt(objectiveId: string): string {
   return `请加载 study 技能，查询 study_status。本段围绕学习目标 ${objectiveId} 出题，一次一题，task 写上这个 objectiveId。需要看图时写 figure。`
@@ -73,10 +86,12 @@ export function paperPhotoPrompt(worksheetId: string): string {
   return `请加载 study 技能，读取练习单 ${worksheetId} 的作答照片，按题号用 paper-draft 保存转录草稿。不要直接入库。`
 }
 
-/** Ask the tutor to generate one local OpenMAIC lesson for the selected subject. */
-export function openmaicGeneratePrompt(subjectLabel: string, objectiveId?: string): string {
+/** Ask the tutor to generate one local OpenMAIC lesson for the current goal, with interest tags and the school unit. */
+export function openmaicGeneratePrompt(subjectLabel: string, objectiveId: string | undefined, tags: string[], focus: string, unitName?: string): string {
   const goal = objectiveId ? `围绕学习目标 ${objectiveId}。` : '围绕今日建议或孩子要点的知识点。'
-  return `请加载 study 技能，阅读 references/openmaic.md。为${subjectLabel}生成一节 OpenMAIC 互动课。${goal}用 shell 和 curl 调用本机服务，不要用 web_fetch 访问 localhost。成功后把课堂 URL 单独一行原文发给我，并写入 .study/openmaic-lessons.json。`
+  const scene = tags.length > 0 ? `requirement 必须写入兴趣标签（${tags.join('、')}），本题优先套「${focus}」。` : 'requirement 必须写入 study_status 的 interests。'
+  const unit = unitName ? `校内单元「${unitName}」。` : ''
+  return `请加载 study 技能，阅读 references/openmaic.md 和 references/interest-hooks.md。为${subjectLabel}生成一节 OpenMAIC 互动课。${goal}${unit}${scene}事实只核知识地图。用 shell 和 curl 调用本机服务，不要用 web_fetch 访问 localhost。成功后把课堂 URL 单独一行原文发给我，并写入 .study/openmaic-lessons.json。`
 }
 
 /** Ask the tutor to retry a failed generation without resubmitting the requirement. */

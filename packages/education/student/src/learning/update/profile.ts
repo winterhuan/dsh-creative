@@ -2,13 +2,18 @@ import { canonical, requireValue, sameScope } from '../shared.ts'
 import { duplicate } from './context.ts'
 import { rawApply, type UpdateContext } from './index.ts'
 import { curriculumFor } from '../../curriculum.ts'
+import { DEFAULT_INTEREST_TAGS } from '../../interests.ts'
 import { normalizeOpenmaicBase } from '../../openmaic.ts'
 import { stateSchema, type Command, type StudyState } from '../../schema.ts'
 
 /** Create the first learner profile for a workspace. */
 export function applySetup(command: Extract<Command, { action: 'setup' }>, now: number): StudyState {
   requireValue(command.profile.limits.blockMinutes <= command.profile.limits.dailyMinutes, '单段时长不能超过每日上限。')
-  return stateSchema.parse({ format: 1, revision: 1, updatedAt: now, profile: command.profile, materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [], breakUntil: 0 })
+  return stateSchema.parse({
+    format: 1, revision: 1, updatedAt: now, profile: command.profile,
+    interests: { tags: [...DEFAULT_INTEREST_TAGS], parentConfirmation: command.profile.parentConfirmation },
+    materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [], breakUntil: 0,
+  })
 }
 
 /** Save a material and its course atomically under one revision. */
@@ -78,6 +83,21 @@ export function applyOpenmaicSettings(ctx: UpdateContext<'openmaic-settings'>): 
   if (current === normalized) return previous
   if (normalized === '') delete state.openmaic
   else state.openmaic = { baseUrl: normalized, parentConfirmation: command.parentConfirmation }
+  return state
+}
+
+/**
+ * Save the parent's theme tags. Duplicates collapse; fewer than three distinct tags is rejected.
+ * An active block blocks the change, matching the other parent settings.
+ */
+export function applyInterests(ctx: UpdateContext<'interests'>): StudyState {
+  const { command, previous, state, active } = ctx
+  requireValue(!active, '先结束当前学习，再由家长调整兴趣标签。')
+  const tags = [...new Set(command.tags)]
+  requireValue(tags.length >= 3 && tags.length <= 8, '兴趣标签需要 3 到 8 个，去掉重复后仍要落在这个范围。')
+  const current = state.interests?.tags ?? []
+  if (current.length === tags.length && current.every((tag, index) => tag === tags[index])) return previous
+  state.interests = { tags, parentConfirmation: command.parentConfirmation }
   return state
 }
 

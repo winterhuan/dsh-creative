@@ -11,7 +11,7 @@ const statusKey = { generating: 'openmaicGenerating', ready: 'openmaicReady', fa
  * and a static export player is intentionally absent.
  */
 /** http(s) URL without credentials, or undefined when the desk must not offer it. */
-function httpUrl(value: string | undefined): string | undefined {
+export function classroomUrl(value: string | undefined): string | undefined {
   if (value === undefined || value === '') return undefined
   let parsed: URL
   try { parsed = new URL(value) } catch { return undefined }
@@ -19,11 +19,16 @@ function httpUrl(value: string | undefined): string | undefined {
   return parsed.href
 }
 
-function openLesson(url: string) {
+export function openClassroom(url: string) {
   // TODO: do not add a sidebar iframe or a static export player. Playback stays in the system browser.
-  const href = httpUrl(url)
+  const href = classroomUrl(url)
   if (href === undefined) return
   window.open(href, '_blank', 'noopener,noreferrer')
+}
+
+/** Lessons for the open subject. A row with no subject stays visible; a row for another subject does not. */
+export function lessonsForSubject<T extends { subject?: 'chinese' | 'math' | 'english' | undefined }>(lessons: readonly T[], subject: 'chinese' | 'math' | 'english'): T[] {
+  return lessons.filter(lesson => lesson.subject === undefined || lesson.subject === subject)
 }
 
 /** Recent OpenMAIC lessons: open or copy the URL, and ask the tutor to generate, retry or review. */
@@ -33,7 +38,7 @@ export function LessonsPanel({ lessons, error, disabled, running, t, onGenerate,
   disabled: boolean
   running: boolean
   t: Translate
-  onGenerate: () => void
+  onGenerate?: () => void
   onRetry: (runId: string) => void
   onReview: (classroomId: string) => void
 }) {
@@ -43,18 +48,18 @@ export function LessonsPanel({ lessons, error, disabled, running, t, onGenerate,
     <h3>{t('openmaicTitle')}</h3>
     <p className="student-muted">{t('openmaicHelp')}</p>
     {error && <p role="alert">{error}</p>}
-    <button type="button" disabled={busy} onClick={onGenerate}>{t('openmaicGenerate')}</button>
+    {onGenerate && <button type="button" disabled={busy} onClick={onGenerate}>{t('openmaicGenerate')}</button>}
     {lessons.length === 0 ? <p>{t('openmaicEmpty')}</p> : lessons.map((lesson, index) => <details key={lesson.id} open={index === 0}>
       <summary>{lesson.title} · {t(statusKey[lesson.status])}</summary>
       <p className="student-muted">{lesson.requirement}</p>
       {lesson.warning && <p>{t('openmaicWarning')}: {lesson.warning}</p>}
       {lesson.error && <p role="alert">{lesson.error}</p>}
-      {httpUrl(lesson.url) && <>
-        <p className="student-url">{httpUrl(lesson.url)}</p>
+      {classroomUrl(lesson.url) && <>
+        <p className="student-url">{classroomUrl(lesson.url)}</p>
         <div className="student-segments">
-          <button type="button" onClick={() => openLesson(lesson.url ?? '')}>{t('openmaicOpen')}</button>
+          <button type="button" onClick={() => openClassroom(lesson.url ?? '')}>{t('openmaicOpen')}</button>
           <button type="button" onClick={() => {
-            const url = httpUrl(lesson.url)
+            const url = classroomUrl(lesson.url)
             if (url === undefined) return
             void navigator.clipboard?.writeText(url).then(() => setCopiedId(lesson.id)).catch(() => setCopiedId(''))
           }}>{copiedId === lesson.id ? t('openmaicCopied') : t('openmaicCopy')}</button>

@@ -90,11 +90,35 @@ export interface StudyInsight {
     objectiveId?: string
     title?: string
     reason: InsightReason
+    /** Confirmed school unit name for this subject, when the parent has saved one. */
+    unitName?: string
     /** When practice redirects to an unmet prerequisite, the goal that raised the need. */
     redirectedFrom?: { id: string; title: string }
   } | null
+  /** At most two due mistakes to clear today. A longer overdue list stays in `dueBacklog`. */
+  dueToday: DueClear[]
+  /** Confirmed due mistakes inside the suggestion range, including `dueToday`. */
+  dueBacklog: number
+  /** The same next step, due list and weak points, limited to one subject for the desk. */
+  subjectSteps: Record<CurriculumSubject, SubjectStep>
   errorProfile: { subject: CurriculumSubject; type: ErrorType; count: number; objectiveIds: string[] }[]
   understandingReminders: UnderstandingReminder[]
+}
+
+/** One subject's desk step: recommendation, the two due clears, and the weak points inside that subject. */
+export interface SubjectStep {
+  recommendation: StudyInsight['recommendation']
+  dueToday: DueClear[]
+  dueBacklog: number
+  weakPoints: ObjectiveInsight[]
+}
+
+/** One due mistake the Today page asks the learner to clear. */
+export interface DueClear {
+  id: string
+  subject: CurriculumSubject
+  topic: string
+  objectiveId?: string
 }
 
 
@@ -191,7 +215,7 @@ function learnable(state: StudyState, item: ObjectiveInsight, scope?: Curriculum
  * current unit has no new goal, and a review week adds no new goal.
  * @param state - current durable learning state.
  * @param now - host wall-clock time in milliseconds.
- * @returns objective insights, the five weakest points, per-subject check-in plans and one recommendation.
+ * @returns objective insights, the five weakest points, per-subject check-in plans, at most two due clears and one recommendation.
  */
 export function studyInsight(state: StudyState, now: number): StudyInsight {
   const outcomes = outcomeIndex(state)
@@ -266,44 +290,80 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
     gap.priority += 30
     if (!gapRedirects.has(goal.id)) gapRedirects.set(goal.id, { id: gap.id, title: gap.title })
   }
-  const weakPoints = objectives.filter(item => (item.level === 'due' || item.level === 'weak' || item.level === 'stalled') && taughtUnit(state, item.subject, item.unit))
-    .sort((a, b) => b.priority - a.priority).slice(0, 5)
+  const rankedWeak = objectives.filter(item => (item.level === 'due' || item.level === 'weak' || item.level === 'stalled') && taughtUnit(state, item.subject, item.unit))
+    .sort((a, b) => b.priority - a.priority)
+  const weakPoints = rankedWeak.slice(0, 5)
   const dueMistake = (item: StudyState['mistakes'][number]) => {
     if (item.confirmedAt === undefined || item.dueAt === undefined || item.dueAt > now) return false
     if (!item.objectiveId) return true
     const objective = objectives.find(candidate => candidate.id === item.objectiveId)
     return taughtUnit(state, item.subject, objective?.unit ?? '')
   }
-  const due = SUBJECT_ORDER.map(subject => ({ subject, count: state.mistakes.filter(item => item.subject === subject && dueMistake(item)).length }))
-    .filter(item => item.count > 0).sort((a, b) => b.count - a.count)
-  const first = due[0]
-  const checkIn = diagnostics.filter(plan => plan.due).sort((a, b) => b.sample.length - a.sample.length)[0]
-  const untouched = objectives.find(item => learnable(state, item))
-  const preview = objectives.find(item => item.level === 'untouched' && schoolGate(state, item.subject)?.previewUnit === item.unit)
-  const held = objectives.find(item => item.level === 'untouched' && schoolGate(state, item.subject) !== undefined && !learnable(state, item) && schoolGate(state, item.subject)?.previewUnit !== item.unit)
-  const teachingGoal = objectives.filter(item => item.reasons.some(reason => reason.code === 'needs-teaching') && taughtUnit(state, item.subject, item.unit))
-    .sort((a, b) => b.priority - a.priority)[0]
-  const queued = state.teachingQueue.filter(item => item.objectiveId === undefined).sort((a, b) => a.confirmedAt - b.confirmedAt)[0]
-  const redirect = teachingGoal ? gapRedirects.get(teachingGoal.id) : undefined
-  const recommendation: StudyInsight['recommendation'] = first
-    ? { kind: 'review', subject: first.subject, reason: { code: 'due-mistakes', count: first.count } }
-    : teachingGoal && redirect
+  const dueItems = state.mistakes.filter(dueMistake).sort((left, right) => (left.dueAt ?? 0) - (right.dueAt ?? 0) || left.id.localeCompare(right.id))
+  const clearOf = (items: StudyState['mistakes']): DueClear[] => items.slice(0, 2).map(item => ({
+    id: item.id, subject: item.subject, topic: item.topic, ...(item.objectiveId !== undefined ? { objectiveId: item.objectiveId } : {}),
+  }))
+  // The desk asks for one subject at a time. The same cascade runs inside that subject so a math goal does not stay on the Chinese tab.
+  const stepFor = (subject?: CurriculumSubject) => {
+    const match = (item: { subject: CurriculumSubject }) => subject === undefined || item.subject === subject
+    const subjectDue = dueItems.filter(match)
+    const dueSlice = clearOf(subjectDue)
+    const ranked = rankedWeak.filter(match)
+    const teachingGoal = objectives.filter(item => match(item) && item.reasons.some(reason => reason.code === 'needs-teaching') && taughtUnit(state, item.subject, item.unit))
+      .sort((a, b) => b.priority - a.priority)[0]
+    const queued = state.teachingQueue.filter(item => item.objectiveId === undefined && match(item)).sort((a, b) => a.confirmedAt - b.confirmedAt)[0]
+    const redirect = teachingGoal ? gapRedirects.get(teachingGoal.id) : undefined
+    // A single due mistake does not take the main path. Practice still wins when the goal needs teaching,
+    // has repeated recent errors, has two open mistakes, or has gone stale.
+    const practiceWeak = (subject === undefined ? ranked.slice(0, 5) : ranked).find(item => {
+      if (item.level === 'weak' || item.level === 'stalled') return true
+      if (item.reasons.some(reason => reason.code === 'needs-teaching' || reason.code === 'not-practised-recently' || reason.code === 'prerequisite-gap')) return true
+      const recent = item.reasons.find(reason => reason.code === 'recent-help-or-error')
+      if (recent !== undefined && recent.count >= 2) return true
+      const open = item.reasons.find(reason => reason.code === 'open-mistakes')
+      return open !== undefined && open.count >= 2
+    })
+    const checkIn = diagnostics.filter(plan => plan.due && match(plan)).sort((a, b) => b.sample.length - a.sample.length)[0]
+    const untouched = objectives.find(item => match(item) && learnable(state, item))
+    const preview = objectives.find(item => match(item) && item.level === 'untouched' && schoolGate(state, item.subject)?.previewUnit === item.unit)
+    const held = objectives.find(item => match(item) && item.level === 'untouched' && schoolGate(state, item.subject) !== undefined && !learnable(state, item) && schoolGate(state, item.subject)?.previewUnit !== item.unit)
+    const recommendation: StudyInsight['recommendation'] = teachingGoal && redirect
       ? { kind: 'practice', subject: teachingGoal.subject, objectiveId: redirect.id, title: redirect.title, reason: { code: 'prerequisite-gap', count: 1 }, redirectedFrom: { id: teachingGoal.id, title: teachingGoal.title } }
-    : teachingGoal
-      ? { kind: 'practice', subject: teachingGoal.subject, objectiveId: teachingGoal.id, title: teachingGoal.title, reason: { code: 'needs-teaching', count: 1 } }
-      : queued
-        ? { kind: 'practice', subject: queued.subject, title: queued.prompt.slice(0, 40), reason: { code: 'needs-teaching', count: 1 } }
-        : weakPoints[0]
-          ? { kind: 'practice', subject: weakPoints[0].subject, objectiveId: weakPoints[0].id, title: weakPoints[0].title, reason: weakPoints[0].reasons[0] ?? { code: 'recent-help-or-error', count: 0 } }
-          : checkIn
-        ? { kind: 'diagnose', subject: checkIn.subject, reason: { code: 'diagnosis-due', count: checkIn.sample.length } }
-        : untouched
-          ? { kind: 'learn', subject: untouched.subject, objectiveId: untouched.id, title: untouched.title, reason: { code: 'not-started', count: 0 } }
-          : preview
-            ? { kind: 'preview', subject: preview.subject, objectiveId: preview.id, title: preview.title, reason: { code: 'preview', count: 0 } }
-            : held
-              ? { kind: 'hold', subject: held.subject, reason: { code: 'school-pace', count: 0 } }
-              : null
+      : teachingGoal
+        ? { kind: 'practice', subject: teachingGoal.subject, objectiveId: teachingGoal.id, title: teachingGoal.title, reason: { code: 'needs-teaching', count: 1 } }
+        : queued
+          ? { kind: 'practice', subject: queued.subject, title: queued.prompt.slice(0, 40), reason: { code: 'needs-teaching', count: 1 } }
+          : practiceWeak
+            ? { kind: 'practice', subject: practiceWeak.subject, objectiveId: practiceWeak.id, title: practiceWeak.title, reason: practiceWeak.reasons.find(reason => reason.code !== 'due-mistakes') ?? practiceWeak.reasons[0] ?? { code: 'recent-help-or-error', count: 0 } }
+            : checkIn
+              ? { kind: 'diagnose', subject: checkIn.subject, reason: { code: 'diagnosis-due', count: checkIn.sample.length } }
+              : untouched
+                ? { kind: 'learn', subject: untouched.subject, objectiveId: untouched.id, title: untouched.title, reason: { code: 'not-started', count: 0 } }
+                : preview
+                  ? { kind: 'preview', subject: preview.subject, objectiveId: preview.id, title: preview.title, reason: { code: 'preview', count: 0 } }
+                  : held
+                    ? { kind: 'hold', subject: held.subject, reason: { code: 'school-pace', count: 0 } }
+                    : dueSlice[0]
+                      ? { kind: 'review', subject: dueSlice[0].subject, ...(dueSlice[0].objectiveId !== undefined ? { objectiveId: dueSlice[0].objectiveId } : {}), title: dueSlice[0].topic.slice(0, 40), reason: { code: 'due-mistakes', count: dueSlice.length } }
+                      : null
+    const unitId = recommendation === null ? undefined : state.courses.find(item => item.subject === recommendation.subject)?.progress?.unitId
+    const unitName = unitId !== undefined && recommendation !== null ? curriculumFor(state.profile, recommendation.subject)?.units.find(unit => unit.id === unitId)?.name : undefined
+    return {
+      recommendation: recommendation !== null && unitName !== undefined ? { ...recommendation, unitName } : recommendation,
+      dueToday: dueSlice,
+      dueBacklog: subjectDue.length,
+      weakPoints: ranked.slice(0, 5),
+    }
+  }
+  const across = stepFor()
+  const subjectSteps = {
+    chinese: stepFor('chinese'),
+    math: stepFor('math'),
+    english: stepFor('english'),
+  }
+  const recommendation = across.recommendation
+  const dueToday = across.dueToday
+  const dueBacklog = across.dueBacklog
   const profileCounts = new Map<string, { subject: CurriculumSubject; type: ErrorType; count: number; objectiveIds: Set<string> }>()
   for (const mistake of state.mistakes) {
     if (mistake.confirmedAt === undefined || mistake.errorType === undefined) continue
@@ -338,7 +398,7 @@ export function studyInsight(state: StudyState, now: number): StudyInsight {
     const practised = objectives.filter(candidate => candidate.lastAt !== undefined).sort((a, b) => (b.lastAt ?? 0) - (a.lastAt ?? 0))[0]
     if (nextTarget !== undefined && (recommendation.kind === 'preview' || practised === undefined || practised.unit !== nextTarget.unit)) remind(nextTarget, 'before-next')
   }
-  return { objectives, weakPoints, diagnostics, recommendation, errorProfile, understandingReminders }
+  return { objectives, weakPoints, diagnostics, recommendation, dueToday, dueBacklog, subjectSteps, errorProfile, understandingReminders }
 }
 
 /**
@@ -410,6 +470,8 @@ export function insightSummary(insight: StudyInsight) {
     weakPoints: insight.weakPoints.slice(0, 3).map(item => ({ id: item.id, subject: item.subject, title: item.title, level: item.level, priority: item.priority, reasons: item.reasons })),
     diagnostics: insight.diagnostics.map(plan => ({ subject: plan.subject, due: plan.due, ...(plan.lastAt !== undefined ? { lastAt: plan.lastAt } : {}), ...(plan.nextAt !== undefined ? { nextAt: plan.nextAt } : {}), sample: plan.sample.map(item => item.id) })),
     recommendation: insight.recommendation,
+    dueToday: insight.dueToday,
+    dueBacklog: insight.dueBacklog,
     errorProfile: insight.errorProfile,
     understandingReminders: insight.understandingReminders,
   }

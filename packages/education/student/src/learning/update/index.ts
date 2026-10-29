@@ -1,7 +1,7 @@
 import { activeSession, requireValue } from '../shared.ts'
 import { scheduleMistakes } from '../schedule.ts'
 import { commandSchema, stateSchema, type Command, type StudyState } from '../../schema.ts'
-import { applyArchiveTerm, applyConfigureCourse, applyCourse, applyLimits, applyMaterial, applyOpenmaicSettings, applySchoolProgress, applySetup } from './profile.ts'
+import { applyArchiveTerm, applyConfigureCourse, applyCourse, applyInterests, applyLimits, applyMaterial, applyOpenmaicSettings, applySchoolProgress, applySetup } from './profile.ts'
 import { applyAnswerOrHint, applyRecord, applyStart, applyStop, applyStuck, applyTask } from './session.ts'
 import { applyClassifyMistake, applyConcept, applyConfirmConcept, applyConfirmMistake, applyLinkMistake, applyMistake, applyObjective, applyRelation } from './mistakes.ts'
 import { applyConfirmPaper, applyConfirmWorkbook, applyDiscardSheet, applyDismissTeaching, applyGradeSheet, applyPaperDraft, applyWorksheet, applyWorkbookDraft } from './paper.ts'
@@ -37,6 +37,7 @@ export function rawApply(previous: StudyState, command: Command, now: number): S
     case 'course': result = applyCourse({ ...base, command }); break
     case 'school-progress': result = applySchoolProgress({ ...base, command }); break
     case 'openmaic-settings': result = applyOpenmaicSettings({ ...base, command }); break
+    case 'interests': result = applyInterests({ ...base, command }); break
     case 'task': result = applyTask({ ...base, command }); break
     case 'answer': case 'hint': result = applyAnswerOrHint({ ...base, command }); break
     case 'stuck': result = applyStuck({ ...base, command }); break
