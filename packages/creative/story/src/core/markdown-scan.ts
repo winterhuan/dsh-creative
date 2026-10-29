@@ -76,9 +76,9 @@ export function firstTable(lines: readonly TextLine[], start = 0, end = lines.le
     for (let row = index + 2; row < end; row += 1) {
       const line = lines[row]
       if (line === undefined || !line.text.trim().startsWith('|')) break
-      rows.push({ cells: cellsOf(line.text), line: line.number })
+      rows.push({ cells: tableCells(line.text), line: line.number })
     }
-    return { headers: cellsOf(header.text), rows }
+    return { headers: tableCells(header.text), rows }
   }
   return undefined
 }
@@ -95,6 +95,7 @@ export function numberedItems(lines: readonly TextLine[], start: number, end: nu
   return items
 }
 
-function cellsOf(line: string): string[] {
+/** Cells of one GitHub-style table row, with bold marks removed. */
+export function tableCells(line: string): string[] {
   return line.trim().replace(/^\|/u, '').replace(/\|$/u, '').split('|').map(cell => stripMarks(cell))
 }

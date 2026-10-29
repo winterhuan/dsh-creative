@@ -9,6 +9,7 @@
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { paddedChapterNumber } from './chapter-names.ts'
 
 /** Schema of {@link evaluateWordcount} results. */
 export const WORDCOUNT_SCHEMA = 'story-wordcount-result/v1'
@@ -355,7 +356,7 @@ export function findChapterFile(directory: string, chapter: number, options: { r
       .sort()
     : []
   if (allowMissing && matches.length === 0) {
-    return join(directory, `${options.outline ? '细纲_' : ''}第${String(chapter).padStart(3, '0')}章.md`)
+    return join(directory, `${options.outline ? '细纲_' : ''}第${paddedChapterNumber(chapter)}章.md`)
   }
   const label = options.outline ? 'outline' : 'body'
   const names = matches.map(path => path.slice(directory.length + 1)).join(', ')

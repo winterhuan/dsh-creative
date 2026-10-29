@@ -4,9 +4,12 @@
  * Runners receive paths that have already passed these checks. A guard
  * failure is a `CliError` and does not write.
  */
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path'
+import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { looseRealpath } from '../core/fs-path.ts'
+
+export { looseRealpath }
 
 const RESERVED_BOOKS = new Set(['长篇', '短篇', '拆文库', '正文', '大纲', '设定', '追踪', '对标', '参考资料'])
 
@@ -15,16 +18,6 @@ export class CliError extends Error {
   constructor(message: string, readonly code = 'INVALID_ARGUMENT', readonly exitCode = 2) {
     super(message)
     this.name = 'CliError'
-  }
-}
-
-/** Resolve symlinks as far as the path exists, like Python's non-strict `Path.resolve()`. */
-export function looseRealpath(path: string): string {
-  try {
-    return realpathSync(path)
-  } catch {
-    const parent = dirname(path)
-    return parent === path ? path : join(looseRealpath(parent), basename(path))
   }
 }
 

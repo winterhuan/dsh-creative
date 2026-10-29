@@ -5,6 +5,7 @@
  * pure function of the state and renders byte-for-byte like the Python
  * reference; the store writes them beside `_tracking-state.json`.
  */
+import { paddedChapterNumber } from '../chapter-names.ts'
 import {
   CONTEXT_HEADINGS, CONTEXT_MAX_BYTES, CONTEXT_TARGET_BYTES, DELTA_MAX_BYTES, DELTA_TARGET_BYTES,
   FORESHADOW_IMPORTANCE, SNAPSHOT_MAX_BYTES, SNAPSHOT_TARGET_BYTES, byteSize, require,
@@ -183,7 +184,7 @@ export function renderDelta(
   acceptedFindings: readonly { readonly rule_id: string; readonly reason: string }[] = [],
 ): string {
   const lines = [
-    `# 第${String(chapter).padStart(3, '0')}章 · ${title}`,
+    `# 第${paddedChapterNumber(chapter)}章 · ${title}`,
     `- 结果：${delta.result}`,
     `- 下一章承诺：${delta.next_chapter_commitments.join('；') || '无'}`,
     '',

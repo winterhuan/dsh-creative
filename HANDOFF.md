@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-28。
+最后更新：2026-10-29。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -22,6 +22,8 @@
 ## 1. 现状速览
 
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
+
+2026-10-29 小说模块边界见[架构笔记](.agents/notes/implemented/architecture/2026-10-29-story-architecture-structure.zh.md)。命令名、JSON 与门禁缺省未改。
 
 2026-10-28 学生学习：OpenMAIC 课记在 `.study/openmaic-lessons.json`，由助手 shell 生成，Host 不代理 `:3000`。兴趣标签 3–8 个，未保存时用示例；今日建议先走当前目标，到期错题最多清 2 条。见[互动课](.agents/notes/implemented/feature/2026-10-28-student-openmaic-lessons.zh.md)与[兴趣情境](.agents/notes/implemented/feature/2026-10-28-student-interest-context.zh.md)。
 

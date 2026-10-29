@@ -7,8 +7,9 @@
  * state is not read.
  */
 import { createHash } from 'node:crypto'
-import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, realpathSync, statSync } from 'node:fs'
-import { basename, dirname, join, relative, sep } from 'node:path'
+import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from 'node:fs'
+import { basename, join, relative, sep } from 'node:path'
+import { looseRealpath } from './fs-path.ts'
 
 /** Invalid lookup input or a library that changed while it was read. */
 export class SettingsLookupError extends Error {
@@ -120,16 +121,6 @@ interface Prepared {
 interface IndexedDoc extends Prepared {
   readonly tokens: readonly string[]
   readonly tf: ReadonlyMap<string, number>
-}
-
-/** Resolve symlinks as far as the path exists. */
-function looseRealpath(path: string): string {
-  try {
-    return realpathSync(path)
-  } catch {
-    const parent = dirname(path)
-    return parent === path ? path : join(looseRealpath(parent), basename(path))
-  }
 }
 
 function contained(root: string, path: string): boolean {

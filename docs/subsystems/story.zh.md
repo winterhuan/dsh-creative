@@ -40,7 +40,7 @@ description: "小说子系统：作品身份、章节一致性、原生 workflow
 <a id="related"></a>
 ## 相关契约
 
-章节交接见[原生 workflow 决策](../../.agents/notes/implemented/feature/2026-10-03-story-native-workflow.zh.md)，确定性检查见[规则归属决策](../../.agents/notes/implemented/simplification/2026-10-03-story-rule-ownership.zh.md)。仅供人浏览技能的能力归 [Skill Viewer](skill-viewer.zh.md) 所有。
+章节交接见[原生 workflow 决策](../../.agents/notes/implemented/feature/2026-10-03-story-native-workflow.zh.md)，确定性检查见[规则归属决策](../../.agents/notes/implemented/simplification/2026-10-03-story-rule-ownership.zh.md)，CLI、core、Host 与 Skill 的划分见[小说模块边界](../../.agents/notes/implemented/architecture/2026-10-29-story-architecture-structure.zh.md)。仅供人浏览技能的能力归 [Skill Viewer](skill-viewer.zh.md) 所有。
 
 <a id="dev-note"></a>
 ## 开发备注
