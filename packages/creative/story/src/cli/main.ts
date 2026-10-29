@@ -58,7 +58,7 @@ function convert(name: string, raw: string, spec: OptionSpec): unknown {
 }
 
 /**
- * Parse the command line the way the Python dispatcher did.
+ * Parse argv into a family, an action, and option values.
  * @param argv - arguments after the program name.
  * @returns the command pair and option values.
  * @throws CliError for an unknown command, option, value or a missing required option.

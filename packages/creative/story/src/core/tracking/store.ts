@@ -8,10 +8,12 @@
  * is reclaimed, and the directory is removed when the commit finishes.
  */
 import {
-  chmodSync, closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync,
+  chmodSync, closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync,
   renameSync, rmSync, statSync, unlinkSync, writeSync,
 } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
+import { looseRealpath } from '../fs-path.ts'
+import { paddedChapterNumber } from '../chapter-names.ts'
 import { requireChapterSourcesUnchanged } from '../wordcount.ts'
 import {
   DELTA_MAX_BYTES, FACTS_LINK_PATH, FACTS_LINK_SCHEMA, TrackingError, asInt, emptyFactsLink, mergeTransaction,
@@ -29,16 +31,6 @@ const LOCK_STALE_MS = 60_000
 export interface TrackingWrite {
   readonly state: TrackingState
   readonly warnings: readonly string[]
-}
-
-/** Resolve symlinks as far as the path exists, like Python's non-strict `Path.resolve()`. */
-function looseRealpath(path: string): string {
-  try {
-    return realpathSync(path)
-  } catch {
-    const parent = dirname(path)
-    return parent === path ? path : join(looseRealpath(parent), basename(path))
-  }
 }
 
 /**
@@ -66,8 +58,7 @@ export function statePath(project: string): string {
  * @returns the record path.
  */
 export function deltaPath(tracking: string, chapter: number): string {
-  const width = Math.max(3, String(chapter).length)
-  return join(tracking, '逐章记录', `第${String(chapter).padStart(width, '0')}章.md`)
+  return join(tracking, '逐章记录', `第${paddedChapterNumber(chapter)}章.md`)
 }
 
 /**

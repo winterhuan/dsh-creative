@@ -8,6 +8,7 @@
  */
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { paddedChapterNumber } from './chapter-names.ts'
 import { WordcountError, chapterSourceDigests, chapterSourceSnapshot } from './wordcount.ts'
 import { extractChapterRules, normalizeRuleSentence, type ExtractedRule } from './rules.ts'
 import { acceptedFindingsOf, type AcceptedFinding } from './tracking/schema.ts'
@@ -61,8 +62,7 @@ export type RuleAuditVerification =
  * @returns `草稿/审稿/第NNN章.rules.json`, padded to at least three digits.
  */
 export function ruleAuditRelativePath(chapter: number): string {
-  const width = Math.max(3, String(chapter).length)
-  return `草稿/审稿/第${String(chapter).padStart(width, '0')}章.rules.json`
+  return `草稿/审稿/第${paddedChapterNumber(chapter)}章.rules.json`
 }
 
 function failure(chapter: number, path: string, reasons: readonly string[]): RuleAuditVerification {

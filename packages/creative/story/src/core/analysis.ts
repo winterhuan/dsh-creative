@@ -9,6 +9,7 @@
 import { createHash } from 'node:crypto'
 import { closeSync, existsSync, fsyncSync, linkSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, statSync, unlinkSync, writeSync } from 'node:fs'
 import { dirname, isAbsolute, join } from 'node:path'
+import { paddedChapterNumber } from './chapter-names.ts'
 
 const PLOT_TYPES = new Set(['转折点', '信息揭示', '冲突', '解决', '铺垫', '行动', '对话', '状态变化'])
 const TONES = new Set(['紧张', '轻松', '悲伤', '热血', '爽', '甜', '温馨', '恐怖', '压抑', '其他'])
@@ -122,7 +123,7 @@ function chapterRanges(document: unknown, lineCount: number, output: string): { 
     }
     const title = text(entry.title, 'chapter title', 160)
     seen.add(chapter)
-    const path = join(output, '章节', `第${String(chapter).padStart(3, '0')}章_摘要.md`)
+    const path = join(output, '章节', `第${paddedChapterNumber(chapter)}章_摘要.md`)
     if (!isRegularFileOrMissing(path)) throw new AnalysisError(`chapter output must be a regular file: ${path}`)
     result.push({ chapter, title, start_line: startLine, end_line: endLine, path, exists: existsSync(path) })
   }

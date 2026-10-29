@@ -20,8 +20,10 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { basename, dirname, join, relative, sep } from 'node:path'
-import { declaredAliases } from './settings-lookup.ts'
+import { paddedChapterNumber } from './chapter-names.ts'
 import { earlySkillHits } from './facts.ts'
+import { markdownHeading, stripMarks, tableCells, textLines, type TextLine } from './markdown-scan.ts'
+import { declaredAliases } from './settings-lookup.ts'
 import { normalizeState, type TrackingState } from './tracking/schema.ts'
 import { statePath } from './tracking/store.ts'
 import { findChapterFile } from './wordcount.ts'
@@ -135,11 +137,6 @@ interface NormalizedConfig {
   readonly voidEnabled: boolean
 }
 
-interface Line {
-  readonly number: number
-  readonly text: string
-}
-
 interface UnitSpan {
   readonly id: string
   readonly start: number
@@ -157,7 +154,7 @@ function encoded(value: unknown): number {
 }
 
 function chapterLabel(chapter: number): string {
-  return String(chapter).padStart(3, '0')
+  return paddedChapterNumber(chapter)
 }
 
 function escapeRegExp(value: string): string {
@@ -166,10 +163,6 @@ function escapeRegExp(value: string): string {
 
 function headingsOf(source: RuleSource): string[] {
   return typeof source.heading === 'string' ? [source.heading] : [...source.heading]
-}
-
-function stripMarks(value: string): string {
-  return value.replace(/\*\*/gu, '').trim()
 }
 
 function isPlaceholder(value: string): boolean {
@@ -198,18 +191,7 @@ function matchField(line: string, heading: string): string | undefined {
   return matched?.[1]?.trim()
 }
 
-function markdownHeading(line: string): { level: number; text: string } | undefined {
-  const matched = /^(#{1,6})\s+(.+?)\s*#*\s*$/u.exec(line.trim())
-  if (matched?.[1] === undefined || matched[2] === undefined) return undefined
-  return { level: matched[1].length, text: stripMarks(matched[2]) }
-}
-
-function toLines(text: string): Line[] {
-  const parts = text.split(/\n/u)
-  return parts.map((part, index) => ({ number: index + 1, text: part.replace(/\r$/u, '') }))
-}
-
-function sectionSpan(lines: readonly Line[], heading: string): { start: number; end: number } | undefined {
+function sectionSpan(lines: readonly TextLine[], heading: string): { start: number; end: number } | undefined {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index]
     if (line === undefined) continue
@@ -237,7 +219,7 @@ function sectionSpan(lines: readonly Line[], heading: string): { start: number; 
   return undefined
 }
 
-function listItems(lines: readonly Line[], start: number, end: number): { text: string; line: number }[] {
+function listItems(lines: readonly TextLine[], start: number, end: number): { text: string; line: number }[] {
   const items: { text: string; line: number }[] = []
   for (const line of lines.slice(start, end)) {
     if (line.text.trim().startsWith('|')) continue
@@ -262,11 +244,11 @@ interface OutlinePointRow {
  * The plot cell is another column whose header contains `情节点`.
  * @returns `undefined` when no such column exists.
  */
-function outlinePointRows(lines: readonly Line[], boundaryHeading: string): OutlinePointRow[] | undefined {
+function outlinePointRows(lines: readonly TextLine[], boundaryHeading: string): OutlinePointRow[] | undefined {
   for (let index = 0; index < lines.length; index += 1) {
     const header = lines[index]
     if (header === undefined || !header.text.includes('|')) continue
-    const headers = cellsOf(header.text)
+    const headers = tableCells(header.text)
     const boundaryColumn = headers.findIndex(cell => cell === boundaryHeading)
     const separator = lines[index + 1]
     if (boundaryColumn < 0 || separator === undefined || !/^\s*\|?\s*:?-{3,}/u.test(separator.text)) continue
@@ -275,7 +257,7 @@ function outlinePointRows(lines: readonly Line[], boundaryHeading: string): Outl
     for (let row = index + 2; row < lines.length; row += 1) {
       const line = lines[row]
       if (line === undefined || !line.text.trim().startsWith('|')) break
-      const cells = cellsOf(line.text)
+      const cells = tableCells(line.text)
       rows.push({
         plot: plotColumn < 0 ? '' : cells[plotColumn] ?? '',
         boundary: cells[boundaryColumn] ?? '',
@@ -300,10 +282,6 @@ function outlinePointText(plot: string, boundary: string): string | undefined {
   return undefined
 }
 
-function cellsOf(line: string): string[] {
-  return line.trim().replace(/^\|/u, '').replace(/\|$/u, '').split('|').map(cell => stripMarks(cell))
-}
-
 function rangeOnLine(line: string): [number, number] | undefined {
   const labeled = /章节范围\s*[:：]\s*(.*)$/u.exec(stripMarks(line.trim().replace(/^[-*+]\s+/u, '')))
   const target = labeled?.[1] ?? ''
@@ -320,7 +298,7 @@ function unitToken(value: string): string {
   return cleaned === '' ? 'unit' : cleaned.slice(0, 40)
 }
 
-function unitsIn(lines: readonly Line[]): UnitSpan[] {
+function unitsIn(lines: readonly TextLine[]): UnitSpan[] {
   const marks: number[] = []
   lines.forEach((line, index) => {
     const heading = markdownHeading(line.text)
@@ -344,7 +322,7 @@ function unitsIn(lines: readonly Line[]): UnitSpan[] {
   return units
 }
 
-function currentUnit(lines: readonly Line[], chapter: number): UnitSpan | undefined {
+function currentUnit(lines: readonly TextLine[], chapter: number): UnitSpan | undefined {
   const matches = unitsIn(lines).filter(unit => chapter >= unit.from && chapter <= unit.to)
   matches.sort((left, right) => (left.to - left.from) - (right.to - right.from) || left.start - right.start)
   return matches[0]
@@ -517,7 +495,7 @@ function locateVolume(project: string, chapter: number, warnings: RuleWarning[])
   for (const path of files) {
     const loaded = readSource(path)
     if (loaded === undefined) continue
-    const unit = currentUnit(toLines(loaded.text), chapter)
+    const unit = currentUnit(textLines(loaded.text), chapter)
     if (unit !== undefined) ranked.push({ path, width: unit.to - unit.from })
   }
   ranked.sort((left, right) => left.width - right.width || left.path.localeCompare(right.path, 'zh'))
@@ -536,7 +514,7 @@ function locateFile(project: string, pattern: string, chapter: number, warnings:
   return undefined
 }
 
-function fieldIn(lines: readonly Line[], start: number, end: number, heading: string): { text: string; line: number } | undefined {
+function fieldIn(lines: readonly TextLine[], start: number, end: number, heading: string): { text: string; line: number } | undefined {
   for (const line of lines.slice(start, end)) {
     const text = matchField(line.text, heading)
     if (text !== undefined) return { text, line: line.number }
@@ -559,7 +537,7 @@ function pushFragments(
 function extractPrefix(
   prefix: string,
   heading: string,
-  lines: readonly Line[],
+  lines: readonly TextLine[],
   path: string,
   chapter: number,
   warnings: RuleWarning[],
@@ -679,7 +657,7 @@ function extractPrefix(
   return rules
 }
 
-function tableRowsIn(lines: readonly Line[], start: number, end: number): { cells: string[]; line: number }[] {
+function tableRowsIn(lines: readonly TextLine[], start: number, end: number): { cells: string[]; line: number }[] {
   const rows: { cells: string[]; line: number }[] = []
   for (let index = start; index < end; index += 1) {
     const header = lines[index]
@@ -689,14 +667,14 @@ function tableRowsIn(lines: readonly Line[], start: number, end: number): { cell
     for (let row = index + 2; row < end; row += 1) {
       const line = lines[row]
       if (line === undefined || !line.text.trim().startsWith('|')) break
-      rows.push({ cells: cellsOf(line.text), line: line.number })
+      rows.push({ cells: tableCells(line.text), line: line.number })
     }
     return rows
   }
   return rows
 }
 
-function numberedItems(lines: readonly Line[], start: number, end: number): { number: number; text: string; line: number }[] {
+function numberedItems(lines: readonly TextLine[], start: number, end: number): { number: number; text: string; line: number }[] {
   const items: { number: number; text: string; line: number }[] = []
   for (const line of lines.slice(start, end)) {
     const matched = /^\s*(\d+)\s*[、.．]\s+(.+)$/u.exec(line.text)
@@ -1077,7 +1055,7 @@ function collect(project: string, chapter: number, file: WritingCheckFile | unde
     const loaded = readSource(path)
     if (loaded === undefined) continue
     const relativePath = posixRelative(project, path)
-    const lines = toLines(loaded.text)
+    const lines = textLines(loaded.text)
     for (const heading of headingsOf(source)) {
       rules.push(...extractPrefix(source.prefix, heading, lines, relativePath, chapter, warnings, state, stateText))
     }
@@ -1096,7 +1074,7 @@ function appendOptionalRules(project: string, chapter: number, outline: string |
   if (outline !== undefined) {
     const loaded = readSource(outline)
     if (loaded !== undefined) {
-      const field = fieldIn(toLines(loaded.text), 0, Number.MAX_SAFE_INTEGER, '爽点')
+      const field = fieldIn(textLines(loaded.text), 0, Number.MAX_SAFE_INTEGER, '爽点')
       if (field !== undefined && field.text.trim() !== '') {
         rules.push({ id: `OUT-${chapterLabel(chapter)}-PAY`, text: field.text, source: { path: posixRelative(project, outline), line: field.line } })
       }
@@ -1106,7 +1084,7 @@ function appendOptionalRules(project: string, chapter: number, outline: string |
   if (volume === undefined) return
   const loaded = readSource(volume)
   if (loaded === undefined) return
-  const lines = toLines(loaded.text)
+  const lines = textLines(loaded.text)
   const relative = posixRelative(project, volume)
   const haystack = `${outline === undefined ? '' : readSource(outline)?.text ?? ''}\n${readSource(locateBody(project, chapter) ?? '')?.text ?? ''}`
   pushMentioned(rules, lines, relative, '原著事实校正与改编边界', 'CANON', haystack, chapter)
@@ -1122,7 +1100,7 @@ function appendOptionalRules(project: string, chapter: number, outline: string |
 
 function pushMentioned(
   rules: ExtractedRule[],
-  lines: readonly Line[],
+  lines: readonly TextLine[],
   path: string,
   heading: string,
   prefix: string,
@@ -1201,7 +1179,7 @@ export function scanChapterQuality(project: string, outlinePath: string, bodyPat
   const config = normalizeConfig(file, warnings)
   const outline = readSource(outlinePath)?.text ?? ''
   const heading = castHeading(config.sources)
-  const field = toLines(outline).map(line => matchField(line.text, heading)).find(value => value !== undefined)
+  const field = textLines(outline).map(line => matchField(line.text, heading)).find(value => value !== undefined)
   const chapter = /细纲_第0*(\d+)章/u.exec(basename(outlinePath))
   const cast = field === undefined || isPlaceholder(field)
     ? undefined
