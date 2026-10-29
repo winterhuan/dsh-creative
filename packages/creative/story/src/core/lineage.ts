@@ -10,8 +10,9 @@
  * of being silently omitted.
  */
 import { createHash } from 'node:crypto'
-import { appendFileSync, existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { appendFileSync, existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { looseRealpath } from './fs-path.ts'
 import { pythonJson } from './json.ts'
 
 /** Domains an edge may connect. */
@@ -43,16 +44,6 @@ export interface LineageEdge {
 function utcNow(): string {
   const iso = new Date().toISOString()
   return `${iso.slice(0, 23)}000Z`
-}
-
-/** Resolve symlinks as far as the path exists, like Python's non-strict `Path.resolve()`. */
-function looseRealpath(path: string): string {
-  try {
-    return realpathSync(path)
-  } catch {
-    const parent = dirname(path)
-    return parent === path ? path : join(looseRealpath(parent), basename(path))
-  }
 }
 
 function relativeToRoot(workspaceRoot: string, raw: string, mustExist: boolean): string {

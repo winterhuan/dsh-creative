@@ -7,8 +7,9 @@
  * does not implement it.
  */
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { basename, dirname, join, sep } from 'node:path'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { join, sep } from 'node:path'
+import { looseRealpath } from '../fs-path.ts'
 import {
   assessHealth, DEFAULT_STALE_CHARACTER_CHAPTERS, DEFAULT_STALE_PLANTED_CHAPTERS, DEFAULT_STALE_THREAD_CHAPTERS,
   HEALTH_THRESHOLD_MAX, type HealthReport,
@@ -54,16 +55,6 @@ function boundedThreshold(value: number | undefined, label: string, fallback: nu
   if (value === undefined) return fallback
   require(Number.isInteger(value) && value >= 1 && value <= HEALTH_THRESHOLD_MAX, `${label} must be an integer from 1 to ${String(HEALTH_THRESHOLD_MAX)}`)
   return value
-}
-
-/** Resolve symlinks as far as the path exists, like Python's non-strict `Path.resolve()`. */
-function looseRealpath(path: string): string {
-  try {
-    return realpathSync(path)
-  } catch {
-    const parent = dirname(path)
-    return parent === path ? path : join(looseRealpath(parent), basename(path))
-  }
 }
 
 function sourcePath(project: string, relative: string): string {

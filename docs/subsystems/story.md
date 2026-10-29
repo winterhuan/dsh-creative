@@ -40,7 +40,7 @@ The `story` namespace holds the Zhuque credential reference. The settings client
 <a id="related"></a>
 ## Related contracts
 
-See the [native workflow decision](../../.agents/notes/implemented/feature/2026-10-03-story-native-workflow.md) for chapter handoffs and the [rule ownership decision](../../.agents/notes/implemented/simplification/2026-10-03-story-rule-ownership.md) for deterministic checks. Human inspection of Skills belongs to [Skill Viewer](skill-viewer.md).
+See the [native workflow decision](../../.agents/notes/implemented/feature/2026-10-03-story-native-workflow.md) for chapter handoffs, the [rule ownership decision](../../.agents/notes/implemented/simplification/2026-10-03-story-rule-ownership.md) for deterministic checks, and the [story module map](../../.agents/notes/implemented/architecture/2026-10-29-story-architecture-structure.md) for the CLI, core, Host, and Skill split. Human inspection of Skills belongs to [Skill Viewer](skill-viewer.md).
 
 <a id="dev-note"></a>
 ## Dev Note

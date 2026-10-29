@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promi
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, type TestContext } from 'vitest'
+import { sampleTrackingInput } from './support/tracking-input.ts'
 import { main } from '../src/cli/main.ts'
 import { loadFacts, recordFacts } from '../src/core/facts.ts'
 import { normalizeState } from '../src/core/tracking/schema.ts'
@@ -13,15 +14,7 @@ async function book(context: TestContext): Promise<{ root: string; directory: st
   context.onTestFinished(async () => { await rm(root, { recursive: true, force: true }) })
   const directory = join(root, '样书')
   await mkdir(join(directory, '正文'), { recursive: true })
-  initialize(directory, {
-    schema_version: 1, book_title: '样书', last_chapter: 1,
-    context: {
-      position: { volume: '第一卷', volume_start_chapter: 1, story_time: '夜', scene: '街' },
-      long_term_constraints: [], active_character_names: [], continuity_risks: [],
-      recent_chapters: [], next_chapter_commitments: [],
-    },
-    character_snapshots: {}, foreshadow: [], timeline_events: [],
-  })
+  initialize(directory, sampleTrackingInput())
   return { root, directory }
 }
 

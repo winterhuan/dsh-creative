@@ -10,6 +10,7 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, sep } from 'node:path'
+import { paddedChapterNumber } from './chapter-names.ts'
 import { findChapterFile } from './wordcount.ts'
 import { atomicWriteText, jsonPayload, loadState, statePath, trackingRoot, withProjectWriteLock } from './tracking/store.ts'
 import { factsDiffMode } from './writing-check.ts'
@@ -112,8 +113,7 @@ export function factsPath(project: string): string {
  * @param chapter - the 1-based chapter number.
  */
 export function claimsRelativePath(chapter: number): string {
-  const width = Math.max(3, String(chapter).length)
-  return `草稿/事实/第${String(chapter).padStart(width, '0')}章.claims.json`
+  return `草稿/事实/第${paddedChapterNumber(chapter)}章.claims.json`
 }
 
 /**
