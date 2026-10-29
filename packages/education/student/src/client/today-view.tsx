@@ -72,7 +72,7 @@ export function TodayView({ study, now, serverNow, remaining, subject, activity,
       {readyUrl && <div className="student-segments"><button type="button" className="student-primary" onClick={() => onOpenClassroom(readyUrl)}>{t('goToClass')}</button></div>}
       {ready && <p className="student-muted">{ready.title}</p>}
     </section>}
-    <section className="student-status"><h3>{t('goal')}</h3><p>{study.profile.nickname} · {t('todayStars')}: {study.todayStars}</p>
+    <section className="student-status"><p>{study.profile.nickname} · {t('todayStars')}: {study.todayStars}</p>
       <p className="student-timer">{t('dailyRemaining')}: {clock(remaining)} · {t('due')}: {study.dueCount} · {t('weakPoints')}: {study.weakPoints.length}</p>
       {schoolUnit && <p>{t('schoolFrontier')}: {schoolUnit.name} · {t(progress?.posture === 'catch-up' ? 'catchUp' : 'keepUp')}{progress?.pace === 'review' ? ` · ${t('reviewWeek')}` : ''} · {t('homeProgress')}: {homeUnit?.name ?? t('homeNotStarted')}</p>}
       {schoolUnit && <p>{t('schoolHere')}</p>}
