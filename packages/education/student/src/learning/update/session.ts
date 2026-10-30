@@ -1,11 +1,11 @@
-import { DAY, MINUTE, OFFSET, canonical, choiceMismatch, matchChoice, requireValue, sameSavedAnswer, scopeSelects, spent, studyDay } from '../shared.ts'
+import { canonical, choiceMismatch, matchChoice, requireValue, sameSavedAnswer, scopeSelects, spent, studyDay } from '../shared.ts'
 import { objectiveOf } from '../view.ts'
 import { alignRecord, dropTaught, resolveAssistance } from './context.ts'
 import type { UpdateContext } from './index.ts'
 import { builtinObjectiveIn, curriculumFor } from '../../curriculum.ts'
 import type { StudyState } from '../../schema.ts'
 
-/** Open the next question inside the active block. */
+/** Open the next question inside the active block; an unanswered question can be replaced when skipping or switching tasks. */
 export function applyTask(ctx: UpdateContext<'task'>): StudyState {
   const { command, previous, state, active } = ctx
   requireValue(active && active.id === command.task.sessionId && active.subject === command.task.subject, '请在当前学习段内出题。')
@@ -15,7 +15,7 @@ export function applyTask(ctx: UpdateContext<'task'>): StudyState {
     return previous
   }
   requireValue(!state.attempts.some(item => item.id === command.task.id && item.sessionId === command.task.sessionId), '这个学习段里的题目编号已使用。下一段学习可以再用同一个编号。')
-  requireValue(!state.task || state.task.sessionId !== active.id || state.attempts.some(item => item.id === state.task?.id), '请先完成当前题目的作答和反馈。')
+  requireValue(!state.task || state.task.sessionId !== active.id || state.task.response === undefined || state.attempts.some(item => item.id === state.task?.id), '请先完成当前已作答题目的反馈。')
   const mistake = state.mistakes.find(item => item.id === command.task.mistakeId)
   requireValue(active.mode !== 'review' || mistake, '复习题需要关联一条已确认的错题。')
   requireValue(active.mode !== 'diagnose' || command.task.objectiveId !== undefined, '摸底题必须关联学习目标（objectiveId）。')
@@ -63,12 +63,12 @@ export function applyStuck(ctx: UpdateContext<'stuck'>): StudyState {
     ...(task.objectiveId !== undefined ? { objectiveId: task.objectiveId } : {}),
     ...(task.variant !== undefined ? { variant: task.variant } : {}),
     ...(task.figure !== undefined ? { figure: task.figure } : {}),
-    at: now, ...(materialId ? { materialId } : {}), ...(now > active.deadline ? { late: true as const } : {}),
+    at: now, ...(materialId ? { materialId } : {}),
   })
   return state
 }
 
-/** Start one learning block, archiving a reused session id first. */
+/** Start one learning block, automatically closing any earlier open block and archiving a reused session id. */
 export function applyStart(ctx: UpdateContext<'start'>): StudyState {
   const { command, previous, state, active, now } = ctx
   const existing = state.sessions.find(item => item.id === command.id)
@@ -76,15 +76,6 @@ export function applyStart(ctx: UpdateContext<'start'>): StudyState {
     requireValue(existing.subject === command.subject && existing.mode === command.mode, '这个学习段编号正在使用，请换一个新编号。')
     return previous
   }
-  if (existing) {
-    const archived = `${existing.id}-past-${state.sessions.filter(item => item.id.startsWith(`${existing.id}-past-`)).length}`
-    requireValue(archived.length <= 80, '这个学习段编号已经用过，请换一个更短的新编号。')
-    for (const attempt of state.attempts) if (attempt.sessionId === existing.id) attempt.sessionId = archived
-    if (state.task?.sessionId === existing.id) state.task.sessionId = archived
-    existing.id = archived
-  }
-  const id = command.id
-  requireValue(!active, '请先结束当前学习段。')
   requireValue(command.scope === undefined || command.mode === 'diagnose' || command.mode === 'foundation' || command.mode === 'school', '自定义范围只用于摸底或学习。')
   if (command.scope) {
     const file = curriculumFor({ grade: command.scope.grade, term: command.scope.term }, command.subject)
@@ -94,9 +85,26 @@ export function applyStart(ctx: UpdateContext<'start'>): StudyState {
   }
   const course = state.courses.find(item => item.subject === command.subject)
   requireValue(command.mode !== 'school' || course, '该科教材与学校进度尚未确认；可先选择 foundation 通用基础练习。')
-  const nextMidnight = (Math.floor((now + OFFSET) / DAY) + 1) * DAY - OFFSET
-  state.sessions.push({ id, subject: command.subject, mode: command.mode, startedAt: now, ...(command.mode === 'diagnose' ? { intensity: command.intensity ?? 'standard' } : {}),
-    deadline: Math.min(now + state.profile.limits.blockMinutes * MINUTE, nextMidnight),
+  if (active) {
+    active.endedAt = now
+    active.spentMs = spent(active, now)
+    const day = studyDay(active.startedAt)
+    const hasWork = state.attempts.some(item => item.sessionId === active.id)
+    if (hasWork && !state.rewards.some(reward => reward.day === day && reward.reason === 'participation')) {
+      state.rewards.push({ day, reason: 'participation' })
+    }
+  }
+  if (existing) {
+    const archived = `${existing.id}-past-${state.sessions.filter(item => item.id.startsWith(`${existing.id}-past-`)).length}`
+    requireValue(archived.length <= 80, '这个学习段编号已经用过，请换一个更短的新编号。')
+    for (const attempt of state.attempts) if (attempt.sessionId === existing.id) attempt.sessionId = archived
+    if (state.task?.sessionId === existing.id) state.task.sessionId = archived
+    existing.id = archived
+  }
+  const id = command.id
+  state.sessions.push({
+    id, subject: command.subject, mode: command.mode, startedAt: now,
+    ...(command.mode === 'diagnose' ? { intensity: command.intensity ?? 'standard' } : {}),
     ...(command.mode === 'school' && course ? { materialId: course.materialId, unit: course.unit } : {}),
     ...(command.scope !== undefined ? { scope: command.scope } : {}),
   })
@@ -113,7 +121,7 @@ export function applyRecord(ctx: UpdateContext<'record'>): StudyState {
   const recorded = { ...aligned, assistance }
   const existing = state.attempts.find(item => item.id === recorded.id && item.sessionId === recorded.sessionId)
   if (existing) {
-    const { at: _at, materialId: _material, late: _late, rawResponse: _raw, ...stored } = existing
+    const { at: _at, materialId: _material, rawResponse: _raw, ...stored } = existing
     if (canonical(stored) === canonical(recorded)) return previous
     throw new Error('该记录 ID 已用于另一条内容。完全相同的重试会直接成功；新的一条请换一个 ID。')
   }
@@ -138,12 +146,12 @@ export function applyRecord(ctx: UpdateContext<'record'>): StudyState {
   requireValue(active.mode !== 'diagnose' || aligned.objectiveId !== undefined, '摸底作答必须关联学习目标（objectiveId）。')
   if (mistake) requireValue(mistake.confirmedAt !== undefined && mistake.uncertainties === '' && mistake.subject === aligned.subject, '先确认图片转录、答案依据与科目，再进行复习。')
   const materialId = mistake?.materialId ?? active.materialId
-  state.attempts.push({ ...recorded, at: now, ...(materialId ? { materialId } : {}), ...(openTask?.rawResponse ? { rawResponse: openTask.rawResponse } : {}), ...(now > active.deadline ? { late: true as const } : {}) })
+  state.attempts.push({ ...recorded, at: now, ...(materialId ? { materialId } : {}), ...(openTask?.rawResponse ? { rawResponse: openTask.rawResponse } : {}) })
   if (recorded.result === 'correct' && recorded.assistance === 'independent') dropTaught(state, recorded.objectiveId)
   return state
 }
 
-/** End a block, record rest and rewards. */
+/** End a block and record elapsed time and rewards. */
 export function applyStop(ctx: UpdateContext<'stop'>): StudyState {
   const { command, previous, state, now } = ctx
   const session = state.sessions.find(item => item.id === command.sessionId)
@@ -152,7 +160,6 @@ export function applyStop(ctx: UpdateContext<'stop'>): StudyState {
   session.endedAt = now
   session.spentMs = spent(session, now)
   session.reflection = command.reflection.trim()
-  state.breakUntil = now + state.profile.limits.breakMinutes * MINUTE
   const day = studyDay(session.startedAt)
   const hasWork = state.attempts.some(item => item.sessionId === session.id)
   for (const reason of ['participation', 'reflection'] as const) {
@@ -160,4 +167,3 @@ export function applyStop(ctx: UpdateContext<'stop'>): StudyState {
   }
   return state
 }
-

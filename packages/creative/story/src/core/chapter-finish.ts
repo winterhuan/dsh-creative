@@ -153,7 +153,8 @@ function readClaims(project: string, chapter: number): { present: boolean; input
   const path = join(project, claimsRelativePath(chapter))
   if (!existsSync(path)) return { present: false }
   try {
-    return { present: true, input: JSON.parse(readFileSync(path, 'utf8')) as unknown }
+    const input: unknown = JSON.parse(readFileSync(path, 'utf8'))
+    return { present: true, input }
   } catch (error) {
     return { present: true, error: `unable to read ${claimsRelativePath(chapter)}: ${error instanceof Error ? error.message : String(error)}` }
   }

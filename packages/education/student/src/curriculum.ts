@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { z } from 'zod'
-import { errorTypeSchema, unitFocusSchema, variationAxisSchema, type ErrorType, type VariationAxis } from './schema.ts'
+import { errorTypeSchema, exerciseItemSchema, unitFocusSchema, variationAxisSchema, type ErrorType, type ExerciseItem, type VariationAxis } from './schema.ts'
 import { errorTypesBySubject, focusBySubject } from './vocabulary.ts'
 
 const recordId = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u)
@@ -34,6 +34,12 @@ export const ideaCatalogSchema = z.object({
 }).strict()
 /** One shipped concept: the meaning a subject uses, independent of grade and unit. */
 export type SubjectIdea = z.infer<typeof ideaSchema>
+
+/** One subject's shipped exercise bank, validated against shipped objectives and error types. */
+export const exerciseCatalogSchema = z.object({
+  subject: subjectSchema,
+  exercises: z.array(exerciseItemSchema).min(1).max(500),
+}).strict()
 
 /** One shipped knowledge map: units, knowledge points, objectives and relations for one subject, grade and term. */
 export const curriculumSchema = z.object({
@@ -118,6 +124,7 @@ export interface BuiltinConcept {
 const SUBJECTS = ['chinese', 'math', 'english'] as const
 const cache = new Map<string, Curriculum>()
 const ideaCache = new Map<CurriculumSubject, SubjectIdea[]>()
+const exerciseCache = new Map<CurriculumSubject, ExerciseItem[]>()
 /** Read through a variable so bundler asset rewriting of `new URL(…, import.meta.url)` does not apply to data files. */
 const moduleUrl = import.meta.url
 
@@ -259,4 +266,42 @@ export function builtinUnitOf(scope: CurriculumScope, subject: CurriculumSubject
 export function builtinConcepts(scope: CurriculumScope, subject: CurriculumSubject): BuiltinConcept[] {
   const file = load(subject, scope.grade, scope.term)
   return file ? file.concepts.map(concept => ({ ...concept, subject: file.subject })) : []
+}
+
+/**
+ * Validated shipped exercise items for one subject across grades one and two.
+ * @param subject - requested subject.
+ * @returns the validated exercise list.
+ */
+export function subjectExercises(subject: CurriculumSubject): ExerciseItem[] {
+  const cached = exerciseCache.get(subject)
+  if (cached !== undefined) return cached
+  const url = new URL(`../knowledge/curriculum/exercises/${subject}.json`, moduleUrl)
+  const file = exerciseCatalogSchema.parse(JSON.parse(readFileSync(url, 'utf8')))
+  if (file.subject !== subject) throw new Error(`习题目录的科目不符：${file.subject}`)
+  const index = shippedObjectiveIndex()
+  const seen = new Set<string>()
+  for (const item of file.exercises) {
+    if (seen.has(item.id)) throw new Error(`习题目录有重复 ID：${item.id}`)
+    seen.add(item.id)
+    if (item.subject !== subject) throw new Error(`习题科目与目录不符：${item.id}`)
+    const objective = index.get(item.objectiveId)
+    if (!objective || objective.subject !== subject) throw new Error(`习题引用的学习目标不存在或科目不符：${item.objectiveId}`)
+    if (item.errorType !== undefined && !errorTypesBySubject[subject].includes(item.errorType)) {
+      throw new Error(`习题错因分类与科目不符：${item.errorType}`)
+    }
+  }
+  exerciseCache.set(subject, file.exercises)
+  return file.exercises
+}
+
+/**
+ * Shipped exercise items targeting one learning objective.
+ * @param objectiveId - objective to look up.
+ * @returns matching shipped exercises, or empty when none exist.
+ */
+export function exercisesForObjective(objectiveId: string): ExerciseItem[] {
+  const objective = builtinObjectiveAnywhere(objectiveId)
+  if (!objective) return []
+  return subjectExercises(objective.subject).filter(item => item.objectiveId === objectiveId)
 }

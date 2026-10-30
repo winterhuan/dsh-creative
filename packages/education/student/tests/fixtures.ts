@@ -6,8 +6,7 @@ export const DAY = 86_400_000
 export const setup = {
   action: 'setup', profile: {
     nickname: '小禾', schoolAlias: '学校A课程', region: '上海市', grade: 2, term: 'first', schoolYear: '2026–2027', schoolSystem: 'five-four',
-    limits: { blockMinutes: 10, breakMinutes: 5, dailyMinutes: 20 },
-    parentConfirmation: '家长确认：使用上述学期和 10/5/20 分钟安排。',
+    parentConfirmation: '家长确认：使用上述学期档案。',
   },
 } satisfies Command
 export const material = {

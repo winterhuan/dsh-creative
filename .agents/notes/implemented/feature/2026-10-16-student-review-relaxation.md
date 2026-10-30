@@ -10,7 +10,7 @@ The spaced-review rules were built for evidence purity: independence required, t
 
 ## Decision
 
-Three rules change. An independent correct answer now advances a mistake one stage on any day, earlier than the due day included, still at most one stage per day; the next due day counts from that answer. Wrong, partial or helped answers no longer lower the stage or clear the independent-day record; they only make the mistake due again the next day. Interactive evidence matches: `record` and review tasks accept any confirmed mistake, no longer only due ones, so an early review block records normally. The consolidation-sheet window (a mistake may be printed when due by tomorrow) and the consolidated stage (stage four, a 30-day interval) are unchanged.
+Three rules change. An independent correct answer now advances a mistake one stage on any day, earlier than the due day included, still at most one stage per day; the next due day counts from that answer along the review curve. Wrong, partial or helped answers no longer lower the stage or clear the independent-day record; they only make the mistake due again the next day. Interactive evidence matches: `record` and review tasks accept any confirmed mistake, no longer only due ones, so an early review block records normally. The consolidation-sheet window (a mistake may be printed when due by tomorrow) stays; the consolidated stage remains stage four, and the interval at that stage is now 35 days per the [overhaul decision](./2026-10-30-student-overhaul.md).
 
 ## Alternatives considered
 

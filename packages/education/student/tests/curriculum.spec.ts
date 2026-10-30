@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { builtinConcepts, builtinObjective, builtinObjectives, curriculumFiles, curriculumFor, subjectIdeas } from '../src/curriculum.ts'
+import { builtinConcepts, builtinObjective, builtinObjectives, curriculumFiles, curriculumFor, exercisesForObjective, subjectExercises, subjectIdeas } from '../src/curriculum.ts'
 import { errorTypesBySubject } from '../src/vocabulary.ts'
 
 const grades = [1, 2] as const
@@ -258,5 +258,27 @@ describe('shipped knowledge maps', () => {
     expect(links.get('c1b-u1-5')).toEqual(['zh-unit-review'])
     expect(links.get('c2a-u2-5')).toContain('zh-antonym')
     expect(links.get('c2a-u2-5')).not.toContain('zh-unit-review')
+  })
+
+  it('loads a validated exercise bank covering every shipped objective', () => {
+    const objectiveIds = new Set(builtinObjectives({ grade: 1, term: 'first' }).concat(
+      builtinObjectives({ grade: 1, term: 'second' }),
+      builtinObjectives({ grade: 2, term: 'first' }),
+      builtinObjectives({ grade: 2, term: 'second' }),
+    ).map(item => item.id))
+    for (const subject of subjects) {
+      const items = subjectExercises(subject)
+      expect(items.length).toBeGreaterThanOrEqual(objectiveIds.size > 0 ? 30 : 1)
+      const covered = new Set(items.map(item => item.objectiveId))
+      for (const objective of builtinObjectives({ grade: 2, term: 'first' }).filter(item => item.subject === subject)) {
+        expect(covered.has(objective.id)).toBe(true)
+        expect(exercisesForObjective(objective.id).length).toBeGreaterThan(0)
+      }
+      for (const item of items) {
+        expect(item.steps.length).toBeGreaterThanOrEqual(2)
+        expect(item.answer.length).toBeGreaterThan(0)
+        expect(['diagnose', 'demo', 'try', 'vary', 'daily']).toContain(item.role)
+      }
+    }
   })
 })

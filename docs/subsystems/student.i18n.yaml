@@ -3,29 +3,29 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/student.md
 /:
-  en: d26466a336fccfb5
-  zh: f3ccb1102caaa28e
+  en: 6c2d421ddcd5916a
+  zh: 44cd0f741f5d66a7
 /student-learning:
   en: 8a9db6bc6970ef95
   zh: bcddf9a35008f256
 /student-learning/summary:
-  en: 8cf7a7c3b5243ed3
-  zh: 4965ef67446eb0d1
+  en: b7d22cb6b20bf013
+  zh: e4339cbc6f2718c8
 /student-learning/table-of-contents:
-  en: 39018ab5fc9150a9
-  zh: 64c70fa8690753b6
+  en: 175a7c1843e09fab
+  zh: 0df94d7881313f5d
 /student-learning/ownership:
   en: e48c21a1e260bd15
   zh: 0271b5d2ef11e565
 /student-learning/materials-and-learner-evidence:
-  en: 2651d85df01da694
-  zh: 067f89e33e54727a
-/student-learning/time-and-rewards:
-  en: 7cc161a1d94035cd
-  zh: 5e772903bd79ae32
+  en: 502829c136fd5677
+  zh: 29512a1867e05ffc
+/student-learning/elapsed-time-and-rewards:
+  en: 17d70f038afdf1a5
+  zh: a5f6ab6dac4db084
 /student-learning/related-contracts:
-  en: 76656a11ed8c4b2c
-  zh: f38d87d965b4b9f6
+  en: 3c401198535831f5
+  zh: 0ca15360c5b74270
 /student-learning/dev-note:
   en: b75c8458928b72b9
   zh: 003ba4e17b4b5269

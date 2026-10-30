@@ -11,7 +11,7 @@ import { IdeasView } from './ideas-view.tsx'
 import { MapView } from './map-view.tsx'
 import { PracticeView } from './practice-view.tsx'
 import { LessonsPanel, lessonsForSubject, openClassroom } from './lessons-view.tsx'
-import { continuePrompt, dailySheetPrompt, diagnosePrompt, dictationPrompt, dueClearPrompt, goalPrompt, interestPracticePrompt, openmaicGeneratePrompt, openmaicRetryPrompt, openmaicReviewPrompt, organizePrompt, previewPrompt, reviewPrompt, teachPrompt, teachQueuePrompt } from './prompts.ts'
+import { continuePrompt, dailySheetPrompt, diagnosePrompt, dictationPrompt, dueClearPrompt, explorePrompt, goalPrompt, interestPracticePrompt, openmaicGeneratePrompt, openmaicRetryPrompt, openmaicReviewPrompt, organizePrompt, previewPrompt, reviewPrompt, teachPrompt, teachQueuePrompt } from './prompts.ts'
 import { TodayView } from './today-view.tsx'
 
 type Study = NonNullable<Dashboard['study']>
@@ -73,8 +73,8 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   const disabled = busy || sending
   const active = study?.active
   useEffect(() => {
-    if (active && subject !== active.subject) { selectSubject(active.subject); setActivity({ subject: active.subject, mode: active.mode }); setSelectedObjectiveId(''); setMistakeOffset(0) }
-  }, [active?.id, active?.subject, active?.mode])
+    if (active) { selectSubject(active.subject); setActivity({ subject: active.subject, mode: active.mode }) }
+  }, [active?.id])
   const curriculum = study?.curriculum ?? null
   const scopeGrade = curriculum?.scope.grade ?? mapGrade ?? study?.profile.grade ?? 1
   const scopeTerm = curriculum?.scope.term ?? mapTerm ?? study?.profile.term ?? 'first'
@@ -94,7 +94,7 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     return { scope: { grade: scope.grade ?? study?.profile.grade ?? 2, term: scope.term ?? study?.profile.term ?? 'first', ...(scope.unit ? { units: [scope.unit] } : {}) } }
   }
   function startDiagnosis(target: Subject, intensity: CheckInIntensity) {
-    if (active || !study) return Promise.resolve()
+    if (!study) return Promise.resolve()
     const scope = scopeOf(target)
     const scoped = scope.grade !== undefined || scope.term !== undefined
     const plan = scoped ? study.scopedDiagnostic : planOf(target)
@@ -102,10 +102,10 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
     selectSubject(target); setActivity({ subject: target, mode: 'diagnose' }); setSelectedObjectiveId(''); setMistakeOffset(0); setView('student')
     return act({ action: 'start', id: crypto.randomUUID(), subject: target, mode: 'diagnose', intensity, ...(scoped ? scopeCommand(target) : {}) }, true, diagnosePrompt(intensity, ids, t))
   }
-  function start(target: Subject, mode: Mode) {
+  function start(target: Subject, mode: Mode, inquiry?: string) {
     if (mode === 'diagnose') return startDiagnosis(target, chosenIntensity(target))
     const next = resolveMode(target, mode)
-    const prompt = next === 'review' ? reviewPrompt : selectedObjectiveId ? goalPrompt(selectedObjectiveId) : continuePrompt
+    const prompt = next === 'review' ? reviewPrompt : next === 'explore' ? explorePrompt(inquiry) : selectedObjectiveId ? goalPrompt(selectedObjectiveId) : continuePrompt
     return act({ action: 'start', id: crypto.randomUUID(), subject: target, mode: next, ...((next === 'foundation' || next === 'school') ? scopeCommand(target) : {}) }, true, prompt)
   }
   function lessonRequest() {
@@ -124,7 +124,7 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   }
   function startInterest() {
     const recommendation = study?.recommendation
-    if (!recommendation || active || recommendation.kind === 'hold' || !study) return
+    if (!recommendation || recommendation.kind === 'hold' || !study) return
     const mode: Mode = resolveMode(recommendation.subject, 'foundation')
     const request = lessonRequest()
     selectSubject(recommendation.subject); setActivity({ subject: recommendation.subject, mode }); setSelectedObjectiveId(recommendation.objectiveId ?? ''); setMistakeOffset(0)
@@ -136,13 +136,13 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
   function startDue() {
     const items = study?.dueToday ?? []
     const first = items[0]
-    if (!study || active || !first) return
+    if (!study || !first) return
     selectSubject(first.subject); setActivity({ subject: first.subject, mode: 'review' }); setSelectedObjectiveId(''); setMistakeOffset(0)
     void act({ action: 'start', id: crypto.randomUUID(), subject: first.subject, mode: 'review' }, true, dueClearPrompt(items.map(item => item.id)))
   }
   function startRecommended() {
     const recommendation = study?.recommendation
-    if (!recommendation || active || recommendation.kind === 'hold' || !study) return
+    if (!recommendation || recommendation.kind === 'hold' || !study) return
     if (recommendation.kind === 'diagnose') { void startDiagnosis(recommendation.subject, chosenIntensity(recommendation.subject)); return }
     const mode: Mode = recommendation.kind === 'review' ? 'review' : resolveMode(recommendation.subject, 'foundation')
     selectSubject(recommendation.subject); setActivity({ subject: recommendation.subject, mode }); setSelectedObjectiveId(mode === 'review' ? '' : recommendation.objectiveId ?? ''); setMistakeOffset(0)
@@ -164,14 +164,14 @@ export function StudyDesk({ sessionId, visible, ask, running, t }: { sessionId: 
         <button type="button" aria-pressed={parentTab === 'parent'} onClick={() => setParentTab('parent')}>{t('parent')}</button>
       </nav>}
       <div className="student-toolbar">
-        {study && !parentSettings && <nav className="student-subjects" aria-label={t('subject')}>{subjects.map(item => <button key={item} type="button" disabled={!!active} aria-pressed={subject === item} onClick={() => { selectSubject(item); setActivity({ subject: item, mode: 'foundation' }); setSelectedObjectiveId(''); setMistakeOffset(0); setMistakeStatus('all') }}>{t(item)}</button>)}</nav>}
+        {study && !parentSettings && <nav className="student-subjects" aria-label={t('subject')}>{subjects.map(item => <button key={item} type="button" aria-pressed={subject === item} onClick={() => { selectSubject(item); setActivity({ subject: item, mode: 'foundation' }); setSelectedObjectiveId(''); setMistakeOffset(0); setMistakeStatus('all') }}>{t(item)}</button>)}</nav>}
         <button type="button" className="student-quiet" disabled={disabled} onClick={() => { void workspace.reload().then(() => setEpoch(value => value + 1)) }}>{t('reload')}</button>
       </div>
     </header>
     {workspace.error && <p role="alert">{workspace.error}</p>}
     {sendError && <p role="alert">{sendError}</p>}
     {!data ? !workspace.error && <progress aria-label={t('busy')} /> : !study && view !== 'parent' ? <section><p>{t('setupFirst')}</p><button onClick={() => { setView('parent'); setParentTab('parent') }}>{t('parent')}</button></section> : subjectLoading && !parentSettings ? <progress aria-label={t('busy')} /> : <>
-      {study && view === 'student' && <TodayView study={study} now={now} serverNow={data.serverNow} remaining={Math.max(0, (study.remainingMs ?? 0) - (active && data ? Math.max(0, Math.min(now, active.deadline) - data.serverNow) : 0))} subject={subject} activity={activity} setActivity={setActivity} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} curriculum={curriculum} selectedObjectiveId={selectedObjectiveId} chooseGoal={chooseGoal} intensityLabel={`${t(intensityKeys[chosenIntensity(subject)])} · ${planOf(subject)?.samples[chosenIntensity(subject)].length ?? 0}`} openParent={() => { setView('parent'); setParentTab('parent') }} openCheckins={() => { setView('parent'); setParentTab('map') }} scope={activeScope} setScope={next => setScopeChoice(previous => ({ ...previous, [subject]: next }))} scopeUnits={study.scopedUnits ?? []} start={start} startRecommended={startRecommended} startDiagnosis={startDiagnosis} chosenIntensity={chosenIntensity(subject)} disabled={disabled} running={running} act={act} tutor={tutor} t={t} prompts={{ daily: dailySheetPrompt(subject), dictation: dictationPrompt(subject) }} lessons={lessonsForSubject(data.interactiveLessons?.lessons ?? [], subject)} onInterestPractice={startInterest} onOpenLesson={() => { const request = lessonRequest(); void tutor(openmaicGeneratePrompt(request.subjectLabel, request.objectiveId, request.tags, request.focus, request.unitName)).catch(() => {}) }} onClearDue={startDue} onOpenClassroom={openClassroom} />}
+      {study && view === 'student' && <TodayView study={study} now={now} subject={subject} activity={activity} setActivity={setActivity} goal={goals.find(item => item.id === selectedObjectiveId)} clearGoal={() => setSelectedObjectiveId('')} curriculum={curriculum} selectedObjectiveId={selectedObjectiveId} chooseGoal={chooseGoal} intensityLabel={`${t(intensityKeys[chosenIntensity(subject)])} · ${planOf(subject)?.samples[chosenIntensity(subject)].length ?? 0}`} openParent={() => { setView('parent'); setParentTab('parent') }} openCheckins={() => { setView('parent'); setParentTab('map') }} scope={activeScope} setScope={next => setScopeChoice(previous => ({ ...previous, [subject]: next }))} scopeUnits={study.scopedUnits ?? []} start={start} startRecommended={startRecommended} startDiagnosis={startDiagnosis} chosenIntensity={chosenIntensity(subject)} disabled={disabled} running={running} act={act} tutor={tutor} t={t} prompts={{ daily: dailySheetPrompt(subject), dictation: dictationPrompt(subject) }} lessons={lessonsForSubject(data.interactiveLessons?.lessons ?? [], subject)} onInterestPractice={startInterest} onOpenLesson={() => { const request = lessonRequest(); void tutor(openmaicGeneratePrompt(request.subjectLabel, request.objectiveId, request.tags, request.focus, request.unitName)).catch(() => {}) }} onClearDue={startDue} onOpenClassroom={openClassroom} />}
       {study && view === 'student' && data.interactiveLessons && <LessonsPanel lessons={lessonsForSubject(data.interactiveLessons.lessons, subject)} {...(data.interactiveLessons.error !== undefined ? { error: data.interactiveLessons.error } : {})} disabled={disabled} running={running} t={t} onRetry={runId => { void tutor(openmaicRetryPrompt(runId)).catch(() => {}) }} onReview={classroomId => { void tutor(openmaicReviewPrompt(classroomId)).catch(() => {}) }} />}
       {study && showMap && <MapView study={study} curriculum={curriculum} subject={subject} selectedConceptId={selectedConceptId} setSelectedConceptId={setSelectedConceptId} selectedObjectiveId={selectedObjectiveId} clearGoal={() => setSelectedObjectiveId('')} chooseGoal={chooseGoal} active={!!active} scopeGrade={scopeGrade} scopeTerm={scopeTerm} setMapGrade={setMapGrade} setMapTerm={setMapTerm} clearBrowse={() => { setMapGrade(undefined); setMapTerm(undefined) }} intensities={intensities} setIntensity={(target, level) => setIntensities(previous => ({ ...previous, [target]: level }))} scopeOf={scopeOf} setScope={(target, next) => setScopeChoice(previous => ({ ...previous, [target]: next }))} selectSubject={selectSubject} startDiagnosis={startDiagnosis} disabled={disabled} running={running} organize={() => { void tutor(organizePrompt(subject)).catch(() => {}) }} change={command => change(command).then(() => undefined)} t={t} />}
       {study && view === 'parent' && parentTab === 'ideas' && <IdeasView study={study} curriculum={curriculum} t={t} />}

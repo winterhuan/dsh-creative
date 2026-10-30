@@ -153,7 +153,9 @@ describe('shipped knowledge map objectives and insight', () => {
     expect(studyStatus(legacy, NOW + 1).interests).toContain('购物超市钱')
     expect(() => updateStudy(saved, { action: 'interests', tags: ['动物宠物', '动物宠物', '美食做饭'], parentConfirmation: '太少' }, NOW + 2)).toThrow('3 到 8')
     const started = updateStudy(saved, start, NOW + 3)
-    expect(() => updateStudy(started, { action: 'interests', tags: ['动物宠物', '美食做饭', '积木拼搭手工'], parentConfirmation: '学习中' }, NOW + 4)).toThrow('先结束当前学习')
+    const during = updateStudy(started, { action: 'interests', tags: ['动物宠物', '美食做饭', '积木拼搭手工'], parentConfirmation: '学习中' }, NOW + 4)
+    expect(during.interests?.tags).toEqual(['动物宠物', '美食做饭', '积木拼搭手工'])
+    expect(during.sessions.some(session => session.endedAt === undefined)).toBe(true)
   })
 
   it('supports cross-grade objectives while unshipped grades stay on custom goals', () => {
@@ -401,7 +403,9 @@ describe('school progress frontier', () => {
   it('does not let a later mistake or a textbook edit move the class forward', () => {
     let state = frontier('keep-up', 'm2a-u-mul', 'teaching', false)
     state = updateStudy(state, { action: 'start', id: 'block-ahead', subject: 'math', mode: 'foundation' }, NOW + MINUTE)
-    expect(() => updateStudy(state, { action: 'school-progress', subject: 'math', unitId: 'm2a-u-home', posture: 'keep-up', preview: 'off', pace: 'teaching', parentConfirmation: '家长确认。' }, NOW + MINUTE)).toThrow('先结束当前学习')
+    state = updateStudy(state, { action: 'school-progress', subject: 'math', unitId: 'm2a-u-home', posture: 'keep-up', preview: 'off', pace: 'teaching', parentConfirmation: '家长确认。' }, NOW + MINUTE)
+    expect(state.courses.find(item => item.subject === 'math')?.progress?.unitId).toBe('m2a-u-home')
+    state = updateStudy(state, { action: 'school-progress', subject: 'math', unitId: 'm2a-u-mul', posture: 'keep-up', preview: 'off', pace: 'teaching', parentConfirmation: '家长改回。' }, NOW + MINUTE)
     state = updateStudy(state, { action: 'stop', sessionId: 'block-ahead', reflection: '' }, NOW + 2 * MINUTE)
     state = updateStudy(state, { action: 'mistake', mistake: { ...mistake, id: 'ahead', objectiveId: 'm2a-o-home' } }, NOW + 2 * MINUTE)
     state = updateStudy(state, { ...confirm, id: 'ahead' }, NOW + 2 * MINUTE)

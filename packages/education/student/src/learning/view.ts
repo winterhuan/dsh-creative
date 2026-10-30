@@ -1,5 +1,5 @@
-import type { ErrorType, StudyState, UnitFocus, Variant, VariationAxis } from '../schema.ts'
-import { builtinObjective, builtinObjectiveAnywhere, curriculumFor, subjectIdeas, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from '../curriculum.ts'
+import type { ErrorType, ExerciseItem, StudyState, UnitFocus, Variant, VariationAxis } from '../schema.ts'
+import { builtinObjective, builtinObjectiveAnywhere, curriculumFor, exercisesForObjective, subjectIdeas, type CurriculumMethod, type CurriculumRelationKind, type CurriculumScope, type CurriculumSubject } from '../curriculum.ts'
 import { DAY, studyDay, taughtUnit } from './shared.ts'
 import { dayStart } from './schedule.ts'
 import { SUBJECT_ORDER, studyInsight, type CheckInRecord, type ObjectiveInsight, type StudyInsight } from './mastery.ts'
@@ -43,6 +43,14 @@ export function sheetOpen(state: StudyState, worksheet: Worksheet): boolean {
   return worksheet.discardedAt === undefined && worksheet.items.some(item => !state.paperResults.some(result => result.worksheetId === worksheet.id && result.itemId === item.id))
 }
 
+/** Combine workspace-saved exercises and shipped exercises for one objective, workspace first. */
+export function exercisesFor(state: StudyState, objectiveId: string): ExerciseItem[] {
+  const saved = (state.exercises ?? []).filter(item => item.objectiveId === objectiveId).map(({ savedAt: _savedAt, ...item }) => item)
+  const shipped = exercisesForObjective(objectiveId)
+  const seen = new Set(saved.map(item => item.id))
+  return [...saved, ...shipped.filter(item => !seen.has(item.id))]
+}
+
 /** The elements a review or daily question can draw on for one objective, shipped or custom. */
 export interface ObjectiveElements {
   facts: string[]
@@ -53,19 +61,21 @@ export interface ObjectiveElements {
   variationAxes: VariationAxis[]
   /** Three hint rungs for an ordinary try: point at the givens, check the registered slip, then the steps. */
   hintLadder: [string, string, string]
+  /** Structured reference exercises for this objective (workspace-saved and shipped). */
+  exercises: ExerciseItem[]
 }
 
-/** The first hint rung names a condition or a drawing, by the objective's learning method. */
+/** The first hint rung names a condition, character feature or drawing, by the objective's learning method. */
 const methodCues: Record<CurriculumMethod, string> = {
-  recognize: '先让孩子在题里指一指已经给出的条件',
-  'read-evidence': '先让孩子在文中找出和问题相关的原句',
-  express: '先让孩子说一说这道题想表达什么',
-  represent: '先让孩子画一画图，把数量或关系摆出来',
-  reason: '先让孩子说说已知什么、要求什么',
-  verify: '先让孩子换一种方法再算一遍或再查一遍',
-  context: '先让孩子说说这段话里的人物在做什么',
-  listen: '先让孩子再听一遍，留意关键词',
-  speak: '先让孩子说出要用到的关键词',
+  recognize: '先让孩子看偏旁部首想意思，再放进词语或句子里辨析字音字形',
+  'read-evidence': '先让孩子带着问题默读或朗读，在文中圈画和问题相关的原句',
+  express: '先让孩子按“是谁—什么样—怎么做”口头说顺，再动笔写或借助关键词按顺序复述',
+  represent: '先让孩子圈出已知条件和问题，再用小棒、计数器、线段图或点子图画出来建模',
+  reason: '先让孩子说出已知什么、要求什么，再用自己的话讲出“先算什么、再算什么、为什么”',
+  verify: '先让孩子用加减逆运算、估算比对或换一种算法再查一遍',
+  context: '先让孩子看图或进入情境猜意思，说说人物在做什么',
+  listen: '先让孩子听读结合字母读音规律（Phonics）留意关键词',
+  speak: '先让孩子用句型词块（Chunks）替换关键词，分角色一问一答说出来',
 }
 
 /** Build the three-rung hint ladder from the objective's method, registered misconceptions and question points. */
@@ -79,8 +89,8 @@ function ladderFor(method: CurriculumMethod, misconceptions: readonly string[], 
 
 /**
  * Elements for one objective: its concepts' misconceptions and examples plus the objective's own error
- * causes, question points and variation axes. Shipped objectives read the same-term knowledge map; custom
- * objectives read the workspace's confirmed concepts and the objective record.
+ * causes, question points, variation axes and structured exercises. Shipped objectives read the same-term
+ * knowledge map; custom objectives read the workspace's confirmed concepts and the objective record.
  * @param state - current durable learning state.
  * @param objectiveId - objective to describe.
  * @returns the merged elements, or undefined for an unknown objective.
@@ -99,6 +109,7 @@ export function objectiveElements(state: StudyState, objectiveId: string): Objec
       questionPoints,
       variationAxes: [...(builtin.variationAxes ?? [])],
       hintLadder: ladderFor(builtin.method, misconceptions, questionPoints),
+      exercises: exercisesFor(state, objectiveId),
     }
   }
   const custom = state.objectives.find(item => item.id === objectiveId)
@@ -114,7 +125,17 @@ export function objectiveElements(state: StudyState, objectiveId: string): Objec
     questionPoints,
     variationAxes: [...(custom.variationAxes ?? [])],
     hintLadder: ladderFor(custom.method, misconceptions, questionPoints),
+    exercises: exercisesFor(state, objectiveId),
   }
+}
+
+/** Pick the best matching reference exercise for a target variant and optional error cause. */
+function pickReferenceExercise(items: readonly ExerciseItem[], variant: Variant, errorType?: ErrorType): ExerciseItem | undefined {
+  if (items.length === 0) return undefined
+  return items.find(item => item.variant === variant && errorType !== undefined && item.errorType === errorType)
+    ?? items.find(item => item.variant === variant)
+    ?? items.find(item => errorType !== undefined && item.errorType === errorType)
+    ?? items[0]
 }
 
 /** One review question to write: the confirmed mistake it targets, its ladder level and what went wrong. */
@@ -133,6 +154,7 @@ export interface ReviewPick {
   variantLevel: Variant
   errorType?: ErrorType
   elements?: ObjectiveElements
+  referenceExercise?: ExerciseItem
 }
 
 /** One weak goal to re-ask on the same sheet with a fresh variant when no due mistake covers it. */
@@ -144,6 +166,7 @@ export interface ObjectiveFill {
   level: ObjectiveInsight['level']
   variantLevel: Variant
   elements?: ObjectiveElements
+  referenceExercise?: ExerciseItem
 }
 
 /** Ladder level for one review question: numeric retests first, then context, then reasoning. */
@@ -187,12 +210,15 @@ export function reviewPlan(state: StudyState, subject: CurriculumSubject, now: n
     if (item.errorType !== undefined && (perCause.get(item.errorType) ?? 0) >= 2) continue
     if (item.errorType !== undefined) perCause.set(item.errorType, (perCause.get(item.errorType) ?? 0) + 1)
     const elements = item.objectiveId !== undefined ? objectiveElements(state, item.objectiveId) : undefined
+    const variantLevel = variantLevelFor(item.stage, recurringCauseOn(state, item))
+    const referenceExercise = elements ? pickReferenceExercise(elements.exercises, variantLevel, item.errorType) : undefined
     picks.push({
       kind: 'mistake', id: item.id, objectiveId: item.objectiveId ?? '', objectiveTitle: objectiveInfo(state, item.objectiveId ?? '')?.title ?? '',
       topic: item.topic, prompt: item.prompt, learnerAnswer: item.learnerAnswer, correction: item.correction, explanation: item.explanation,
-      stage: item.stage, dueToday: (item.dueAt ?? 0) <= now, variantLevel: variantLevelFor(item.stage, recurringCauseOn(state, item)),
+      stage: item.stage, dueToday: (item.dueAt ?? 0) <= now, variantLevel,
       ...(item.errorType !== undefined ? { errorType: item.errorType } : {}),
       ...(elements !== undefined ? { elements } : {}),
+      ...(referenceExercise !== undefined ? { referenceExercise } : {}),
     })
   }
   const covered = new Set<string>([
@@ -204,7 +230,12 @@ export function reviewPlan(state: StudyState, subject: CurriculumSubject, now: n
     .slice(0, Math.min(2, Math.max(0, size - picks.length)))
     .map((item): ObjectiveFill => {
       const elements = objectiveElements(state, item.id)
-      return { kind: 'objective', id: item.id, objectiveId: item.id, title: item.title, level: item.level, variantLevel: 'numeric', ...(elements !== undefined ? { elements } : {}) }
+      const referenceExercise = elements ? pickReferenceExercise(elements.exercises, 'numeric') : undefined
+      return {
+        kind: 'objective', id: item.id, objectiveId: item.id, title: item.title, level: item.level, variantLevel: 'numeric',
+        ...(elements !== undefined ? { elements } : {}),
+        ...(referenceExercise !== undefined ? { referenceExercise } : {}),
+      }
     })
   const coverage = new Map<ErrorType, number>()
   for (const pick of picks) if (pick.errorType !== undefined) coverage.set(pick.errorType, (coverage.get(pick.errorType) ?? 0) + 1)

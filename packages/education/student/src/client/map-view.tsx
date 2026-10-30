@@ -65,6 +65,11 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
         {selectedObjectiveId && !active && <button type="button" onClick={clearGoal}>{t('clearGoal')}</button>}
       </> : <p>{t('mapUnavailable')}</p>}
     </section>
+    {curriculum && <section><h3>{t('mindMap')}</h3>
+      <p className="student-muted">{t('mindMapHelp')}</p>
+      <div className="student-legend">{levels.map(level => <span key={level}><span className={`student-dot student-level-${level}`} />{t(levelKeys[level])}</span>)}</div>
+      <MindMapTree curriculum={curriculum} selectedConceptId={selectedConceptId} setSelectedConceptId={setSelectedConceptId} selectedObjectiveId={selectedObjectiveId} chooseGoal={chooseGoal} active={active} t={t} />
+    </section>}
     {curriculum && <section><h3>{t('knowledgePoints')}</h3>
       <p className="student-muted">{t('selectConcept')}</p>
       <div className="student-legend">{levels.map(level => <span key={level}><span className={`student-dot student-level-${level}`} />{t(levelKeys[level])}</span>)}</div>
@@ -76,7 +81,7 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
         {selectedConcept.lastAt !== undefined && <p className="student-muted">{t('lastPractised')}: {day(selectedConcept.lastAt)}{selectedConcept.activeMistakes > 0 ? ` · ${t('bookReviewing')} ${selectedConcept.activeMistakes}` : ''}</p>}
         {curriculum.objectives.filter(item => item.conceptIds.includes(selectedConcept.id)).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><MasteryDots days={curriculum.scope.current ? item.independentDays : undefined} t={t} /><p className="student-muted">{item.goal}</p>
           {item.reasons.length > 0 && item.level !== 'untouched' && <p className="student-muted">{reasonText(item.reasons, t)}</p>}
-          {curriculum.scope.current && <button type="button" disabled={active} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
+          {curriculum.scope.current && <button type="button" aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
         </div>)}
         {curriculum.relations.filter(relation => relation.fromId === selectedConcept.id || relation.toId === selectedConcept.id).map(relation => <p key={relation.id} className="student-muted">{conceptName(relation.fromId)} · {t(relation.kind)} · {conceptName(relation.toId)}: {relation.explanation}</p>)}
       </div> : null}
@@ -91,21 +96,21 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
         <p className="student-muted">{unit.summary}</p>
         <div className="student-chips">{own.map(item => <button key={item.id} type="button" className="student-chip" aria-pressed={selectedConceptId === item.id} onClick={() => setSelectedConceptId(item.id)}><span className={`student-dot student-level-${item.level}`} />{item.name}</button>)}</div>
         {curriculum.objectives.filter(item => item.unit === unit.id).map(item => <div key={item.id}><p>{t('learningGoal')} · {item.title} · {t(levelKeys[item.level])} · {t(item.method)}</p><MasteryDots days={curriculum.scope.current ? item.independentDays : undefined} t={t} /><p className="student-muted">{item.goal}</p>
-          {curriculum.scope.current && <button type="button" disabled={active} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
+          {curriculum.scope.current && <button type="button" aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal(item)}>{t('chooseGoal')} · {item.title}</button>}
         </div>)}
       </details> })}
     </section>}
     {(study.objectives.length > 0 || study.concepts.length > 0) && <section><h3>{t('learningGoal')} · {t('pendingConcept')}</h3>
       {study.concepts.map(item => <details key={item.id}><summary>{item.name}{item.confirmedAt === undefined ? ` · ${t('pendingConcept')}` : ''}</summary>
         <p>{t('definition')}: {item.definition}</p><p>{t('example')}: {item.example}</p><p>{t('source')}: {item.source}</p>
-        {item.confirmedAt === undefined && <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void change({ action: 'confirm-concept', id: item.id, definition: String(form.get('definition') ?? ''), example: String(form.get('example') ?? ''), source: String(form.get('source') ?? ''), userConfirmation: String(form.get('confirmation') ?? '') }).catch(() => {}) }}>
+        {item.confirmedAt === undefined && <form onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); void change({ action: 'confirm-concept', id: item.id, definition: String(form.get('definition') ?? ''), example: String(form.get('example') ?? ''), source: String(form.get('source') ?? ''), userConfirmation: t('confirmConcept') }).catch(() => {}) }}>
           {(['definition', 'example', 'source'] as const).map(name => <label key={name}>{t(name)}<textarea name={name} defaultValue={item[name]} required maxLength={2000} /></label>)}
-          <label>{t('parentConfirmation')}<input name="confirmation" required maxLength={2000} /></label><button disabled={disabled} type="submit">{t('confirmConcept')}</button>
+          <button disabled={disabled} type="submit">{t('confirmConcept')}</button>
         </form>}
       </details>)}
       {study.relations.map(item => <p key={item.id}>{study.concepts.find(concept => concept.id === item.fromId)?.name ?? item.fromId} · {t(item.kind)} · {study.concepts.find(concept => concept.id === item.toId)?.name ?? item.toId}: {item.explanation} · {t('source')}: {item.source}</p>)}
       {study.objectives.map(item => <div key={item.id}><p>{item.title} · {t(item.method)}: {item.goal}</p>
-        <button type="button" disabled={active} aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal({ id: item.id, subject })}>{t('chooseGoal')} · {item.title}</button>
+        <button type="button" aria-pressed={selectedObjectiveId === item.id} onClick={() => chooseGoal({ id: item.id, subject })}>{t('chooseGoal')} · {item.title}</button>
       </div>)}
     </section>}
     <section>{curriculum && <><h3>{t('relationsLabel')} · {curriculum.relations.length}</h3>
@@ -146,7 +151,7 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
         <nav className="student-segments" aria-label={t('intensity')}>{(['light', 'standard', 'deep'] as const).map(level => <button key={level} type="button" aria-pressed={intensity === level} onClick={() => setIntensity(target, level)}>{t(intensityKeys[level])} · {shown.samples[level].length}{shown.recommendedIntensity === level ? ` · ${t('recommended')}` : ''}</button>)}</nav>
         <p className="student-muted">{t(intensityHelpKeys[intensity])}</p>
         {sample.length > 0 ? <p className="student-muted">{t('diagnosisSample')}: {sample.map(item => `${item.title} · ${t(sampleKeys[item.reason])}`).join('；')}</p> : <p>{t('empty')}</p>}
-        <button type="button" disabled={disabled || running || active || sample.length === 0} onClick={() => { void startDiagnosis(target, intensity) }}>{t(shown.due ? 'startDiagnosis' : 'repeatDiagnosis')} · {t(target)}</button>
+        <button type="button" disabled={disabled || running || sample.length === 0} onClick={() => { void startDiagnosis(target, intensity) }}>{t(shown.due ? 'startDiagnosis' : 'repeatDiagnosis')} · {t(target)}</button>
         {history.length > 0 && <details><summary>{t('history')} · {history.length}</summary>
           {history.map(item => <div key={item.sessionId}><p>{day(item.startedAt)} · {t(intensityKeys[item.intensity])} · {t('assistIndependent')} {item.counts.independent} · {t('assistHint')} {item.counts.helped} · {t('wrong')} {item.counts.wrong}</p>
             {item.results.map(result => <p key={result.id} className="student-muted">{result.title} · {t(result.result)} · {t(assistKeys[result.assistance])}</p>)}
@@ -155,6 +160,44 @@ export function MapView({ study, curriculum, subject, selectedConceptId, setSele
       </section>
     })}
   </>
+}
+
+function MindMapTree({ curriculum, selectedConceptId, setSelectedConceptId, selectedObjectiveId, chooseGoal, active: _active, t }: {
+  curriculum: Curriculum
+  selectedConceptId: string
+  setSelectedConceptId: (id: string) => void
+  selectedObjectiveId: string
+  chooseGoal: (goal: { id: string; subject: Subject }) => void
+  active: boolean
+  t: Translate
+}) {
+  const conceptName = (id: string) => curriculum.concepts.find(item => item.id === id)?.name ?? id
+  return <div className="student-mindmap" role="tree" aria-label={t('mindMap')}>
+    {curriculum.units.map(unit => {
+      const concepts = curriculum.concepts.filter(item => item.unit === unit.id)
+      return <div key={unit.id} className="student-mindmap-unit" role="treeitem" aria-expanded="true">
+        <p className="student-mindmap-root">{unit.name}</p>
+        <ul className="student-mindmap-branch">
+          {concepts.map(concept => {
+            const links = curriculum.relations.filter(relation => relation.fromId === concept.id || relation.toId === concept.id)
+            const goals = curriculum.objectives.filter(item => item.conceptIds.includes(concept.id))
+            return <li key={concept.id} className="student-mindmap-node">
+              <button type="button" className={`student-mindmap-concept student-level-${concept.level}`} aria-pressed={selectedConceptId === concept.id} onClick={() => setSelectedConceptId(concept.id)}>
+                <span className={`student-dot student-level-${concept.level}`} />{concept.name}
+              </button>
+              {links.length > 0 && <ul className="student-mindmap-links">{links.map(relation => {
+                const other = relation.fromId === concept.id ? relation.toId : relation.fromId
+                return <li key={relation.id}><button type="button" className="student-quiet" onClick={() => setSelectedConceptId(other)}>{t(relation.kind)} · {conceptName(other)}</button></li>
+              })}</ul>}
+              {goals.length > 0 && curriculum.scope.current && <ul className="student-mindmap-goals">{goals.map(goal => <li key={goal.id}>
+                <button type="button" aria-pressed={selectedObjectiveId === goal.id} onClick={() => chooseGoal(goal)}>{t('chooseGoal')} · {goal.title}</button>
+              </li>)}</ul>}
+            </li>
+          })}
+        </ul>
+      </div>
+    })}
+  </div>
 }
 
 function countLevels(concepts: readonly Curriculum['concepts'][number][]): Record<Level, number> {

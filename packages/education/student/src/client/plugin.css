@@ -145,6 +145,46 @@
 .student-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .student-mastery { display: flex; gap: 6px; align-items: center; }
 .student-mastery span { width: 10px; height: 10px; border-radius: 50%; }
+.student-simon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.student-simon li {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
+}
+.student-simon-done { opacity: 0.7; }
+.student-simon-current {
+  color: var(--dsw-alias-label-primary);
+  border-color: var(--dsw-alias-state-business-primary);
+  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 12%, var(--dsw-alias-bg-base));
+  font-weight: 500;
+}
+.student-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.student-mindmap { display: flex; flex-direction: column; gap: 12px; }
+.student-mindmap-unit {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-base);
+}
+.student-mindmap-root { font-weight: 500; margin: 0 0 8px; }
+.student-mindmap-branch { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 2px solid var(--dsw-alias-border-l2); display: flex; flex-direction: column; gap: 8px; }
+.student-mindmap-node { display: flex; flex-direction: column; gap: 4px; }
+.student-mindmap-concept { text-align: left; display: flex; align-items: center; gap: 6px; }
+.student-mindmap-concept.student-level-mastered { box-shadow: inset 3px 0 0 var(--dsw-alias-state-success-primary); }
+.student-mindmap-concept.student-level-practising { box-shadow: inset 3px 0 0 var(--dsw-alias-state-business-primary); }
+.student-mindmap-concept.student-level-stalled { box-shadow: inset 3px 0 0 var(--dsw-alias-state-warn-primary); }
+.student-mindmap-concept.student-level-weak,
+.student-mindmap-concept.student-level-due { box-shadow: inset 3px 0 0 var(--dsw-alias-state-error-primary); }
+.student-mindmap-links,
+.student-mindmap-goals { list-style: none; margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; }
 .student-figure svg { width: 100%; height: auto; max-height: 220px; color: var(--dsw-alias-label-primary); }
 .student-figure circle,
 .student-figure rect,

@@ -34,6 +34,7 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
   return <>
     <PhotoIntake ask={ask} disabled={disabled || running} t={t} />
     <WorkbookIntake study={study} goals={goals} revision={revision} disabled={disabled || running} change={change} ask={ask} t={t} />
+    <MistakeEditor subject={subject} goals={goals} revision={revision} change={change} t={t} />
     <section><h3>{t('notebook')} · {t(subject)} · {study.confirmedCount}</h3>
       <nav className="student-segments" aria-label={t('mistakeStatus')}>{(['all', 'due', 'reviewing', 'mastered'] as const).map(name => <button key={name} type="button" aria-pressed={mistakeStatus === name} onClick={() => { setMistakeStatus(name); setMistakeOffset(0) }}>{t(name === 'all' ? 'all' : name === 'due' ? 'bookDue' : name === 'reviewing' ? 'bookReviewing' : 'bookMastered')}{name === 'all' ? '' : ` · ${study.mistakeBook[name]}`}</button>)}</nav>
       {study.confirmedMistakes.length === 0 && <p>{t('empty')}</p>}
@@ -45,12 +46,47 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
         <p>{t('reviewStage')}: {item.stage + 1} / 5{item.dueAt !== undefined ? ` · ${t('nextReview')}: ${item.dueAt <= now ? t('dueNow') : new Date(item.dueAt).toLocaleString()}` : ''}</p>
         {study.worksheets.filter(sheet => sheet.sources.some(source => source.mistakeId === item.id)).map(sheet => <p key={sheet.id} className="student-muted">{t('relatedWorksheets')}: {sheet.objectiveTitle} · {t('graded')} {sheet.results.length}/{sheet.items.length}</p>)}
         <MistakeObjective mistake={item} objectives={goals} change={change} t={t} />
+        <MistakeEditor subject={subject} goals={goals} revision={revision} change={change} t={t} existing={item} />
+        <div className="student-segments">
+          <button type="button" onClick={() => {
+            if (!window.confirm(t('deleteMistakeConfirm'))) return
+            void change({ action: 'delete-mistake', id: item.id }, revision).catch(() => {})
+          }}>{t('deleteMistake')}</button>
+          {item.objectiveId && <button type="button" onClick={() => {
+            const objectiveId = item.objectiveId!
+            void change({
+              action: 'save-exercise',
+              exercise: {
+                id: `ws-${item.id}`.slice(0, 80),
+                subject: item.subject,
+                objectiveId,
+                role: 'vary',
+                variant: 'numeric',
+                prompt: item.prompt,
+                steps: ['先回忆错因', '独立做一遍', '对照订正'],
+                answer: item.correction,
+                explanation: item.explanation,
+                answerEvidence: item.answerEvidence,
+                ...(item.errorType !== undefined ? { errorType: item.errorType } : {}),
+              },
+            }, revision).catch(() => {})
+          }}>{t('saveToExerciseBank')}</button>}
+        </div>
       </details>)}
       {study.confirmedCount > 20 && <div className="student-pages">
         <button type="button" disabled={study.confirmedOffset === 0} onClick={() => setMistakeOffset(study.confirmedOffset - 20)}>{t('previousPage')}</button>
         <span>{t('page')} {Math.floor(study.confirmedOffset / 20) + 1} / {Math.ceil(study.confirmedCount / 20)}</span>
         <button type="button" disabled={study.confirmedOffset + 20 >= study.confirmedCount} onClick={() => setMistakeOffset(study.confirmedOffset + 20)}>{t('nextPage')}</button>
       </div>}
+    </section>
+    <section><h3>{t('workspaceExercises')} · {(study.exercises ?? []).length}</h3>
+      {(study.exercises ?? []).length === 0 && <p>{t('empty')}</p>}
+      {(study.exercises ?? []).map(item => <details key={item.id}><summary>{item.prompt.slice(0, 40)}</summary>
+        <p>{t('learningGoal')}: {goals.find(goal => goal.id === item.objectiveId)?.title ?? item.objectiveId}</p>
+        <p>{t('answer')}: {item.answer}</p>
+        <p>{t('explanation')}: {item.explanation}</p>
+        <button type="button" onClick={() => { void change({ action: 'delete-exercise', id: item.id }, revision).catch(() => {}) }}>{t('deleteExercise')}</button>
+      </details>)}
     </section>
     <section><h3>{t('worksheets')}</h3>
       <p className="student-muted">{t('reviewSheetHelp')}</p>
@@ -63,12 +99,58 @@ export function PracticeView({ study, now, subject, goals, mistakeStatus, setMis
     <section><h3>{t('due')} · {study.dueCount}</h3>{study.dueMistakes.length === 0 && <p>{t('empty')}</p>}
       {study.dueMistakes.map(item => <p key={item.id}>{t(item.subject)} · {item.topic}</p>)}
       {study.dueSubjects.map(item => <button key={item} disabled={disabled || running} onClick={() => onReview(item)}>{t('review')} · {t(item)}</button>)}
-      {study.dueSubjects.length > 0 && study.phase !== 'ready' && <p>{t('reviewBlocked')}</p>}
     </section>
     <section><h3>{t('pending')} · {study.pendingCount}</h3>{study.pendingMistakes.length === 0 && <p>{t('empty')}</p>}
       {study.pendingMistakes.map(item => <MistakeConfirmation key={`${epoch}-${item.id}`} mistake={item} revision={revision} change={change} t={t} />)}
     </section><p>{t('mistakeBounded')}</p>
   </>
+}
+
+function MistakeEditor({ subject, goals, revision, change, t, existing }: {
+  subject: Subject
+  goals: Goal[]
+  revision: number
+  change: ChangeStudy
+  t: Translate
+  existing?: Study['confirmedMistakes'][number]
+}) {
+  const [error, setError] = useState('')
+  return <details><summary>{existing ? t('editMistake') : t('addMistake')}</summary>
+    <form onSubmit={event => {
+      event.preventDefault(); setError('')
+      const form = new FormData(event.currentTarget)
+      const objectiveId = String(form.get('objectiveId') ?? '')
+      const picked = String(form.get('errorType') ?? '')
+      const errorType = errorTypesBySubject[subject].find(candidate => candidate === picked)
+      void change({
+        action: 'confirm-mistake',
+        id: existing?.id ?? crypto.randomUUID(),
+        subject,
+        topic: String(form.get('topic') ?? '').trim() || undefined,
+        prompt: String(form.get('prompt') ?? ''),
+        learnerAnswer: String(form.get('learnerAnswer') ?? '') || undefined,
+        correction: String(form.get('correction') ?? ''),
+        explanation: String(form.get('explanation') ?? ''),
+        answerEvidence: String(form.get('answerEvidence') ?? ''),
+        objectiveId: objectiveId === '' ? '' : objectiveId,
+        ...(errorType !== undefined ? { errorType } : {}),
+        userConfirmation: t('confirmMistake'),
+      }, revision).catch(reason => setError(reason instanceof Error ? reason.message : t('networkError')))
+    }}>
+      <label>{t('topic')}<input name="topic" defaultValue={existing?.topic ?? ''} maxLength={2000} /></label>
+      {(['prompt', 'learnerAnswer', 'correction', 'explanation', 'answerEvidence'] as const).map(name => <label key={name}>{t(name)}<textarea name={name} defaultValue={existing?.[name] ?? ''} required={name !== 'learnerAnswer'} maxLength={2000} /></label>)}
+      <label>{t('learningGoal')}<select name="objectiveId" defaultValue={existing?.objectiveId ?? ''}>
+        <option value="">{t('unclassified')}</option>
+        {goals.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
+      </select></label>
+      <label>{t('errorTypeLabel')}<select name="errorType" defaultValue={existing?.errorType ?? ''}>
+        <option value="">{t('errorTypeNone')}</option>
+        {errorTypesBySubject[subject].map(type => <option key={type} value={type}>{t(type)}</option>)}
+      </select></label>
+      <button type="submit">{existing ? t('save') : t('addMistake')}</button>
+      {error && <p role="alert">{error}</p>}
+    </form>
+  </details>
 }
 
 function MistakeObjective({ mistake, objectives, change, t }: { mistake: Study['confirmedMistakes'][number]; objectives: Goal[]; change: ChangeStudy; t: Translate }) {

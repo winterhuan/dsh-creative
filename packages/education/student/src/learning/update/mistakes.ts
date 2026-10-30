@@ -31,24 +31,94 @@ export function applyMistake(ctx: UpdateContext<'mistake'>): StudyState {
   return state
 }
 
-/** Confirm the final transcription of one mistake. */
+/** Confirm the final transcription of one mistake, or create/edit a confirmed mistake directly from the panel. */
 export function applyConfirmMistake(ctx: UpdateContext<'confirm-mistake'>): StudyState {
-  const { command, previous, state, active, now } = ctx
-  const mistake = state.mistakes.find(item => item.id === command.id)
-  requireValue(mistake, '错题不存在。')
+  const { command, previous, state, now } = ctx
+  let mistake = state.mistakes.find(item => item.id === command.id)
+  if (!mistake) {
+    requireValue(command.subject !== undefined, '直接添加错题需要指定科目（subject）。')
+    const objectiveId = command.objectiveId === '' ? undefined : command.objectiveId
+    if (objectiveId !== undefined) requireValue(objectiveOf(state, objectiveId)?.subject === command.subject, '错题学习目标不存在或科目不符。')
+    if (command.errorType !== undefined) requireValue(errorTypesBySubject[command.subject].includes(command.errorType), '错因分类与科目不符。')
+    mistake = {
+      id: command.id,
+      subject: command.subject,
+      topic: command.topic ?? command.prompt.slice(0, 60),
+      prompt: command.prompt,
+      learnerAnswer: command.learnerAnswer ?? '（未记录）',
+      correction: command.correction,
+      explanation: command.explanation,
+      answerEvidence: command.answerEvidence,
+      uncertainties: '',
+      ...(objectiveId !== undefined ? { objectiveId } : {}),
+      ...(command.errorType !== undefined ? { errorType: command.errorType } : {}),
+      confirmedAt: now,
+      userConfirmation: command.userConfirmation,
+      stage: 0,
+      independentDays: [],
+    }
+    state.mistakes.push(mistake)
+    return state
+  }
+  const targetSubject = command.subject ?? mistake.subject
+  requireValue(targetSubject === mistake.subject, '错题科目不能更改。')
+  const nextObjectiveId = command.objectiveId === undefined ? mistake.objectiveId : command.objectiveId === '' ? undefined : command.objectiveId
+  if (nextObjectiveId !== undefined) requireValue(objectiveOf(state, nextObjectiveId)?.subject === mistake.subject, '错题学习目标不存在或科目不符。')
   if (command.errorType !== undefined) requireValue(errorTypesBySubject[mistake.subject].includes(command.errorType), '错因分类与科目不符。')
-  if (mistake.confirmedAt !== undefined && (command.learnerAnswer === undefined || mistake.learnerAnswer === command.learnerAnswer) && mistake.prompt === command.prompt && mistake.correction === command.correction
+  const nextTopic = command.topic ?? mistake.topic
+  if (mistake.confirmedAt !== undefined && mistake.topic === nextTopic && mistake.objectiveId === nextObjectiveId && (command.learnerAnswer === undefined || mistake.learnerAnswer === command.learnerAnswer) && mistake.prompt === command.prompt && mistake.correction === command.correction
     && mistake.explanation === command.explanation && mistake.answerEvidence === command.answerEvidence && (command.errorType === undefined || mistake.errorType === command.errorType) && mistake.userConfirmation === command.userConfirmation) return previous
-  requireValue(!active, '先结束当前学习，再校正错题记录。')
+  mistake.topic = nextTopic
   mistake.prompt = command.prompt
   if (command.learnerAnswer !== undefined) mistake.learnerAnswer = command.learnerAnswer
   mistake.correction = command.correction
   mistake.explanation = command.explanation
   mistake.answerEvidence = command.answerEvidence
+  if (nextObjectiveId === undefined) delete mistake.objectiveId
+  else mistake.objectiveId = nextObjectiveId
   if (command.errorType !== undefined) mistake.errorType = command.errorType
   mistake.userConfirmation = command.userConfirmation
   mistake.uncertainties = ''
-  mistake.confirmedAt = now
+  if (mistake.confirmedAt === undefined) mistake.confirmedAt = now
+  return state
+}
+
+/** Delete one mistake from the notebook and detach any worksheet references to it. */
+export function applyDeleteMistake(ctx: UpdateContext<'delete-mistake'>): StudyState {
+  const { command, previous, state } = ctx
+  if (!state.mistakes.some(item => item.id === command.id)) return previous
+  state.mistakes = state.mistakes.filter(item => item.id !== command.id)
+  for (const sheet of state.worksheets) {
+    for (const item of sheet.items) {
+      if (item.mistakeId === command.id) delete item.mistakeId
+    }
+  }
+  return state
+}
+
+/** Save or update one workspace exercise item in the local exercise bank. */
+export function applySaveExercise(ctx: UpdateContext<'save-exercise'>): StudyState {
+  const { command, previous, state, now } = ctx
+  const item = command.exercise
+  const objective = objectiveOf(state, item.objectiveId)
+  requireValue(objective && objective.subject === item.subject, '习题学习目标不存在或科目不符。')
+  if (item.errorType !== undefined) requireValue(errorTypesBySubject[item.subject].includes(item.errorType), '错因分类与科目不符。')
+  const existing = state.exercises.find(entry => entry.id === item.id)
+  if (existing) {
+    const { savedAt: _savedAt, ...stored } = existing
+    if (canonical(stored) === canonical(item)) return previous
+    state.exercises = state.exercises.map(entry => entry.id === item.id ? { ...item, savedAt: existing.savedAt ?? now } : entry)
+    return state
+  }
+  state.exercises.push({ ...item, savedAt: now })
+  return state
+}
+
+/** Delete one workspace exercise item from the local exercise bank. */
+export function applyDeleteExercise(ctx: UpdateContext<'delete-exercise'>): StudyState {
+  const { command, previous, state } = ctx
+  if (!state.exercises.some(item => item.id === command.id)) return previous
+  state.exercises = state.exercises.filter(item => item.id !== command.id)
   return state
 }
 
@@ -123,4 +193,3 @@ export function applyClassifyMistake(ctx: UpdateContext<'classify-mistake'>): St
   else mistake.errorType = next
   return state
 }
-

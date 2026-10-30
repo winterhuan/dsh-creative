@@ -100,6 +100,7 @@ export function dashboard(state: StudyState | undefined, now: number, options: {
     weekly: weeklySummary(state, now, insight),
     diagnostics: insight.diagnostics,
     materials: state.materials.filter(item => state.courses.some(course => course.materialId === item.id)),
+    exercises: state.exercises.filter(item => item.subject === subject).slice(-20).reverse(),
     workbookDrafts: state.workbookDrafts.filter(item => item.subject === subject).slice(-20).reverse(),
     teachingQueue: state.teachingQueue.filter(item => item.subject === subject).slice(-20).reverse(),
     recentAttempts: state.attempts.filter(item => item.subject === subject).slice(-20).reverse(),

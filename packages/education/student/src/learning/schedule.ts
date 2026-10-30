@@ -1,7 +1,8 @@
 import { DAY, studyDay } from './shared.ts'
 import type { StudyState } from '../schema.ts'
 
-const REVIEW_DAYS = [1, 3, 7, 14, 30]
+/** Spaced-repetition intervals in days for stages 1..4 (1d / 7d / 16d / 35d forgetting curve). */
+const REVIEW_DAYS = [1, 7, 16, 35]
 
 /** Midnight in the teaching timezone that starts the given calendar day. */
 export function dayStart(day: string): number { return Date.parse(`${day}T00:00:00+08:00`) }
@@ -11,8 +12,8 @@ export function dayStart(day: string): number { return Date.parse(`${day}T00:00:
  * A mistake is due from the calendar day after confirmation or after the last wrong answer, not at a clock time.
  * Wrong, partial or helped answers keep the stage and only make it due again the next day. An independent correct
  * answer on any day, earlier than the due day included, advances it at most once per day; the next due day counts
- * from that answer.
- * Stage 4 (a 30-day interval) is consolidated.
+ * from that answer along the 1 / 7 / 16 / 35-day curve.
+ * Stage 4 (a 35-day interval) is consolidated.
  */
 export function scheduleMistakes(state: StudyState): StudyState {
   const evidence = new Map<string, { at: number; result: string; assistance: string }[]>()
@@ -42,7 +43,7 @@ export function scheduleMistakes(state: StudyState): StudyState {
       if (days.includes(day)) continue
       days = [...days, day]
       stage = Math.min(4, stage + 1)
-      due = studyDay(item.at + (REVIEW_DAYS[stage] ?? 1) * DAY)
+      due = studyDay(item.at + (REVIEW_DAYS[stage - 1] ?? 1) * DAY)
     }
     mistake.stage = stage
     mistake.independentDays = days

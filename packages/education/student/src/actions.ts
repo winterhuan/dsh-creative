@@ -11,7 +11,6 @@ export interface ActionMeta {
 /** Every study action with its submission surface and owning handler family; keyed exhaustively by the command schema. */
 export const actionMeta: Record<Command['action'], ActionMeta> = {
   setup: { panel: true, group: 'profile' },
-  limits: { panel: true, group: 'profile' },
   material: { panel: false, group: 'profile' },
   course: { panel: false, group: 'profile' },
   'configure-course': { panel: true, group: 'profile' },
@@ -28,6 +27,9 @@ export const actionMeta: Record<Command['action'], ActionMeta> = {
   stop: { panel: true, group: 'session' },
   mistake: { panel: false, group: 'mistakes' },
   'confirm-mistake': { panel: true, group: 'mistakes' },
+  'delete-mistake': { panel: true, group: 'mistakes' },
+  'save-exercise': { panel: true, group: 'mistakes' },
+  'delete-exercise': { panel: true, group: 'mistakes' },
   concept: { panel: false, group: 'mistakes' },
   'confirm-concept': { panel: true, group: 'mistakes' },
   objective: { panel: false, group: 'mistakes' },

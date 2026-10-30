@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-29。
+最后更新：2026-10-30。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -22,6 +22,8 @@
 ## 1. 现状速览
 
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
+
+2026-10-30 学生插件全面改造：取消时长/休息限制与 `timeNotice`；内置语数英习题知识库与工作区真题沉淀；复习曲线改为 1/7/16/35 天；西蒙四步、费曼小老师、任务微步骤与探究疑问；知识地图逻辑树；家长档案就地更新与面板自动确认；错题本面板增删改。见[全面改造](.agents/notes/implemented/feature/2026-10-30-student-overhaul.zh.md)。
 
 2026-10-29 小说模块边界见[架构笔记](.agents/notes/implemented/architecture/2026-10-29-story-architecture-structure.zh.md)。命令名、JSON 与门禁缺省未改。
 
@@ -225,7 +227,7 @@ DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖
 
 ### 学生学习
 
-`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台分成学生页和家长页：学生页是今日学习；家长页包含知识地图与学习摸底、概念、练习单与错题巩固、家长设置与成长记录；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题与奖励。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。未提供教材的二年级上册使用随包课页，用户教材优先。使用方法及计时、教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
+`@winterhuan/dsh-student` 位于 `packages/education/student`，独立构建和安装，不依赖创作包。右侧学习工作台分成学生页和家长页：学生页是今日学习；家长页包含知识地图与学习摸底、概念、练习单与错题巩固、家长设置与成长记录；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题、工作区习题与奖励。无单段/休息/每日时长限制；内置习题知识库按目标索引。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。未提供教材的二年级上册使用随包课页，用户教材优先。使用方法及教材确认和模型能力的限制见[学生插件](packages/education/student/README.zh.md)。
 
 ### 模型设置增强
 

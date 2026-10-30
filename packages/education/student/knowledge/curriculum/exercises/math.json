@@ -1,0 +1,538 @@
+{
+  "subject": "math",
+  "exercises": [
+    {
+      "id": "ex-m1a-school-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-school",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "看图比一比，哪一行图形更多？",
+      "choices": ["○ 比 △ 多", "△ 比 ○ 多", "○ 和 △ 同样多"],
+      "figure": {
+        "kind": "shapes",
+        "rows": [
+          { "name": "○", "shape": "circle", "count": 7, "blank": 0 },
+          { "name": "△", "shape": "triangle", "count": 5, "blank": 0 }
+        ]
+      },
+      "steps": ["先一个一个点数出第一行 ○ 的个数", "再把第二行 △ 与第一行 ○ 一一对应配对", "看哪一行有剩余，说出谁比谁多"],
+      "answer": "○ 比 △ 多",
+      "explanation": "○ 有 7 个，△ 有 5 个，一一对应后 ○ 还有剩余，所以 ○ 比 △ 多。",
+      "answerEvidence": "沪教版一年级上册《我是小学生》一一对应比多少。",
+      "errorType": "unit-quantity"
+    },
+    {
+      "id": "ex-m1a-shapes-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-shapes",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "看图认一认，哪种立体图形可以向各个方向自由滚动？",
+      "choices": ["球", "正方体", "长方体"],
+      "figure": {
+        "kind": "solid",
+        "items": [
+          { "shape": "sphere", "count": 1 },
+          { "shape": "cube", "count": 1 },
+          { "shape": "cuboid", "count": 1 },
+          { "shape": "cylinder", "count": 1 }
+        ],
+        "mark": "no"
+      },
+      "steps": ["先观察图中的四种立体图形：球、正方体、长方体、圆柱", "回想每种图形的面是平的还是弯的", "找出到处都能滚动的图形"],
+      "answer": "球",
+      "explanation": "球是圆圆的，能向各个方向滚动；正方体和长方体的面是平的，不易滚动。",
+      "answerEvidence": "沪教版一年级上册《认识图形》立体图形特征。",
+      "errorType": "geometry-feature"
+    },
+    {
+      "id": "ex-m1a-count-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-count",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看数的分与合图，空框里依次应该填几？",
+      "figure": {
+        "kind": "split",
+        "parts": [
+          { "top": "6", "left": "2", "right": "" },
+          { "top": "10", "left": "", "right": "3" }
+        ]
+      },
+      "steps": ["先看第一个分与合：6 可以分成 2 和几", "再看第二个分与合：几和 3 合成 10", "用合成检验一遍两个数加起来是不是顶上的数"],
+      "answer": "4，7",
+      "explanation": "6 可以分成 2 和 4；7 和 3 合成 10。",
+      "answerEvidence": "沪教版一年级上册《10以内的数》分与合：2+4=6，7+3=10。",
+      "errorType": "calculation"
+    },
+    {
+      "id": "ex-m1a-compare-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-compare",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "在 8 ○ 5 的圆圈里填“>”“<”还是“=”？如果一排有 8 个小朋友，从左数小明排在第 5 个，“8 个”和“第 5 个”意思一样吗？",
+      "steps": ["先比较 8 和 5 的大小，写出符号", "再区分“8 个”表示总数，“第 5 个”表示按顺序排到的位置", "把两问合起来说完整"],
+      "answer": "填 >（8 > 5）。不一样，“8 个”表示一共有 8 个人，“第 5 个”表示小明从左数排到的位置这 1 个人。",
+      "explanation": "8 比 5 大，用 >；“几个”是总数，“第几”是顺序位置。",
+      "answerEvidence": "沪教版一年级上册《小于、等于、大于》与《第几》。",
+      "errorType": "reading-task"
+    },
+    {
+      "id": "ex-m1a-meaning-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-meaning",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "草地上原来有 5 只小兔，又跑来 3 只，现在一共有几只小兔？应该用加法还是减法？请列出算式。",
+      "steps": ["先判断“又跑来 3 只”是把两部分合起来还是去掉一部分", "合起来用加法计算", "列出算式并算出得数"],
+      "answer": "用加法，5 + 3 = 8（只）。",
+      "explanation": "把原来的 5 只和又跑来的 3 只合起来，用加法：5 + 3 = 8。",
+      "answerEvidence": "沪教版一年级上册《加法的含义》：把两部分合起来用加法。",
+      "errorType": "operation-choice"
+    },
+    {
+      "id": "ex-m1a-fluency-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-fluency",
+      "role": "try",
+      "variant": "numeric",
+      "prompt": "按顺序口算：9 − 4 + 3 = ？请说出第一步先算什么，第二步再算什么。",
+      "steps": ["加减混合算式按从左到右的顺序计算", "第一步先算左边的 9 − 4 = 5", "第二步再用 5 + 3 算出最后结果"],
+      "answer": "8。先算 9 − 4 = 5，再算 5 + 3 = 8。",
+      "explanation": "加减混合按从左往右算：9 − 4 = 5，5 + 3 = 8。",
+      "answerEvidence": "沪教版一年级上册《加减混合》从左到右运算顺序。",
+      "errorType": "calculation"
+    },
+    {
+      "id": "ex-m1a-teen-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-teen",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看小棒图（一捆是 10 根），图上表示的数是多少？它由几个十和几个一组成？",
+      "figure": { "kind": "sticks", "bundles": 1, "singles": 6 },
+      "steps": ["先数有几捆小棒，1 捆表示 1 个十", "再数有几根单根小棒，6 根表示 6 个一", "合起来写出这个两位数"],
+      "answer": "16，由 1 个十和 6 个一组成。",
+      "explanation": "1 捆是 1 个十，6 根是 6 个一，合起来是 16（10 + 6 = 16）。",
+      "answerEvidence": "沪教版一年级上册《十几就是十和几》。",
+      "errorType": "place-value"
+    },
+    {
+      "id": "ex-m1a-carry-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-carry",
+      "role": "demo",
+      "variant": "reasoning",
+      "prompt": "用“凑十法”计算 8 + 5 = ？请说出把 5 分成几和几，先算什么，再算什么。",
+      "steps": ["先看大数 8 差几凑成 10（8 + 2 = 10）", "把 5 分成 2 和 3，先算 8 + 2 = 10", "再算 10 + 3 = 13"],
+      "answer": "13。把 5 分成 2 和 3，先算 8 + 2 = 10，再算 10 + 3 = 13。",
+      "explanation": "凑十法：拆小数凑大数，8 和 2 凑成 10，再加上剩下的 3 得 13。",
+      "answerEvidence": "沪教版一年级上册《20以内进位加法》8+5=13。",
+      "errorType": "carry-borrow"
+    },
+    {
+      "id": "ex-m1a-review-1",
+      "subject": "math",
+      "objectiveId": "m1a-o-review",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "小熊搭积木，先用了 7 块正方体，又用了 6 块圆柱，一共用了多少块积木？",
+      "steps": ["先找出已知条件：7 块正方体和 6 块圆柱", "求“一共用了多少块”要把两部分合起来，用加法", "用凑十法算出 7 + 6 的结果"],
+      "answer": "7 + 6 = 13（块）。",
+      "explanation": "把 7 块和 6 块合起来，7 + 3 = 10，10 + 3 = 13（块）。",
+      "answerEvidence": "沪教版一年级上册《复习》综合应用。",
+      "errorType": "operation-choice"
+    },
+    {
+      "id": "ex-m1b-borrow-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-borrow",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "计算 13 − 8 = ？请用“破十法”或“想加算减”说明你是怎么算的。",
+      "steps": ["个位 3 减 8 不够减，从十位退 1 个十", "破十法：先算 10 − 8 = 2，再算 2 + 3 = 5", "用加法复核：8 + 5 = 13，结果正确"],
+      "answer": "5。破十法：把 13 分成 10 和 3，先算 10 − 8 = 2，再算 2 + 3 = 5（或想 8 + 5 = 13，所以 13 − 8 = 5）。",
+      "explanation": "13 − 8 个位不够减，用破十法 10 − 8 = 2、2 + 3 = 5。",
+      "answerEvidence": "沪教版一年级下册《20以内退位减法》。",
+      "errorType": "carry-borrow"
+    },
+    {
+      "id": "ex-m1b-count100-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-count100",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看小棒图，一共是多少根？这个数读作什么，由几个十和几个一组成？",
+      "figure": { "kind": "sticks", "bundles": 5, "singles": 3 },
+      "steps": ["先数有几捆：5 捆是 5 个十", "再数单根：3 根是 3 个一", "合起来写出 53，读作五十三"],
+      "answer": "53，读作五十三，由 5 个十和 3 个一组成。",
+      "explanation": "5 捆是 50，加 3 根是 53，读作五十三。",
+      "answerEvidence": "沪教版一年级下册《100以内的数》53=50+3。",
+      "errorType": "place-value"
+    },
+    {
+      "id": "ex-m1b-compare100-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-compare100",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "比较 42 和 38 的大小，先比哪一位？再写出 46 的两个相邻数。",
+      "steps": ["两位数比大小先看十位：42 的十位是 4，38 的十位是 3，4 > 3 所以 42 > 38", "求 46 的相邻数就是算 46 − 1 和 46 + 1", "写出比较结果和两个相邻数"],
+      "answer": "先比十位，42 > 38；46 的相邻数是 45 和 47。",
+      "explanation": "4 个十大于 3 个十，所以 42 > 38；46 前后紧挨的数是 45 和 47。",
+      "answerEvidence": "沪教版一年级下册《100以内数的大小比较》《相邻数与相邻整十数》。",
+      "errorType": "place-value"
+    },
+    {
+      "id": "ex-m1b-clock-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-clock",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看这两个钟面，分别表示什么时刻？",
+      "figure": {
+        "kind": "clock",
+        "clocks": [
+          { "hour": 8, "minute": 0 },
+          { "hour": 8, "minute": 30 }
+        ]
+      },
+      "steps": ["先看第一个钟面：分针指着 12，时针指着 8，是整时", "再看第二个钟面：分针指着 6，时针在 8 和 9 正中间，是半时", "依次写出两个时刻"],
+      "answer": "8 时（8:00），8 时半（8:30）。",
+      "explanation": "分针指 12 是整时（8 时），分针指 6、时针走过 8 是半时（8 时半）。",
+      "answerEvidence": "沪教版一年级下册《时间的初步认识》整时与半时。",
+      "errorType": "unit-quantity"
+    },
+    {
+      "id": "ex-m1b-add100-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-add100",
+      "role": "try",
+      "variant": "numeric",
+      "prompt": "在竖式格里计算：28 + 5 = ？并算一算连加 25 + 30 + 4 = ？",
+      "figure": { "kind": "vertical", "count": 2 },
+      "steps": ["算 28 + 5 时相同数位对齐，个位 8 + 5 = 13，写 3 向十位进 1，十位 2 + 1 = 3", "算 25 + 30 + 4 时按从左往右先算 25 + 30 = 55，再算 55 + 4 = 59", "对照数位复核进位"],
+      "answer": "33，59。",
+      "explanation": "28 + 5 个位满十进一得 33；25 + 30 = 55，55 + 4 = 59。",
+      "answerEvidence": "沪教版一年级下册《100以内数的加减法（一）》。",
+      "errorType": "carry-borrow"
+    },
+    {
+      "id": "ex-m1b-measure-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-measure",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "看厘米尺图，图中的铅笔长多少厘米？下面那条弯弯的线是不是线段？",
+      "figure": {
+        "kind": "measure",
+        "bars": [
+          { "name": "铅笔", "length": 8, "style": "straight" },
+          { "name": "毛线", "length": 6, "style": "curved" }
+        ],
+        "ruler": "yes"
+      },
+      "steps": ["先看铅笔左端对准尺上的 0 刻度，右端对着刻度几", "再看第二条线是弯的，回忆线段必须是直的且有两个端点", "回答长度并判断是不是线段"],
+      "answer": "铅笔长 8 厘米；弯弯的毛线不是线段，因为线段必须是直的。",
+      "explanation": "从 0 刻度量到 8 是 8 厘米；线段是直的，弯线不是线段。",
+      "answerEvidence": "沪教版一年级下册《长度的比较与测量》。",
+      "errorType": "unit-quantity"
+    },
+    {
+      "id": "ex-m1b-body-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-body",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "用“步”量同一间教室的长度，小明量了 12 步，爸爸量了 8 步。为什么量的是同一间教室，步数却不一样？",
+      "steps": ["先想“一步”是身体尺，每个人的脚长和步幅大小不同", "再比谁的一步更长（爸爸的一步比小明长）", "说明同一段距离，每一步越长，走出的步数就越少"],
+      "answer": "因为爸爸的一步比小明的一步长，不同人的身体尺长度不一样，所以量同一间教室得到的步数不同。",
+      "explanation": "身体尺因人而异，步子大的人量同一段长度需要的步数更少。",
+      "answerEvidence": "沪教版一年级下册《身体上的尺子》。",
+      "errorType": "reasoning-incomplete"
+    },
+    {
+      "id": "ex-m1b-plaza-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-plaza",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看数墙，下面相邻两块数砖相加等于正上方的一块。请填出空着的数砖。",
+      "figure": {
+        "kind": "wall",
+        "rows": [
+          [""],
+          ["5", ""],
+          ["2", "3", "4"]
+        ]
+      },
+      "steps": ["先看最下面一行右边的 3 和 4，相加求出第二行右边的空格（3 + 4 = 7）", "再用第二行的 5 和 7 相加，求出最顶上的空格（5 + 7 = 12）", "从上往下减一遍验算"],
+      "answer": "第二行右边填 7，第一行顶上填 12。",
+      "explanation": "3 + 4 = 7，5 + 7 = 12。",
+      "answerEvidence": "沪教版一年级下册《数学广场·数墙》。",
+      "errorType": "pattern"
+    },
+    {
+      "id": "ex-m1b-review-1",
+      "subject": "math",
+      "objectiveId": "m1b-o-review",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "上午 9 时半，小胖去文具店买了一把长 15（  ）的直尺；架子上原来有 14 支铅笔，买走 6 支，还剩几支？",
+      "steps": ["先给直尺选择合适的长度单位（厘米）", "再看“原来 14 支，买走 6 支，求还剩”用退位减法", "计算 14 − 6 并用 6 + 8 = 14 验算"],
+      "answer": "厘米；14 − 6 = 8（支）。",
+      "explanation": "直尺长 15 厘米；求剩余用减法 14 − 6 = 8（支）。",
+      "answerEvidence": "沪教版一年级下册《复习》。",
+      "errorType": "operation-choice"
+    },
+    {
+      "id": "ex-m2a-sub-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-sub",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "在竖式格里计算 52 − 28 = ？并用加法验算。",
+      "figure": { "kind": "vertical", "count": 2 },
+      "steps": ["先看个位：2 减 8 不够减，从十位退 1 作 10，12 − 8 = 4", "再看十位：5 退 1 剩 4，4 − 2 = 2，得 24", "用差加减数验算：24 + 28 = 52"],
+      "answer": "24，验算：24 + 28 = 52。",
+      "explanation": "个位 12 − 8 = 4，十位 4 − 2 = 2，结果是 24；24 + 28 = 52。",
+      "answerEvidence": "沪教版二年级上册《两位数退位减法》与《加与减》。",
+      "errorType": "carry-borrow"
+    },
+    {
+      "id": "ex-m2a-sub-2",
+      "subject": "math",
+      "objectiveId": "m2a-o-sub",
+      "role": "vary",
+      "variant": "context",
+      "prompt": "看线段图，小明有 43 颗玻璃球，小红比小明少 18 颗，小红有多少颗？",
+      "figure": {
+        "kind": "bar-model",
+        "bars": [
+          { "name": "小明", "segments": [{ "label": "43", "units": 12 }] },
+          { "name": "小红", "segments": [{ "label": "", "units": 7 }, { "label": "少18", "units": 5, "style": "dashed" }] }
+        ]
+      },
+      "steps": ["先看线段图找数量关系：小红比 43 少 18，求小红用减法 43 − 18", "个位 3 减 8 不够，从十位退 1，13 − 8 = 5；十位 3 − 1 = 2", "用 25 + 18 = 43 验算"],
+      "answer": "43 − 18 = 25（颗）。",
+      "explanation": "从 43 里去掉少的 18，43 − 18 = 25（颗）。",
+      "answerEvidence": "沪教版二年级上册《退位减法》43−18=25。",
+      "errorType": "carry-borrow"
+    },
+    {
+      "id": "ex-m2a-shop-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-shop",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "在欢乐购物街上，一本笔记本 3 元 2 角，一颗糖果 1 元 5 角。买这两样一共应付多少？如果付出 5 元，应找回多少？",
+      "figure": { "kind": "money", "items": ["5元"] },
+      "steps": ["先算应付：3 元 2 角 + 1 元 5 角，元加元、角加角得 4 元 7 角", "再把 5 元化成 50 角，4 元 7 角化成 47 角", "用付出的钱减去应付的钱：50 角 − 47 角 = 3 角"],
+      "answer": "应付 4 元 7 角，找回 3 角。",
+      "explanation": "3 元 2 角 + 1 元 5 角 = 4 元 7 角；5 元 − 4 元 7 角 = 3 角。",
+      "answerEvidence": "沪教版二年级上册《欢乐购物街》已读教案。",
+      "errorType": "money-measure"
+    },
+    {
+      "id": "ex-m2a-meaning-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-meaning",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看点子方阵图，横着看每行有 5 个点，有 4 行，是几个几？请写成乘法算式，并说出因数和积。",
+      "figure": { "kind": "dot-array", "rows": 4, "columns": 5, "total": "" },
+      "steps": ["先数每行有 5 个，一共有 4 行，表示 4 个 5 连加（5+5+5+5）", "改写成乘法算式 4 × 5 = 20 或 5 × 4 = 20", "指出相乘的两个数是因数，结果 20 是积"],
+      "answer": "4 个 5；4 × 5 = 20（或 5 × 4 = 20），4 和 5 是因数，20 是积。",
+      "explanation": "4 行每行 5 个是 4 个 5，写成 4 × 5 = 20，4 和 5 是因数，20 是积。",
+      "answerEvidence": "沪教版二年级上册《表内乘法·乘法的意义》。",
+      "errorType": "operation-choice"
+    },
+    {
+      "id": "ex-m2a-tables-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-tables",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "一句口诀“七八五十六”可以算出哪两道乘法算式？如果突然忘了 7 × 8 等于多少，怎样用 7 × 7 推算出来？",
+      "steps": ["交换两个因数的位置，写出“七八五十六”对应的两道乘法", "想 7 × 7 = 49 表示 7 个 7", "8 个 7 比 7 个 7 多 1 个 7，用 49 + 7 推算出 56"],
+      "answer": "7 × 8 = 56 和 8 × 7 = 56。想 7 × 7 = 49，再加 1 个 7，49 + 7 = 56。",
+      "explanation": "一句口诀算两道乘法；相邻口诀相差一个因数，49 + 7 = 56。",
+      "answerEvidence": "沪教版二年级上册《7的乘法口诀》《用口诀算乘法》。",
+      "errorType": "calculation"
+    },
+    {
+      "id": "ex-m2a-home-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-home",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "看方向板，早晨面向太阳站立，你的前面是东，那么你的后面、左边、右边各是什么方向？",
+      "figure": { "kind": "compass", "blank": "yes" },
+      "steps": ["先确定东和西相对：前面是东，后面就是西", "再按上北下南左西右东（面向北时右是东），面向东时左手边是北、右手边是南", "依次写出后面、左边、右边的方向"],
+      "answer": "后面是西，左边是北，右边是南。",
+      "explanation": "早晨太阳在东，面向东时后面是西、左面是北、右面是南。",
+      "answerEvidence": "沪教版二年级上册《我的学校我的家·东南西北》。",
+      "errorType": "geometry-feature"
+    },
+    {
+      "id": "ex-m2a-sort-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-sort",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "桌上有红苹果、青苹果、黄香蕉、蓝铅笔、红橡皮。如果先按“水果和文具”分两类，再把“水果”这一组按品种继续分，应该怎么分？",
+      "steps": ["第一层先按用途分成“水果”（红苹果、青苹果、黄香蕉）和“文具”（蓝铅笔、红橡皮）", "第二层只对“水果”这一组按品种细分成“苹果”和“香蕉”", "核对总数是不是还是 5 样物品，不漏不重"],
+      "answer": "第一层分成水果（红苹果、青苹果、黄香蕉）和文具（蓝铅笔、红橡皮）；第二层把水果继续分成苹果（红苹果、青苹果）和香蕉（黄香蕉）。",
+      "explanation": "逐层分类先按一个标准分大组，再对其中一组按第二个标准细分。",
+      "answerEvidence": "沪教版二年级上册《分类·逐层分类》。",
+      "errorType": "reasoning-incomplete"
+    },
+    {
+      "id": "ex-m2a-plaza-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-plaza",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看三阶幻方表，每一横行、每一竖列和两条斜对角线上的三个数相加的和都等于 15。请填出空缺的格子。",
+      "figure": {
+        "kind": "grid",
+        "rows": [
+          { "cells": ["2", "7", "6"] },
+          { "cells": ["9", "5", ""] },
+          { "cells": ["4", "", "8"] }
+        ]
+      },
+      "steps": ["先看第一行 2 + 7 + 6 = 15，确认幻方和是 15", "看第二行：9 + 5 + ( ) = 15，算出右边填 1", "看第三行：4 + ( ) + 8 = 15，算出中间填 3，再用竖列检验"],
+      "answer": "第二行右边填 1，第三行中间填 3。",
+      "explanation": "9 + 5 + 1 = 15，4 + 3 + 8 = 15；竖列 7 + 5 + 3 = 15，6 + 1 + 8 = 15。",
+      "answerEvidence": "沪教版二年级上册《数学广场·幻方》。",
+      "errorType": "pattern"
+    },
+    {
+      "id": "ex-m2a-review-1",
+      "subject": "math",
+      "objectiveId": "m2a-o-review",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "小丁丁买 4 支钢笔，每支 8 元，一共要付多少元？他付出 50 元，应找回多少元？",
+      "steps": ["第一步求 4 个 8 元是多少，用乘法口诀“四八三十二”算出应付 32 元", "第二步用付出的 50 元减去应付的 32 元，退位减法算出找回 18 元", "用 32 + 18 = 50 验算"],
+      "answer": "应付：4 × 8 = 32（元）；找回：50 − 32 = 18（元）。",
+      "explanation": "先用乘法算总价 4 × 8 = 32（元），再用退位减法算找零 50 − 32 = 18（元）。",
+      "answerEvidence": "沪教版二年级上册《复习》。",
+      "errorType": "operation-choice"
+    },
+    {
+      "id": "ex-m2b-read1000-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-read1000",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "看计数器上的珠子，这个三位数写作什么、读作什么？它由几个百、几个十和几个一组成？",
+      "figure": { "kind": "counter", "hundreds": 3, "tens": 0, "ones": 5 },
+      "steps": ["先看百位杆上有 3 颗珠子，表示 3 个百", "再看十位杆上空着没有珠子，用 0 占位；个位杆上有 5 颗珠子，表示 5 个一", "写出 305，中间的 0 读作“零”"],
+      "answer": "写作 305，读作三百零五，由 3 个百、0 个十和 5 个一（3 个百和 5 个一）组成。",
+      "explanation": "百位 3、十位 0、个位 5，写作 305，读作三百零五。",
+      "answerEvidence": "二年级下册《千以内数的认识》百位与数的组成。",
+      "errorType": "place-value"
+    },
+    {
+      "id": "ex-m2b-compare1000-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-compare1000",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "比较 356 和 358 的大小，填上 > 或 <，并说明你是按什么顺序比较的。",
+      "steps": ["先比百位：两个数百位都是 3，一样大", "再比十位：十位都是 5，也一样大", "最后比个位：6 < 8，所以 356 < 358"],
+      "answer": "356 < 358。先比百位都是 3，再比十位都是 5，最后比个位 6 比 8 小，所以 356 < 358。",
+      "explanation": "三位数比大小从百位比起，百位和十位都相同时看个位。",
+      "answerEvidence": "二年级下册《千以内数的大小比较》。",
+      "errorType": "place-value"
+    },
+    {
+      "id": "ex-m2b-vertical-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-vertical",
+      "role": "diagnose",
+      "variant": "numeric",
+      "prompt": "在竖式格里计算 502 − 178 = ？并写出加法验算算式。",
+      "figure": { "kind": "vertical", "count": 2 },
+      "steps": ["个位 2 减 8 不够减，十位是 0，先从百位退 1 到十位作 10，再从十位退 1 到个位作 10，个位 12 − 8 = 4", "十位退 1 后剩 9，9 − 7 = 2；百位 5 退 1 剩 4，4 − 1 = 3，得 324", "用差加减数验算：324 + 178 = 502"],
+      "answer": "324，验算：324 + 178 = 502。",
+      "explanation": "隔位退位后十位剩 9，个位 12−8=4、十位 9−7=2、百位 4−1=3，得 324。",
+      "answerEvidence": "二年级下册《三位数减法（竖式）》502−178=324。",
+      "errorType": "carry-borrow"
+    },
+    {
+      "id": "ex-m2b-estimate-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-estimate",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "先估算 198 + 304 大约是多少，再算出准确得数，比一比结果是否合理。",
+      "steps": ["先把 198 看成接近的整百数 200，把 304 看成 300，估算 200 + 300 = 500", "再列式精确计算 198 + 304 = 502", "502 与估算值 500 非常接近，说明计算结果合理"],
+      "answer": "估算：把 198 看成 200、304 看成 300，大约是 500；精算：198 + 304 = 502，与 500 接近，结果合理。",
+      "explanation": "198 接近 200，304 接近 300，估算约 500，精确得数 502。",
+      "answerEvidence": "二年级下册《估算》知识点事实。",
+      "errorType": "reasoning-incomplete"
+    },
+    {
+      "id": "ex-m2b-time2-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-time2",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "看这两个钟面，写出开始时刻和结束时刻，并算一算中间经过了多少分钟？",
+      "figure": {
+        "kind": "clock",
+        "clocks": [
+          { "hour": 9, "minute": 10 },
+          { "hour": 9, "minute": 40 }
+        ]
+      },
+      "steps": ["先读第一个钟面：时针走过 9，分针指 2（2 × 5 = 10），是 9 时 10 分", "再读第二个钟面：时针走过 9，分针指 8（8 × 5 = 40），是 9 时 40 分", "用 40 分减去 10 分，算出经过了 30 分钟"],
+      "answer": "开始是 9 时 10 分，结束是 9 时 40 分，经过了 30 分钟。",
+      "explanation": "9 时 10 分到 9 时 40 分，分针从 2 走到 8 走了 6 大格，40 − 10 = 30（分）。",
+      "answerEvidence": "二年级下册《认识几时几分》《经过时间》。",
+      "errorType": "unit-quantity"
+    },
+    {
+      "id": "ex-m2b-mass-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-mass",
+      "role": "diagnose",
+      "variant": "context",
+      "prompt": "看天平图，1 粒花生米大约重 1（  ），2 袋 500 克的食盐合起来重 1000 克，也就是几千克？",
+      "figure": { "kind": "balance", "left": "2袋500克食盐", "right": "1千克砝码", "tilt": "level" },
+      "steps": ["先判断 1 粒花生米很轻，用“克”作单位", "再算 2 袋 500 克食盐是 1000 克", "根据 1 千克 = 1000 克，得出是 1 千克"],
+      "answer": "克；1 千克。",
+      "explanation": "较轻的物品用克作单位；1000 克 = 1 千克。",
+      "answerEvidence": "二年级下册《克的认识》《千克的认识》。",
+      "errorType": "unit-quantity"
+    },
+    {
+      "id": "ex-m2b-shapes2-1",
+      "subject": "math",
+      "objectiveId": "m2b-o-shapes2",
+      "role": "diagnose",
+      "variant": "reasoning",
+      "prompt": "看平面图形行，三角形和四边形各有几条直边、几个角？长方形和正方形的边有什么不同？",
+      "figure": {
+        "kind": "plane",
+        "items": [
+          { "shape": "triangle", "count": 1 },
+          { "shape": "rectangle", "count": 1 },
+          { "shape": "square", "count": 1 },
+          { "shape": "quadrilateral", "count": 1 }
+        ],
+        "mark": "no"
+      },
+      "steps": ["先数三角形有 3 条直边、3 个角；四边形有 4 条直边、4 个角", "再比较长方形（对边相等）和正方形（四条边都相等）", "用完整的话说明它们的特点"],
+      "answer": "三角形有 3 条边、3 个角；四边形有 4 条边、4 个角。长方形是对边相等，正方形是四条边都相等（四个角都是直角）。",
+      "explanation": "按边数和角数区分三角形与四边形，按对边相等与四边都相等区分长方形与正方形。",
+      "answerEvidence": "二年级下册《三角形与四边形》。",
+      "errorType": "geometry-feature"
+    }
+  ]
+}

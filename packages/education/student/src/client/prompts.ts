@@ -3,7 +3,13 @@ import { intensityKeys } from './display.ts'
 import type { Translate } from './locales.ts'
 
 /** Natural-language tutor requests. The study skill owns the teaching rules. */
-export const continuePrompt = '请加载 study 技能，查询 study_status，继续当前学习段。先处理未反馈的答案或提示，再出下一题。一次一题。timeNotice 里的时长是建议，请照原文告诉孩子；孩子还想继续就继续。'
+export const continuePrompt = '请加载 study 技能，查询 study_status，继续当前学习段。先处理未反馈的答案或提示，再出下一题。一次一题。没有时长限制，孩子想继续就继续；想休息就 stop。'
+
+/** Ask the child to teach the idea back like a little teacher (Feynman). */
+export function feynmanPrompt(topic: string | undefined): string {
+  const focus = topic ? `围绕「${topic}」` : '围绕刚才学的内容'
+  return `请加载 study 技能。你扮演好奇的同桌。请孩子${focus}当小老师讲一讲：用简单的话说明是什么、怎么做、为什么。孩子讲完后，用一两句追问帮他发现漏洞并补齐；不要直接替他讲完整答案。`
+}
 export const reviewPrompt = '请加载 study 技能，查询 study_status 和到期错题。本段复习到期错题：先做变式，不展示已保存答案。task 写上 mistakeId 和 objectiveId。一次一题。'
 export const hintPrompt = '请加载 study 技能。学生要提示：只指出条件或该画的图，不给算式和答案。如果这题已经答错，下一题换一种表示，并在 task 上写 figure。'
 export const teachHintPrompt = '请加载 study 技能，阅读 references/teaching.md 的「不会做时先教」。按当前题的 phase 教方法：还没示范就先 demo，引导步先给一步提示，不把算式和答案直接填进括号。'
@@ -38,6 +44,12 @@ export function interestPracticePrompt(objectiveId: string | undefined, tags: st
 /** Clear only the one or two due mistakes named for today. */
 export function dueClearPrompt(ids: string[]): string {
   return `请加载 study 技能，阅读 references/interest-hooks.md。今天只清 dueToday 里的这 ${ids.length} 条到期错题（${ids.join('、')}），其余到期错题留到以后。先做变式，不展示已保存答案。task 写 mistakeId 和 objectiveId。情境用 interests 里的标签套壳，事实只核知识地图。一次一题。`
+}
+
+/** Problem-based explore: guess, check, revise. */
+export function explorePrompt(question: string | undefined): string {
+  const focus = question && question.trim() !== '' ? `孩子的疑问是：${question.trim()}。` : '先问孩子想弄清什么。'
+  return `请加载 study 技能。本段是自主探究（explore）。${focus}按问题导向法引导：我猜什么 → 如何验证（翻课页或做小实验）→ 看到了什么 → 我改变了什么想法。一次只推进一小步，不要直接给出完整答案。`
 }
 
 /** Continue around one shipped or custom learning goal. */

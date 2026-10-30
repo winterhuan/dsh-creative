@@ -1,9 +1,9 @@
 import { activeSession, requireValue } from '../shared.ts'
 import { scheduleMistakes } from '../schedule.ts'
 import { commandSchema, stateSchema, type Command, type StudyState } from '../../schema.ts'
-import { applyArchiveTerm, applyConfigureCourse, applyCourse, applyInterests, applyLimits, applyMaterial, applyOpenmaicSettings, applySchoolProgress, applySetup } from './profile.ts'
+import { applyArchiveTerm, applyConfigureCourse, applyCourse, applyInterests, applyMaterial, applyOpenmaicSettings, applySchoolProgress, applySetup, applyUpdateProfile } from './profile.ts'
 import { applyAnswerOrHint, applyRecord, applyStart, applyStop, applyStuck, applyTask } from './session.ts'
-import { applyClassifyMistake, applyConcept, applyConfirmConcept, applyConfirmMistake, applyLinkMistake, applyMistake, applyObjective, applyRelation } from './mistakes.ts'
+import { applyClassifyMistake, applyConcept, applyConfirmConcept, applyConfirmMistake, applyDeleteExercise, applyDeleteMistake, applyLinkMistake, applyMistake, applyObjective, applyRelation, applySaveExercise } from './mistakes.ts'
 import { applyConfirmPaper, applyConfirmWorkbook, applyDiscardSheet, applyDismissTeaching, applyGradeSheet, applyPaperDraft, applyWorksheet, applyWorkbookDraft } from './paper.ts'
 
 /** Context handed to every action handler: the clone to mutate, the input state, the active block and the clock. */
@@ -29,10 +29,9 @@ export function rawApply(previous: StudyState, command: Command, now: number): S
   const base = { previous, state, now, active }
   let result: StudyState
   switch (command.action) {
-    case 'setup': result = applySetup(command, now); break
+    case 'setup': result = applyUpdateProfile({ ...base, command }); break
     case 'configure-course': result = applyConfigureCourse({ ...base, command }); break
     case 'archive-term': result = applyArchiveTerm({ ...base, command }); break
-    case 'limits': result = applyLimits({ ...base, command }); break
     case 'material': result = applyMaterial({ ...base, command }); break
     case 'course': result = applyCourse({ ...base, command }); break
     case 'school-progress': result = applySchoolProgress({ ...base, command }); break
@@ -46,6 +45,9 @@ export function rawApply(previous: StudyState, command: Command, now: number): S
     case 'stop': result = applyStop({ ...base, command }); break
     case 'mistake': result = applyMistake({ ...base, command }); break
     case 'confirm-mistake': result = applyConfirmMistake({ ...base, command }); break
+    case 'delete-mistake': result = applyDeleteMistake({ ...base, command }); break
+    case 'save-exercise': result = applySaveExercise({ ...base, command }); break
+    case 'delete-exercise': result = applyDeleteExercise({ ...base, command }); break
     case 'concept': result = applyConcept({ ...base, command }); break
     case 'confirm-concept': result = applyConfirmConcept({ ...base, command }); break
     case 'objective': result = applyObjective({ ...base, command }); break
@@ -68,15 +70,13 @@ export function rawApply(previous: StudyState, command: Command, now: number): S
   return scheduleMistakes(stateSchema.parse(state))
 }
 
-/** Apply one validated mutation without changing the input; setup creates the first state. */
+/** Apply one validated mutation without changing the input; setup creates the first state or updates the existing profile in place. */
 export function updateStudy(previous: StudyState | undefined, input: unknown, now: number): StudyState {
   const command = commandSchema.parse(input)
-  if (command.action === 'setup') {
-    requireValue(previous === undefined, '学习档案已存在。每个工作区保存一名学生的一学期，请为其他学生或学期使用新工作区。')
+  if (command.action === 'setup' && previous === undefined) {
     return applySetup(command, now)
   }
   requireValue(previous, '请先用 /study 完成家长确认的学习档案。')
   requireValue(now >= previous.updatedAt, '系统时间早于上次记录，请核对设备时钟后重试。')
   return rawApply(previous, command, now)
 }
-

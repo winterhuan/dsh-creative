@@ -9,53 +9,48 @@ import { NOW, MINUTE, DAY, setup, material, course, start, attempt, mistake, con
 
 const dueDay = (from: number, days = 1) => Date.parse(`${studyDay(from + days * DAY)}T00:00:00+08:00`)
 
-describe('daily learning and rest', () => {
-  it('requires confirmed setup and rejects out-of-range time settings', () => {
+describe('daily learning without time limits', () => {
+  it('requires confirmed setup and updates an existing profile in place', () => {
     expect(() => updateStudy(undefined, start, NOW)).toThrow('家长确认')
-    expect(() => updateStudy(undefined, { ...setup, profile: { ...setup.profile, limits: { ...setup.profile.limits, dailyMinutes: 90 } } }, NOW)).toThrow()
     const state = updateStudy(undefined, setup, NOW)
-    expect(() => updateStudy(state, setup, NOW)).toThrow('已存在')
-    expect(studyStatus(state, NOW)).toMatchObject({ phase: 'ready', remainingMs: 20 * MINUTE, unconfirmedSubjects: ['chinese', 'math', 'english'] })
+    expect(studyStatus(state, NOW)).toMatchObject({ phase: 'ready', unconfirmedSubjects: ['chinese', 'math', 'english'] })
+    expect(studyStatus(state, NOW).time).toMatchObject({ timezone: 'Asia/Shanghai', blockElapsed: null, todayElapsed: '0秒' })
+    const renamed = updateStudy(state, { ...setup, profile: { ...setup.profile, nickname: '小苗' } }, NOW)
+    expect(renamed.profile.nickname).toBe('小苗')
+    expect(renamed.revision).toBe(state.revision + 1)
+    expect(updateStudy(renamed, { ...setup, profile: { ...setup.profile, nickname: '小苗' } }, NOW)).toBe(renamed)
   })
 
-  it('keeps block, break and daily durations as suggestions and still saves the work', () => {
+  it('auto-closes an open block when starting another and records elapsed time only', () => {
     let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
-    expect(() => updateStudy(state, { ...start, id: 'parallel' }, NOW)).toThrow('结束当前')
-    expect(state.sessions[0]?.deadline).toBe(NOW + 10 * MINUTE)
-    const due = studyStatus(state, NOW + 10 * MINUTE)
-    expect(due.phase).toBe('stop-required')
-    expect(due.timeNotice).toContain('本段已用 10分钟，建议 10 分钟')
-    expect(due.timeNotice).toContain('已超过本段建议时长')
-    expect(due.time).toMatchObject({ timezone: 'Asia/Shanghai', blockSuggested: '10分钟', todaySuggested: '20分钟', breakUntil: null })
+    expect(studyStatus(state, NOW + 10 * MINUTE)).toMatchObject({ phase: 'studying', time: { blockElapsed: '10分钟', todayElapsed: '10分钟' } })
     state = updateStudy(state, { action: 'record', attempt }, NOW + 11 * MINUTE)
-    expect(state.attempts[0]).toMatchObject({ response: attempt.response, late: true })
-    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 15 * MINUTE)
+    expect(state.attempts[0]).toMatchObject({ response: attempt.response })
+    expect(state.attempts[0]).not.toHaveProperty('late')
+    expect(state.sessions[0]).not.toHaveProperty('deadline')
+    state = updateStudy(state, { ...start, id: 'b2', subject: 'english', mode: 'explore' }, NOW + 15 * MINUTE)
+    expect(state.sessions[0]?.endedAt).toBe(NOW + 15 * MINUTE)
     expect(state.sessions[0]?.spentMs).toBe(15 * MINUTE)
-    const resting = studyStatus(state, NOW + 16 * MINUTE)
-    expect(resting.phase).toBe('break')
-    expect(resting.time.breakUntil).toBe('09:20')
-    expect(resting.timeNotice).toContain('建议休息到 09:20（北京时间）')
-    state = updateStudy(state, { ...start, id: 'b2', subject: 'english', mode: 'explore' }, NOW + 19 * MINUTE)
-    expect(state.sessions[1]).toMatchObject({ id: 'b2', deadline: NOW + 29 * MINUTE })
-    expect(studyStatus(state, NOW + 19 * MINUTE).timeNotice).toContain('建议休息到 09:20')
-    state = updateStudy(state, { action: 'stop', sessionId: 'b2', reflection: '' }, NOW + 30 * MINUTE)
-    expect(studyStatus(state, NOW + 35 * MINUTE).phase).toBe('daily-complete')
-    state = updateStudy(state, { ...start, id: 'b3' }, NOW + 35 * MINUTE)
-    expect(state.sessions[2]?.deadline).toBe(NOW + 45 * MINUTE)
-    state = updateStudy(state, { action: 'stop', sessionId: 'b3', reflection: '' }, NOW + 36 * MINUTE)
-    expect(studyStatus(state, NOW + DAY).phase).toBe('ready')
+    expect(state.sessions[1]).toMatchObject({ id: 'b2', subject: 'english', mode: 'explore' })
+    expect(studyStatus(state, NOW + 15 * MINUTE).phase).toBe('studying')
+    state = updateStudy(state, { action: 'stop', sessionId: 'b2', reflection: '' }, NOW + 20 * MINUTE)
+    expect(studyStatus(state, NOW + 20 * MINUTE)).toMatchObject({ phase: 'ready', time: { todayElapsed: '20分钟' } })
     expect(state.rewards).toEqual([{ day: '2026-10-05', reason: 'participation' }])
   })
 
-  it('does not shorten a block to the remaining daily suggestion', () => {
-    let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
-    state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 10 * MINUTE)
-    state = updateStudy(state, { ...start, id: 'b2' }, NOW + 15 * MINUTE)
-    state = updateStudy(state, { action: 'stop', sessionId: 'b2', reflection: '' }, NOW + 23 * MINUTE)
-    expect(studyStatus(state, NOW + 28 * MINUTE).time).toMatchObject({ todayElapsed: '18分钟', todaySuggested: '20分钟' })
-    state = updateStudy(state, { ...start, id: 'b3' }, NOW + 28 * MINUTE)
-    expect(state.sessions[2]?.deadline).toBe(NOW + 38 * MINUTE)
-    expect(studyStatus(state, NOW + 28 * MINUTE).timeNotice).toContain('今天累计 18分钟，建议 20 分钟')
+  it('strips legacy time-limit fields when migrating a saved study file', () => {
+    const legacy = {
+      format: 1, revision: 1, updatedAt: NOW, breakUntil: NOW + MINUTE,
+      profile: { ...setup.profile, limits: { blockMinutes: 10, breakMinutes: 5, dailyMinutes: 20 } },
+      materials: [], courses: [], sessions: [{ id: 'old', subject: 'math', mode: 'foundation', startedAt: NOW, endedAt: NOW + MINUTE, spentMs: MINUTE, deadline: NOW + 10 * MINUTE }],
+      attempts: [{ ...attempt, at: NOW, late: true }], mistakes: [], rewards: [],
+    }
+    const migrated = stateSchema.parse(migrateStudyFile(legacy))
+    expect(migrated).not.toHaveProperty('breakUntil')
+    expect(migrated.profile).not.toHaveProperty('limits')
+    expect(migrated.sessions[0]).not.toHaveProperty('deadline')
+    expect(migrated.attempts[0]).not.toHaveProperty('late')
+    expect(migrated.exercises).toEqual([])
   })
 
   it('gives no stars for idle time and at most two per day for actual work and reflection', () => {
@@ -73,23 +68,33 @@ describe('daily learning and rest', () => {
     expect(state.rewards).toHaveLength(2)
   })
 
-  it('permits stopping early and counts only elapsed time without imposing a catch-up debt', () => {
+  it('permits stopping early and counts only elapsed time', () => {
     let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
     state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + MINUTE)
-    expect(studyStatus(state, NOW + 6 * MINUTE)).toMatchObject({ phase: 'ready', remainingMs: 19 * MINUTE, stars: 0 })
+    expect(studyStatus(state, NOW + 6 * MINUTE)).toMatchObject({ phase: 'ready', stars: 0, time: { todayElapsed: '1分钟' } })
     expect(() => updateStudy(state, { ...start, id: 'b2' }, NOW)).toThrow('时钟')
   })
 
-  it('caps a block at Shanghai midnight and attributes delayed closure to the day of work', () => {
+  it('attributes delayed closure to the day the block started', () => {
     const late = Date.parse('2026-10-05T23:58:00+08:00')
     let state = updateStudy(updateStudy(undefined, setup, late), start, late)
     state = updateStudy(state, { action: 'record', attempt }, late + MINUTE)
     state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, late + 10 * MINUTE)
-    expect(state.sessions[0]?.deadline).toBe(Date.parse('2026-10-06T00:00:00+08:00'))
     expect(state.sessions[0]?.spentMs).toBe(10 * MINUTE)
     expect(state.rewards[0]?.day).toBe('2026-10-05')
     expect(studyDay(late + 2 * MINUTE)).toBe('2026-10-06')
-    expect(studyStatus(state, late + 15 * MINUTE).remainingMs).toBe(20 * MINUTE)
+    expect(studyStatus(state, late + 15 * MINUTE).phase).toBe('ready')
+  })
+
+  it('replaces an unanswered task and saves workspace exercises', () => {
+    let state = updateStudy(updateStudy(undefined, setup, NOW), start, NOW)
+    state = updateStudy(state, { action: 'task', task: { id: 't1', sessionId: start.id, subject: 'math', topic: '减法', prompt: '8-3=?', objectiveId: 'm2a-o-sub' } }, NOW)
+    state = updateStudy(state, { action: 'task', task: { id: 't2', sessionId: start.id, subject: 'math', topic: '减法', prompt: '9-4=?', steps: ['圈条件', '列式', '验算'], objectiveId: 'm2a-o-sub' } }, NOW + MINUTE)
+    expect(state.task).toMatchObject({ id: 't2', steps: ['圈条件', '列式', '验算'] })
+    state = updateStudy(state, { action: 'save-exercise', exercise: { id: 'ex-ws-1', subject: 'math', objectiveId: 'm2a-o-sub', role: 'try', variant: 'numeric', prompt: '7-2=?', steps: ['看清减数', '口算'], answer: '5', explanation: '7 减 2 得 5。', answerEvidence: '口算。' } }, NOW + 2 * MINUTE)
+    expect(state.exercises).toHaveLength(1)
+    state = updateStudy(state, { action: 'delete-exercise', id: 'ex-ws-1' }, NOW + 3 * MINUTE)
+    expect(state.exercises).toHaveLength(0)
   })
 })
 
@@ -125,8 +130,11 @@ describe('shared workbench tasks', () => {
   it('preserves published questions and submitted answers through reload and rejects fabricated assessment', () => {
     let state = stateSchema.parse(JSON.parse(JSON.stringify(begin())))
     expect(() => updateStudy(state, { action: 'record', attempt }, NOW)).toThrow('请先用 answer 保存原始回答')
-    expect(() => updateStudy(state, { action: 'task', task: { ...task, id: 'next' } }, NOW)).toThrow('完成当前')
+    state = updateStudy(state, { action: 'task', task: { ...task, id: 'skip' } }, NOW)
+    expect(state.task?.id).toBe('skip')
+    state = updateStudy(state, { action: 'task', task }, NOW)
     state = updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)
+    expect(() => updateStudy(state, { action: 'task', task: { ...task, id: 'next' } }, NOW + MINUTE)).toThrow('已作答题目的反馈')
     expect(updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)).toBe(state)
     expect(() => updateStudy(state, { action: 'answer', taskId: task.id, response: '改写答案' }, NOW + MINUTE)).toThrow('已提交')
     expect(() => updateStudy(state, { action: 'record', attempt: { ...attempt, prompt: '另一道题' } }, NOW + MINUTE)).toThrow('prompt 不一致。期望：「8 + 7 等于多少？」')
@@ -136,7 +144,7 @@ describe('shared workbench tasks', () => {
     expect(state.task?.response).toBeUndefined()
   })
 
-  it('records hints as assistance and still saves a task after the suggested deadline', () => {
+  it('records hints as assistance and still saves a task later in the block', () => {
     let state = updateStudy(begin(), { action: 'hint', taskId: task.id }, NOW)
     state = updateStudy(state, { action: 'answer', taskId: task.id, response: attempt.response }, NOW + MINUTE)
     expect(() => updateStudy(state, { action: 'record', attempt }, NOW + MINUTE)).toThrow('不能记录为独立')
@@ -145,7 +153,8 @@ describe('shared workbench tasks', () => {
     state = updateStudy(state, { action: 'task', task: { ...task, id: 'late' } }, NOW + 10 * MINUTE)
     state = updateStudy(state, { action: 'answer', taskId: 'late', response: '15' }, NOW + 11 * MINUTE)
     state = updateStudy(state, { action: 'record', attempt: { ...attempt, id: 'late', response: '15' } }, NOW + 11 * MINUTE)
-    expect(state.attempts.at(-1)).toMatchObject({ id: 'late', late: true })
+    expect(state.attempts.at(-1)).toMatchObject({ id: 'late', response: '15' })
+    expect(state.attempts.at(-1)).not.toHaveProperty('late')
     state = updateStudy(state, { action: 'stop', sessionId: start.id, reflection: '' }, NOW + 12 * MINUTE)
     expect(state.task).toMatchObject({ id: 'late', response: '15' })
   })
@@ -204,7 +213,7 @@ describe('subject knowledge and paper practice', () => {
     state = updateStudy(state, { action: 'confirm-paper', ...paperConfirm }, NOW + 2 * DAY)
     expect(state.paperDrafts).toEqual([])
     expect(state.paperResults[0]).toMatchObject({ response: draft.response, receivedAt: NOW + 2 * DAY, feedback: '家长核对照片转录' })
-    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: dueDay(NOW, 5) })
+    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: dueDay(NOW + 2 * DAY, 1) })
     expect(state.sessions).toEqual([])
     expect(state.rewards).toEqual([])
     expect(updateStudy(state, { action: 'confirm-paper', ...paperConfirm }, NOW + 2 * DAY)).toBe(state)

@@ -5,9 +5,9 @@ import { taughtUnit } from './learning/shared.ts'
 import { scheduleMistakes } from './learning/schedule.ts'
 import { diagnosticFor, insightSummary, studyInsight } from './learning/mastery.ts'
 import { studyStatus } from './learning/status.ts'
-import { checkInHistory, curriculumView, objectiveElements, reviewPlan } from './learning/view.ts'
+import { checkInHistory, curriculumView, exercisesFor, objectiveElements, reviewPlan } from './learning/view.ts'
 import { updateStudy } from './learning/update/index.ts'
-import { curriculumFor, subjectIdeas } from './curriculum.ts'
+import { builtinObjectiveAnywhere, curriculumFor, subjectExercises, subjectIdeas } from './curriculum.ts'
 
 const MAX_BYTES = 8_388_608
 
@@ -35,13 +35,28 @@ function migrateLegacyFigures(parsed: unknown): unknown {
 }
 
 /**
- * Turn a saved hint flag into a hint level before parsing.
- * Missing workbook drafts and the teaching queue are filled by the state schema defaults.
+ * Turn a saved hint flag into a hint level and strip retired time-limit fields before parsing.
+ * Missing workbook drafts, exercises and the teaching queue are filled by the state schema defaults.
  */
 export function migrateStudyFile(parsed: unknown): unknown {
   const next = migrateLegacyFigures(parsed)
   if (typeof next !== 'object' || next === null) return next
-  const task = (next as { task?: unknown }).task
+  const root = next as Record<string, unknown>
+  delete root.breakUntil
+  if (typeof root.profile === 'object' && root.profile !== null) {
+    delete (root.profile as Record<string, unknown>).limits
+  }
+  if (Array.isArray(root.sessions)) {
+    for (const session of root.sessions) {
+      if (typeof session === 'object' && session !== null) delete (session as Record<string, unknown>).deadline
+    }
+  }
+  if (Array.isArray(root.attempts)) {
+    for (const attempt of root.attempts) {
+      if (typeof attempt === 'object' && attempt !== null) delete (attempt as Record<string, unknown>).late
+    }
+  }
+  const task = root.task
   if (typeof task === 'object' && task !== null) {
     const record = task as { hintRequested?: unknown; hintLevel?: unknown }
     if (typeof record.hintLevel !== 'number') record.hintLevel = record.hintRequested === true ? 1 : 0
@@ -131,7 +146,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       pendingMistakes: summary.pendingMistakes.slice(0, 20), pendingMistakeCount: summary.pendingMistakes.length,
       teachingQueue: state.teachingQueue.slice(0, 20), teachingQueueCount: state.teachingQueue.length,
       workbookDrafts: state.workbookDrafts.slice(0, 20), workbookDraftCount: state.workbookDrafts.length,
-      more: 'The study skill owns what to do next; kind=progress, due, weak or curriculum with offset pages more records. interests and interestFocus wrap question context; facts stay on the knowledge map. dueToday lists at most two mistakes to clear and dueBacklog is the full overdue count. openmaic.baseUrl is the interactive-lesson service; write lesson records at openmaic.lessonsPath with the shell, not study_update.',
+      more: 'The study skill owns what to do next; kind=progress, due, weak, exercises or curriculum with offset pages more records. interests and interestFocus wrap question context; facts stay on the knowledge map. dueToday lists at most two mistakes to clear and dueBacklog is the full overdue count. openmaic.baseUrl is the interactive-lesson service; write lesson records at openmaic.lessonsPath with the shell, not study_update.',
     }
   }
   if (kind === 'curriculum') {
@@ -158,6 +173,7 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
           id: objective.id, title: objective.title, goal: objective.goal, method: objective.method, unit: unitId,
           errorTypes: elements?.errorTypes ?? [], questionPoints: elements?.questionPoints ?? [], variationAxes: elements?.variationAxes ?? [],
           misconceptions: elements?.misconceptions ?? [], examples: elements?.examples ?? [], hintLadder: elements?.hintLadder ?? ['', '', ''],
+          exercises: elements?.exercises ?? [],
           knowledgePoints: file.concepts.filter(concept => objective.conceptIds.includes(concept.id)).map(concept => ({
             id: concept.id, name: concept.name, definition: concept.definition, example: concept.example,
             ...((concept.ideaIds?.length ?? 0) > 0 ? { ideas: subjectIdeas(subject).filter(idea => concept.ideaIds?.includes(idea.id)).map(idea => ({ id: idea.id, name: idea.name, definition: idea.definition, example: idea.example })) } : {}),
@@ -170,7 +186,26 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
     return {
       revision: state.revision, subject, objectives: page.slice(offset, offset + 20),
       nextOffset: offset + 20 < page.length ? offset + 20 : null,
-      more: 'Write questions and hints from these elements and the hint ladder; the full rules live in the study skill.',
+      more: 'Write questions and hints from these elements, reference exercises and the hint ladder; the full rules live in the study skill.',
+    }
+  }
+  if (kind === 'exercises') {
+    const subjects = subject ? [subject] : (['chinese', 'math', 'english'] as const)
+    const saved = state.exercises.filter(item => !subject || item.subject === subject)
+    const seen = new Set(saved.map(item => item.id))
+    const shipped = subjects.flatMap(sub => subjectExercises(sub)).filter(item => !seen.has(item.id))
+    const all = [...saved.map(item => ({ ...item, source: 'workspace' as const })), ...shipped.map(item => ({ ...item, source: 'shipped' as const }))]
+    const filtered = all.filter(item => {
+      if (id !== undefined && item.id !== id && item.objectiveId !== id) return false
+      if (unit !== undefined) {
+        const objective = builtinObjectiveAnywhere(item.objectiveId)
+        if (objective?.unit !== unit) return false
+      }
+      return true
+    })
+    return {
+      revision: state.revision, total: filtered.length, items: filtered.slice(offset, offset + 20),
+      nextOffset: offset + 20 < filtered.length ? offset + 20 : null,
     }
   }
   if (kind === 'review-sheet') {
@@ -183,8 +218,16 @@ export function queryStudy(state: StudyState | undefined, kind: string, offset: 
       ? { grade: options.grade ?? state.profile.grade, term: options.term ?? state.profile.term, ...(options.unit !== undefined ? { units: [options.unit] } : {}) }
       : undefined
     if (scope && !subject) throw new Error('跨年级摸底计划需要指定科目（subject）。')
-    const diagnostics = scope && subject ? [diagnosticFor(state, subject, now, scope)] : studyInsight(state, now).diagnostics
-    return { revision: state.revision, diagnostics: subject ? diagnostics.filter(plan => plan.subject === subject) : diagnostics,
+    const diagnostics = (scope && subject ? [diagnosticFor(state, subject, now, scope)] : studyInsight(state, now).diagnostics)
+      .filter(plan => !subject || plan.subject === subject)
+      .map(plan => ({
+        ...plan,
+        sample: plan.sample.map(sample => {
+          const exercise = exercisesFor(state, sample.id).find(item => item.role === 'diagnose') ?? exercisesFor(state, sample.id)[0]
+          return { ...sample, ...(exercise !== undefined ? { exercise } : {}) }
+        }),
+      }))
+    return { revision: state.revision, diagnostics,
       history: checkInHistory(state).filter(item => !subject || item.subject === subject),
       more: 'Ask one short task per sampled objective and record each answer; the study skill describes the flow and intensities, and grade/term narrows the scope.', }
   }

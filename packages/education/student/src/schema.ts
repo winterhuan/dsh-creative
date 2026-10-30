@@ -6,6 +6,7 @@ const text = z.string().trim().min(1).max(2000)
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/u)
 const time = z.number().int().nonnegative()
 const subject = z.enum(['chinese', 'math', 'english'])
+const stepText = z.string().trim().min(1).max(240)
 
 /** Deduplicate enum source values while keeping the tuple type `z.enum` requires. */
 function enumValues<T extends string>(values: readonly T[]): [T, ...T[]] {
@@ -32,9 +33,12 @@ export const variationAxisSchema = z.enum(['numbers', 'context', 'representation
 export type VariationAxis = z.infer<typeof variationAxisSchema>
 /** One printable sheet's role; absent keeps the legacy title heuristic. */
 export const sheetKindSchema = z.enum(['daily', 'practice', 'review'])
+/** One exercise item's pedagogical role in diagnosis, Simon four-step teaching, or daily routines. */
+export const exerciseRoleSchema = z.enum(['diagnose', 'demo', 'try', 'vary', 'daily'])
+/** Pedagogical role of a structured exercise item. */
+export type ExerciseRole = z.infer<typeof exerciseRoleSchema>
 const scope = z.object({ region: text, grade: z.number().int().min(1).max(6), term: z.enum(['first', 'second']), schoolYear: text, schoolSystem: z.enum(['five-four', 'six-three']) }).strict()
-const limits = z.object({ blockMinutes: z.number().int().min(5).max(15), breakMinutes: z.number().int().min(5).max(15), dailyMinutes: z.number().int().min(10).max(30) }).strict()
-const profile = scope.extend({ nickname: text, schoolAlias: z.string().trim().max(2000), limits, parentConfirmation: text }).strict()
+const profile = scope.extend({ nickname: text, schoolAlias: z.string().trim().max(2000), parentConfirmation: text.default('家长已确认学习档案') }).strict()
 const material = z.object({
   id, subject, scope, title: text, publisher: text, edition: text,
   editionStatus: z.enum(['unconfirmed', 'identified']),
@@ -48,7 +52,7 @@ const schoolProgress = z.object({
   preview: z.boolean(),
   pace: z.enum(['teaching', 'review']),
 }).strict()
-const courseInput = z.object({ subject, materialId: id, unit: text, parentConfirmation: text }).strict()
+const courseInput = z.object({ subject, materialId: id, unit: text, parentConfirmation: text.default('家长已确认教材与当前单元') }).strict()
 const course = courseInput.extend({ progress: schoolProgress.optional() }).strict()
 const mistake = z.object({
   id, subject, topic: text, prompt: text, learnerAnswer: text, correction: text,
@@ -56,7 +60,7 @@ const mistake = z.object({
   uncertainties: z.string().max(2000), materialId: id.optional(), objectiveId: id.optional(),
   errorType: errorTypeSchema.optional(),
 }).strict()
-const concept = z.object({ id, subject, name: text, definition: text, example: text, source: text, facts: z.array(z.string().trim().min(1).max(240)).min(2).max(8).optional(), misconceptions: z.array(text).max(3).optional() }).strict()
+const concept = z.object({ id, subject, name: text, definition: text, example: text, source: text, facts: z.array(stepText).min(2).max(8).optional(), misconceptions: z.array(text).max(3).optional() }).strict()
 const objective = z.object({ id, subject, title: text, goal: text, conceptIds: z.array(id).min(1).max(5), method: z.enum(['recognize', 'read-evidence', 'express', 'represent', 'reason', 'verify', 'context', 'listen', 'speak']), errorTypes: z.array(errorTypeSchema).max(4).optional(), questionPoints: z.array(text).max(4).optional(), variationAxes: z.array(variationAxisSchema).max(4).optional() }).strict()
 const relation = z.object({ id, fromId: id, toId: id, kind: z.enum(['prerequisite', 'part-of', 'contrast', 'explains', 'cause-effect']), explanation: text, source: text }).strict()
 const label = z.string().trim().max(24)
@@ -71,8 +75,8 @@ const sketchElement = z.discriminatedUnion('draw', [
   z.object({ draw: z.literal('text'), x: z.number().int().min(0).max(480), y: z.number().int().min(0).max(259), label, align: z.enum(['left', 'center']).optional() }).strict(),
   z.object({ draw: z.literal('arrow'), from: sketchPoint, to: sketchPoint }).strict(),
 ])
-/** Printable figures drawn by the PDF renderer; an empty label prints an answer box. */
-const figure = z.discriminatedUnion('kind', [
+/** Printable figures drawn by the SVG renderer; an empty label prints an answer box. */
+export const figureSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('bar-model'), bars: z.array(z.object({ name: label, segments: z.array(z.object({ label, units: z.number().int().min(1).max(20), style: z.enum(['solid', 'dashed']).optional() }).strict()).min(1).max(4), total: label.optional() }).strict()).min(1).max(3) }).strict(),
   z.object({ kind: z.literal('money'), items: z.array(z.union([denomination, z.object({ denomination, count: z.number().int().min(1).max(9) }).strict()])).min(1).max(16) }).strict(),
   z.object({ kind: z.literal('place-value'), tens: count(9), ones: count(9), crossTens: count(9), crossOnes: count(19), regroup: z.enum(['yes', 'no']) }).strict(),
@@ -143,8 +147,38 @@ const figure = z.discriminatedUnion('kind', [
     }
   }
 })
+const figure = figureSchema
 /** A figure shared by an on-screen task and a printed worksheet item. */
 export type Figure = z.infer<typeof figure>
+/** One structured exercise item shared by the shipped exercise bank and the workspace collection. */
+export const exerciseItemSchema = z.object({
+  id, subject, objectiveId: id,
+  role: exerciseRoleSchema,
+  variant: variantSchema,
+  prompt: text,
+  choices: z.array(text).min(2).max(4).optional(),
+  figure: figure.optional(),
+  steps: z.array(stepText).min(2).max(4),
+  answer: text,
+  explanation: text,
+  answerEvidence: text,
+  errorType: errorTypeSchema.optional(),
+}).strict()
+/** One validated exercise item from the shipped bank or the workspace collection. */
+export type ExerciseItem = z.infer<typeof exerciseItemSchema>
+const workspaceExerciseInput = z.object({
+  id, subject, objectiveId: id,
+  role: exerciseRoleSchema.default('try'),
+  variant: variantSchema.default('numeric'),
+  prompt: text,
+  choices: z.array(text).min(2).max(4).optional(),
+  figure: figure.optional(),
+  steps: z.array(stepText).min(2).max(4),
+  answer: text,
+  explanation: text,
+  answerEvidence: text,
+  errorType: errorTypeSchema.optional(),
+}).strict()
 /** One step of teaching the current task: show, guide, independent try, then a variation. */
 export const phaseSchema = z.enum(['demo', 'guide', 'try', 'vary'])
 /** One teaching step on the current task. */
@@ -160,14 +194,14 @@ const attemptBody = {
 const attempt = z.object({ ...attemptBody, result: attemptResult, assistance }).strict()
 /** A record may omit assistance; the saved attempt always stores the resolved value. */
 const recordAttempt = z.object({ ...attemptBody, result: attemptResult, assistance: assistance.optional() }).strict()
-const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), phase: phaseSchema.optional(), variant: variantSchema.optional(), mistakeId: id.optional(), objectiveId: id.optional(), figure: figure.optional() }).strict()
+const task = z.object({ id, sessionId: id, subject, topic: text, prompt: text, choices: z.array(text).min(2).max(4).optional(), steps: z.array(stepText).min(2).max(5).optional(), phase: phaseSchema.optional(), variant: variantSchema.optional(), mistakeId: id.optional(), objectiveId: id.optional(), figure: figure.optional() }).strict()
 const answerSpace = z.enum(['none', 'line', 'lines', 'box'])
 const worksheetItem = z.object({ id, objectiveId: id.optional(), mistakeId: id.optional(), variant: variantSchema.optional(), prompt: text, figure: figure.optional(), space: answerSpace.optional(), answer: text, explanation: text, answerEvidence: text }).strict()
 const worksheet = z.object({ id, subject, kind: sheetKindSchema.optional(), objectiveId: id.optional(), items: z.array(worksheetItem).min(1).max(8) }).strict()
 const result = z.enum(['correct', 'partial', 'incorrect', 'unassessed'])
-const paperResult = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, feedback: text, answerEvidence: text, userConfirmation: text }).strict()
+const paperResult = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, feedback: text, answerEvidence: text, userConfirmation: text.default('家长在面板批改') }).strict()
 const paperDraft = z.object({ worksheetId: id, itemId: id, response: text, result, assistance, uncertainties: z.string().max(2000), errorType: errorTypeSchema.optional(), confidence: z.enum(['high', 'low']).optional() }).strict()
-const gradeSheet = z.object({ worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text }).strict()
+const gradeSheet = z.object({ worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text.default('家长在面板批改') }).strict()
 const workbookOutcome = z.enum(['stuck', 'hinted', 'independent-wrong', 'independent-correct'])
 const workbookDraft = z.object({
   id, subject, prompt: text, response: text.optional(), outcome: workbookOutcome,
@@ -178,7 +212,6 @@ const teachingItem = z.object({ id, subject, prompt: text, objectiveId: id.optio
 /** Validated mutations; confirmation fields record user statements, not authenticated identities. */
 export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('setup'), profile }).strict(),
-  z.object({ action: z.literal('limits'), limits, parentConfirmation: text }).strict(),
   z.object({ action: z.literal('material'), material }).strict(),
   z.object({ action: z.literal('course'), course: courseInput }).strict(),
   z.object({ action: z.literal('start'), id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']), intensity: z.enum(['light', 'standard', 'deep']).optional(),
@@ -187,14 +220,17 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('answer'), taskId: id, response: text }).strict(),
   z.object({ action: z.literal('hint'), taskId: id }).strict(),
   z.object({ action: z.literal('configure-course'), material, course: courseInput }).strict(),
-  z.object({ action: z.literal('school-progress'), subject, unitId: id, posture: z.enum(['keep-up', 'catch-up']), preview: z.enum(['on', 'off']), pace: z.enum(['teaching', 'review']), parentConfirmation: text }).strict(),
+  z.object({ action: z.literal('school-progress'), subject, unitId: id, posture: z.enum(['keep-up', 'catch-up']), preview: z.enum(['on', 'off']), pace: z.enum(['teaching', 'review']), parentConfirmation: text.default('家长确认学校进度') }).strict(),
   z.object({ action: z.literal('record'), attempt: recordAttempt }).strict(),
   z.object({ action: z.literal('stuck'), taskId: id }).strict(),
   z.object({ action: z.literal('stop'), sessionId: id, reflection: z.string().max(2000) }).strict(),
   z.object({ action: z.literal('mistake'), mistake }).strict(),
-  z.object({ action: z.literal('confirm-mistake'), id, prompt: text, learnerAnswer: text.optional(), correction: text, explanation: text, answerEvidence: text, errorType: errorTypeSchema.optional(), userConfirmation: text }).strict(),
+  z.object({ action: z.literal('confirm-mistake'), id, subject: subject.optional(), topic: text.optional(), objectiveId: z.union([id, z.literal('')]).optional(), prompt: text, learnerAnswer: text.optional(), correction: text, explanation: text, answerEvidence: text, errorType: errorTypeSchema.optional(), userConfirmation: text.default('家长已核对错题与订正') }).strict(),
+  z.object({ action: z.literal('delete-mistake'), id }).strict(),
+  z.object({ action: z.literal('save-exercise'), exercise: workspaceExerciseInput }).strict(),
+  z.object({ action: z.literal('delete-exercise'), id }).strict(),
   z.object({ action: z.literal('concept'), concept }).strict(),
-  z.object({ action: z.literal('confirm-concept'), id, definition: text.optional(), example: text.optional(), source: text.optional(), userConfirmation: text }).strict(),
+  z.object({ action: z.literal('confirm-concept'), id, definition: text.optional(), example: text.optional(), source: text.optional(), userConfirmation: text.default('家长已核对概念') }).strict(),
   z.object({ action: z.literal('objective'), objective }).strict(),
   z.object({ action: z.literal('relation'), relation }).strict(),
   z.object({ action: z.literal('link-mistake'), mistakeId: id, objectiveId: id }).strict(),
@@ -202,14 +238,14 @@ export const commandSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('worksheet'), worksheet }).strict(),
   z.object({ action: z.literal('paper-draft'), paperDraft }).strict(),
   z.object({ action: z.literal('grade-sheet'), grade: gradeSheet }).strict(),
-  z.object({ action: z.literal('confirm-paper'), worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text }).strict(),
+  z.object({ action: z.literal('confirm-paper'), worksheetId: id, results: z.array(z.object({ itemId: id, result: z.enum(['correct', 'partial', 'incorrect']), response: text.optional(), assistance: assistance.optional(), errorType: errorTypeSchema.optional() }).strict()).min(1).max(8), userConfirmation: text.default('家长已核对转录结果') }).strict(),
   z.object({ action: z.literal('discard-sheet'), worksheetId: id }).strict(),
   z.object({ action: z.literal('workbook-draft'), draft: workbookDraft }).strict(),
-  z.object({ action: z.literal('confirm-workbook'), id, outcome: workbookOutcome.optional(), objectiveId: z.union([id, z.literal('')]).optional(), correction: text.optional(), explanation: text.optional(), answerEvidence: text.optional(), userConfirmation: text }).strict(),
+  z.object({ action: z.literal('confirm-workbook'), id, outcome: workbookOutcome.optional(), objectiveId: z.union([id, z.literal('')]).optional(), correction: text.optional(), explanation: text.optional(), answerEvidence: text.optional(), userConfirmation: text.default('家长已核对练习册题目') }).strict(),
   z.object({ action: z.literal('dismiss-teaching'), id }).strict(),
-  z.object({ action: z.literal('archive-term'), parentConfirmation: text }).strict(),
-  z.object({ action: z.literal('openmaic-settings'), baseUrl: z.string().trim().max(200), parentConfirmation: text }).strict(),
-  z.object({ action: z.literal('interests'), tags: z.array(z.string().trim().regex(INTEREST_TAG)).min(3).max(8), parentConfirmation: text }).strict(),
+  z.object({ action: z.literal('archive-term'), parentConfirmation: text.default('家长确认归档本学期') }).strict(),
+  z.object({ action: z.literal('openmaic-settings'), baseUrl: z.string().trim().max(200), parentConfirmation: text.default('家长确认 OpenMAIC 地址') }).strict(),
+  z.object({ action: z.literal('interests'), tags: z.array(z.string().trim().regex(INTEREST_TAG)).min(3).max(8), parentConfirmation: text.default('家长确认兴趣标签') }).strict(),
 ])
 
 /** One learner and term per workspace; previous materials and attempts are retained. */
@@ -221,11 +257,11 @@ export const stateSchema = z.object({
   courses: z.array(course).max(3),
   sessions: z.array(z.object({
     id, subject, mode: z.enum(['foundation', 'school', 'review', 'explore', 'diagnose']), intensity: z.enum(['light', 'standard', 'deep']).optional(),
-    startedAt: time, deadline: time, endedAt: time.optional(), spentMs: time.optional(),
+    startedAt: time, endedAt: time.optional(), spentMs: time.optional(),
     materialId: id.optional(), unit: text.optional(), reflection: z.string().max(2000).optional(),
     scope: z.object({ grade: z.number().int().min(1).max(6), term: z.enum(['first', 'second']), units: z.array(id).max(20).optional(), objectiveIds: z.array(id).max(60).optional() }).strict().optional(),
   }).strict()).max(5000),
-  attempts: z.array(attempt.extend({ at: time, materialId: id.optional(), rawResponse: text.optional(), late: z.literal(true).optional() }).strict()).max(20000),
+  attempts: z.array(attempt.extend({ at: time, materialId: id.optional(), rawResponse: text.optional() }).strict()).max(20000),
   mistakes: z.array(mistake.extend({
     confirmedAt: time.optional(), userConfirmation: text.optional(),
     // Derived by replay on read; persisted copies are legacy and ignored.
@@ -233,6 +269,7 @@ export const stateSchema = z.object({
     source: z.object({ worksheetId: id, itemId: id }).strict().optional(),
     independentDays: z.array(z.string()).default([]), stage: z.number().int().min(0).max(4).default(0),
   }).strict()).max(5000),
+  exercises: z.array(exerciseItemSchema.extend({ savedAt: time.optional() }).strict()).max(1000).default([]),
   concepts: z.array(concept.extend({ confirmedAt: time.optional(), userConfirmation: text.optional() }).strict()).max(1000).default([]),
   objectives: z.array(objective).max(1000).default([]),
   relations: z.array(relation).max(2000).default([]),
@@ -246,12 +283,11 @@ export const stateSchema = z.object({
   /** Parent theme tags. Absent profiles still read the example list; facts stay on the knowledge map. */
   interests: z.object({ tags: z.array(z.string().trim().regex(INTEREST_TAG)).min(3).max(8), parentConfirmation: text }).strict().optional(),
   rewards: z.array(z.object({ day: z.string(), reason: z.enum(['participation', 'reflection']) }).strict()).max(1000),
-  breakUntil: time,
   task: task.extend({ response: text.optional(), rawResponse: text.optional(), answeredAt: time.optional(), hintLevel: z.number().int().min(0).max(3), stuck: z.boolean().optional() }).strict().optional(),
 }).strict()
 
 /** The archive command on its own, so the store can intercept it before applying the mutation. */
-export const archiveTermSchema = z.object({ action: z.literal('archive-term'), parentConfirmation: z.string().trim().min(1).max(2000) }).strict()
+export const archiveTermSchema = z.object({ action: z.literal('archive-term'), parentConfirmation: z.string().trim().min(1).max(2000).default('家长确认归档本学期') }).strict()
 /** A schema-validated learning mutation. */
 export type Command = z.infer<typeof commandSchema>
 /** Durable learning evidence, parsed before reads and after every mutation. */

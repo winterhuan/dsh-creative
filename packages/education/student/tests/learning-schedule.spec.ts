@@ -22,7 +22,7 @@ describe('photo mistakes and spaced review', () => {
     expect(state.mistakes[0]).toMatchObject({ uncertainties: '', prompt: attempt.prompt, dueAt: dueDay(NOW) })
     state = updateStudy(state, { ...start, id: 'early', mode: 'review' }, NOW + 5 * MINUTE)
     state = updateStudy(state, { action: 'record', attempt: { ...attempt, sessionId: 'early', mistakeId: mistake.id } }, NOW + 6 * MINUTE)
-    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: dueDay(NOW, 3) })
+    expect(state.mistakes[0]).toMatchObject({ stage: 1, dueAt: dueDay(NOW + 6 * MINUTE, 1) })
   })
 
   it('extends independent reviews on any day and only shortens the next review for helped answers', () => {

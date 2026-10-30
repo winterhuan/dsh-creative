@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/education/student/README.md
 /:
-  en: 3b4a850b79bac2df
-  zh: f07e6f375aa90ceb
+  en: 5d0334ee85971c09
+  zh: f3cd2c854dc32f47
 /winterhuan-dsh-student:
   en: a5ec18b584b87d9a
   zh: 927b5f91fc230a5d
 /winterhuan-dsh-student/summary:
-  en: aa26f8e65270fce1
-  zh: 0b69ea0454abbd0f
+  en: 4ea3ddec96acc6ee
+  zh: 761b1c3ee14152ba
 /winterhuan-dsh-student/table-of-contents:
   en: d152484eb41ac6b4
   zh: b3ad7867f23dad1c
@@ -18,32 +18,32 @@
   en: fb74fd2dd274775e
   zh: 9aac9a4a97fb2d74
 /winterhuan-dsh-student/use-this-package/use-the-learning-desk:
-  en: 9082ad364f3e026c
-  zh: 1840aa8c08707c21
+  en: addb77a093022588
+  zh: a89d0d982ef66c20
 /winterhuan-dsh-student/use-this-package/open-an-interactive-lesson:
   en: 18a864caa4a6b235
   zh: 630377d0dee700f8
 /winterhuan-dsh-student/use-this-package/choose-a-learning-activity:
-  en: 275f0fbfa0a3dda5
-  zh: e6193fc99fb89329
+  en: 555af7fcf92d0617
+  zh: 5b0bf80425f19149
 /winterhuan-dsh-student/use-this-package/confirm-the-learner-and-materials:
-  en: 795b743c1919a28a
-  zh: 124cd40242741b16
+  en: 1102c27a5599c2b7
+  zh: 3c42e52556f75c08
 /winterhuan-dsh-student/use-this-package/use-default-textbooks:
   en: afe5c3d6bc358085
   zh: ff855309b1d2e5e1
 /winterhuan-dsh-student/use-this-package/use-the-knowledge-map-and-weak-points:
-  en: 57410a2e63a188d5
-  zh: 9a63cc4f062e5b8e
-/winterhuan-dsh-student/use-this-package/learn-rest-and-review:
-  en: 097f7ee83786acb1
-  zh: 8f652a0c1ebf0ab0
+  en: 4e62b108c912de24
+  zh: 8be09642bc7cac44
+/winterhuan-dsh-student/use-this-package/learn-and-review:
+  en: 165c87aa937f50fb
+  zh: dce4ba41a2f5c2f7
 /winterhuan-dsh-student/understand-the-implementation:
-  en: 5bb84c68b7194bc5
-  zh: 4cce054d3323278c
+  en: c4fe3b3ab67367d6
+  zh: 95ac84401ce61969
 /winterhuan-dsh-student/further-exploration:
-  en: b78cb834d7a64d74
-  zh: 1822777f5f26ffe9
+  en: 3255b324e9c56f92
+  zh: c1ca70b884083476
 /winterhuan-dsh-student/model-experience:
   en: 215e7ba838619b7b
   zh: a311da3843709f90
@@ -60,8 +60,8 @@
   en: aa76a5796ac4c7e4
   zh: dd36da5b240c25ef
 /winterhuan-dsh-student/known-limitations-and-deferred-work:
-  en: 089e30e7fd470f45
-  zh: 60c4780b33037e3c
+  en: f111837361781dfe
+  zh: 19aee91b0345dad8
 /winterhuan-dsh-student/known-limitations-and-deferred-work/dev-note:
   en: 0a1253c6f7b5e8b9
   zh: 9f56528562c7c914

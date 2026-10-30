@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-30-student-overhaul.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-30-student-overhaul.md
+/agent-note-student-plugin-overhaul-without-time-limits:
+  en: 7747840ab4e541db
+  zh: 8a9a88e71271c5fb
+/agent-note-student-plugin-overhaul-without-time-limits/problem:
+  en: 8f712572853d6d7e
+  zh: d199d9e8acdd08dc
+/agent-note-student-plugin-overhaul-without-time-limits/decision:
+  en: 869577ee04ecfd4b
+  zh: 7d98be6bfa39d997
+/agent-note-student-plugin-overhaul-without-time-limits/alternatives-considered:
+  en: 7db501faf9e6a329
+  zh: a90581c91539225f
+/agent-note-student-plugin-overhaul-without-time-limits/verification:
+  en: aa6eb44aa63821da
+  zh: bf3b16ad7977b067
+/agent-note-student-plugin-overhaul-without-time-limits/consequences:
+  en: 2120bf4eaa214988
+  zh: 30e21270bf6672dd

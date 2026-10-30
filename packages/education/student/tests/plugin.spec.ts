@@ -84,7 +84,7 @@ describe('independently loaded student plugin', () => {
     expect((JSON.parse(bytes) as { mistakes: { dueAt?: number; stage?: number; independentDays?: string[] }[] }).mistakes[0]?.dueAt).toBeUndefined()
     const second = execution('study_status', new AbortController().signal, 'resumed-session')
     expect(await studyStore(second)).toEqual(scheduleMistakes(structuredClone(state)))
-    expect(await query()).toMatchObject({ phase: 'break', stars: 2 })
+    expect(await query()).toMatchObject({ phase: 'ready', stars: 2 })
     expect(await readFile(join(cwd, '.study/state.json'), 'utf8')).toBe(bytes)
   })
 
@@ -119,7 +119,7 @@ describe('independently loaded student plugin', () => {
     const { cwd, call } = await fixture()
     await expect(call({ ...setup, profile: { ...setup.profile, schoolYear: '' } })).rejects.toThrow()
     await expect(call({ ...setup, injected: true })).rejects.toThrow()
-    await expect(call({ ...setup, profile: { ...setup.profile, limits: { ...setup.profile.limits, breakMinutes: 0 } } })).rejects.toThrow()
+    await expect(call({ ...setup, profile: { ...setup.profile, grade: 0 } })).rejects.toThrow()
     expect(await readdir(cwd)).toEqual([])
   })
 
@@ -176,7 +176,7 @@ describe('independently loaded student plugin', () => {
   it('shares sidebar answers across native sessions and rejects stale form revisions', async () => {
     const { execution, call } = await fixture()
     await studyStore(execution(), setup, 0)
-    await expect(studyStore(execution(), { action: 'limits', limits: setup.profile.limits, parentConfirmation: '确认' }, 0)).rejects.toThrow('已更新')
+    await expect(studyStore(execution(), { ...setup, profile: { ...setup.profile, nickname: '另一昵称' } }, 0)).rejects.toThrow('已更新')
     await call(start)
     const task = { id: attempt.id, sessionId: attempt.sessionId, subject: attempt.subject, topic: attempt.topic, prompt: attempt.prompt }
     await call({ action: 'task', task })

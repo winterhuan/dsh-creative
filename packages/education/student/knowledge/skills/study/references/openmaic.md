@@ -16,7 +16,7 @@
 
 ## 拼 requirement
 
-1. 读 `study_status` 的 `recommendation` 和 `timeNotice`。把 `timeNotice` 原样告诉孩子；时长只提醒，不因此取消生成。
+1. 读 `study_status` 的 `recommendation`。没有时长限制，不因已学多久取消生成。
 2. 家长或孩子指定了学习目标就用那个 `objectiveId`，否则用今日建议里的目标。用 `kind=curriculum` 或 `kind=elements` 取标题、定义和可考事实，不要把整册地图或课页塞进 requirement。若建议带 `unitName`，或学校进度能对上单元名（例如欢乐购物街），把这个单元名写进场景。
 3. 在工作区根目录和 `.study/` 查找 `openmaic-requirement-*.md`。有多份时用修改时间最新的一份，把正文并进去。没有简报就只用目标、事实、兴趣标签和单元名。
 4. `requirement` 写成一段中文：年级、科目、目标、两三条可考事实、`interests` 里的一个标签（优先 `interestFocus`，下一节课可以换）、已知的校内单元名、希望孩子在课上做什么。场景壳子见 `interest-hooks.md`。事实仍只核知识地图，不把兴趣写成知识点。`materialIds` 只有用户已经给出 OpenMAIC 材料 id 时才附上，不要编造。
@@ -102,7 +102,7 @@ EOF
 
 成功后在对话里先用一句孩子能懂的话说明课好了。下一行只放课堂 URL 原文，单独一行，前后不要加括号、反引号或 Markdown 链接。若有 `warning`，用另一句告诉家长。请家长用系统浏览器打开这一行。工作台的「在浏览器打开」做的是同一件事。
 
-可以问孩子要不要记一段学习时间。要的话，该科已确认学校进度就 `start` 模式 `school`，否则用 `explore`。这只是软计时外壳：`timeNotice` 照原文转述，超时仍可上课，不要说系统会关掉页面。
+可以问孩子要不要记一段学习时间。要的话，该科已确认学校进度就 `start` 模式 `school`，否则用 `explore`。这只是可选的学习记录外壳，不要说系统会关掉页面。
 
 ## 失败后重试
 

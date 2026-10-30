@@ -36,7 +36,7 @@ function SaveForm({ revision, submit, children, t, disabled = false, button = 's
   </form>
 }
 
-/** Parent-confirmed setup, limits and an atomic textbook/course update. */
+/** Parent-confirmed setup or in-place profile update, plus an atomic textbook/course update. */
 export function ParentSettings({ data, change, t, curriculum = null, subject = 'math', onSubject }: {
   data: Dashboard
   change: ChangeStudy
@@ -51,37 +51,38 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
   const today = new Date(data.serverNow + 8 * 60 * 60 * 1000)
   const currentYear = today.getUTCFullYear() - (today.getUTCMonth() < 8 ? 1 : 0)
   const years = Array.from({ length: 7 }, (_, index) => `${currentYear + 1 - index}–${currentYear + 2 - index}`)
-  const limits = profile?.limits ?? { blockMinutes: 10, breakMinutes: 5, dailyMinutes: 20 }
   return <section>
     <p>{t('parentHelp')}</p>
-    {!!study?.active && <p role="status">{t('settingsWhileActive')}</p>}
-    <SaveForm key={profile ? 'limits' : 'setup'} revision={data.revision} t={t} disabled={!!study?.active} submit={(form, revision) => {
-      const limits = { blockMinutes: Number(form.get('blockMinutes')), breakMinutes: Number(form.get('breakMinutes')), dailyMinutes: Number(form.get('dailyMinutes')) }
-      const parentConfirmation = read(form, 'parentConfirmation')
-      if (profile) return change({ action: 'limits', limits, parentConfirmation }, revision)
-      return change({ action: 'setup', profile: { nickname: read(form, 'nickname'), region: read(form, 'region'), grade: Number(form.get('grade')), term: form.get('term') === 'second' ? 'second' : 'first', schoolYear: read(form, 'schoolYear'), schoolAlias: read(form, 'schoolAlias'), schoolSystem: form.get('schoolSystem') === 'six-three' ? 'six-three' : 'five-four', limits, parentConfirmation } }, revision)
-    }}>
-      {profile ? <p>{profile.nickname} · {profile.region} · {profile.grade} · {t(profile.term)} · {profile.schoolYear} · {t(profile.schoolSystem)}</p> : <>
-        <Field name="nickname" label={t('nickname')} />
-        <Field name="region" label={t('region')} value="上海市" />
-        <Field name="grade" label={t('grade')} value={2} type="number" min={1} max={6} />
-        <label>{t('term')}<select name="term" aria-label={t('term')}><option value="first">{t('first')}</option><option value="second">{t('second')}</option></select></label>
-        <label>{t('schoolYear')}<select name="schoolYear" aria-label={t('schoolYear')} defaultValue="" required>
-          <option value="" disabled>{t('chooseSchoolYear')}</option>
-          {years.map(year => <option key={year} value={year}>{year}</option>)}
-        </select></label>
-        <p>{t('schoolYearHelp')}</p>
-        <Field name="schoolAlias" label={t('schoolAlias')} required={false} />
-        <p>{t('schoolAliasHelp')}</p>
-        <label>{t('schoolSystem')}<select name="schoolSystem" aria-label={t('schoolSystem')}><option value="five-four">{t('five-four')}</option><option value="six-three">{t('six-three')}</option></select></label>
-      </>}
-      {(['blockMinutes', 'breakMinutes', 'dailyMinutes'] as const).map(name => <Field key={name} name={name} label={t(name)} value={limits[name]} type="number" min={name === 'dailyMinutes' ? 10 : 5} max={name === 'dailyMinutes' ? 30 : 15} />)}
-      <Field name="parentConfirmation" label={t('parentConfirmation')} />
+    <SaveForm key={profile ? `profile-${profile.nickname}-${profile.grade}-${profile.term}-${profile.schoolYear}` : 'setup'} revision={data.revision} t={t} submit={(form, revision) => change({
+      action: 'setup',
+      profile: {
+        nickname: read(form, 'nickname'),
+        region: read(form, 'region'),
+        grade: Number(form.get('grade')),
+        term: form.get('term') === 'second' ? 'second' : 'first',
+        schoolYear: read(form, 'schoolYear'),
+        schoolAlias: read(form, 'schoolAlias'),
+        schoolSystem: form.get('schoolSystem') === 'six-three' ? 'six-three' : 'five-four',
+        parentConfirmation: t('profileConfirm'),
+      },
+    }, revision)}>
+      <Field name="nickname" label={t('nickname')} value={profile?.nickname ?? ''} />
+      <Field name="region" label={t('region')} value={profile?.region ?? '上海市'} />
+      <Field name="grade" label={t('grade')} value={profile?.grade ?? 2} type="number" min={1} max={6} />
+      <label>{t('term')}<select name="term" aria-label={t('term')} defaultValue={profile?.term ?? 'first'}><option value="first">{t('first')}</option><option value="second">{t('second')}</option></select></label>
+      <label>{t('schoolYear')}<select name="schoolYear" aria-label={t('schoolYear')} defaultValue={profile?.schoolYear ?? ''} required>
+        <option value="" disabled>{t('chooseSchoolYear')}</option>
+        {years.map(year => <option key={year} value={year}>{year}</option>)}
+      </select></label>
+      <p>{t('schoolYearHelp')}</p>
+      <Field name="schoolAlias" label={t('schoolAlias')} value={profile?.schoolAlias ?? ''} required={false} />
+      <p>{t('schoolAliasHelp')}</p>
+      <label>{t('schoolSystem')}<select name="schoolSystem" aria-label={t('schoolSystem')} defaultValue={profile?.schoolSystem ?? 'five-four'}><option value="five-four">{t('five-four')}</option><option value="six-three">{t('six-three')}</option></select></label>
     </SaveForm>
     {profile && <>
       <h3>{t('curriculum')}</h3><p>{t('materialHelp')}</p>
       {study.courses.map(course => <p key={course.subject}>{t(course.subject)} · {study.materials.find(item => item.id === course.materialId)?.title} · {course.unit}</p>)}
-      <SaveForm revision={data.revision} t={t} disabled={!!study.active} submit={async (form, revision) => {
+      <SaveForm revision={data.revision} t={t} submit={async (form, revision) => {
         const materialId = crypto.randomUUID()
         const selected = read(form, 'subject')
         const courseSubject = subjects.find(item => item === selected) ?? subject
@@ -98,7 +99,6 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
           <option value="" disabled>{t('chooseUnit')}</option>
           {curriculum.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
         </select></label> : <Field name="unit" label={t('unit')} />}
-        <label className="student-check"><input type="checkbox" required />{t('materialConfirm')}</label>
       </SaveForm>
       {curriculum?.scope.current && <>
         <h3>{t('schoolFrontier')}</h3>
@@ -121,16 +121,15 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
           <label>{t('schoolFrontier')}<select name="unitId" aria-label={t('schoolFrontier')} defaultValue={study.courses.find(course => course.subject === subject)?.progress?.unitId ?? curriculum.units[0]?.id} required>{curriculum.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
           <label>{t('keepUp')}<select name="posture" aria-label={t('keepUp')} defaultValue={study.courses.find(course => course.subject === subject)?.progress?.posture ?? 'keep-up'}><option value="keep-up">{t('keepUp')}</option><option value="catch-up">{t('catchUp')}</option></select></label>
           <label className="student-check"><input type="checkbox" name="preview" defaultChecked={study.courses.find(course => course.subject === subject)?.progress?.preview === true} />{t('previewUnit')}</label>
-          <label className="student-check"><input type="checkbox" required />{t('confirmSchoolProgress')}</label>
           {progressError && <p role="alert">{progressError}</p>}
           <div className="student-segments">
-            <button type="submit" value="stay" disabled={!!study.active}>{t('stillThisUnit')}</button>
-            <button type="submit" value="next" disabled={!!study.active}>{t('nextSchoolUnit')}</button>
-            <button type="submit" value="review" disabled={!!study.active}>{t('reviewWeek')}</button>
+            <button type="submit" value="stay">{t('stillThisUnit')}</button>
+            <button type="submit" value="next">{t('nextSchoolUnit')}</button>
+            <button type="submit" value="review">{t('reviewWeek')}</button>
           </div>
         </form> : <p>{t('schoolProgressNeedsCourse')}</p>}
       </>}
-      <InterestsForm tags={study.interests} revision={data.revision} active={!!study.active} change={change} t={t} />
+      <InterestsForm tags={study.interests} revision={data.revision} change={change} t={t} />
       <h3>{t('openmaicTitle')}</h3>
       <p className="student-muted">{t('openmaicBaseHelp')}</p>
       <p>{t('openmaicEffective')}: {data.interactiveLessons.baseUrl}</p>
@@ -151,9 +150,9 @@ export function ParentSettings({ data, change, t, curriculum = null, subject = '
 }
 
 /** Parent theme tags. The saved list is edited here; an empty profile shows the example tags from status. */
-function InterestsForm({ tags, revision, active, change, t }: { tags: string[]; revision: number; active: boolean; change: ChangeStudy; t: Translate }) {
+function InterestsForm({ tags, revision, change, t }: { tags: string[]; revision: number; change: ChangeStudy; t: Translate }) {
   const [draft, setDraft] = useState(tags)
-  return <SaveForm revision={revision} t={t} disabled={active} submit={(_form, nextRevision) => {
+  return <SaveForm revision={revision} t={t} submit={(_form, nextRevision) => {
     const next = [...new Set(draft.map(tag => tag.trim()).filter(tag => tag !== ''))]
     if (next.length < 3 || next.length > 8) throw new Error(t('interestCount'))
     if (next.some(tag => !INTEREST_TAG.test(tag))) throw new Error(t('interestShape'))
@@ -184,7 +183,6 @@ export function MistakeConfirmation({ mistake, revision, change, t }: { mistake:
         <option value="">{t('errorTypeNone')}</option>
         {errorTypesBySubject[mistake.subject].map(type => <option key={type} value={type}>{t(type)}</option>)}
       </select></label>
-      <label className="student-check"><input type="checkbox" required />{t('confirmMistake')}</label>
     </SaveForm>
   </details>
 }

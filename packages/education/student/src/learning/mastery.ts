@@ -5,7 +5,7 @@ import { DAY, schoolGate, scopeSelects, studyDay, taughtUnit, type ObjectiveBase
 /** Subject display order shared by check-in plans and history. */
 export const SUBJECT_ORDER = ['chinese', 'math', 'english'] as const
 const DIAGNOSIS_INTERVAL = 14 * DAY
-const RECHECK_AFTER = 30 * DAY
+const RECHECK_AFTER = 35 * DAY
 
 /** Why an objective needs attention; codes are localized by the workbench and read by the model. */
 export interface InsightReason {

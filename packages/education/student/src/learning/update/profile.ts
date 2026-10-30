@@ -8,12 +8,19 @@ import { stateSchema, type Command, type StudyState } from '../../schema.ts'
 
 /** Create the first learner profile for a workspace. */
 export function applySetup(command: Extract<Command, { action: 'setup' }>, now: number): StudyState {
-  requireValue(command.profile.limits.blockMinutes <= command.profile.limits.dailyMinutes, '单段时长不能超过每日上限。')
   return stateSchema.parse({
     format: 1, revision: 1, updatedAt: now, profile: command.profile,
     interests: { tags: [...DEFAULT_INTEREST_TAGS], parentConfirmation: command.profile.parentConfirmation },
-    materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [], breakUntil: 0,
+    materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [],
   })
+}
+
+/** Update the existing learner profile in place, preserving all learning evidence. */
+export function applyUpdateProfile(ctx: UpdateContext<'setup'>): StudyState {
+  const { command, previous, state } = ctx
+  if (canonical(state.profile) === canonical(command.profile)) return previous
+  state.profile = command.profile
+  return state
 }
 
 /** Save a material and its course atomically under one revision. */
@@ -23,16 +30,6 @@ export function applyConfigureCourse(ctx: UpdateContext<'configure-course'>): St
   const withMaterial = rawApply(previous, { action: 'material', material: command.material }, now)
   const withCourse = rawApply(withMaterial, { action: 'course', course: command.course }, now)
   return stateSchema.parse({ ...withCourse, revision: previous.revision + 1 })
-}
-
-/** Replace the parent-confirmed time limits. */
-export function applyLimits(ctx: UpdateContext<'limits'>): StudyState {
-  const { command, state, active } = ctx
-  requireValue(!active, '先结束当前学习，再由家长调整时长。')
-  requireValue(command.limits.blockMinutes <= command.limits.dailyMinutes, '单段时长不能超过每日上限。')
-  state.profile.limits = command.limits
-  state.profile.parentConfirmation = command.parentConfirmation
-  return state
 }
 
 /** Register one course material; an identical retry is a no-op. */
@@ -45,8 +42,7 @@ export function applyMaterial(ctx: UpdateContext<'material'>): StudyState {
 
 /** Confirm a material as the subject course, keeping confirmed school progress. */
 export function applyCourse(ctx: UpdateContext<'course'>): StudyState {
-  const { command, state, active } = ctx
-  requireValue(!active, '先结束当前学习，再修改校内进度。')
+  const { command, state } = ctx
   const material = state.materials.find(item => item.id === command.course.materialId)
   requireValue(material && material.subject === command.course.subject && sameScope(state.profile, material.scope), '教材的科目、地区、年级、学期、学年和学制必须与档案一致。')
   requireValue(material.kind === 'official-textbook' || material.kind === 'school-material', '参考资料和 AI 自编练习不能标为校内同步教材。')
@@ -60,8 +56,7 @@ export function applyCourse(ctx: UpdateContext<'course'>): StudyState {
 
 /** Record the parent-confirmed school frontier unit. */
 export function applySchoolProgress(ctx: UpdateContext<'school-progress'>): StudyState {
-  const { command, state, active, now } = ctx
-  requireValue(!active, '先结束当前学习，再修改学校进度。')
+  const { command, state, now } = ctx
   const course = state.courses.find(item => item.subject === command.subject)
   requireValue(course, '先确认该科教材，再标学校教到哪一单元。')
   const file = curriculumFor(state.profile, command.subject)
@@ -69,7 +64,6 @@ export function applySchoolProgress(ctx: UpdateContext<'school-progress'>): Stud
   course.progress = { unitId: command.unitId, confirmedAt: now, posture: command.posture, preview: command.preview === 'on', pace: command.pace }
   return state
 }
-
 
 /**
  * Save or clear the parent OpenMAIC origin.
@@ -88,11 +82,9 @@ export function applyOpenmaicSettings(ctx: UpdateContext<'openmaic-settings'>): 
 
 /**
  * Save the parent's theme tags. Duplicates collapse; fewer than three distinct tags is rejected.
- * An active block blocks the change, matching the other parent settings.
  */
 export function applyInterests(ctx: UpdateContext<'interests'>): StudyState {
-  const { command, previous, state, active } = ctx
-  requireValue(!active, '先结束当前学习，再由家长调整兴趣标签。')
+  const { command, previous, state } = ctx
   const tags = [...new Set(command.tags)]
   requireValue(tags.length >= 3 && tags.length <= 8, '兴趣标签需要 3 到 8 个，去掉重复后仍要落在这个范围。')
   const current = state.interests?.tags ?? []
@@ -106,5 +98,5 @@ export function applyArchiveTerm(ctx: UpdateContext<'archive-term'>): StudyState
   const { command, state, active, now } = ctx
   requireValue(!active, '先结束当前学习，再归档学期。')
   requireValue(command.parentConfirmation.trim().length > 0, '归档学期需要家长的确认。')
-  return stateSchema.parse({ format: 1, revision: 1, updatedAt: now, archivedAt: now, profile: state.profile, materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [], breakUntil: 0 })
+  return stateSchema.parse({ format: 1, revision: 1, updatedAt: now, archivedAt: now, profile: state.profile, materials: [], courses: [], sessions: [], attempts: [], mistakes: [], rewards: [] })
 }

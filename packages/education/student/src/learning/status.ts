@@ -1,67 +1,44 @@
-import { DAY, MINUTE, activeSession, beijingClock, formatDuration, studyDay, todaySpent, type Outcome } from './shared.ts'
+import { DAY, activeSession, formatDuration, studyDay, todaySpent, type Outcome } from './shared.ts'
 import { interestFocus, interestTagsOf } from '../interests.ts'
 import { effectiveOpenmaicBase, OPENMAIC_COOKIE_PATH, OPENMAIC_LESSONS_PATH } from '../openmaic.ts'
 import type { ErrorType, StudyState } from '../schema.ts'
 import type { StudyInsight } from './mastery.ts'
 import { objectiveInfo, questionObjectiveId } from './view.ts'
 
-/** One time-derived suggestion state; suggestions never reject a later call. */
-export type StudyPhase = 'ready' | 'studying' | 'stop-required' | 'break' | 'daily-complete'
-/** The time-derived part of the status: phase, budgets and the relayed notice text. */
+/** Current session state: either ready to start or actively studying. */
+export type StudyPhase = 'ready' | 'studying'
+/** Elapsed time summary for the current block and today. */
 export interface TimeStatus {
   phase: StudyPhase
-  remainingMs: number
-  timeNotice: string
   time: {
     timezone: 'Asia/Shanghai'
     blockElapsed: string | null
-    blockSuggested: string
     todayElapsed: string
-    todaySuggested: string
-    breakUntil: string | null
   }
-  breakRemainingMs: number
 }
 
 /**
- * Today's suggested budget and clocks, computed from sessions and limits only.
- * A passed block, an unfinished break or a full day does not reject a later call;
- * `timeNotice` is the text to relay and already states elapsed time, the suggestion
- * and any break clock in Beijing time. Reading does not close a session.
+ * Elapsed clocks for the current block and today, computed from sessions only.
+ * Reading never closes a session.
  */
 export function timeStatus(state: StudyState, now: number): TimeStatus {
   const active = activeSession(state)
   const todayMs = todaySpent(state, now)
-  const remainingMs = Math.max(0, state.profile.limits.dailyMinutes * MINUTE - todayMs)
-  const phase = active ? now >= active.deadline ? 'stop-required' : 'studying'
-    : now < state.breakUntil ? 'break' : remainingMs === 0 ? 'daily-complete' : 'ready'
+  const phase: StudyPhase = active ? 'studying' : 'ready'
   const blockElapsedMs = active ? Math.max(0, now - active.startedAt) : 0
-  const timeParts = [
-    ...(active ? [`本段已用 ${formatDuration(blockElapsedMs)}，建议 ${state.profile.limits.blockMinutes} 分钟。`] : []),
-    ...(active && now >= active.deadline ? ['已超过本段建议时长，可以继续，也可以结束休息。'] : []),
-    `今天累计 ${formatDuration(todayMs)}，建议 ${state.profile.limits.dailyMinutes} 分钟。`,
-    ...(todayMs > state.profile.limits.dailyMinutes * MINUTE ? ['今天已超过建议时长，仍可以继续。'] : []),
-    ...(now < state.breakUntil ? [`建议休息到 ${beijingClock(state.breakUntil)}（北京时间），现在也可以开始。`] : []),
-  ]
   return {
-    phase, remainingMs, timeNotice: timeParts.join(''),
+    phase,
     time: {
       timezone: 'Asia/Shanghai',
       blockElapsed: active ? formatDuration(blockElapsedMs) : null,
-      blockSuggested: `${state.profile.limits.blockMinutes}分钟`,
       todayElapsed: formatDuration(todayMs),
-      todaySuggested: `${state.profile.limits.dailyMinutes}分钟`,
-      breakUntil: now < state.breakUntil ? beijingClock(state.breakUntil) : null,
     },
-    breakRemainingMs: Math.max(0, state.breakUntil - now),
   }
 }
 
 /**
- * Summarize today's suggested budget, course confirmation, rewards and evidence-derived progress.
- * `phase` names a suggestion. A passed block, an unfinished break or a full day does not reject a later call.
- * `timeNotice` is the text to relay; it already states elapsed time, the suggestion and any break clock.
- * Reading does not close a session past its suggestion; stop records when the learner actually stopped.
+ * Summarize elapsed time, course confirmation, rewards and evidence-derived progress.
+ * Reading does not close a session; stop records when the learner actually stopped.
  */
 export function studyStatus(state: StudyState, now: number) {
   const time = timeStatus(state, now)
