@@ -69,17 +69,24 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
 
   expect(container.querySelector('.writer-rail')).toBeTruthy()
   expect(container.querySelector('.writer-stage')).toBeTruthy()
+  expect(container.querySelector('.writer-masthead')).toBeTruthy()
   const search = container.querySelector('.writer-search-slot input') as HTMLInputElement
   expect(search.disabled).toBe(false)
+  expect(search.closest('[role="search"]')).toBeTruthy()
   expect(screen.getByPlaceholderText(zh.search)).toBeTruthy()
-  expect(screen.getByText(zh.localWorkspace)).toBeTruthy()
+  expect((await screen.findAllByText(zh.healthOk)).length).toBeGreaterThan(0)
+  expect(container.querySelector('.writer-workspace')?.textContent).toBe('ws')
+  expect(container.querySelector('.writer-workspace')?.getAttribute('title')).toBe('/ws')
+  expect(screen.getByText(zh.countsSummary.replace('{libraries}', '1').replace('{projects}', '1'))).toBeTruthy()
 
   const librariesTab = await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
   const projectsTab = screen.getByRole('tab', { name: new RegExp(zh.projects) })
   expect(librariesTab.textContent).toContain('1')
   expect(projectsTab.textContent).toContain('1')
   expect(librariesTab.getAttribute('aria-selected')).toBe('true')
+  expect(librariesTab.getAttribute('aria-controls')).toBe('writer-workspace-panel')
   expect(librariesTab.classList.contains('writer-tab')).toBe(true)
+  expect(container.querySelector('#writer-workspace-panel')?.getAttribute('role')).toBe('tabpanel')
 
   // Depth-0 root opens by default and lazy-loads children (no click).
   const sample = await screen.findByRole('button', { name: /样本/ })
@@ -171,4 +178,18 @@ it('focuses search on ⌘K when the chat composer is not focused', async () => {
   expect(document.activeElement).not.toBe(search)
   fireEvent.keyDown(document, { key: 'k', metaKey: true })
   expect(document.activeElement).toBe(search)
+})
+
+it('shows a scan-failed banner with retry when the workspace root is unreadable', async () => {
+  const failing: ClientRemote = {
+    workspaceFiles: {
+      list: async () => ({ ok: false as const, error: { code: 'unavailable', message: 'down' } }),
+      readBytes: async () => ({ ok: false as const, error: { code: 'unavailable', message: 'down' } }),
+    },
+  } as ClientRemote
+  render(<WriterDesk sessionId={SessionId('session-5')} cwd={cwd} remote={failing} t={key => zh[key]} visible />)
+  expect(await screen.findByRole('alert')).toBeTruthy()
+  expect(screen.getByText(zh.scanFailed)).toBeTruthy()
+  expect(screen.getAllByText(zh.healthFailed).length).toBeGreaterThan(0)
+  expect(screen.getByRole('button', { name: zh.retryScan })).toBeTruthy()
 })

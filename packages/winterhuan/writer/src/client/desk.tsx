@@ -28,6 +28,11 @@ import {
   type WriterSearchHit,
   type WriterSearchResult,
 } from './search.ts'
+import {
+  workspaceShortName,
+  writerScanHealth,
+  type WriterScanHealth,
+} from './workspace-status.ts'
 
 type Copy = (key: keyof typeof zh) => string
 type EditorMode = 'edit' | 'preview'
@@ -108,6 +113,13 @@ function isChatComposerTarget(target: EventTarget | null): boolean {
   return true
 }
 
+function healthCopy(health: WriterScanHealth, t: Copy): string {
+  if (health === 'loading') return t('healthLoading')
+  if (health === 'partial') return t('healthPartial')
+  if (health === 'failed') return t('healthFailed')
+  return t('healthOk')
+}
+
 function TreeNodes({
   nodes,
   depth,
@@ -168,6 +180,7 @@ function TreeNodes({
         className="writer-tree-toggle"
         style={indent}
         aria-expanded={open}
+        aria-label={folderName}
         onClick={() => { onToggle(key, !open) }}
       >
         <span aria-hidden="true" className="writer-tree-chevron">{open ? '▼' : '▶'}</span>
@@ -258,6 +271,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const [reloadKey, setReloadKey] = useState(0)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [scanErrors, setScanErrors] = useState<readonly string[]>([])
+  const [scanning, setScanning] = useState(false)
+  const [scanHardFailed, setScanHardFailed] = useState(false)
   const [filter, setFilter] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchResult, setSearchResult] = useState<WriterSearchResult | undefined>(undefined)
@@ -289,6 +304,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     const controller = new AbortController()
     const signal = controller.signal
     setNotice(undefined)
+    setScanning(true)
+    setScanHardFailed(false)
     void (async () => {
       try {
         const scan = await scanWriterWorkspace(relative => readDir(remote, sessionId, cwd, relative, signal).then(page => page.entries))
@@ -296,10 +313,18 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         setLibraries(scan.libraries.map(rootToDirectoryNode))
         setProjects(scan.projects.map(rootToDirectoryNode))
         setScanErrors(scan.scanErrors)
+        setScanHardFailed(false)
         setListings({})
         setExpanded({})
       } catch (error) {
-        if (!signal.aborted) setNotice(error instanceof Error && error.message !== 'load' ? error.message : t('loadError'))
+        if (signal.aborted) return
+        setLibraries([])
+        setProjects([])
+        setScanErrors([])
+        setScanHardFailed(true)
+        setNotice(error instanceof Error && error.message !== 'load' ? error.message : t('loadError'))
+      } finally {
+        if (!signal.aborted) setScanning(false)
       }
     })()
     return () => { controller.abort() }
@@ -517,15 +542,32 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const truncationText = searchResult === undefined
     ? ''
     : writerSearchTruncationMessage(searchResult.truncation, searchResult.limits, searchResult.scanErrors)
+  const shortName = workspaceShortName(cwd)
+  const health = writerScanHealth({
+    scanning,
+    hardFailed: scanHardFailed,
+    libraryCount: libraries.length,
+    projectCount: projects.length,
+    scanErrors,
+  })
+  const healthText = healthCopy(health, t)
+  const countsText = t('countsSummary')
+    .replace('{libraries}', String(libraries.length))
+    .replace('{projects}', String(projects.length))
+  const tabPanelId = 'writer-workspace-panel'
+  const librariesTabId = 'writer-tab-libraries'
+  const projectsTabId = 'writer-tab-projects'
 
   return <div className="writer-desk" data-workbench="writer">
     <aside className="writer-rail" aria-label={t('tree')}>
       <nav className="writer-tabs" aria-label={t('workspaceTabs')} role="tablist">
         <button
           type="button"
+          id={librariesTabId}
           role="tab"
           className="writer-tab"
           aria-selected={view === 'libraries'}
+          aria-controls={tabPanelId}
           onClick={() => { setViewPick('libraries') }}
         >
           <span>{t('libraries')}</span>
@@ -533,16 +575,18 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         </button>
         <button
           type="button"
+          id={projectsTabId}
           role="tab"
           className="writer-tab"
           aria-selected={view === 'projects'}
+          aria-controls={tabPanelId}
           onClick={() => { setViewPick('projects') }}
         >
           <span>{t('projects')}</span>
           <b className="writer-badge">{projects.length}</b>
         </button>
       </nav>
-      <div className="writer-search-slot">
+      <div className="writer-search-slot" role="search">
         <input
           ref={searchRef}
           type="search"
@@ -560,8 +604,23 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
           }}
         />
       </div>
-      <div className="writer-tree-panel" role="tabpanel">
-        {showSearch ? (
+      <div
+        className="writer-tree-panel"
+        id={tabPanelId}
+        role="tabpanel"
+        aria-labelledby={view === 'libraries' ? librariesTabId : projectsTabId}
+        aria-busy={scanning || undefined}
+      >
+        {health === 'failed' && !showSearch && <div className="writer-scan-banner" role="alert">
+          <p>{t('scanFailed')}</p>
+          <button type="button" onClick={rescan}>{t('retryScan')}</button>
+        </div>}
+        {health === 'partial' && !showSearch && <div className="writer-scan-banner writer-scan-banner-warn" role="status">
+          <p>{t('scanPartial')}</p>
+          <button type="button" onClick={rescan}>{t('retryScan')}</button>
+        </div>}
+        {scanning && !showSearch ? <p className="writer-empty">{t('healthLoading')}</p>
+          : showSearch ? (
           searching ? <p className="writer-empty">{t('searching').replace('{query}', query)}</p>
             : searchResult !== undefined && searchResult.results.length === 0 ? <>
               <p className="writer-empty">{(searchResult.truncated ? t('searchIncomplete') : t('searchEmpty')).replace('{query}', query)}</p>
@@ -572,7 +631,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
                 {truncationText !== '' && <p className="writer-muted" role="status">{truncationText}</p>}
               </>
                 : null
-        ) : roots.length === 0 ? <p className="writer-empty">{view === 'libraries' ? t('emptyLibraries') : t('emptyProjects')}</p> : <nav aria-label={t('tree')}>
+        ) : health === 'failed' ? null
+          : roots.length === 0 ? <p className="writer-empty">{view === 'libraries' ? t('emptyLibraries') : t('emptyProjects')}</p> : <nav aria-label={t('tree')}>
           <ul className="writer-tree">{TreeNodes({
             nodes: roots,
             depth: 0,
@@ -586,16 +646,19 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
             t,
           })}</ul>
         </nav>}
-        {!showSearch && scanErrors.length > 0 && <p className="writer-muted">{t('scanPartial')}</p>}
       </div>
       <footer className="writer-rail-note">
-        <span className="writer-rail-dot" aria-hidden="true" />
-        <p>{t('localWorkspace')}</p>
+        <span className="writer-rail-dot" data-health={health} aria-hidden="true" />
+        <p title={cwd}>{shortName} · {healthText}</p>
       </footer>
     </aside>
     <section className="writer-stage">
       <header className="writer-stage-heading">
-        <span>{t('title')}</span>
+        <div className="writer-masthead" aria-label={t('masthead')}>
+          <span className="writer-workspace" title={cwd}>{shortName}</span>
+          <span className="writer-counts">{countsText}</span>
+          <span className="writer-health" data-health={health} role="status">{healthText}</span>
+        </div>
         <button type="button" className="writer-reload" onClick={rescan}>{t('reload')}</button>
       </header>
       <main className="writer-editor">

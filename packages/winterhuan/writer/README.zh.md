@@ -68,7 +68,7 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 ### 使用侧栏
 
-先打开写作模式，再从右侧栏打开写作。左栏信息架构对齐 oh-story Dashboard（等分 Tab → 文件名搜索 → 树 → 脚注），皮肤仍跟 DSH。拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页，根默认展开）、换文件脏确认、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。文件名搜索（防抖、限当前 Tab、对齐 Dashboard 结果/节点/深度上限），Esc 清空；侧栏可见且焦点不在对话输入时 ⌘/Ctrl+K 聚焦搜索，⌘/Ctrl+S 保存。编辑 ↔ Markdown 预览、脏态（待保存/已保存/保存中）、底栏（行·列、字数、EOL），保存时保留原换行。保存带上一次读取得到的版本；磁盘已变则先载入磁盘版本再存。列表、读取与搜索遍历走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件与行号 gutter 尚未接入。
+先打开写作模式，再从右侧栏打开写作。左栏信息架构对齐 oh-story Dashboard（等分 Tab → 文件名搜索 → 树 → 脚注），皮肤仍跟 DSH。拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页，根默认展开）、换文件脏确认、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。文件名搜索（防抖、限当前 Tab、对齐 Dashboard 结果/节点/深度上限），Esc 清空；侧栏可见且焦点不在对话输入时 ⌘/Ctrl+K 聚焦搜索，⌘/Ctrl+S 保存。编辑 ↔ Markdown 预览、脏态（待保存/已保存/保存中）、编辑器底栏（行·列、字数、EOL），保存时保留原换行。舞台顶栏显示工作区短名、拆文库/写作项目计数与列举健康态（可用 / 部分失败 / 扫描失败），扫描失败时有明确提示与重试；左栏脚注同步健康态。保存带上一次读取得到的版本；磁盘已变则先载入磁盘版本再存。列表、读取与搜索遍历走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件、视图态 localStorage 持久化与行号 gutter 尚未接入（P3d 只做状态栏/健康态/a11y 抛光）。
 
 在 DSH 里，`story-setup` 把宿主认成 `dsh`，不部署 Claude Code 的 `.claude/hooks`，也不部署 Codex 的 `.codex/hooks.json`。作者明确要求其他宿主时，那些宿主仍走自己的部署文件。
 
@@ -115,7 +115,7 @@ persona 在该预设修订的生命周期内保持稳定。第一次进入写作
 <a id="known-limitations-and-deferred-work"></a>
 ## 已知限制与待办
 
-- 侧栏对标 Dashboard 的拆文库/写作项目发现、可编扩展、文件名搜索、预览与编辑器壳基础能力，但不启本机 dashboard-server，也不换 zs 主题。删文件与行号 gutter 尚未做。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
+- 侧栏对标 Dashboard 的拆文库/写作项目发现、可编扩展、文件名搜索、预览、编辑器壳与 P3d 顶栏/健康态抛光，但不启本机 dashboard-server，也不换 zs 主题。删文件、视图态 localStorage 持久化与行号 gutter 尚未做。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
 
 <a id="dev-note"></a>
 ### 开发备注

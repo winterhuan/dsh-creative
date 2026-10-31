@@ -50,6 +50,14 @@ export const zh = {
   dirtySaving: '保存中',
   statusChars: '{n} 字符',
   statusCursor: '第 {line} 行，第 {col} 列',
+  masthead: '工作区概览',
+  countsSummary: '拆文库 {libraries} · 写作项目 {projects}',
+  healthLoading: '扫描中',
+  healthOk: '可用',
+  healthPartial: '部分失败',
+  healthFailed: '扫描失败',
+  scanFailed: '工作区扫描失败，点重试再试一次',
+  retryScan: '重试',
 }
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -103,4 +111,12 @@ export const en: { [Key in keyof typeof zh]: string } = {
   dirtySaving: 'Saving',
   statusChars: '{n} characters',
   statusCursor: 'Line {line}, column {col}',
+  masthead: 'Workspace overview',
+  countsSummary: 'Libraries {libraries} · Projects {projects}',
+  healthLoading: 'Scanning',
+  healthOk: 'Ready',
+  healthPartial: 'Partially failed',
+  healthFailed: 'Scan failed',
+  scanFailed: 'Workspace scan failed — retry',
+  retryScan: 'Retry',
 }
