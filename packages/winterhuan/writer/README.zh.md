@@ -1,5 +1,5 @@
 ---
-description: "为 DSH 增加写作模式：挂载 oh-story 技能，并在侧栏编辑设定、大纲和章节。"
+description: "为 DSH 增加写作模式：挂载 oh-story 技能，并在侧栏按 Dashboard 导航编辑拆文库与写作项目。"
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概要
 
-本 bundle 给 DSH 增加写作模式。新会话可以使用 oh-story 的长篇、短篇和去 AI 味技能，右侧栏可以改设定、大纲和章节。默认把技能拷进工作区 `.agents/skills`，已经存在的目录不覆盖。把 `skillMount` 改成 `bundled` 并重启后，改为直接读插件包里的 `skills` 目录。侧栏不嵌入 oh-story Dashboard。
+本 bundle 给 DSH 增加写作模式。新会话可以使用 oh-story 的长篇、短篇和去 AI 味技能，右侧栏按 Dashboard 模型浏览拆文库与写作项目并编辑允许的文本文件。默认把技能拷进工作区 `.agents/skills`，已经存在的目录不覆盖。把 `skillMount` 改成 `bundled` 并重启后，改为直接读插件包里的 `skills` 目录。侧栏不嵌入、也不启动 oh-story Dashboard。
 
 ## 目录
 
@@ -68,7 +68,7 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 ### 使用侧栏
 
-先打开写作模式，再从右侧栏打开写作。侧栏列出当前工作区里一本书的设定、大纲和章节，并保存正在编辑的 markdown。保存带上一次读取得到的版本。磁盘上的文件如果已经变了，要先载入磁盘版本才能再存。列表和读取走会话的 `workspaceFiles`。侧栏不启动 oh-story Dashboard。
+先打开写作模式，再从右侧栏打开写作。侧栏导航对齐 oh-story Dashboard：拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页）、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。保存带上一次读取得到的版本；磁盘已变则先载入磁盘版本再存。列表与读取走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件、搜索 ⌘K、预览等尚未接入。
 
 在 DSH 里，`story-setup` 把宿主认成 `dsh`，不部署 Claude Code 的 `.claude/hooks`，也不部署 Codex 的 `.codex/hooks.json`。作者明确要求其他宿主时，那些宿主仍走自己的部署文件。
 
@@ -115,7 +115,7 @@ persona 在该预设修订的生命周期内保持稳定。第一次进入写作
 <a id="known-limitations-and-deferred-work"></a>
 ## 已知限制与待办
 
-- 侧栏只编辑设定、大纲、细纲和正文下的 markdown。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
+- 侧栏对标 Dashboard 的拆文库/写作项目发现与可编扩展，但不启本机 dashboard-server，也不换 zs 主题。删文件、搜索 ⌘K、预览、行号等尚未做。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
 
 <a id="dev-note"></a>
 ### 开发备注
