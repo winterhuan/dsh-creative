@@ -6,9 +6,20 @@ import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { afterEach, expect, it, vi } from 'vitest'
 
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks() })
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+  try { localStorage.clear() } catch { /* ignore */ }
+})
 import { WriterDesk } from '../src/client/desk.tsx'
 import { zh } from '../src/client/locales.ts'
+import {
+  WRITER_RAIL_DEFAULT_WIDTH,
+  WRITER_RAIL_MIN_WIDTH,
+  WRITER_RAIL_STORAGE_KEY,
+  readRailChrome,
+} from '../src/client/rail-chrome.ts'
 
 const cwd = '/ws'
 const tree: Record<string, { name: string, type: 'file' | 'directory', size?: number }[]> = {
@@ -262,4 +273,51 @@ it('lets empty tabs switch view and empty copy when both sides are 0', async () 
   expect(librariesTab.getAttribute('aria-selected')).toBe('false')
   expect(await screen.findByText(zh.emptyProjects)).toBeTruthy()
   expect(screen.queryByText(zh.emptyLibraries)).toBeNull()
+})
+
+
+it('defaults the left rail width and persists collapse / resize chrome', async () => {
+  const { container } = render(<WriterDesk sessionId={SessionId('session-rail')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+  await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
+
+  const desk = container.querySelector('.writer-desk') as HTMLElement
+  expect(desk.getAttribute('data-rail-collapsed')).toBeNull()
+  expect(desk.style.getPropertyValue('--writer-rail-width')).toBe(`${String(WRITER_RAIL_DEFAULT_WIDTH)}px`)
+
+  const toggle = screen.getByRole('button', { name: zh.collapseRail })
+  expect(toggle.getAttribute('aria-expanded')).toBe('true')
+  expect(toggle.getAttribute('aria-controls')).toBe('writer-rail')
+  fireEvent.click(toggle)
+  expect(desk.getAttribute('data-rail-collapsed')).toBe('true')
+  expect(screen.getByRole('button', { name: zh.expandRail }).getAttribute('aria-expanded')).toBe('false')
+  expect(readRailChrome()).toEqual({ width: WRITER_RAIL_DEFAULT_WIDTH, collapsed: true })
+
+  fireEvent.click(screen.getByRole('button', { name: zh.expandRail }))
+  expect(desk.getAttribute('data-rail-collapsed')).toBeNull()
+
+  const handle = container.querySelector('.writer-rail-resize') as HTMLElement
+  expect(handle.getAttribute('role')).toBe('separator')
+  expect(handle.getAttribute('aria-valuenow')).toBe(String(WRITER_RAIL_DEFAULT_WIDTH))
+  fireEvent.keyDown(handle, { key: 'Home' })
+  expect(desk.style.getPropertyValue('--writer-rail-width')).toBe(`${String(WRITER_RAIL_MIN_WIDTH)}px`)
+  expect(readRailChrome().width).toBe(WRITER_RAIL_MIN_WIDTH)
+  expect(localStorage.getItem(WRITER_RAIL_STORAGE_KEY)).toContain(String(WRITER_RAIL_MIN_WIDTH))
+})
+
+it('drags the rail resize handle to set width', async () => {
+  const { container } = render(<WriterDesk sessionId={SessionId('session-drag')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+  await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
+  const desk = container.querySelector('.writer-desk') as HTMLElement
+  const handle = container.querySelector('.writer-rail-resize') as HTMLElement
+
+  handle.setPointerCapture = vi.fn()
+  handle.releasePointerCapture = vi.fn()
+  handle.hasPointerCapture = vi.fn(() => true)
+
+  fireEvent.pointerDown(handle, { button: 0, pointerId: 7, clientX: 300 })
+  fireEvent.pointerMove(handle, { pointerId: 7, clientX: 380 })
+  fireEvent.pointerUp(handle, { pointerId: 7, clientX: 380 })
+
+  expect(desk.style.getPropertyValue('--writer-rail-width')).toBe('300px')
+  expect(readRailChrome()).toEqual({ width: 300, collapsed: false })
 })
