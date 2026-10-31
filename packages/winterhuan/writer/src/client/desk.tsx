@@ -1,5 +1,6 @@
 /** Setting, outline, chapter list, and the prose editor. */
-import type { ClientRemote } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
+import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { useEffect, useState } from 'react'
 import { bookLabel, collectBookFiles, findBooks, type WriterFile, type WriterSection } from './library.ts'

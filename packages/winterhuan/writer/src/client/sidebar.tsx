@@ -1,5 +1,6 @@
 /** Register the writing sidebar: tab type, then the keyed body slot. */
 import type { Context } from '@deepseek-ai/cordis'
+import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
@@ -39,7 +40,7 @@ export function apply(context: Context): void {
     useEffect(() => { if (typeof preset === 'string' && preset !== 'writer') tab.actions.close() }, [preset, tab.actions])
     if (preset !== 'writer') return null
     if (cwd === undefined) return <p className="writer-empty">{copy('noWorkspace')}</p>
-    return <WriterDesk sessionId={sessionId} cwd={cwd} remote={context.remote} t={copy} visible={tab.visible} />
+    return <WriterDesk sessionId={sessionId} cwd={cwd} remote={context.remote as ClientRemote} t={copy} visible={tab.visible} />
   }
   context.effect(() => context.slots.inject('sidebar.right.pane.tab', () => context.slots.register(
     { name: 'sidebar.right.pane.tab', key: TAB_ID, locale: NS },

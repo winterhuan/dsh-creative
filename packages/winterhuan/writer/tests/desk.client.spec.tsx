@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 /** The writing sidebar lists a book and saves chapter text with the read version. */
 import { fireEvent, render, screen } from '@testing-library/react'
-import type { ClientRemote } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
+import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { expect, it, vi } from 'vitest'
 import { WriterDesk } from '../src/client/desk.tsx'

@@ -37,6 +37,7 @@
     "client": {
       "platform": "web",
       "inject": [
+        "@deepseek-ai/dsh-api-workspace-files",
         "@deepseek-ai/dsh-client-ui-sidebar-right",
         "@deepseek-ai/dsh-client-ui-session"
       ]
@@ -97,7 +98,9 @@
     "@deepseek-ai/dsh-tools": "0.2.1-rc.5",
     "@deepseek-ai/dsh-typert-registry": "0.2.1-rc.5",
     "@types/react": "18.3.28",
-    "react": "18.3.1"
+    "react": "18.3.1",
+    "@deepseek-ai/dsh-api-gateway": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5"
   },
   "scripts": {
     "build": "tsc -b tsconfig.host.json tsconfig.client.json && tsdown --config-loader native",
