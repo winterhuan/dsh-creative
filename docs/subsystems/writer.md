@@ -20,7 +20,7 @@ English | [中文](writer.zh.md)
 <a id="ownership"></a>
 ## Package
 
-[@winterhuan/dsh-writer](../../packages/winterhuan/writer/README.md) installs on its own. The host row owns `skillMount`, the first copy into `.agents/skills`, `/writer-sync-skills`, and `PUT /writer/file`. The preset row owns the tool list and the persona. The browser half is the same package's client entry.
+[@winterhuan/dsh-writer](../../packages/winterhuan/writer/README.md) installs on its own. The host row owns `skillMount`, the first copy into `.agents/skills`, `/writer-sync-skills`, and `PUT /writer/file`. The preset row owns the tool list and the persona. The browser half is the same package's client entry: the writing sidebar plus a Plugins-page Writing card that binds the Zhuque credential through `makersApiKeyEnv` (Host stores the env name only; secrets go through credentials).
 
 <a id="boundary"></a>
 ## Mount and save boundary

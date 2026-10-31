@@ -51,7 +51,7 @@ In `bundled` mode the host does not copy skills. The preset's skill-filesystem r
     skillMount: bundled
 ```
 
-`makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. The host stores the name only. `story-zhuque` reads that variable and does not run unless the author asks for the check.
+`makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. The host stores the name only. The Plugins page shows a Writing entry while this Host row is installed: bind the secret through DSH credentials (never into the settings document). `story-zhuque` reads that variable and does not run unless the author asks for the check.
 
 ### Use the sidebar
 
