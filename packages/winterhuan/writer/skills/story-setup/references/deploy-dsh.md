@@ -32,7 +32,7 @@ DSH 没有 Claude Code / Codex 的 hook 运行时。本文件**禁止**写入或
 
 - `.claude/hooks` 与 `.codex/hooks.json` 相对部署前没有新增 story hook 文件或注册。
 - `.story-deployed` 的 `target_cli` 含 `dsh`。
-- `story`、`story-long-write`、`story-short-write`、`story-deslop` 能在当前会话的技能目录里打开。
+- `story`、`story-long-write`、`story-short-write`、`story-deslop`、`story-long-scan`、`story-long-analyze`、`story-short-scan`、`story-short-analyze`、`story-cover` 能在当前会话的技能目录里打开。
 
 ## 安装报告必须提示
 

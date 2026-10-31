@@ -1,6 +1,6 @@
 /**
- * The Writer settings page: the Zhuque detection key.
- * The key is written through the credentials domain, never into the settings section.
+ * The Writer settings page: Zhuque detection key and cover image API key.
+ * Keys are written through the credentials domain, never into the settings section.
  */
 
 import { useState, type ReactNode } from 'react'
@@ -12,23 +12,26 @@ import { ZhuqueKeysDialog } from './ZhuqueKeysDialog.tsx'
 import { formLabels } from './zhuque-locales.ts'
 import type { WriterZhuqueCardFace, WriterZhuqueKeyControlState } from './zhuque-settings-controller.ts'
 
-/** Props the renderer binds for the Writer Zhuque settings page. */
+/** Props the renderer binds for the Writer settings page. */
 export type ZhuqueSettingsCardProps =
   PropsRuntime<'plugins.item'>
   & PropsLocale<'settings.writer'>
   & InjectFace<WriterZhuqueCardFace>
 
+type BulkKind = 'makers' | 'cover'
+
 /**
- * Render the Writer Zhuque settings page, or its one-liner when the Plugins page asks for a summary.
+ * Render the Writer settings page, or its one-liner when the Plugins page asks for a summary.
  * @param props - the view asked for, locale copy, the page snapshot, and its form actions.
  * @returns the one-liner, or the form.
  */
 export function ZhuqueSettingsCard(props: ZhuqueSettingsCardProps): ReactNode {
   const { t } = props
   const state = props.useWriterZhuqueCard(snapshot => snapshot)
-  const [bulk, setBulk] = useState(false)
+  const [bulk, setBulk] = useState<BulkKind | null>(null)
   if (props.view === 'summary') return t('description')
   const control: WriterZhuqueKeyControlState = state.key
+  const cover: WriterZhuqueKeyControlState = state.coverKey
   return (
     <SettingsForm
       labels={formLabels(t)}
@@ -50,17 +53,35 @@ export function ZhuqueSettingsCard(props: ZhuqueSettingsCardProps): ReactNode {
         type="button"
         className={css.manage}
         disabled={!control.writable}
-        onClick={() => { setBulk(true) }}
+        onClick={() => { setBulk('makers') }}
       >
         {t('manageKeys')}
       </button>
-      {bulk
+      <SettingsSecretField
+        id="plugin-config-writer-cover-key"
+        label={t('coverKeyLabel')}
+        hint={t(cover.writable ? 'coverKeyHint' : 'coverKeyReadOnlyHint')}
+        stateLabel={cover.configured ? t('keySet') : t('keyUnset')}
+        onEdit={(text) => { props.edit('gptImageApiKey', text) }}
+        disabled={!cover.writable}
+        text={cover.draft.text}
+        configured={cover.configured}
+      />
+      <button
+        type="button"
+        className={css.manage}
+        disabled={!cover.writable}
+        onClick={() => { setBulk('cover') }}
+      >
+        {t('manageCoverKeys')}
+      </button>
+      {bulk !== null
         ? (
           <ZhuqueKeysDialog
             title={t('title')}
             description={t('keysDialogDescription')}
-            label={t('makersKeyLabel')}
-            inputId="plugin-config-writer-makers-pool"
+            label={bulk === 'makers' ? t('makersKeyLabel') : t('coverKeyLabel')}
+            inputId={bulk === 'makers' ? 'plugin-config-writer-makers-pool' : 'plugin-config-writer-cover-pool'}
             placeholder={t('keysDialogPlaceholder')}
             countLabel={t('keysCount')}
             clearLabel={t('keysClear')}
@@ -68,9 +89,9 @@ export function ZhuqueSettingsCard(props: ZhuqueSettingsCardProps): ReactNode {
             discardLabel={t('discard')}
             failedLabel={t('saveFailed')}
             closeLabel={t('keysCloseLabel')}
-            disabled={!control.writable}
-            onSave={props.saveKeys}
-            onClose={() => { setBulk(false) }}
+            disabled={!(bulk === 'makers' ? control.writable : cover.writable)}
+            onSave={bulk === 'makers' ? props.saveKeys : props.saveCoverKeys}
+            onClose={() => { setBulk(null) }}
           />
         )
         : null}

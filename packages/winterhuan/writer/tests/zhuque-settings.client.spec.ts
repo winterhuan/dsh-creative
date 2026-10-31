@@ -90,6 +90,9 @@ describe('writer zhuque settings apply', () => {
     expect(describeCredentials).not.toHaveBeenCalled()
     remote.emit('credentials/reference-updated', ['MAKERS_API_KEY'])
     await vi.waitFor(() => { expect(describeCredentials).toHaveBeenCalledTimes(1) })
+    describeCredentials.mockClear()
+    remote.emit('credentials/reference-updated', ['GPT_IMAGE_API_KEY'])
+    await vi.waitFor(() => { expect(describeCredentials).toHaveBeenCalledTimes(1) })
   })
 
   it('collapses the page on teardown', async () => {

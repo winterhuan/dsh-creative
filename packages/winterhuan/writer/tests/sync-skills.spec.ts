@@ -27,7 +27,7 @@ it('copies story skills into .agents/skills without overwriting, then a force sy
   const source = packageSkillsDir()
   const first = await syncWriterSkills({ sourceDir: source, workspaceDir: book, force: false })
   expect(first.root).toBe(project)
-  expect(first.copied).toEqual(expect.arrayContaining(['story', 'story-long-write', 'story-short-write', 'story-deslop', 'story-zhuque']))
+  expect(first.copied).toEqual(expect.arrayContaining(['story', 'story-long-write', 'story-short-write', 'story-deslop', 'story-zhuque', 'story-long-scan', 'story-long-analyze', 'story-short-scan', 'story-short-analyze', 'story-cover', 'browser-cdp']))
   expect(first.skipped).toEqual([])
   const storyFile = join(project, '.agents/skills/story/SKILL.md')
   const original = await readFile(storyFile, 'utf8')
@@ -59,7 +59,7 @@ it('discovers story skills from the workspace copy and not from an unused bundle
       watch: false,
     })
     const names = (await ctx.skills.list({ cwd: join(project, 'chapters') })).map(skill => skill.name)
-    expect(names).toEqual(expect.arrayContaining(['story', 'story-long-write', 'story-short-write', 'story-deslop', 'story-zhuque']))
+    expect(names).toEqual(expect.arrayContaining(['story', 'story-long-write', 'story-short-write', 'story-deslop', 'story-zhuque', 'story-long-scan', 'story-long-analyze', 'story-short-scan', 'story-short-analyze', 'story-cover', 'browser-cdp']))
     expect(names).not.toContain('only-bundled')
     await bundledCtx.plugin(SkillRegistry)
     await bundledCtx.plugin(SkillFileSystem, {
