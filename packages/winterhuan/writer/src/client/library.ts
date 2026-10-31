@@ -335,12 +335,15 @@ export function rootToDirectoryNode(root: WriterWorkspaceRoot): Extract<WriterTr
 
 /**
  * Whether a folder should start expanded when the user has not toggled it yet.
- * Roots stay collapsed until opened; directories open when they contain the selection.
+ * Depth-0 roots default open (Dashboard first layer); deeper folders open when they
+ * contain the selection. Explicit session toggles still win over this default.
  * @param path - directory path.
  * @param selected - active file path, if any.
+ * @param depth - tree depth (0 = tab roots).
  * @returns default open state.
  */
-export function defaultWriterTreeExpanded(path: string, selected: string | undefined): boolean {
-  if (selected === undefined || path === '') return false
+export function defaultWriterTreeExpanded(path: string, selected: string | undefined, depth = 0): boolean {
+  if (depth === 0) return true
+  if (selected === undefined) return false
   return selected === path || selected.startsWith(`${path}/`)
 }

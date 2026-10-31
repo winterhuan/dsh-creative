@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-/** Dual-tab workspace tree: expand roots lazily and save editable files. */
-import { fireEvent, render, screen } from '@testing-library/react'
+/** Dual-tab workspace tree: rail shell, root expand, dirty confirm, save. */
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import { SessionId } from '@deepseek-ai/dsh-session'
-import { expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
+
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks() })
 import { WriterDesk } from '../src/client/desk.tsx'
 import { zh } from '../src/client/locales.ts'
 
@@ -57,30 +59,37 @@ function remote(): ClientRemote {
   } as ClientRemote
 }
 
-it('shows library and project tabs, lazy-loads the real tree, and saves', async () => {
+it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () => {
   const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(
     JSON.stringify({ path: 'novel/正文/第001章.md', bytes: 6, version: 'v2' }),
     { status: 200 },
   ))
   vi.stubGlobal('fetch', fetchMock)
-  render(<WriterDesk sessionId={SessionId('session-1')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+  const { container } = render(<WriterDesk sessionId={SessionId('session-1')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+
+  expect(container.querySelector('.writer-rail')).toBeTruthy()
+  expect(container.querySelector('.writer-stage')).toBeTruthy()
+  expect(container.querySelector('.writer-search-slot input')?.hasAttribute('disabled')).toBe(true)
+  expect(screen.getByPlaceholderText(zh.searchSoon)).toBeTruthy()
+  expect(screen.getByText(zh.localWorkspace)).toBeTruthy()
 
   const librariesTab = await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
   const projectsTab = screen.getByRole('tab', { name: new RegExp(zh.projects) })
   expect(librariesTab.textContent).toContain('1')
   expect(projectsTab.textContent).toContain('1')
-
-  // Preferred view is libraries when any exist.
   expect(librariesTab.getAttribute('aria-selected')).toBe('true')
-  expect(await screen.findByRole('button', { name: /样本/ })).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: /样本/ }))
+  expect(librariesTab.classList.contains('writer-tab')).toBe(true)
+
+  // Depth-0 root opens by default and lazy-loads children (no click).
+  const sample = await screen.findByRole('button', { name: /样本/ })
+  expect(sample.getAttribute('aria-expanded')).toBe('true')
   expect(await screen.findByRole('button', { name: '笔记.md' })).toBeTruthy()
   const png = screen.getByRole('button', { name: 'cover.png' })
   expect((png as HTMLButtonElement).disabled).toBe(true)
 
   fireEvent.click(projectsTab)
-  expect(await screen.findByRole('button', { name: /novel/ })).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: /novel/ }))
+  const novel = await screen.findByRole('button', { name: /novel/ })
+  expect(novel.getAttribute('aria-expanded')).toBe('true')
   expect(await screen.findByRole('button', { name: 'meta.json' })).toBeTruthy()
   expect(await screen.findByRole('button', { name: /设定/ })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: /设定/ }))
@@ -103,4 +112,24 @@ it('shows library and project tabs, lazy-loads the real tree, and saves', async 
   const [url, init] = fetchMock.mock.calls[0] ?? []
   expect(String(url)).toContain('/writer/file')
   expect(JSON.parse(String(init?.body))).toEqual({ content: '新稿', baseVersion: 'v1' })
+})
+
+it('asks before switching files when the draft is dirty', async () => {
+  render(<WriterDesk sessionId={SessionId('session-2')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+  fireEvent.click(await screen.findByRole('tab', { name: new RegExp(zh.projects) }))
+  await screen.findByRole('button', { name: /novel/ })
+  fireEvent.click(await screen.findByRole('button', { name: /设定/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '世界观.md' }))
+  const editor = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
+  fireEvent.change(editor, { target: { value: '脏稿' } })
+
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+  fireEvent.click(await screen.findByRole('button', { name: 'meta.json' }))
+  expect(confirm).toHaveBeenCalledWith(zh.confirmDiscard)
+  expect(screen.getByRole('textbox', { name: 'novel/设定/世界观.md' })).toBeTruthy()
+
+  confirm.mockReturnValue(true)
+  fireEvent.click(screen.getByRole('button', { name: 'meta.json' }))
+  expect(await screen.findByRole('textbox', { name: 'novel/meta.json' })).toBeTruthy()
+  confirm.mockRestore()
 })

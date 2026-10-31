@@ -35,6 +35,10 @@ export const zh = {
   saveError: '没有保存',
   truncated: '这一层没有列全',
   editor: '正文',
+  localWorkspace: '本地工作区',
+  searchSoon: '搜索即将支持',
+  searchSoonLabel: '文件搜索（即将支持）',
+  confirmDiscard: '当前文稿还有未保存的修改。确定放弃并打开另一份文件吗？',
 }
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -73,4 +77,8 @@ export const en: { [Key in keyof typeof zh]: string } = {
   saveError: 'Not saved',
   truncated: 'This folder is only partly listed',
   editor: 'Prose',
+  localWorkspace: 'Local workspace',
+  searchSoon: 'Search coming soon',
+  searchSoonLabel: 'File search (coming soon)',
+  confirmDiscard: 'This draft has unsaved changes. Discard them and open another file?',
 }
