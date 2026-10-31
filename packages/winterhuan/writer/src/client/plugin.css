@@ -16,7 +16,7 @@
 /* Left rail: tabs → search slot → tree → footnote (Dashboard IA, DSH tokens). */
 .writer-rail {
   display: grid;
-  grid-template-rows: 40px auto minmax(0, 1fr) 36px;
+  grid-template-rows: 34px auto minmax(0, 1fr) 30px;
   min-width: 0;
   min-height: 0;
   border-right: 1px solid var(--writer-border);
@@ -88,15 +88,15 @@
 .writer-search-slot {
   display: flex;
   align-items: center;
-  margin: 8px 10px 4px;
+  margin: 6px 8px 2px;
   min-width: 0;
 }
 
 .writer-search-slot input {
   box-sizing: border-box;
   width: 100%;
-  height: 32px;
-  padding: 0 10px;
+  height: 28px;
+  padding: 0 8px;
   border: 1px solid var(--writer-border);
   border-radius: 6px;
   background: var(--dsw-alias-bg-layer-1, var(--dsw-alias-bg-base));
@@ -126,7 +126,7 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding: 4px 6px 8px;
+  padding: 2px 4px 6px;
 }
 
 .writer-rail-note {
@@ -180,40 +180,52 @@
 
 .writer-stage-heading {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px 8px;
+  min-height: 32px;
+  padding: 4px 10px;
   border-bottom: 1px solid var(--writer-border);
 }
 
 .writer-masthead {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 6px 10px;
+  gap: 6px 8px;
   min-width: 0;
   flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .writer-workspace {
+  flex: 0 1 auto;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
+  max-width: 28%;
 }
 
 .writer-counts {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 
 .writer-local {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--dsw-alias-label-secondary);
   font-size: 11px;
   white-space: nowrap;
+  max-width: 36%;
 }
 
 .writer-health {
@@ -243,7 +255,9 @@
 }
 
 .writer-reload {
+  flex: 0 0 auto;
   margin-left: auto;
+  white-space: nowrap;
 }
 
 .writer-scan-banner {
@@ -271,14 +285,25 @@
 .writer-stage-heading button,
 .writer-editor button,
 .writer-alert button,
-.writer-tree-panel button {
+.writer-scan-banner button {
   box-sizing: border-box;
   font: inherit;
   color: var(--dsw-alias-label-primary);
   border: 1px solid var(--writer-border);
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 2px 8px;
   background: var(--dsw-alias-bg-base);
+  cursor: pointer;
+}
+
+.writer-tree-panel button {
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--dsw-alias-label-primary);
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  background: transparent;
   cursor: pointer;
 }
 
@@ -299,10 +324,12 @@
   align-items: center;
   gap: 6px;
   width: 100%;
-  min-height: 32px;
+  min-height: 26px;
   text-align: left;
-  padding: 4px 8px 4px calc(6px + var(--writer-indent, 0px)) !important;
-  border-radius: 6px;
+  padding: 2px 6px 2px calc(4px + var(--writer-indent, 0px)) !important;
+  border: 0 !important;
+  border-radius: 4px;
+  background: transparent;
 }
 
 .writer-tree-file:hover:not(:disabled),
@@ -312,7 +339,7 @@
 
 .writer-tree-file[aria-current='true'] {
   background: var(--dsw-alias-interactive-bg-hover);
-  box-shadow: inset 3px 0 0 var(--writer-accent);
+  box-shadow: inset 2px 0 0 var(--writer-accent);
   font-weight: 600;
 }
 
@@ -352,10 +379,10 @@
 }
 
 .writer-tree-folder > ul {
-  margin-top: 1px;
-  margin-left: 10px;
-  padding-left: 6px;
-  border-left: 1px solid var(--writer-border);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .writer-editor {
@@ -365,31 +392,34 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding: 8px 12px 12px;
-  gap: 8px;
+  padding: 6px 10px 8px;
+  gap: 6px;
 }
 
 .writer-editor header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .writer-document-identity {
   min-width: 0;
   flex: 1 1 auto;
-  display: grid;
-  gap: 2px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .writer-breadcrumbs {
   min-width: 0;
+  flex: 1 1 auto;
   display: flex;
   flex-wrap: nowrap;
   gap: 0;
   overflow: hidden;
   color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
@@ -412,11 +442,18 @@
 }
 
 .writer-path {
+  flex: 0 1 auto;
+  max-width: 42%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
+  font-size: 13px;
+}
+
+.writer-line-numbers-toggle {
+  flex: 0 0 auto;
 }
 
 .writer-line-numbers-toggle[aria-pressed='true'] {
@@ -541,23 +578,31 @@
 .writer-tree-status-action {
   color: var(--dsw-alias-label-secondary);
   font-size: 12px;
-  min-height: 28px;
+  min-height: 24px;
   display: flex;
   align-items: center;
-  padding-left: calc(6px + var(--writer-indent, 0px));
+  padding: 2px 6px 2px calc(4px + var(--writer-indent, 0px));
 }
 
 .writer-tree-status-action {
   width: 100%;
   text-align: left;
-  border-style: dashed !important;
+  border: 1px dashed var(--writer-border) !important;
+  border-radius: 4px;
+  background: transparent;
 }
 
 .writer-editor-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.writer-editor-toolbar > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .writer-dirty {
@@ -568,6 +613,7 @@
   line-height: 1.7;
   color: var(--dsw-alias-label-secondary);
   background: var(--dsw-alias-interactive-bg-hover);
+  white-space: nowrap;
 }
 
 .writer-dirty[data-state='dirty'] {
@@ -580,6 +626,7 @@
 
 .writer-mode-switch {
   display: inline-flex;
+  flex: 0 0 auto;
   margin-left: auto;
   border: 1px solid var(--writer-border);
   border-radius: 6px;
@@ -590,7 +637,7 @@
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent;
-  padding: 4px 10px;
+  padding: 2px 8px;
 }
 
 .writer-mode-switch button[aria-pressed='true'] {
