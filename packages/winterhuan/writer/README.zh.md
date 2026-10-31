@@ -51,7 +51,7 @@ dsh plugin --profile web add packages/winterhuan/writer
     skillMount: bundled
 ```
 
-`makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。Host 只保存这个名字。`story-zhuque` 读取该变量；作者没有要求检测时不运行。
+`makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。Host 只保存这个名字。安装本 Host 行后，插件页会出现「写作」入口，密钥经 DSH 凭据服务绑定（不写入设置文件）。`story-zhuque` 读取该变量；作者没有要求检测时不运行。
 
 ### 使用侧栏
 
