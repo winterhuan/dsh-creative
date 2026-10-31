@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for writer.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/writer.md
+/:
+  en: 14917979f533893c
+  zh: 6fb2b245c6f22094
+/writing:
+  en: 91938fc64cabb17c
+  zh: d237c813ccbaa078
+/writing/summary:
+  en: 352efbe9b470064e
+  zh: 9f62b1440e4c6fde
+/writing/table-of-contents:
+  en: 2607495979efcbae
+  zh: ea75205ddd7277a1
+/writing/package:
+  en: 3f20a2046376d334
+  zh: b33f8c9e788b6987
+/writing/mount-and-save-boundary:
+  en: 7baa7db78ec08f77
+  zh: c9bc55011f340212
+/writing/related:
+  en: 0dbb7b0c3c49a04d
+  zh: 5f238cfe5a2ae2d3
+/writing/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-31-writer-preset.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-31-writer-preset.md
+/agent-note-writing-preset:
+  en: a48d999d56565413
+  zh: 992c71fb25633962
+/agent-note-writing-preset/problem:
+  en: 80e9453bc3bda6e1
+  zh: 7e092bef993ad101
+/agent-note-writing-preset/decision:
+  en: ad2a4099057f6a1d
+  zh: 947b764f79d489fb
+/agent-note-writing-preset/alternatives-considered:
+  en: ebecab83dc99d7a9
+  zh: f71bfd4bb4b967a4
+/agent-note-writing-preset/consequences:
+  en: de4a316d939743f9
+  zh: b1768dbc87b6e9de
+/agent-note-writing-preset/verification:
+  en: 33bf3e1fa05b0ba8
+  zh: 5f3beba37a7af708

@@ -1,0 +1,107 @@
+- insert:
+    - id: writer
+      name: '@winterhuan/dsh-writer'
+    - id: preset-writer
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: writer
+        name: 写作模式
+        description: 用 oh-story 技能写网文，并在侧栏修改设定、大纲和章节。
+        order: 12
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |
+                You are a fiction-writing collaborator powered by the {{model}} model.
+                Load the oh-story skill that matches the task before acting: story for routing, story-setup for project setup, story-long-write for a serial, story-short-write for a short story, and story-deslop when the author asks to remove an AI tone. Load story-zhuque only when the author explicitly asks for a Zhuque check.
+                The manuscript, 设定, and outline files in the workspace are the source of truth. Discussion does not authorize prose edits.
+                On DeepSeek Harness the skills are already mounted. When running story-setup, detect the DSH host and do not deploy Claude Code or Codex .claude/hooks.
+                Do not start or embed the oh-story dashboard. The sidebar is the workbench. Ask only when a material creative choice is not in the author's instructions or the project.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            disabled: !!js (ctx.get('writerHost')?.skillMount ?? process.env.DSH_WRITER_SKILL_MOUNT ?? 'workspace') === 'bundled'
+          - id: skill-filesystem-bundled
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            disabled: !!js (ctx.get('writerHost')?.skillMount ?? process.env.DSH_WRITER_SKILL_MOUNT ?? 'workspace') !== 'bundled'
+            config:
+              bundledSkillDir: !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')), 'skills')
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelectionSettings: true
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
