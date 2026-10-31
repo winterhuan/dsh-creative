@@ -30,6 +30,9 @@
     },
     {
       "path": "packages/preset/project-default-mode/tsconfig.client.json"
+    },
+    {
+      "path": "packages/winterhuan/writer/tsconfig.client.json"
     }
   ]
 }

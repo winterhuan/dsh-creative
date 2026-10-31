@@ -21,6 +21,9 @@
     },
     {
       "path": "packages/preset/project-default-mode/tsconfig.host.json"
+    },
+    {
+      "path": "packages/winterhuan/writer/tsconfig.host.json"
     }
   ]
 }

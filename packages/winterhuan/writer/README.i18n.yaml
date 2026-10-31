@@ -1,0 +1,55 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/winterhuan/writer/README.md
+/:
+  en: a8fb7f6ee8fc961d
+  zh: 5cdea2f318ca823b
+/winterhuan-dsh-writer:
+  en: e11eafc303f9cd37
+  zh: b7beed1748b08ea2
+/winterhuan-dsh-writer/summary:
+  en: 579897b8ad0db512
+  zh: 18e0c26412098f4a
+/winterhuan-dsh-writer/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 82bbd1ae631975a1
+/winterhuan-dsh-writer/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/winterhuan-dsh-writer/use-this-package/install-into-a-profile:
+  en: 37f9771894d7e904
+  zh: 633a17e1ea138993
+/winterhuan-dsh-writer/use-this-package/choose-how-skills-are-mounted:
+  en: 317b9c801592800b
+  zh: d85c0f82ad61f567
+/winterhuan-dsh-writer/use-this-package/use-the-sidebar:
+  en: bf6b041df9f81a8e
+  zh: 157ca99b406339c9
+/winterhuan-dsh-writer/understand-the-implementation:
+  en: 169e0c746d26d469
+  zh: e3f580b478761f7b
+/winterhuan-dsh-writer/further-exploration:
+  en: 8216067acaebe494
+  zh: dc6e51d7ba4609e9
+/winterhuan-dsh-writer/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/winterhuan-dsh-writer/model-experience/writing-preset:
+  en: 0d6ea6a89268a27c
+  zh: d275a798a2a3261a
+/winterhuan-dsh-writer/model-experience/writing-preset/what-the-model-sees:
+  en: 401abc168760659a
+  zh: c617e6ff6f4b5098
+/winterhuan-dsh-writer/model-experience/writing-preset/token-effect:
+  en: 6f006ffcbec652b4
+  zh: 7df300cb7834b1c9
+/winterhuan-dsh-writer/model-experience/writing-preset/kv-cache-effect:
+  en: bba84443b7bee070
+  zh: 35608e2b053d06cc
+/winterhuan-dsh-writer/known-limitations-and-deferred-work:
+  en: 0854e336484ab8d8
+  zh: 7c4485a0c801540f
+/winterhuan-dsh-writer/known-limitations-and-deferred-work/dev-note:
+  en: d2a525302f330d92
+  zh: a65c77d2e94d18e5

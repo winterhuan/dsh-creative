@@ -1,0 +1,115 @@
+.writer-desk {
+  --writer-border: var(--dsw-alias-border-l2);
+  display: grid;
+  grid-template-columns: clamp(108px, 32%, 220px) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-base);
+  font: 13px/1.5 var(--dsw-font-family);
+}
+.writer-heading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--writer-border);
+}
+.writer-heading nav,
+.writer-heading label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.writer-heading button,
+.writer-heading select,
+.writer-list button,
+.writer-editor button,
+.writer-alert button {
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--dsw-alias-label-primary);
+  border: 1px solid var(--writer-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--dsw-alias-bg-base);
+  cursor: pointer;
+}
+.writer-heading button[aria-pressed='true'],
+.writer-list button[aria-current='true'] {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.writer-reload { margin-left: auto; }
+.writer-list,
+.writer-editor {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+.writer-list {
+  border-right: 1px solid var(--writer-border);
+  padding: 8px;
+}
+.writer-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.writer-list li + li { margin-top: 4px; }
+.writer-list button {
+  width: 100%;
+  text-align: left;
+}
+.writer-editor {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px 12px;
+  gap: 8px;
+}
+.writer-editor header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.writer-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.writer-editor textarea {
+  flex: 1;
+  min-height: 160px;
+  resize: none;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--writer-border);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+  font: 13px/1.6 var(--dsw-font-family);
+}
+.writer-empty,
+.writer-muted,
+.writer-alert {
+  margin: 0;
+}
+.writer-muted { color: var(--dsw-alias-label-secondary); }
+.writer-alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--dsw-alias-danger-label, var(--dsw-alias-label-primary));
+}
+.writer-editor button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
