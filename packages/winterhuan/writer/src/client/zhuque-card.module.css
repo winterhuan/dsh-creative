@@ -1,7 +1,7 @@
 /* Bulk key dialog opener, visually quiet beside the secret field. */
 .manage {
   display: block;
-  margin: 2px 0 0;
+  margin: 2px 0 16px;
   border: none;
   background: none;
   padding: 0;
@@ -18,4 +18,8 @@
 
 .manage:disabled {
   cursor: default;
+}
+
+.manage:last-of-type {
+  margin-bottom: 0;
 }

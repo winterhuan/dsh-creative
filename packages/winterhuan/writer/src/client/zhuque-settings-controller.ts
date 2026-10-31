@@ -1,7 +1,7 @@
 /**
  * The Writer settings page's staged form over the `writer` namespace.
- * The Zhuque key literal never rides a response: it writes through the
- * credentials domain under the reference `makersApiKeyEnv` names.
+ * Key literals never ride a response: they write through the credentials
+ * domain under the references `makersApiKeyEnv` and `gptImageApiKeyEnv` name.
  */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
@@ -16,13 +16,15 @@ import {
 /** Namespace of the writer plugin. Spelled here so the client half does not import Host values. */
 export const WRITER_SETTINGS_NS = 'writer'
 
-/** Section field this page reads for the credential reference name. */
+/** Section fields this page reads for credential reference names. */
 export interface WriterZhuqueSettings {
   /** Credential reference naming the EdgeOne Makers key. Defaults to MAKERS_API_KEY. */
   makersApiKeyEnv?: string
+  /** Credential reference naming the cover image API key. Defaults to GPT_IMAGE_API_KEY. */
+  gptImageApiKeyEnv?: string
 }
 
-/** What the credentials domain last reported for the Zhuque key. */
+/** What the credentials domain last reported for one key. */
 interface KeyCredentialState {
   /** Reference this answer describes. */
   ref: string
@@ -32,7 +34,7 @@ interface KeyCredentialState {
   writable: boolean
 }
 
-/** The Zhuque key control as the page renders it. */
+/** One credential control as the page renders it. */
 export interface WriterZhuqueKeyControlState {
   /** The staged credential, which starts blank on every load. */
   draft: SettingsFieldState
@@ -42,10 +44,12 @@ export interface WriterZhuqueKeyControlState {
   writable: boolean
 }
 
-/** What the Writer Zhuque settings page renders. */
+/** What the Writer settings page renders. */
 export interface WriterZhuqueCardState extends SettingsFormShell {
   /** The Zhuque key control. */
   key: WriterZhuqueKeyControlState
+  /** The cover image API key control. */
+  coverKey: WriterZhuqueKeyControlState
 }
 
 /** The registration-side face the page's slot entry injects. */
@@ -55,20 +59,28 @@ export interface WriterZhuqueCardFace extends SettingsFormActions {
     writerZhuqueCard: SnapshotStore<WriterZhuqueCardState>
   }
   /**
-   * Write the key pool immediately. The bulk dialog owns its own save gesture.
+   * Write the Zhuque key pool immediately. The bulk dialog owns its own save gesture.
    * @param text - one key per line.
    * @returns whether the Host reports a configured credential afterwards.
    */
   saveKeys: (text: string) => Promise<boolean>
+  /**
+   * Write the cover key pool immediately.
+   * @param text - one key per line.
+   * @returns whether the Host reports a configured credential afterwards.
+   */
+  saveCoverKeys: (text: string) => Promise<boolean>
 }
 
-const FALLBACK_REF = 'MAKERS_API_KEY'
+const FALLBACK_MAKERS_REF = 'MAKERS_API_KEY'
+const FALLBACK_COVER_REF = 'GPT_IMAGE_API_KEY'
 
-/** Bridges the `writer` scope and the credentials domain onto the Zhuque key. */
+/** Bridges the `writer` scope and the credentials domain onto Zhuque and cover keys. */
 export class WriterZhuqueCardController {
   private readonly form: SettingsFormModel<WriterZhuqueSettings>
   private readonly store: SnapshotStore<WriterZhuqueCardState>
-  private credentialState: KeyCredentialState = { ref: '', configured: false, writable: true }
+  private makersState: KeyCredentialState = { ref: '', configured: false, writable: true }
+  private coverState: KeyCredentialState = { ref: '', configured: false, writable: true }
 
   /**
    * @param scope - the shared configuration form for the `writer` namespace.
@@ -78,10 +90,13 @@ export class WriterZhuqueCardController {
     private readonly scope: SettingsFormScope<WriterZhuqueSettings>,
     private readonly ctx: ClientContext,
   ) {
-    this.form = new SettingsFormModel(scope, [], [{ field: 'makersApiKey', write: (text: string) => this.writeKey(text) }])
+    this.form = new SettingsFormModel(scope, [], [
+      { field: 'makersApiKey', write: (text: string) => this.writeKey('makers', text) },
+      { field: 'gptImageApiKey', write: (text: string) => this.writeKey('cover', text) },
+    ])
     this.store = this.form.bind(() => this.projection())
-    scope.subscribe(() => { void this.readCredential() })
-    void this.readCredential()
+    scope.subscribe(() => { void this.readCredentials() })
+    void this.readCredentials()
   }
 
   private projection(): WriterZhuqueCardState {
@@ -89,40 +104,67 @@ export class WriterZhuqueCardController {
       ...this.form.shell(),
       key: {
         draft: this.form.field('makersApiKey'),
-        configured: this.credentialState.configured,
-        writable: this.credentialState.writable,
+        configured: this.makersState.configured,
+        writable: this.makersState.writable,
+      },
+      coverKey: {
+        draft: this.form.field('gptImageApiKey'),
+        configured: this.coverState.configured,
+        writable: this.coverState.writable,
       },
     }
   }
 
-  /** Ask the credentials domain about the reference the section names. */
-  private async readCredential(): Promise<void> {
-    const ref = refOf(this.scope.getSnapshot())
-    if (ref !== this.credentialState.ref) {
-      this.credentialState = { ref, configured: false, writable: true }
-      this.store.set(this.projection())
+  /** Ask the credentials domain about both references the section names. */
+  private async readCredentials(): Promise<void> {
+    const snapshot = this.scope.getSnapshot()
+    const makersRef = makersRefOf(snapshot)
+    const coverRef = coverRefOf(snapshot)
+    let projected = false
+    if (makersRef !== this.makersState.ref) {
+      this.makersState = { ref: makersRef, configured: false, writable: true }
+      projected = true
     }
-    const response = await this.ctx.remote.credentials.describe([ref])
+    if (coverRef !== this.coverState.ref) {
+      this.coverState = { ref: coverRef, configured: false, writable: true }
+      projected = true
+    }
+    if (projected) this.store.set(this.projection())
+    const response = await this.ctx.remote.credentials.describe([makersRef, coverRef])
     if (!response.ok) return
-    if (ref !== refOf(this.scope.getSnapshot())) return
-    const view = response.value[ref]
-    const next: KeyCredentialState = {
-      ref,
-      configured: view?.configured ?? false,
-      writable: view?.writable ?? true,
+    const latest = this.scope.getSnapshot()
+    if (makersRef !== makersRefOf(latest) || coverRef !== coverRefOf(latest)) return
+    const makersView = response.value[makersRef]
+    const coverView = response.value[coverRef]
+    const nextMakers: KeyCredentialState = {
+      ref: makersRef,
+      configured: makersView?.configured ?? false,
+      writable: makersView?.writable ?? true,
     }
-    if (next.configured === this.credentialState.configured && next.writable === this.credentialState.writable && next.ref === this.credentialState.ref) return
-    this.credentialState = next
+    const nextCover: KeyCredentialState = {
+      ref: coverRef,
+      configured: coverView?.configured ?? false,
+      writable: coverView?.writable ?? true,
+    }
+    const makersSame = nextMakers.configured === this.makersState.configured
+      && nextMakers.writable === this.makersState.writable
+      && nextMakers.ref === this.makersState.ref
+    const coverSame = nextCover.configured === this.coverState.configured
+      && nextCover.writable === this.coverState.writable
+      && nextCover.ref === this.coverState.ref
+    if (makersSame && coverSame) return
+    this.makersState = nextMakers
+    this.coverState = nextCover
     this.store.set(this.projection())
   }
 
   /**
-   * Re-read after the Host reports a change to the watched reference.
+   * Re-read after the Host reports a change to a watched reference.
    * @param ref - the reference the Host reports as changed.
    */
   refreshCredential(ref: string): void {
-    if (this.credentialState.ref !== ref) return
-    void this.readCredential()
+    if (this.makersState.ref !== ref && this.coverState.ref !== ref) return
+    void this.readCredentials()
   }
 
   /**
@@ -133,30 +175,35 @@ export class WriterZhuqueCardController {
     return {
       hooks: { writerZhuqueCard: this.store },
       ...this.form.actions(),
-      saveKeys: (text) => this.saveKeys(text),
+      saveKeys: (text) => this.saveKeys('makers', text),
+      saveCoverKeys: (text) => this.saveKeys('cover', text),
     }
   }
 
   /**
-   * Write the key pool from the bulk dialog.
+   * Write a key pool from a bulk dialog.
+   * @param which - Zhuque or cover.
    * @param text - the dialog's whole text, one key per line.
    * @returns whether the Host reports a configured credential afterwards.
    */
-  async saveKeys(text: string): Promise<boolean> {
+  async saveKeys(which: 'makers' | 'cover', text: string): Promise<boolean> {
     if (text.trim() === '') return false
-    return this.writeKey(text.trim())
+    return this.writeKey(which, text.trim())
   }
 
   /**
-   * Write the staged key, then re-read whether the Host now holds one.
+   * Write a staged key, then re-read whether the Host now holds one.
+   * @param which - Zhuque or cover.
    * @param value - the staged credential literal.
    * @returns whether the Host reports a configured credential afterwards.
    */
-  private async writeKey(value: string): Promise<boolean> {
-    const response = await this.ctx.remote.credentials.set(refOf(this.scope.getSnapshot()), value)
+  private async writeKey(which: 'makers' | 'cover', value: string): Promise<boolean> {
+    const snapshot = this.scope.getSnapshot()
+    const ref = which === 'makers' ? makersRefOf(snapshot) : coverRefOf(snapshot)
+    const response = await this.ctx.remote.credentials.set(ref, value)
     if (!response.ok) return false
-    await this.readCredential()
-    return this.credentialState.configured
+    await this.readCredentials()
+    return which === 'makers' ? this.makersState.configured : this.coverState.configured
   }
 
   /** Release configuration subscriptions. */
@@ -164,11 +211,21 @@ export class WriterZhuqueCardController {
 }
 
 /**
- * The credential reference the section names, or MAKERS_API_KEY.
+ * The Zhuque credential reference the section names, or MAKERS_API_KEY.
  * @param snapshot - the current scope snapshot.
  * @returns the reference to address.
  */
-function refOf(snapshot: SettingsFormScopeSnapshot<WriterZhuqueSettings>): string {
+function makersRefOf(snapshot: SettingsFormScopeSnapshot<WriterZhuqueSettings>): string {
   const declared = snapshot.value?.makersApiKeyEnv
-  return declared !== undefined && declared.length > 0 ? declared : FALLBACK_REF
+  return declared !== undefined && declared.length > 0 ? declared : FALLBACK_MAKERS_REF
+}
+
+/**
+ * The cover credential reference the section names, or GPT_IMAGE_API_KEY.
+ * @param snapshot - the current scope snapshot.
+ * @returns the reference to address.
+ */
+function coverRefOf(snapshot: SettingsFormScopeSnapshot<WriterZhuqueSettings>): string {
+  const declared = snapshot.value?.gptImageApiKeyEnv
+  return declared !== undefined && declared.length > 0 ? declared : FALLBACK_COVER_REF
 }

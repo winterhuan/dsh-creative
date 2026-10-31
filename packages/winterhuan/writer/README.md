@@ -51,7 +51,20 @@ In `bundled` mode the host does not copy skills. The preset's skill-filesystem r
     skillMount: bundled
 ```
 
-`makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. The host stores the name only. The Plugins page shows a Writing entry while this Host row is installed: bind the secret through DSH credentials (never into the settings document). `story-zhuque` reads that variable and does not run unless the author asks for the check.
+`makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. `gptImageApiKeyEnv` names the variable for cover image generation. The default is `GPT_IMAGE_API_KEY`. The host stores the names only and mirrors them to `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`. The Plugins page shows a Writing entry while this Host row is installed: bind secrets through DSH credentials (never into the settings document). `story-zhuque` and `story-cover` (API path) read those variables and do not run unless the author asks.
+
+### Scan, analyze, and cover skills
+
+These packaged skills are author-triggered. They do not block chapter writing.
+
+| Skill | Triggers | Notes |
+|:------|:---------|:------|
+| `story-long-scan` | `/story-long-scan` | Long-form ranking scan. May need `agent-browser` / `browser-cdp` for live boards. |
+| `story-short-scan` | `/story-short-scan` | Short-form ranking scan. Same browser note. |
+| `story-long-analyze` | `/story-long-analyze` | Long-form teardown. Needs Python 3 for scripts. |
+| `story-short-analyze` | `/story-short-analyze` | Short-form teardown. Needs Python 3. |
+| `story-cover` | `/story-cover` | Prompt-only needs no key. Generating an image on DSH uses the GPT Image credential above. Codex hosts may still use `$imagegen`. |
+| `browser-cdp` | `/browser-cdp` | Optional helper when a scan needs a live browser session. |
 
 ### Use the sidebar
 
@@ -89,7 +102,7 @@ The patch in [cordis.patch.yml](cordis.patch.yml) inserts the host and the prese
 
 #### What the model sees
 
-A session on preset `writer` receives the preset persona and the oh-story skill catalog, including `story`, `story-long-write`, `story-short-write`, `story-deslop`, and `story-zhuque`. The persona tells the model to load the matching skill, to skip Claude Code and Codex hooks during `story-setup` on DSH, and not to start the oh-story dashboard. `story-zhuque` is for an explicit Zhuque request. The sidebar save is not a model tool.
+A session on preset `writer` receives the preset persona and the oh-story skill catalog, including `story`, `story-long-write`, `story-short-write`, `story-deslop`, `story-zhuque`, scan/analyze/cover skills, and `browser-cdp`. The persona tells the model to load the matching skill, to skip Claude Code and Codex hooks during `story-setup` on DSH, and not to start the oh-story dashboard. `story-zhuque` is for an explicit Zhuque request. The sidebar save is not a model tool.
 
 #### Token effect
 
@@ -101,7 +114,7 @@ The persona is stable for the life of the preset revision. Copying skills into `
 
 ## Known Limitations and Deferred Work
 
-- The sidebar edits markdown under 设定, 大纲, 细纲, and 正文 only. It does not create a book, run chapter guards, or list files through a private read API. `workspace` mode will not replace an existing skill directory until `/writer-sync-skills`. A project copy still outranks a bundled skill if both are present after an earlier copy. Zhuque runs only when `story-zhuque` is invoked and the named environment variable is set. This environment did not install the bundle into a live DSH profile.
+- The sidebar edits markdown under 设定, 大纲, 细纲, and 正文 only. It does not create a book, run chapter guards, or list files through a private read API. `workspace` mode will not replace an existing skill directory until `/writer-sync-skills`. A project copy still outranks a bundled skill if both are present after an earlier copy. Zhuque runs only when `story-zhuque` is invoked and the named environment variable is set. Cover image generation needs `GPT_IMAGE_API_KEY` (or the configured name) only when the author asks for an image; prompt-only delivery does not. This environment did not install the bundle into a live DSH profile.
 
 <a id="dev-note"></a>
 ### Dev Note

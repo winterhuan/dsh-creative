@@ -1,6 +1,6 @@
 # API 回退生图
 
-只在会话没有内置生图工具或作者明确要求走 API 时使用。`gpt-image-2` 返回 base64，请求体不带 `response_format`。无参考图走文生图，有参考图走图生图。
+只在会话没有内置生图工具或作者明确要求走 API 时使用。在 DSH 上，密钥名来自写作插件的 `gptImageApiKeyEnv`（默认 `GPT_IMAGE_API_KEY`），由 Host 镜像到 `WRITER_COVER_KEY_ENV`；实际密钥走 DSH 凭据，不要写进设置文件。`gpt-image-2` 返回 base64，请求体不带 `response_format`。无参考图走文生图，有参考图走图生图。
 
 ## 环境变量
 

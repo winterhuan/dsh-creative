@@ -33,6 +33,7 @@ export interface Config {
   readonly editorMaxBytes?: number
   readonly trustedHosts?: string[]
   readonly makersApiKeyEnv?: Volatile<string>
+  readonly gptImageApiKeyEnv?: Volatile<string>
 }
 
 /** Schema for the writing plugin. */
@@ -40,6 +41,7 @@ export const Config = z.object({
   skillMount: z.union(['workspace', 'bundled'] as const).default('workspace'),
   editorMaxBytes: z.natural().min(65_536).max(8_388_608).default(2_097_152),
   makersApiKeyEnv: z.string().role('credential-ref').default('MAKERS_API_KEY').volatile(),
+  gptImageApiKeyEnv: z.string().role('credential-ref').default('GPT_IMAGE_API_KEY').volatile(),
   trustedHosts: z.array(z.string()).default([]),
 }) as z<Config>
 
@@ -47,8 +49,10 @@ export const Config = z.object({
 export interface WriterHost {
   readonly skillMount: SkillMount
   readonly skillsDir: string
-  /** Credential environment name. The host does not read the secret. */
+  /** Credential environment name for Zhuque. The host does not read the secret. */
   readonly makersApiKeyEnv: string
+  /** Credential environment name for cover image API. The host does not read the secret. */
+  readonly gptImageApiKeyEnv: string
   sync(workspaceDir: string, force: boolean): Promise<SyncResult>
 }
 
@@ -61,13 +65,13 @@ declare module '@deepseek-ai/cordis' {
 
 const MOUNT_ENV = 'DSH_WRITER_SKILL_MOUNT'
 
-function credentialName(value: Volatile<string> | string | undefined): string {
+function credentialName(value: Volatile<string> | string | undefined, fallback: string): string {
   if (typeof value === 'string' && value.trim() !== '') return value.trim()
   if (value !== undefined && typeof value !== 'string') {
     const current = value.get()
     if (typeof current === 'string' && current.trim() !== '') return current.trim()
   }
-  return 'MAKERS_API_KEY'
+  return fallback
 }
 
 function restoreEnv(name: string, previous: string | undefined): void {
@@ -86,19 +90,24 @@ export function apply(context: Context, config: Config = {}): void {
   for (const host of trustedHosts) assertTrustedWriterAuthority(host)
   const skillsDir = packageSkillsDir()
   const maxBytes = config.editorMaxBytes ?? 2_097_152
-  const makersApiKeyEnv = credentialName(config.makersApiKeyEnv)
+  const makersApiKeyEnv = credentialName(config.makersApiKeyEnv, 'MAKERS_API_KEY')
+  const gptImageApiKeyEnv = credentialName(config.gptImageApiKeyEnv, 'GPT_IMAGE_API_KEY')
   const previousMount = process.env[MOUNT_ENV]
   const previousKeyEnv = process.env.WRITER_ZHUQUE_KEY_ENV
+  const previousCoverKeyEnv = process.env.WRITER_COVER_KEY_ENV
   process.env[MOUNT_ENV] = skillMount
   process.env.WRITER_ZHUQUE_KEY_ENV = makersApiKeyEnv
+  process.env.WRITER_COVER_KEY_ENV = gptImageApiKeyEnv
   context.effect(() => () => {
     restoreEnv(MOUNT_ENV, previousMount)
     restoreEnv('WRITER_ZHUQUE_KEY_ENV', previousKeyEnv)
+    restoreEnv('WRITER_COVER_KEY_ENV', previousCoverKeyEnv)
   }, 'writer: skill mount')
   const host: WriterHost = {
     skillMount,
     skillsDir,
     makersApiKeyEnv,
+    gptImageApiKeyEnv,
     sync: (workspaceDir, force) => syncWriterSkills({ sourceDir: skillsDir, workspaceDir, force }),
   }
   context.provide('writerHost', host)

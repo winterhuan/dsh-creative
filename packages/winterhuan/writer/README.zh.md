@@ -51,7 +51,20 @@ dsh plugin --profile web add packages/winterhuan/writer
     skillMount: bundled
 ```
 
-`makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。Host 只保存这个名字。安装本 Host 行后，插件页会出现「写作」入口，密钥经 DSH 凭据服务绑定（不写入设置文件）。`story-zhuque` 读取该变量；作者没有要求检测时不运行。
+`makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。`gptImageApiKeyEnv` 是封面生图用的环境变量名，默认 `GPT_IMAGE_API_KEY`。Host 只保存名字，并分别镜像到 `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`。安装本 Host 行后，插件页会出现「写作」入口，密钥经 DSH 凭据服务绑定（不写入设置文件）。`story-zhuque` 与 `story-cover`（API 通路）读取对应变量；作者没有明确要求时不运行。
+
+### 扫榜、拆文与封面技能
+
+这些随包技能由作者主动触发，不挡写章。
+
+| 技能 | 触发 | 说明 |
+|:-----|:-----|:-----|
+| `story-long-scan` | `/story-long-scan` | 长篇扫榜。实时榜单可能需要 `agent-browser` / `browser-cdp`。 |
+| `story-short-scan` | `/story-short-scan` | 短篇扫榜。浏览器依赖同上。 |
+| `story-long-analyze` | `/story-long-analyze` | 长篇拆文。脚本需要 Python 3。 |
+| `story-short-analyze` | `/story-short-analyze` | 短篇拆文。需要 Python 3。 |
+| `story-cover` | `/story-cover` | 仅提示词不需要 Key。在 DSH 上要出图时用上面的 GPT Image 凭据。Codex 宿主仍可用 `$imagegen`。 |
+| `browser-cdp` | `/browser-cdp` | 扫榜需要实时浏览器会话时的可选助手。 |
 
 ### 使用侧栏
 
@@ -89,7 +102,7 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 #### 模型看到的内容
 
-预设为 `writer` 的会话会看到该预设的 persona，以及 oh-story 技能目录，其中包括 `story`、`story-long-write`、`story-short-write`、`story-deslop` 和 `story-zhuque`。persona 要求按任务加载对应技能，在 DSH 上跑 `story-setup` 时跳过 Claude Code 与 Codex 的 hooks，并且不要启动 oh-story Dashboard。`story-zhuque` 只用于作者明确提出的朱雀检测。侧栏保存不是模型工具。
+预设为 `writer` 的会话会看到该预设的 persona，以及 oh-story 技能目录，其中包括 `story`、`story-long-write`、`story-short-write`、`story-deslop`、`story-zhuque`、扫榜/拆文/封面技能和 `browser-cdp`。persona 要求按任务加载对应技能，在 DSH 上跑 `story-setup` 时跳过 Claude Code 与 Codex 的 hooks，并且不要启动 oh-story Dashboard。`story-zhuque` 只用于作者明确提出的朱雀检测。侧栏保存不是模型工具。
 
 #### Token 影响
 
@@ -102,7 +115,7 @@ persona 在该预设修订的生命周期内保持稳定。第一次进入写作
 <a id="known-limitations-and-deferred-work"></a>
 ## 已知限制与待办
 
-- 侧栏只编辑设定、大纲、细纲和正文下的 markdown。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。本环境没有把 bundle 装进正在运行的 DSH profile。
+- 侧栏只编辑设定、大纲、细纲和正文下的 markdown。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
 
 <a id="dev-note"></a>
 ### 开发备注

@@ -18,6 +18,7 @@ function state(overrides: Partial<WriterZhuqueCardState> = {}): WriterZhuqueCard
     saving: false,
     failed: false,
     key: { draft: { text: '', overridden: false, invalid: false }, configured: false, writable: true },
+    coverKey: { draft: { text: '', overridden: false, invalid: false }, configured: false, writable: true },
     ...overrides,
   }
 }
@@ -31,6 +32,7 @@ function propsFor(snapshot: WriterZhuqueCardState): ZhuqueSettingsCardProps {
     save: vi.fn(),
     discard: vi.fn(),
     saveKeys: vi.fn(async () => true),
+    saveCoverKeys: vi.fn(async () => true),
   } as ZhuqueSettingsCardProps
 }
 
@@ -47,6 +49,14 @@ describe('ZhuqueSettingsCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'manageKeys' }))
     const dialog = screen.getByRole('dialog', { name: 'title' })
     expect(within(dialog).getByLabelText('makersKeyLabel')).toBeTruthy()
+  })
+
+  it('shows the cover key and opens its bulk dialog', () => {
+    render(<ZhuqueSettingsCard {...propsFor(state())} />)
+    expect(screen.getByLabelText('coverKeyLabel')).toHaveProperty('type', 'password')
+    fireEvent.click(screen.getByRole('button', { name: 'manageCoverKeys' }))
+    const dialog = screen.getByRole('dialog', { name: 'title' })
+    expect(within(dialog).getByLabelText('coverKeyLabel')).toBeTruthy()
   })
 
   it('explains why an environment key cannot be edited', () => {

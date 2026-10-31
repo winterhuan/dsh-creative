@@ -1,6 +1,6 @@
 /**
- * Writer Zhuque settings page, browser half. Registers into the Plugins page's
- * `plugins.item` slot while the Host serves the `writer` namespace.
+ * Writer settings page (Zhuque + cover keys), browser half. Registers into the
+ * Plugins page's `plugins.item` slot while the Host serves the `writer` namespace.
  */
 
 import type {} from '@deepseek-ai/dsh-client-locale/client'
@@ -27,14 +27,14 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   }
 }
 
-/** Dictionary namespace owned by the Zhuque settings page. */
+/** Dictionary namespace owned by the Writing settings page. */
 export const ZHUQUE_NS = 'settings.writer'
 
-/** Cordis services the Zhuque settings page needs beyond the sidebar. */
+/** Cordis services the Writing settings page needs beyond the sidebar. */
 export const zhuqueInject = ['remote.credentials', 'configForms'] as const
 
 /**
- * Mount the Zhuque settings page while the Host serves the writer namespace.
+ * Mount the Writing settings page while the Host serves the writer namespace.
  * @param ctx - the browser plugin context.
  */
 export function applyZhuqueSettings(ctx: ClientContext): void {
