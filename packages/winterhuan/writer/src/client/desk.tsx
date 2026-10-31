@@ -3,6 +3,7 @@ import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { writerExtension } from '../editable.ts'
 import {
   buildLoadedChildren,
   defaultWriterTreeExpanded,
@@ -71,6 +72,12 @@ function updateDirectoryNode(
   })
 }
 
+function fileStemAndExt(name: string): { stem: string, ext: string } {
+  const ext = writerExtension(name)
+  if (ext === '') return { stem: name, ext: '' }
+  return { stem: name.slice(0, -ext.length), ext: ext.slice(1) }
+}
+
 function TreeNodes({
   nodes,
   depth,
@@ -95,28 +102,35 @@ function TreeNodes({
   readonly t: Copy
 }): ReactNode {
   return nodes.map((node) => {
-    const indent = { '--writer-indent': `${String(depth * 12)}px` } as CSSProperties
-    const childIndent = { '--writer-indent': `${String((depth + 1) * 12)}px` } as CSSProperties
+    const indent = { '--writer-indent': `${String(depth * 14)}px` } as CSSProperties
+    const childIndent = { '--writer-indent': `${String((depth + 1) * 14)}px` } as CSSProperties
     if (node.kind === 'file') {
+      const { stem, ext } = fileStemAndExt(node.name)
       return <li key={node.path}>
         <button
           type="button"
           className={node.editable ? 'writer-tree-file' : 'writer-tree-file writer-tree-file-disabled'}
           style={indent}
           title={node.editable ? node.path : t('notEditable').replace('{path}', node.path)}
+          aria-label={node.name}
           aria-current={node.path === selected ? 'true' : undefined}
           disabled={!node.editable}
           onClick={() => { if (node.editable) onSelect(node.path) }}
-        >{node.name}</button>
+        >
+          <span aria-hidden="true" className="writer-tree-kind">📄</span>
+          <span className="writer-tree-label" aria-hidden="true">{stem || node.name}</span>
+          {ext !== '' && <span className="writer-tree-ext" aria-hidden="true">{ext}</span>}
+        </button>
       </li>
     }
 
     const key = node.path
-    const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, selected)
+    const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, selected, depth)
     const listing = listings[key]
     const total = listing === undefined ? node.children.length : visibleDirectoryEntries(listing.entries).length
     const hasMore = listing !== undefined && node.shown < total
     const apiTruncated = (listing?.truncated ?? node.truncated) && node.shown >= total && total > 0
+    const folderName = node.name === '' || node.name === '.' ? t('workspaceBook') : node.name
 
     return <li key={key === '' ? 'workspace-root' : key} className="writer-tree-folder">
       <button
@@ -127,7 +141,8 @@ function TreeNodes({
         onClick={() => { onToggle(key, !open) }}
       >
         <span aria-hidden="true" className="writer-tree-chevron">{open ? '▼' : '▶'}</span>
-        <span>{node.name === '' || node.name === '.' ? t('workspaceBook') : node.name}</span>
+        <span aria-hidden="true" className="writer-tree-kind">📁</span>
+        <span className="writer-tree-label">{folderName}</span>
       </button>
       {open && <ul>
         {node.loading && <li className="writer-tree-status" style={childIndent}>{t('loading')}</li>}
@@ -185,6 +200,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     || (viewPick === 'projects' && projects.length > 0)
   ) ? viewPick : preferredView
   const roots = view === 'libraries' ? libraries : projects
+  const dirty = draft !== saved
 
   const patchDirectory = (path: string, update: (node: DirectoryNode) => DirectoryNode): void => {
     setLibraries(nodes => updateDirectoryNode(nodes, path, update))
@@ -249,6 +265,20 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     })
   }
 
+  // Dashboard: first-layer roots open by default and lazy-load; respect explicit collapse.
+  useEffect(() => {
+    if (!visible) return
+    for (const root of roots) {
+      if (root.kind !== 'directory') continue
+      const key = root.path
+      const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, active, 0)
+      if (!open || root.loaded || root.loading || root.loadError !== undefined) continue
+      loadDirectory(key)
+    }
+    // loadDirectory closes over listings; roots/expanded/active drive when to open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional narrow deps for root lazy-open
+  }, [visible, roots, expanded, active, listings])
+
   const onToggle = (path: string, open: boolean): void => {
     setExpanded(current => ({ ...current, [path]: open }))
     if (open) loadDirectory(path)
@@ -261,6 +291,23 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       const built = buildLoadedChildren(path, cached.entries, node.shown + DIRECTORY_PAGE_SIZE, cached.truncated)
       return { ...node, ...built, loaded: true, loading: false }
     })
+  }
+
+  const confirmDiscard = (): boolean => !dirty || window.confirm(t('confirmDiscard'))
+
+  const selectFile = (path: string): void => {
+    if (path === active) return
+    if (!confirmDiscard()) return
+    setActive(path)
+  }
+
+  const rescan = (): void => {
+    if (!confirmDiscard()) return
+    setActive(undefined)
+    setDraft('')
+    setSaved('')
+    setVersion(undefined)
+    setReloadKey(value => value + 1)
   }
 
   useEffect(() => {
@@ -311,53 +358,77 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   }
 
   return <div className="writer-desk" data-workbench="writer">
-    <header className="writer-heading">
-      <span>{t('title')}</span>
+    <aside className="writer-rail" aria-label={t('tree')}>
       <nav className="writer-tabs" aria-label={t('workspaceTabs')} role="tablist">
         <button
           type="button"
           role="tab"
+          className="writer-tab"
           aria-selected={view === 'libraries'}
-          aria-pressed={view === 'libraries'}
           onClick={() => { setViewPick('libraries') }}
-        >{t('libraries')}<b className="writer-badge">{libraries.length}</b></button>
+        >
+          <span>{t('libraries')}</span>
+          <b className="writer-badge">{libraries.length}</b>
+        </button>
         <button
           type="button"
           role="tab"
+          className="writer-tab"
           aria-selected={view === 'projects'}
-          aria-pressed={view === 'projects'}
           onClick={() => { setViewPick('projects') }}
-        >{t('projects')}<b className="writer-badge">{projects.length}</b></button>
+        >
+          <span>{t('projects')}</span>
+          <b className="writer-badge">{projects.length}</b>
+        </button>
       </nav>
-      <button type="button" className="writer-reload" onClick={() => { setReloadKey(value => value + 1); setActive(undefined) }}>{t('reload')}</button>
-    </header>
-    <aside className="writer-list">
-      {roots.length === 0 ? <p className="writer-empty">{view === 'libraries' ? t('emptyLibraries') : t('emptyProjects')}</p> : <nav aria-label={t('tree')}>
-        <ul className="writer-tree">{TreeNodes({
-          nodes: roots,
-          depth: 0,
-          expanded,
-          selected: active,
-          listings,
-          onToggle,
-          onSelect: path => { setActive(path) },
-          onLoadMore,
-          onRetry: path => { loadDirectory(path, true) },
-          t,
-        })}</ul>
-      </nav>}
-      {scanErrors.length > 0 && <p className="writer-muted">{t('scanPartial')}</p>}
+      <div className="writer-search-slot">
+        <input
+          type="search"
+          disabled
+          readOnly
+          value=""
+          placeholder={t('searchSoon')}
+          aria-label={t('searchSoonLabel')}
+        />
+      </div>
+      <div className="writer-tree-panel" role="tabpanel">
+        {roots.length === 0 ? <p className="writer-empty">{view === 'libraries' ? t('emptyLibraries') : t('emptyProjects')}</p> : <nav aria-label={t('tree')}>
+          <ul className="writer-tree">{TreeNodes({
+            nodes: roots,
+            depth: 0,
+            expanded,
+            selected: active,
+            listings,
+            onToggle,
+            onSelect: selectFile,
+            onLoadMore,
+            onRetry: path => { loadDirectory(path, true) },
+            t,
+          })}</ul>
+        </nav>}
+        {scanErrors.length > 0 && <p className="writer-muted">{t('scanPartial')}</p>}
+      </div>
+      <footer className="writer-rail-note">
+        <span className="writer-rail-dot" aria-hidden="true" />
+        <p>{t('localWorkspace')}</p>
+      </footer>
     </aside>
-    <main className="writer-editor">
-      {active === undefined && notice === undefined && <p className="writer-empty">{t('emptyHelp')}</p>}
-      {notice !== undefined && <p role="alert" className="writer-alert">{notice}{conflict && <button type="button" onClick={() => { setReloadKey(value => value + 1) }}>{t('reloadDisk')}</button>}</p>}
-      {active !== undefined && <>
-        <header>
-          <span className="writer-path" title={active}>{active}</span>
-          <button type="button" disabled={busy || conflict || version === undefined || draft === saved} onClick={save}>{t('save')}</button>
-        </header>
-        <textarea aria-label={active} value={draft} onChange={event => { setDraft(event.target.value); setNotice(undefined) }} />
-      </>}
-    </main>
+    <section className="writer-stage">
+      <header className="writer-stage-heading">
+        <span>{t('title')}</span>
+        <button type="button" className="writer-reload" onClick={rescan}>{t('reload')}</button>
+      </header>
+      <main className="writer-editor">
+        {active === undefined && notice === undefined && <p className="writer-empty">{t('emptyHelp')}</p>}
+        {notice !== undefined && <p role="alert" className="writer-alert">{notice}{conflict && <button type="button" onClick={() => { setReloadKey(value => value + 1) }}>{t('reloadDisk')}</button>}</p>}
+        {active !== undefined && <>
+          <header>
+            <span className="writer-path" title={active}>{active}</span>
+            <button type="button" disabled={busy || conflict || version === undefined || draft === saved} onClick={save}>{t('save')}</button>
+          </header>
+          <textarea aria-label={active} value={draft} onChange={event => { setDraft(event.target.value); setNotice(undefined) }} />
+        </>}
+      </main>
+    </section>
   </div>
 }

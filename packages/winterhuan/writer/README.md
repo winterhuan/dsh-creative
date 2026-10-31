@@ -68,7 +68,7 @@ These packaged skills are author-triggered. They do not block chapter writing.
 
 ### Use the sidebar
 
-Open 写作模式, then open 写作 from the right sidebar. Navigation matches the oh-story Dashboard: Libraries / Projects tabs (with counts), a lazy real directory tree (~200-entry pages), and editable extensions `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`. A save sends the version from the last read. If the file changed on disk, the save is refused until you load the disk copy. Lists and reads use the session `workspaceFiles` remote; the sidebar does **not** start a local dashboard-server. Delete, ⌘K search, and preview are not wired yet.
+Open 写作模式, then open 写作 from the right sidebar. The left rail follows Dashboard information architecture (equal tabs → search slot → tree → footnote); skin stays on DSH tokens. Libraries / Projects tabs (with counts), lazy real directory tree (~200-entry pages, roots open by default), dirty-switch confirm, and editable extensions `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`. A save sends the version from the last read. If the file changed on disk, the save is refused until you load the disk copy. Lists and reads use the session `workspaceFiles` remote; the sidebar does **not** start a local dashboard-server. Delete, real ⌘K search, and preview are not wired yet.
 
 On DSH, `story-setup` treats the host as `dsh` and does not deploy Claude Code `.claude/hooks` or Codex `.codex/hooks.json`. Other hosts still follow their own deploy files when you ask for them.
 

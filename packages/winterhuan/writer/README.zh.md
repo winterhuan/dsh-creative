@@ -68,7 +68,7 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 ### 使用侧栏
 
-先打开写作模式，再从右侧栏打开写作。侧栏导航对齐 oh-story Dashboard：拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页）、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。保存带上一次读取得到的版本；磁盘已变则先载入磁盘版本再存。列表与读取走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件、搜索 ⌘K、预览等尚未接入。
+先打开写作模式，再从右侧栏打开写作。左栏信息架构对齐 oh-story Dashboard（等分 Tab → 搜索槽 → 树 → 脚注），皮肤仍跟 DSH。拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页，根默认展开）、换文件脏确认、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。保存带上一次读取得到的版本；磁盘已变则先载入磁盘版本再存。列表与读取走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件、真实搜索 ⌘K、预览等尚未接入。
 
 在 DSH 里，`story-setup` 把宿主认成 `dsh`，不部署 Claude Code 的 `.claude/hooks`，也不部署 Codex 的 `.codex/hooks.json`。作者明确要求其他宿主时，那些宿主仍走自己的部署文件。
 
