@@ -12,11 +12,13 @@ import type { SessionId } from '@deepseek-ai/dsh-session'
 import { writerSkillMount, type SkillMount } from './mount.ts'
 import { assertTrustedWriterAuthority } from './request-trust.ts'
 import { packageSkillsDir } from './skills-dir.ts'
+import { resolveWriterSyncPreset } from './sync-gate.ts'
 import { syncWriterSkills, type SyncResult } from './sync-skills.ts'
 import { registerWriterRoute } from './write-route.ts'
 
 export { packageSkillsDir } from './skills-dir.ts'
 export { skillFilesystemRowDisabled, writerSkillMount } from './mount.ts'
+export { resolveWriterSyncPreset } from './sync-gate.ts'
 export { syncWriterSkills, projectRootFor } from './sync-skills.ts'
 export { registerWriterRoute } from './write-route.ts'
 export { classifyWriterPath, isEditableWriterPath } from './editable.ts'
@@ -111,11 +113,18 @@ export function apply(context: Context, config: Config = {}): void {
     sync: (workspaceDir, force) => syncWriterSkills({ sourceDir: skillsDir, workspaceDir, force }),
   }
   context.provide('writerHost', host)
-  const copy = (agent: Agent): void => {
+  const copy = (agent: Agent, eventPreset?: string): void => {
     if (skillMount !== 'workspace') return
     const cwd = agent.session.header.cwd
     if (cwd === undefined) return
-    const selected = agent.session.header.agentPreset ?? context.get('agentPresets')?.composedPreset(agent.ctx)
+    const composed = context.get('agentPresets')?.composedPreset(agent.ctx)
+    const selected = resolveWriterSyncPreset({
+      ...(eventPreset !== undefined ? { eventPreset } : {}),
+      ...(composed !== undefined ? { composedPreset: composed } : {}),
+      ...(agent.session.header.agentPreset !== undefined
+        ? { headerPreset: agent.session.header.agentPreset }
+        : {}),
+    })
     if (selected !== 'writer') return
     void host.sync(cwd, false).catch((error: unknown) => {
       context.logger('writer').warn(`skill copy skipped: ${error instanceof Error ? error.message : String(error)}`)
@@ -123,9 +132,9 @@ export function apply(context: Context, config: Config = {}): void {
   }
   context.on('agent/created', ({ agent }) => { copy(agent) })
   context.on('agent-preset/selected', (sessionId: SessionId, preset: string) => {
-    if (preset !== 'writer' || skillMount !== 'workspace') return
+    if (skillMount !== 'workspace') return
     const agent = context.get('agents')?.get(sessionId)
-    if (agent !== undefined) copy(agent)
+    if (agent !== undefined) copy(agent, preset)
   })
   context.inject(['webServer', 'typert'], ctx => {
     registerWriterRoute(ctx, { maxBytes, trustedHosts })
