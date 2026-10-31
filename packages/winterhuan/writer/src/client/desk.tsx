@@ -3,8 +3,18 @@ import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import { writerExtension } from '../editable.ts'
+import {
+  breadcrumbSegments,
+  countLoadedFiles,
+  editorByteSize,
+  fileExtensionLabel,
+  formatBytes,
+  loadedFilesLabel,
+} from './editor-shell.ts'
 import { applyEol, detectEol, eolLabel, normalizeEol, type WriterEol } from './eol.ts'
+import { WriterLineNumbers } from './LineNumbers.tsx'
 import {
   buildLoadedChildren,
   defaultWriterTreeExpanded,
@@ -267,6 +277,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const [eol, setEol] = useState<WriterEol>('\n')
   const [notice, setNotice] = useState<string | undefined>(undefined)
   const [conflict, setConflict] = useState(false)
+  const [conflictOpen, setConflictOpen] = useState(false)
+  const [showLineNumbers, setShowLineNumbers] = useState(true)
   const [busy, setBusy] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
@@ -417,6 +429,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     const controller = new AbortController()
     const path = joinCwd(cwd, active)
     setConflict(false)
+    setConflictOpen(false)
     setNotice(undefined)
     void readWorkspaceText(remote, sessionId, path, controller.signal).then((result) => {
       if (controller.signal.aborted) return
@@ -448,7 +461,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       const payload = await response.json() as WriterSave & { error?: string }
       if (response.status === 412) {
         setConflict(true)
-        setNotice(payload.error ?? t('conflict'))
+        setConflictOpen(true)
+        setNotice(undefined)
         return
       }
       if (!response.ok) {
@@ -551,9 +565,16 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     scanErrors,
   })
   const healthText = healthCopy(health, t)
+  const loadedFileCount = countLoadedFiles(libraries) + countLoadedFiles(projects)
+  const filesText = loadedFilesLabel(loadedFileCount, t('filesOnDemand'), t('filesLoaded'))
   const countsText = t('countsSummary')
     .replace('{libraries}', String(libraries.length))
     .replace('{projects}', String(projects.length))
+    .replace('{files}', filesText)
+  const crumbs = active === undefined ? [] : breadcrumbSegments(active)
+  const byteLabel = formatBytes(editorByteSize(draft, eol))
+  const extLabel = active === undefined ? '' : fileExtensionLabel(active)
+  const encodingText = t('statusEncoding').replace('{eol}', eolLabel(eol))
   const tabPanelId = 'writer-workspace-panel'
   const librariesTabId = 'writer-tab-libraries'
   const projectsTabId = 'writer-tab-projects'
@@ -649,25 +670,65 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       </div>
       <footer className="writer-rail-note">
         <span className="writer-rail-dot" data-health={health} aria-hidden="true" />
-        <p title={cwd}>{shortName} · {healthText}</p>
+        <p title={`${cwd} · ${t('localWorkspace')}`}>{shortName} · {healthText} · {t('localWorkspace')}</p>
       </footer>
     </aside>
     <section className="writer-stage">
       <header className="writer-stage-heading">
         <div className="writer-masthead" aria-label={t('masthead')}>
           <span className="writer-workspace" title={cwd}>{shortName}</span>
-          <span className="writer-counts">{countsText}</span>
+          <span className="writer-counts" title={t('filesCountHint')}>{countsText}</span>
+          <span className="writer-local" title={t('localWorkspace')}>{t('localWorkspace')}</span>
           <span className="writer-health" data-health={health} role="status">{healthText}</span>
         </div>
         <button type="button" className="writer-reload" onClick={rescan}>{t('reload')}</button>
       </header>
       <main className="writer-editor">
         {active === undefined && notice === undefined && <p className="writer-empty">{t('emptyHelp')}</p>}
-        {notice !== undefined && <p role="alert" className="writer-alert">{notice}{conflict && <button type="button" onClick={() => { setReloadKey(value => value + 1) }}>{t('reloadDisk')}</button>}</p>}
+        {notice !== undefined && <p role="alert" className="writer-alert">{notice}</p>}
+        {conflictOpen && <Modal
+          open
+          onClose={() => { setConflictOpen(false) }}
+          title={t('conflictTitle')}
+          description={t('conflictBody')}
+          closeLabel={t('conflictClose')}
+          footer={(
+            <>
+              <button type="button" onClick={() => { setConflictOpen(false) }}>{t('conflictKeep')}</button>
+              <button
+                type="button"
+                className="writer-conflict-reload"
+                onClick={() => {
+                  setConflictOpen(false)
+                  setConflict(false)
+                  setReloadKey(value => value + 1)
+                }}
+              >{t('conflictReload')}</button>
+            </>
+          )}
+        />}
         {active !== undefined && <>
           <header className="writer-editor-toolbar">
-            <span className="writer-path" title={active}>{active}</span>
+            <div className="writer-document-identity">
+              <nav className="writer-breadcrumbs" aria-label={t('breadcrumbs')}>
+                {crumbs.map((part, index) => (
+                  <span key={`${String(index)}-${part}`}>
+                    {index > 0 && <i aria-hidden="true">／</i>}
+                    <span>{part}</span>
+                  </span>
+                ))}
+              </nav>
+              <span className="writer-path" title={active}>{crumbs[crumbs.length - 1] ?? active}</span>
+            </div>
             <span className="writer-dirty" data-state={dirtyState}>{dirtyText}</span>
+            <button
+              type="button"
+              className="writer-line-numbers-toggle"
+              title={t('toggleLineNumbers')}
+              aria-label={t('toggleLineNumbers')}
+              aria-pressed={showLineNumbers}
+              onClick={() => { setShowLineNumbers(value => !value) }}
+            >#</button>
             <div className="writer-mode-switch" role="group" aria-label={t('editor')}>
               <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit') }}>{t('modeEdit')}</button>
               <button type="button" aria-pressed={mode === 'preview'} onClick={() => { setMode('preview') }}>{t('modePreview')}</button>
@@ -675,19 +736,27 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
             <button type="button" disabled={busy || conflict || version === undefined || draft === saved} onClick={save}>{t('save')}</button>
           </header>
           {mode === 'edit' ? (
-            <textarea
-              ref={editorRef}
-              aria-label={active}
-              value={draft}
-              onChange={(event) => {
-                setDraft(event.target.value)
-                setCaret(event.target.selectionStart)
-                setNotice(undefined)
-              }}
-              onSelect={event => { setCaret(event.currentTarget.selectionStart) }}
-              onKeyUp={event => { setCaret(event.currentTarget.selectionStart) }}
-              onClick={event => { setCaret(event.currentTarget.selectionStart) }}
-            />
+            <div className={showLineNumbers ? 'writer-editor-body show-line-numbers' : 'writer-editor-body'}>
+              <WriterLineNumbers
+                text={draft}
+                caret={caret}
+                show={showLineNumbers}
+                textareaRef={editorRef}
+              />
+              <textarea
+                ref={editorRef}
+                aria-label={active}
+                value={draft}
+                onChange={(event) => {
+                  setDraft(event.target.value)
+                  setCaret(event.target.selectionStart)
+                  setNotice(undefined)
+                }}
+                onSelect={event => { setCaret(event.currentTarget.selectionStart) }}
+                onKeyUp={event => { setCaret(event.currentTarget.selectionStart) }}
+                onClick={event => { setCaret(event.currentTarget.selectionStart) }}
+              />
+            </div>
           ) : (
             <article
               className="writer-preview"
@@ -698,9 +767,15 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
           <footer className="writer-status">
             <span>{t('statusCursor').replace('{line}', String(line)).replace('{col}', String(col))}</span>
             <span aria-hidden="true">·</span>
-            <span>{t('statusChars').replace('{n}', String(countCharacters(draft)))}</span>
+            <span className="writer-document-meta">{byteLabel}</span>
             <span aria-hidden="true">·</span>
-            <span>{eolLabel(eol)}</span>
+            <span>{t('statusChars').replace('{n}', String(countCharacters(draft)))}</span>
+            {extLabel !== '' && <>
+              <span aria-hidden="true">·</span>
+              <span>{extLabel}</span>
+            </>}
+            <span aria-hidden="true">·</span>
+            <span>{encodingText}</span>
           </footer>
         </>}
       </main>

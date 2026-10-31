@@ -77,7 +77,8 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
   expect((await screen.findAllByText(zh.healthOk)).length).toBeGreaterThan(0)
   expect(container.querySelector('.writer-workspace')?.textContent).toBe('ws')
   expect(container.querySelector('.writer-workspace')?.getAttribute('title')).toBe('/ws')
-  expect(screen.getByText(zh.countsSummary.replace('{libraries}', '1').replace('{projects}', '1'))).toBeTruthy()
+  expect(screen.getByText(zh.localWorkspace)).toBeTruthy()
+  expect(screen.getByTitle(zh.filesCountHint)).toBeTruthy()
 
   const librariesTab = await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
   const projectsTab = screen.getByRole('tab', { name: new RegExp(zh.projects) })
@@ -94,6 +95,8 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
   expect(await screen.findByRole('button', { name: '笔记.md' })).toBeTruthy()
   const png = screen.getByRole('button', { name: 'cover.png' })
   expect((png as HTMLButtonElement).disabled).toBe(true)
+  const filesLabel = zh.filesLoaded.replace('{n}', '2')
+  expect(screen.getByText(zh.countsSummary.replace('{libraries}', '1').replace('{projects}', '1').replace('{files}', filesLabel))).toBeTruthy()
 
   fireEvent.click(projectsTab)
   const novel = await screen.findByRole('button', { name: /novel/ })
@@ -104,6 +107,13 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
   expect(await screen.findByRole('button', { name: '世界观.md' })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '世界观.md' }))
   expect(await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })).toBeTruthy()
+  const crumbs = screen.getByRole('navigation', { name: zh.breadcrumbs })
+  expect(crumbs.textContent).toContain('设定')
+  expect(crumbs.textContent).toContain('世界观.md')
+  expect(screen.getByLabelText(zh.toggleLineNumbers).getAttribute('aria-pressed')).toBe('true')
+  expect(container.querySelector('.writer-line-gutter')).toBeTruthy()
+  expect(screen.getByText(/UTF-8/)).toBeTruthy()
+  expect(screen.getByText(/B$/)).toBeTruthy()
 
   fireEvent.click(screen.getByRole('button', { name: /正文/ }))
   expect(await screen.findByRole('button', { name: '第001章.md' })).toBeTruthy()
@@ -192,4 +202,27 @@ it('shows a scan-failed banner with retry when the workspace root is unreadable'
   expect(screen.getByText(zh.scanFailed)).toBeTruthy()
   expect(screen.getAllByText(zh.healthFailed).length).toBeGreaterThan(0)
   expect(screen.getByRole('button', { name: zh.retryScan })).toBeTruthy()
+})
+
+it('shows a conflict dialog with keep and reload actions', async () => {
+  const fetchMock = vi.fn(async () => new Response(
+    JSON.stringify({ error: 'version mismatch' }),
+    { status: 412 },
+  ))
+  vi.stubGlobal('fetch', fetchMock)
+  render(<WriterDesk sessionId={SessionId('session-6')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+  fireEvent.click(await screen.findByRole('tab', { name: new RegExp(zh.projects) }))
+  fireEvent.click(await screen.findByRole('button', { name: /设定/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '世界观.md' }))
+  const editor = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
+  fireEvent.change(editor, { target: { value: '冲突稿' } })
+  fireEvent.click(screen.getByRole('button', { name: zh.save }))
+  expect(await screen.findByRole('dialog', { name: zh.conflictTitle })).toBeTruthy()
+  expect(screen.getByRole('button', { name: zh.conflictKeep })).toBeTruthy()
+  expect(screen.getByRole('button', { name: zh.conflictReload })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: zh.conflictKeep }))
+  await vi.waitFor(() => {
+    expect(screen.queryByRole('dialog', { name: zh.conflictTitle })).toBeNull()
+  })
+  expect((screen.getByRole('button', { name: zh.save }) as HTMLButtonElement).disabled).toBe(true)
 })
