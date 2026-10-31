@@ -1,9 +1,10 @@
-/** Dual-tab workspace tree and the prose editor. */
+/** Dual-tab workspace tree, filename search, and the prose editor shell. */
 import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { writerExtension } from '../editable.ts'
+import { applyEol, detectEol, eolLabel, normalizeEol, type WriterEol } from './eol.ts'
 import {
   buildLoadedChildren,
   defaultWriterTreeExpanded,
@@ -16,10 +17,20 @@ import {
   type WriterWorkspaceView,
 } from './library.ts'
 import type { zh } from './locales.ts'
+import { markdownToSafeHtml } from './markdown.ts'
 import { listWorkspace, readWorkspaceText, remoteMessage } from './read.ts'
 import { saveWriterFile, type WriterSave } from './save.ts'
+import {
+  MAX_SEARCH_QUERY_LENGTH,
+  SEARCH_DEBOUNCE_MS,
+  searchWriterFilenames,
+  writerSearchTruncationMessage,
+  type WriterSearchHit,
+  type WriterSearchResult,
+} from './search.ts'
 
 type Copy = (key: keyof typeof zh) => string
+type EditorMode = 'edit' | 'preview'
 
 interface DeskProps {
   readonly sessionId: SessionId
@@ -76,6 +87,25 @@ function fileStemAndExt(name: string): { stem: string, ext: string } {
   const ext = writerExtension(name)
   if (ext === '') return { stem: name, ext: '' }
   return { stem: name.slice(0, -ext.length), ext: ext.slice(1) }
+}
+
+function countCharacters(content: string): number {
+  return [...content.replace(/\s/gu, '')].length
+}
+
+function cursorLineCol(content: string, caret: number): { line: number, col: number } {
+  const before = content.slice(0, Math.max(0, Math.min(caret, content.length)))
+  const lines = before.split('\n')
+  const last = lines[lines.length - 1] ?? ''
+  return { line: lines.length, col: [...last].length + 1 }
+}
+
+function isChatComposerTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.closest('[data-workbench="writer"]') !== null) return false
+  const tag = target.tagName
+  if (tag !== 'TEXTAREA' && tag !== 'INPUT' && !target.isContentEditable) return false
+  return true
 }
 
 function TreeNodes({
@@ -173,6 +203,40 @@ function TreeNodes({
   })
 }
 
+function SearchHits({
+  hits,
+  selected,
+  onSelect,
+  t,
+}: {
+  readonly hits: readonly WriterSearchHit[]
+  readonly selected: string | undefined
+  readonly onSelect: (path: string) => void
+  readonly t: Copy
+}): ReactNode {
+  return <ul className="writer-tree writer-search-hits">
+    {hits.map((hit) => {
+      const { stem, ext } = fileStemAndExt(hit.name)
+      return <li key={hit.path}>
+        <button
+          type="button"
+          className={hit.editable ? 'writer-tree-file' : 'writer-tree-file writer-tree-file-disabled'}
+          title={hit.editable ? hit.path : t('notEditable').replace('{path}', hit.path)}
+          aria-label={hit.name}
+          aria-current={hit.path === selected ? 'true' : undefined}
+          disabled={!hit.editable}
+          onClick={() => { if (hit.editable) onSelect(hit.path) }}
+        >
+          <span aria-hidden="true" className="writer-tree-kind">📄</span>
+          <span className="writer-tree-label" aria-hidden="true">{stem || hit.name}</span>
+          {ext !== '' && <span className="writer-tree-ext" aria-hidden="true">{ext}</span>}
+        </button>
+        <p className="writer-search-path" title={hit.path}>{hit.path}</p>
+      </li>
+    })}
+  </ul>
+}
+
 /**
  * The writing sidebar body for one session.
  * @param props - session, workspace root, remote, and copy.
@@ -187,12 +251,22 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const [draft, setDraft] = useState('')
   const [saved, setSaved] = useState('')
   const [version, setVersion] = useState<string | undefined>(undefined)
+  const [eol, setEol] = useState<WriterEol>('\n')
   const [notice, setNotice] = useState<string | undefined>(undefined)
   const [conflict, setConflict] = useState(false)
   const [busy, setBusy] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [scanErrors, setScanErrors] = useState<readonly string[]>([])
+  const [filter, setFilter] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [searchResult, setSearchResult] = useState<WriterSearchResult | undefined>(undefined)
+  const [mode, setMode] = useState<EditorMode>('edit')
+  const [caret, setCaret] = useState(0)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const editorRef = useRef<HTMLTextAreaElement>(null)
+  const saveRef = useRef<() => void>(() => {})
+  const searchSeq = useRef(0)
 
   const preferredView: WriterWorkspaceView = libraries.length > 0 ? 'libraries' : 'projects'
   const view: WriterWorkspaceView = (
@@ -200,7 +274,10 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     || (viewPick === 'projects' && projects.length > 0)
   ) ? viewPick : preferredView
   const roots = view === 'libraries' ? libraries : projects
+  const rootPathsKey = roots.map(node => node.path).join('\0')
   const dirty = draft !== saved
+  const query = filter.trim()
+  const showSearch = query !== ''
 
   const patchDirectory = (path: string, update: (node: DirectoryNode) => DirectoryNode): void => {
     setLibraries(nodes => updateDirectoryNode(nodes, path, update))
@@ -267,7 +344,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
 
   // Dashboard: first-layer roots open by default and lazy-load; respect explicit collapse.
   useEffect(() => {
-    if (!visible) return
+    if (!visible || showSearch) return
     for (const root of roots) {
       if (root.kind !== 'directory') continue
       const key = root.path
@@ -275,9 +352,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       if (!open || root.loaded || root.loading || root.loadError !== undefined) continue
       loadDirectory(key)
     }
-    // loadDirectory closes over listings; roots/expanded/active drive when to open.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional narrow deps for root lazy-open
-  }, [visible, roots, expanded, active, listings])
+  }, [visible, roots, expanded, active, listings, showSearch])
 
   const onToggle = (path: string, open: boolean): void => {
     setExpanded(current => ({ ...current, [path]: open }))
@@ -307,6 +383,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     setDraft('')
     setSaved('')
     setVersion(undefined)
+    setEol('\n')
     setReloadKey(value => value + 1)
   }
 
@@ -322,9 +399,13 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         setNotice(remoteMessage(result.error, t('loadError')))
         return
       }
-      setDraft(result.value.text)
-      setSaved(result.value.text)
+      const detected = detectEol(result.value.text)
+      const text = normalizeEol(result.value.text)
+      setEol(detected)
+      setDraft(text)
+      setSaved(text)
       setVersion(result.value.version)
+      setCaret(0)
     }).catch((error: unknown) => {
       if (!controller.signal.aborted) setNotice(error instanceof Error ? error.message : t('loadError'))
     })
@@ -336,8 +417,9 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     const path = active
     const baseVersion = version
     const submitted = draft
+    const payloadContent = applyEol(submitted, eol)
     setBusy(true)
-    void saveWriterFile(sessionId, path, submitted, baseVersion, new AbortController().signal).then(async (response) => {
+    void saveWriterFile(sessionId, path, payloadContent, baseVersion, new AbortController().signal).then(async (response) => {
       const payload = await response.json() as WriterSave & { error?: string }
       if (response.status === 412) {
         setConflict(true)
@@ -348,6 +430,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         setNotice(payload.error ?? t('saveError'))
         return
       }
+      // Keep dirty if the author typed more while the request was in flight.
       setSaved(submitted)
       setVersion(payload.version)
       setNotice(t('saved'))
@@ -356,6 +439,84 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       setNotice(t('saveError'))
     }).finally(() => { setBusy(false) })
   }
+  saveRef.current = save
+
+  // Debounced filename search for the active tab.
+  useEffect(() => {
+    if (!visible) return undefined
+    const trimmed = filter.trim()
+    if (trimmed === '') {
+      searchSeq.current += 1
+      setSearching(false)
+      setSearchResult(undefined)
+      return undefined
+    }
+    if (trimmed.length > MAX_SEARCH_QUERY_LENGTH) {
+      searchSeq.current += 1
+      setSearching(false)
+      setSearchResult(undefined)
+      setNotice(t('searchQueryTooLong'))
+      return undefined
+    }
+    setSearching(true)
+    const sequence = ++searchSeq.current
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      const rootPaths = rootPathsKey === ''
+        ? []
+        : rootPathsKey.split('\0').map(path => (path === '' ? '.' : path))
+      void searchWriterFilenames(
+        rootPaths,
+        trimmed,
+        relative => readDir(remote, sessionId, cwd, relative === '.' ? '' : relative, controller.signal),
+        controller.signal,
+      ).then((result) => {
+        if (sequence !== searchSeq.current || controller.signal.aborted) return
+        setSearchResult(result)
+        setSearching(false)
+      }).catch((error: unknown) => {
+        if (sequence !== searchSeq.current || controller.signal.aborted) return
+        setSearching(false)
+        setSearchResult(undefined)
+        setNotice(error instanceof Error ? error.message : t('loadError'))
+      })
+    }, SEARCH_DEBOUNCE_MS)
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [visible, filter, view, rootPathsKey, remote, sessionId, cwd, t])
+
+  useEffect(() => {
+    if (!visible) return undefined
+    const onKey = (event: KeyboardEvent): void => {
+      const modifier = event.metaKey || event.ctrlKey
+      if (!modifier) return
+      const key = event.key.toLocaleLowerCase()
+      if (key === 's') {
+        event.preventDefault()
+        saveRef.current()
+        return
+      }
+      if (key === 'k') {
+        if (isChatComposerTarget(event.target)) return
+        event.preventDefault()
+        const input = searchRef.current
+        if (input === null) return
+        input.focus()
+        input.select()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('keydown', onKey) }
+  }, [visible])
+
+  const dirtyState = busy ? 'saving' : dirty ? 'dirty' : 'saved'
+  const dirtyText = busy ? t('dirtySaving') : dirty ? t('dirtyPending') : t('dirtySaved')
+  const { line, col } = cursorLineCol(draft, caret)
+  const truncationText = searchResult === undefined
+    ? ''
+    : writerSearchTruncationMessage(searchResult.truncation, searchResult.limits, searchResult.scanErrors)
 
   return <div className="writer-desk" data-workbench="writer">
     <aside className="writer-rail" aria-label={t('tree')}>
@@ -383,16 +544,35 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       </nav>
       <div className="writer-search-slot">
         <input
+          ref={searchRef}
           type="search"
-          disabled
-          readOnly
-          value=""
-          placeholder={t('searchSoon')}
-          aria-label={t('searchSoonLabel')}
+          value={filter}
+          placeholder={t('search')}
+          aria-label={t('searchLabel')}
+          onChange={event => { setFilter(event.target.value); setNotice(undefined) }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              setFilter('')
+              setSearchResult(undefined)
+              setSearching(false)
+            }
+          }}
         />
       </div>
       <div className="writer-tree-panel" role="tabpanel">
-        {roots.length === 0 ? <p className="writer-empty">{view === 'libraries' ? t('emptyLibraries') : t('emptyProjects')}</p> : <nav aria-label={t('tree')}>
+        {showSearch ? (
+          searching ? <p className="writer-empty">{t('searching').replace('{query}', query)}</p>
+            : searchResult !== undefined && searchResult.results.length === 0 ? <>
+              <p className="writer-empty">{(searchResult.truncated ? t('searchIncomplete') : t('searchEmpty')).replace('{query}', query)}</p>
+              {truncationText !== '' && <p className="writer-muted" role="status">{truncationText}</p>}
+            </>
+              : searchResult !== undefined ? <>
+                <SearchHits hits={searchResult.results} selected={active} onSelect={selectFile} t={t} />
+                {truncationText !== '' && <p className="writer-muted" role="status">{truncationText}</p>}
+              </>
+                : null
+        ) : roots.length === 0 ? <p className="writer-empty">{view === 'libraries' ? t('emptyLibraries') : t('emptyProjects')}</p> : <nav aria-label={t('tree')}>
           <ul className="writer-tree">{TreeNodes({
             nodes: roots,
             depth: 0,
@@ -406,7 +586,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
             t,
           })}</ul>
         </nav>}
-        {scanErrors.length > 0 && <p className="writer-muted">{t('scanPartial')}</p>}
+        {!showSearch && scanErrors.length > 0 && <p className="writer-muted">{t('scanPartial')}</p>}
       </div>
       <footer className="writer-rail-note">
         <span className="writer-rail-dot" aria-hidden="true" />
@@ -422,11 +602,43 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         {active === undefined && notice === undefined && <p className="writer-empty">{t('emptyHelp')}</p>}
         {notice !== undefined && <p role="alert" className="writer-alert">{notice}{conflict && <button type="button" onClick={() => { setReloadKey(value => value + 1) }}>{t('reloadDisk')}</button>}</p>}
         {active !== undefined && <>
-          <header>
+          <header className="writer-editor-toolbar">
             <span className="writer-path" title={active}>{active}</span>
+            <span className="writer-dirty" data-state={dirtyState}>{dirtyText}</span>
+            <div className="writer-mode-switch" role="group" aria-label={t('editor')}>
+              <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit') }}>{t('modeEdit')}</button>
+              <button type="button" aria-pressed={mode === 'preview'} onClick={() => { setMode('preview') }}>{t('modePreview')}</button>
+            </div>
             <button type="button" disabled={busy || conflict || version === undefined || draft === saved} onClick={save}>{t('save')}</button>
           </header>
-          <textarea aria-label={active} value={draft} onChange={event => { setDraft(event.target.value); setNotice(undefined) }} />
+          {mode === 'edit' ? (
+            <textarea
+              ref={editorRef}
+              aria-label={active}
+              value={draft}
+              onChange={(event) => {
+                setDraft(event.target.value)
+                setCaret(event.target.selectionStart)
+                setNotice(undefined)
+              }}
+              onSelect={event => { setCaret(event.currentTarget.selectionStart) }}
+              onKeyUp={event => { setCaret(event.currentTarget.selectionStart) }}
+              onClick={event => { setCaret(event.currentTarget.selectionStart) }}
+            />
+          ) : (
+            <article
+              className="writer-preview"
+              aria-label={`${active} ${t('modePreview')}`}
+              dangerouslySetInnerHTML={{ __html: markdownToSafeHtml(draft) }}
+            />
+          )}
+          <footer className="writer-status">
+            <span>{t('statusCursor').replace('{line}', String(line)).replace('{col}', String(col))}</span>
+            <span aria-hidden="true">·</span>
+            <span>{t('statusChars').replace('{n}', String(countCharacters(draft)))}</span>
+            <span aria-hidden="true">·</span>
+            <span>{eolLabel(eol)}</span>
+          </footer>
         </>}
       </main>
     </section>
