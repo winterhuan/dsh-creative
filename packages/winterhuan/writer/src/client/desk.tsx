@@ -295,11 +295,10 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const saveRef = useRef<() => void>(() => {})
   const searchSeq = useRef(0)
 
+  // Prefer libraries when any exist; otherwise projects (both empty → projects).
+  // Honor an explicit tab pick even when that side's count is 0 so empty states stay switchable.
   const preferredView: WriterWorkspaceView = libraries.length > 0 ? 'libraries' : 'projects'
-  const view: WriterWorkspaceView = (
-    (viewPick === 'libraries' && libraries.length > 0)
-    || (viewPick === 'projects' && projects.length > 0)
-  ) ? viewPick : preferredView
+  const view: WriterWorkspaceView = viewPick ?? preferredView
   const roots = view === 'libraries' ? libraries : projects
   const rootPathsKey = roots.map(node => node.path).join('\0')
   const dirty = draft !== saved

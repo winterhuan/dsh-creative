@@ -226,3 +226,37 @@ it('shows a conflict dialog with keep and reload actions', async () => {
   })
   expect((screen.getByRole('button', { name: zh.save }) as HTMLButtonElement).disabled).toBe(true)
 })
+
+it('lets empty tabs switch view and empty copy when both sides are 0', async () => {
+  const emptyRemote: ClientRemote = {
+    workspaceFiles: {
+      list: async (_session: string, path: string) => ({
+        ok: true as const,
+        value: { path, entries: [], truncated: false },
+      }),
+      readBytes: async () => ({ ok: false as const, error: { code: 'unavailable', message: 'n/a' } }),
+    },
+  } as ClientRemote
+  render(<WriterDesk sessionId={SessionId('session-empty')} cwd={cwd} remote={emptyRemote} t={key => zh[key]} visible />)
+
+  const librariesTab = await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
+  const projectsTab = screen.getByRole('tab', { name: new RegExp(zh.projects) })
+  expect(librariesTab.textContent).toContain('0')
+  expect(projectsTab.textContent).toContain('0')
+  // Default when both empty: writing projects.
+  expect(projectsTab.getAttribute('aria-selected')).toBe('true')
+  expect(librariesTab.getAttribute('aria-selected')).toBe('false')
+  expect(await screen.findByText(zh.emptyProjects)).toBeTruthy()
+
+  fireEvent.click(librariesTab)
+  expect(librariesTab.getAttribute('aria-selected')).toBe('true')
+  expect(projectsTab.getAttribute('aria-selected')).toBe('false')
+  expect(await screen.findByText(zh.emptyLibraries)).toBeTruthy()
+  expect(screen.queryByText(zh.emptyProjects)).toBeNull()
+
+  fireEvent.click(projectsTab)
+  expect(projectsTab.getAttribute('aria-selected')).toBe('true')
+  expect(librariesTab.getAttribute('aria-selected')).toBe('false')
+  expect(await screen.findByText(zh.emptyProjects)).toBeTruthy()
+  expect(screen.queryByText(zh.emptyLibraries)).toBeNull()
+})
