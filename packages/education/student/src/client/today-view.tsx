@@ -6,7 +6,7 @@ import { FigureView } from './figure-view.tsx'
 import { classroomUrl } from './lessons-view.tsx'
 import { MasteryDots } from './mastery-dots.tsx'
 import { feynmanPrompt, hintPromptFor, stuckPrompt } from './prompts.ts'
-import { assistKeys, clock, day, focusKeys, intensityHelpKeys, intensityKeys, planKeys, reasonText, reminderKeys, type Activity, type Mode, type ScopeChoice, type Subject } from './display.ts'
+import { assistKeys, day, focusKeys, intensityHelpKeys, intensityKeys, planKeys, reasonText, reminderKeys, type Activity, type Mode, type ScopeChoice, type Subject } from './display.ts'
 import type { Dashboard } from '../dashboard.ts'
 
 type Study = NonNullable<Dashboard['study']>
@@ -15,9 +15,8 @@ type Goal = { id: string; title: string }
 type Act = (command: Command, withTutor?: boolean, prompt?: string) => Promise<void>
 
 /** The learner's page: one recommended next step, the current question, and a folded set of other ways to practise. */
-export function TodayView({ study, now, subject, activity, setActivity, goal, clearGoal, curriculum, selectedObjectiveId, chooseGoal, intensityLabel, openParent, openCheckins, scope, setScope, scopeUnits, start, startRecommended, startDiagnosis, chosenIntensity, disabled, running, act, tutor, t, prompts, lessons, onInterestPractice, onOpenLesson, onClearDue, onOpenClassroom }: {
+export function TodayView({ study, subject, activity, setActivity, goal, clearGoal, curriculum, selectedObjectiveId, chooseGoal, intensityLabel, openParent, openCheckins, scope, setScope, scopeUnits, start, startRecommended, startDiagnosis, chosenIntensity, disabled, running, act, tutor, t, prompts, lessons, onInterestPractice, onOpenLesson, onClearDue, onOpenClassroom }: {
   study: Study
-  now: number
   subject: Subject
   activity: Activity
   setActivity: (activity: Activity) => void
@@ -67,8 +66,6 @@ export function TodayView({ study, now, subject, activity, setActivity, goal, cl
     ?? lessons.find(item => item.status === 'ready' && classroomUrl(item.url))
   const readyUrl = classroomUrl(ready?.url)
   const goalPractice = recommendation?.kind === 'practice' || recommendation?.kind === 'learn' || recommendation?.kind === 'preview' || (recommendation?.kind === 'review' && recommendation.objectiveId !== undefined)
-  const todayElapsed = study.time?.todayElapsed ?? clock(0)
-  const blockElapsed = ownSession ? (study.time?.blockElapsed ?? clock(Math.max(0, now - active.startedAt))) : null
   return <>
     {(generating || readyUrl) && <section>
       {generating && <p role="status">{t('openmaicGenerating')} · {generating.title}</p>}
@@ -76,11 +73,10 @@ export function TodayView({ study, now, subject, activity, setActivity, goal, cl
       {ready && <p className="student-muted">{ready.title}</p>}
     </section>}
     <section className="student-status"><p>{study.profile.nickname} · {t('todayStars')}: {study.todayStars}</p>
-      <p className="student-timer">{t('todayElapsed')}: {todayElapsed} · {t('due')}: {study.dueCount} · {t('weakPoints')}: {study.weakPoints.length}</p>
+      <p>{t('due')}: {study.dueCount} · {t('weakPoints')}: {study.weakPoints.length}</p>
       {schoolUnit && <p>{t('schoolFrontier')}: {schoolUnit.name} · {t(progress?.posture === 'catch-up' ? 'catchUp' : 'keepUp')}{progress?.pace === 'review' ? ` · ${t('reviewWeek')}` : ''} · {t('homeProgress')}: {homeUnit?.name ?? t('homeNotStarted')}</p>}
-      {schoolUnit && <p>{t('schoolHere')}</p>}
       <p className="student-muted">{t(subject === 'chinese' ? 'chineseMethod' : subject === 'math' ? 'mathMethod' : 'englishMethod')}</p>
-      {ownSession ? <><p>{t(active.subject)} · {t(active.mode)}</p>{blockElapsed && <p className="student-timer">{t('blockElapsed')}: {blockElapsed}</p>}</>
+      {ownSession ? <p>{t(active.subject)} · {t(active.mode)}</p>
         : active && active.subject !== subject ? <p className="student-muted">{t('otherSubjectActive').replace('{subject}', t(active.subject))}</p> : null}
     </section>
     {ownSession && <>

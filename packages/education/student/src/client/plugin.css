@@ -104,7 +104,6 @@
 .student-desk .student-check { flex-direction: row; align-items: flex-start; }
 .student-desk .student-check input { flex: 0 0 auto; }
 .student-desk img { width: 100%; max-height: 240px; object-fit: contain; border-radius: 8px; background: var(--dsw-alias-bg-base); }
-.student-desk .student-timer { font-variant-numeric: tabular-nums; font-weight: 500; }
 .student-status { gap: 6px; }
 .student-desk .student-question {
   padding: 12px;
@@ -167,24 +166,32 @@
   font-weight: 500;
 }
 .student-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.student-mindmap { display: flex; flex-direction: column; gap: 12px; }
+.student-map-inline {
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-left: 3px solid var(--dsw-alias-state-business-primary);
+  background: var(--dsw-alias-bg-layer-1, var(--dsw-alias-bg-base));
+}
+.student-map-links { margin-top: 8px; }
 .student-mindmap-unit {
   padding: 10px;
+  margin: 8px 0;
   border-radius: 8px;
   border: 1px solid var(--dsw-alias-border-l2);
   background: var(--dsw-alias-bg-base);
 }
-.student-mindmap-root { font-weight: 500; margin: 0 0 8px; }
-.student-mindmap-branch { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 2px solid var(--dsw-alias-border-l2); display: flex; flex-direction: column; gap: 8px; }
+.student-mindmap-unit > summary { font-weight: 500; cursor: pointer; }
+.student-mindmap-branch { list-style: none; margin: 8px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(--dsw-alias-border-l2); display: flex; flex-direction: column; gap: 6px; }
 .student-mindmap-node { display: flex; flex-direction: column; gap: 4px; }
-.student-mindmap-concept { text-align: left; display: flex; align-items: center; gap: 6px; }
+.student-mindmap-concept { text-align: left; display: flex; align-items: center; gap: 6px; width: 100%; }
+.student-mindmap-concept[aria-pressed='true'] { background: var(--dsw-alias-bg-layer-2, transparent); }
 .student-mindmap-concept.student-level-mastered { box-shadow: inset 3px 0 0 var(--dsw-alias-state-success-primary); }
 .student-mindmap-concept.student-level-practising { box-shadow: inset 3px 0 0 var(--dsw-alias-state-business-primary); }
 .student-mindmap-concept.student-level-stalled { box-shadow: inset 3px 0 0 var(--dsw-alias-state-warn-primary); }
 .student-mindmap-concept.student-level-weak,
 .student-mindmap-concept.student-level-due { box-shadow: inset 3px 0 0 var(--dsw-alias-state-error-primary); }
-.student-mindmap-links,
-.student-mindmap-goals { list-style: none; margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; }
 .student-figure svg { width: 100%; height: auto; max-height: 220px; color: var(--dsw-alias-label-primary); }
 .student-figure circle,
 .student-figure rect,
