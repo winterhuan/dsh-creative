@@ -56,15 +56,34 @@
   border-right: 1px solid var(--writer-border);
   padding: 8px;
 }
-.writer-list ul {
+.writer-list ul,
+.writer-tree {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.writer-list li + li { margin-top: 4px; }
+.writer-list li + li { margin-top: 2px; }
 .writer-list button {
   width: 100%;
   text-align: left;
+}
+.writer-tree-file,
+.writer-tree-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: calc(4px + var(--writer-indent, 0px)) !important;
+}
+.writer-tree-chevron {
+  display: inline-block;
+  width: 0.9em;
+  flex: 0 0 auto;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--dsw-alias-label-secondary);
+}
+.writer-tree-folder > ul {
+  margin-top: 2px;
 }
 .writer-editor {
   display: flex;

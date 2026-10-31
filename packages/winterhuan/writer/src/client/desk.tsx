@@ -1,9 +1,18 @@
-/** Setting, outline, chapter list, and the prose editor. */
+/** Setting, outline, chapter tree, and the prose editor. */
 import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { useEffect, useState } from 'react'
-import { bookLabel, collectBookFiles, findBooks, type WriterFile, type WriterSection } from './library.ts'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import {
+  bookLabel,
+  buildWriterTree,
+  collectBookFiles,
+  defaultWriterTreeExpanded,
+  findBooks,
+  writerTreeExpandKey,
+  type WriterFile,
+  type WriterTreeNode,
+} from './library.ts'
 import type { zh } from './locales.ts'
 import { listWorkspace, readWorkspaceText, remoteMessage } from './read.ts'
 import { saveWriterFile, type WriterSave } from './save.ts'
@@ -28,13 +37,66 @@ async function readDir(remote: ClientRemote, sessionId: SessionId, cwd: string, 
   }
 }
 
+function TreeNodes({
+  nodes,
+  depth,
+  expanded,
+  selected,
+  onToggle,
+  onSelect,
+}: {
+  readonly nodes: readonly WriterTreeNode[]
+  readonly depth: number
+  readonly expanded: Readonly<Record<string, boolean>>
+  readonly selected: string | undefined
+  readonly onToggle: (key: string, open: boolean) => void
+  readonly onSelect: (path: string) => void
+}): ReactNode {
+  return nodes.map((node) => {
+    const indent = { '--writer-indent': `${String(depth * 12)}px` } as CSSProperties
+    if (node.kind === 'file') {
+      return <li key={node.path}>
+        <button
+          type="button"
+          className="writer-tree-file"
+          style={indent}
+          title={node.path}
+          aria-current={node.path === selected ? 'true' : undefined}
+          onClick={() => { onSelect(node.path) }}
+        >{node.name}</button>
+      </li>
+    }
+    const key = writerTreeExpandKey(node)
+    const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, selected)
+    return <li key={key} className="writer-tree-folder">
+      <button
+        type="button"
+        className="writer-tree-toggle"
+        style={indent}
+        aria-expanded={open}
+        onClick={() => { onToggle(key, !open) }}
+      >
+        <span aria-hidden="true" className="writer-tree-chevron">{open ? '▼' : '▶'}</span>
+        <span>{node.name}</span>
+      </button>
+      {open && node.children.length > 0 && <ul>{TreeNodes({
+        nodes: node.children,
+        depth: depth + 1,
+        expanded,
+        selected,
+        onToggle,
+        onSelect,
+      })}</ul>}
+    </li>
+  })
+}
+
 /**
  * The writing sidebar body for one session.
  * @param props - session, workspace root, remote, and copy.
  * @returns the desk.
  */
 export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
-  const [section, setSection] = useState<WriterSection>('chapter')
   const [books, setBooks] = useState<string[]>([])
   const [book, setBook] = useState('')
   const [files, setFiles] = useState<WriterFile[]>([])
@@ -47,8 +109,12 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const [conflict, setConflict] = useState(false)
   const [busy, setBusy] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const shown = files.filter(file => file.section === section)
-  const selected = shown.some(file => file.path === active) ? active : shown[0]?.path
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const tree = useMemo(
+    () => buildWriterTree(files, book, { setting: t('setting'), outline: t('outline'), chapters: t('chapters') }),
+    [files, book, t],
+  )
+  const selected = files.some(file => file.path === active) ? active : files[0]?.path
 
   useEffect(() => {
     if (!visible) return undefined
@@ -127,22 +193,27 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     }).finally(() => { setBusy(false) })
   }
 
-  const sections: readonly { id: WriterSection, label: string }[] = [
-    { id: 'setting', label: t('setting') },
-    { id: 'outline', label: t('outline') },
-    { id: 'chapter', label: t('chapters') },
-  ]
+  const onToggle = (key: string, open: boolean): void => {
+    setExpanded(current => ({ ...current, [key]: open }))
+  }
+
   return <div className="writer-desk" data-workbench="writer">
     <header className="writer-heading">
       <span>{t('title')}</span>
-      {books.length > 1 && <label>{t('book')}<select aria-label={t('book')} value={book} onChange={event => { setBook(event.target.value); setActive(undefined) }}>{books.map(item => <option key={item || 'root'} value={item}>{bookLabel(item, t('workspaceBook'))}</option>)}</select></label>}
-      <nav aria-label={t('description')}>
-        {sections.map(item => <button key={item.id} type="button" aria-pressed={section === item.id} onClick={() => setSection(item.id)}>{item.label}</button>)}
-      </nav>
+      {books.length > 1 && <label>{t('book')}<select aria-label={t('book')} value={book} onChange={event => { setBook(event.target.value); setActive(undefined); setExpanded({}) }}>{books.map(item => <option key={item || 'root'} value={item}>{bookLabel(item, t('workspaceBook'))}</option>)}</select></label>}
       <button type="button" className="writer-reload" onClick={() => { setReloadKey(value => value + 1) }}>{t('reload')}</button>
     </header>
     <aside className="writer-list">
-      {shown.length === 0 ? <p className="writer-empty">{t('empty')}</p> : <ul>{shown.map(file => <li key={file.path}><button type="button" aria-current={file.path === selected} onClick={() => { setActive(file.path) }}>{file.name}</button></li>)}</ul>}
+      {tree.length === 0 ? <p className="writer-empty">{t('empty')}</p> : <nav aria-label={t('tree')}>
+        <ul className="writer-tree">{TreeNodes({
+          nodes: tree,
+          depth: 0,
+          expanded,
+          selected,
+          onToggle,
+          onSelect: path => { setActive(path) },
+        })}</ul>
+      </nav>}
       {truncated && <p className="writer-muted">{t('truncated')}</p>}
     </aside>
     <main className="writer-editor">
