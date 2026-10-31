@@ -1,5 +1,5 @@
 ---
-description: "Add a writing preset that mounts oh-story skills and a sidebar for the setting, outline, and chapters."
+description: "Add a writing preset that mounts oh-story skills and a Dashboard-aligned sidebar for libraries and writing projects."
 kind: "package-bundle"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-This bundle adds 写作模式 to a DSH profile. A new session can use the oh-story skills for serials, short stories, and revision, and the right sidebar can edit the setting, outline, and chapters. Skills are copied into the workspace `.agents/skills` directory by default, without replacing files that already exist. Set `skillMount` to `bundled` and restart to read the package `skills` directory instead. The sidebar does not embed the oh-story dashboard.
+This bundle adds 写作模式 to a DSH profile. A new session can use the oh-story skills for serials, short stories, and revision, and the right sidebar browses libraries and writing projects with Dashboard-aligned navigation and editable text files. Skills are copied into the workspace `.agents/skills` directory by default, without replacing files that already exist. Set `skillMount` to `bundled` and restart to read the package `skills` directory instead. The sidebar does not embed or start the oh-story dashboard.
 
 ## Table of Contents
 
@@ -68,7 +68,7 @@ These packaged skills are author-triggered. They do not block chapter writing.
 
 ### Use the sidebar
 
-Open 写作模式, then open 写作 from the right sidebar. The sidebar lists 设定, 大纲, and chapters for a book in the session workspace, and saves the open markdown file. A save sends the version from the last read. If the file changed on disk, the save is refused until you load the disk copy. Lists and reads use the session `workspaceFiles` remote. The sidebar does not start the oh-story dashboard.
+Open 写作模式, then open 写作 from the right sidebar. Navigation matches the oh-story Dashboard: Libraries / Projects tabs (with counts), a lazy real directory tree (~200-entry pages), and editable extensions `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`. A save sends the version from the last read. If the file changed on disk, the save is refused until you load the disk copy. Lists and reads use the session `workspaceFiles` remote; the sidebar does **not** start a local dashboard-server. Delete, ⌘K search, and preview are not wired yet.
 
 On DSH, `story-setup` treats the host as `dsh` and does not deploy Claude Code `.claude/hooks` or Codex `.codex/hooks.json`. Other hosts still follow their own deploy files when you ask for them.
 
@@ -114,7 +114,7 @@ The persona is stable for the life of the preset revision. Copying skills into `
 
 ## Known Limitations and Deferred Work
 
-- The sidebar edits markdown under 设定, 大纲, 细纲, and 正文 only. It does not create a book, run chapter guards, or list files through a private read API. `workspace` mode will not replace an existing skill directory until `/writer-sync-skills`. A project copy still outranks a bundled skill if both are present after an earlier copy. Zhuque runs only when `story-zhuque` is invoked and the named environment variable is set. Cover image generation needs `GPT_IMAGE_API_KEY` (or the configured name) only when the author asks for an image; prompt-only delivery does not. This environment did not install the bundle into a live DSH profile.
+- The sidebar mirrors Dashboard library/project discovery and editable extensions, without starting a local dashboard-server or adopting the zs theme. Delete, ⌘K search, preview, and line numbers are still deferred. It does not create a book, run chapter guards, or list files through a private read API. `workspace` mode will not replace an existing skill directory until `/writer-sync-skills`. A project copy still outranks a bundled skill if both are present after an earlier copy. Zhuque runs only when `story-zhuque` is invoked and the named environment variable is set. Cover image generation needs `GPT_IMAGE_API_KEY` (or the configured name) only when the author asks for an image; prompt-only delivery does not. This environment did not install the bundle into a live DSH profile.
 
 <a id="dev-note"></a>
 ### Dev Note

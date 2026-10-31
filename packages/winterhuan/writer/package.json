@@ -1,7 +1,7 @@
 {
   "name": "@winterhuan/dsh-writer",
   "version": "0.1.0",
-  "description": "Thin DSH writing mode that mounts oh-story skills and a sidebar for settings, outline, and chapters",
+  "description": "Thin DSH writing mode that mounts oh-story skills and a Dashboard-aligned workspace sidebar",
   "type": "module",
   "license": "MIT",
   "publishConfig": {

@@ -132,3 +132,36 @@
   cursor: default;
   opacity: 0.55;
 }
+
+.writer-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.writer-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.6;
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+}
+.writer-tree-file-disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.writer-tree-status,
+.writer-tree-status-action {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+.writer-tree-status-action {
+  width: 100%;
+  text-align: left;
+  border-style: dashed !important;
+}
+

@@ -58,6 +58,6 @@ it('saves a chapter when the version matches and rejects a stale write', async (
 it('refuses paths outside the book and untrusted hosts', async () => {
   const { request } = fixture()
   expect((await request('../秘密.md', { content: 'x', baseVersion: 'v1' })).status).toBe(403)
-  expect((await request('novel/notes.md', { content: 'x', baseVersion: 'v1' })).status).toBe(403)
+  expect((await request('novel/cover.png', { content: 'x', baseVersion: 'v1' })).status).toBe(403)
   expect((await request('novel/正文/第001章.md', { content: 'x', baseVersion: 'v1' }, 'evil.example')).status).toBe(403)
 })

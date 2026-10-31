@@ -89,7 +89,7 @@ async function handle(context: Context, request: IncomingMessage, response: Serv
   if (url.pathname !== '/writer/file' || request.method !== 'PUT') throw new WriterHttpError(404, '写作接口不存在。')
   const sessionId = url.searchParams.get('sessionId') ?? ''
   const path = url.searchParams.get('path') ?? ''
-  if (!isEditableWriterPath(path)) throw new WriterHttpError(403, '只能保存设定、大纲或正文章节。')
+  if (!isEditableWriterPath(path)) throw new WriterHttpError(403, '只能保存侧栏允许的文本文件（md/txt/json/yaml/yml/toml）。')
   const input = await jsonBody(request, options.maxBytes * 2 + 1024)
   if (typeof input.content !== 'string') throw new WriterHttpError(400, 'content 必须是字符串。')
   if (Buffer.byteLength(input.content) > options.maxBytes) throw new WriterHttpError(413, '文件超过侧栏大小限制。')

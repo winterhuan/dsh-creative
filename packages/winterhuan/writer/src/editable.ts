@@ -1,11 +1,35 @@
 /** Workspace-relative paths the writing sidebar may save. */
 
+/** File extensions Dashboard and the sidebar treat as editable. */
+export const EDITABLE_EXTENSIONS: ReadonlySet<string> = new Set(['.md', '.txt', '.json', '.yaml', '.yml', '.toml'])
+
 export type WriterSection = 'setting' | 'outline' | 'chapter'
 
 /**
- * Classify one workspace-relative markdown path.
+ * Lowercase extension of a basename, including the leading dot.
+ * @param name - file basename or relative path.
+ * @returns extension such as `.md`, or `''` when none.
+ */
+export function writerExtension(name: string): string {
+  const base = name.includes('/') ? (name.split('/').pop() ?? name) : name
+  const index = base.lastIndexOf('.')
+  return index >= 0 ? base.slice(index).toLowerCase() : ''
+}
+
+/**
+ * Whether a basename uses an editable extension.
+ * @param name - file basename or relative path.
+ * @returns true for md / txt / json / yaml / yml / toml.
+ */
+export function isEditableWriterName(name: string): boolean {
+  return EDITABLE_EXTENSIONS.has(writerExtension(name))
+}
+
+/**
+ * Classify one workspace-relative markdown path into a book section.
+ * Kept for callers that still want 设定 / 大纲 / 正文 grouping; the save gate is extension-based.
  * @param relativePath - path relative to the session workspace, `/` separated.
- * @returns the sidebar section, or undefined when the path is not part of the book.
+ * @returns the sidebar section, or undefined when the path is not part of the book markers.
  */
 export function classifyWriterPath(relativePath: string): WriterSection | undefined {
   if (!safeRelative(relativePath) || !relativePath.endsWith('.md')) return undefined
@@ -24,7 +48,7 @@ export function classifyWriterPath(relativePath: string): WriterSection | undefi
  * @returns whether a save may target it.
  */
 export function isEditableWriterPath(path: string): boolean {
-  return classifyWriterPath(path) !== undefined
+  return safeRelative(path) && isEditableWriterName(path)
 }
 
 /**
