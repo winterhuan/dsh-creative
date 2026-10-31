@@ -2,18 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "packages/creative/story/tsconfig.host.json"
-    },
-    {
-      "path": "packages/creative/video-recap/tsconfig.host.json"
-    },
-    {
-      "path": "packages/creative/short-drama/tsconfig.host.json"
-    },
-    {
-      "path": "./packages/creative/novel-to-game/tsconfig.host.json"
-    },
-    {
       "path": "./packages/skill/skill-viewer"
     },
     {
