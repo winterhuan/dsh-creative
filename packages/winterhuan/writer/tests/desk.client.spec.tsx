@@ -69,8 +69,9 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
 
   expect(container.querySelector('.writer-rail')).toBeTruthy()
   expect(container.querySelector('.writer-stage')).toBeTruthy()
-  expect(container.querySelector('.writer-search-slot input')?.hasAttribute('disabled')).toBe(true)
-  expect(screen.getByPlaceholderText(zh.searchSoon)).toBeTruthy()
+  const search = container.querySelector('.writer-search-slot input') as HTMLInputElement
+  expect(search.disabled).toBe(false)
+  expect(screen.getByPlaceholderText(zh.search)).toBeTruthy()
   expect(screen.getByText(zh.localWorkspace)).toBeTruthy()
 
   const librariesTab = await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
@@ -132,4 +133,42 @@ it('asks before switching files when the draft is dirty', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'meta.json' }))
   expect(await screen.findByRole('textbox', { name: 'novel/meta.json' })).toBeTruthy()
   confirm.mockRestore()
+})
+
+it('searches filenames, previews markdown, and saves with ⌘S', async () => {
+  const fetchMock = vi.fn(async () => new Response(
+    JSON.stringify({ path: 'novel/设定/世界观.md', bytes: 6, version: 'v2' }),
+    { status: 200 },
+  ))
+  vi.stubGlobal('fetch', fetchMock)
+  const { container } = render(<WriterDesk sessionId={SessionId('session-3')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+
+  fireEvent.click(await screen.findByRole('tab', { name: new RegExp(zh.projects) }))
+  const search = screen.getByLabelText(zh.searchLabel)
+  fireEvent.change(search, { target: { value: '世界观' } })
+  expect(await screen.findByRole('button', { name: '世界观.md' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: '世界观.md' }))
+  const editor = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
+  expect(screen.getByText(zh.dirtySaved)).toBeTruthy()
+  expect(screen.getByText(/LF/)).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: zh.modePreview }))
+  expect(container.querySelector('.writer-preview')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: zh.modeEdit }))
+
+  const editArea = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
+  fireEvent.change(editArea, { target: { value: '新设定' } })
+  expect(screen.getByText(zh.dirtyPending)).toBeTruthy()
+  fireEvent.keyDown(document, { key: 's', metaKey: true })
+  await vi.waitFor(() => { expect(fetchMock).toHaveBeenCalled() })
+  const [, init] = fetchMock.mock.calls[0] ?? []
+  expect(JSON.parse(String(init?.body))).toEqual({ content: '新设定', baseVersion: 'v1' })
+})
+
+it('focuses search on ⌘K when the chat composer is not focused', async () => {
+  render(<WriterDesk sessionId={SessionId('session-4')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+  const search = await screen.findByLabelText(zh.searchLabel)
+  expect(document.activeElement).not.toBe(search)
+  fireEvent.keyDown(document, { key: 'k', metaKey: true })
+  expect(document.activeElement).toBe(search)
 })
