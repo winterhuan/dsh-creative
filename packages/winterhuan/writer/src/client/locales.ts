@@ -69,7 +69,11 @@ export const zh = {
   healthFailed: '扫描失败',
   scanFailed: '工作区扫描失败，点重试再试一次',
   retryScan: '重试',
+  collapseRail: '隐藏文件树',
+  expandRail: '显示文件树',
+  resizeRail: '拖动调整文件树宽度',
 }
+
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap { writerDesk: keyof typeof zh }
@@ -141,4 +145,8 @@ export const en: { [Key in keyof typeof zh]: string } = {
   healthFailed: 'Scan failed',
   scanFailed: 'Workspace scan failed — retry',
   retryScan: 'Retry',
+  collapseRail: 'Hide file tree',
+  expandRail: 'Show file tree',
+  resizeRail: 'Drag to resize the file tree',
 }
+

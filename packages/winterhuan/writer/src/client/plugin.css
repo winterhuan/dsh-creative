@@ -1,8 +1,9 @@
 .writer-desk {
   --writer-border: var(--dsw-alias-border-l2);
   --writer-accent: var(--dsw-alias-brand-primary);
+  --writer-rail-width: 220px;
   display: grid;
-  grid-template-columns: clamp(136px, 38%, 280px) minmax(0, 1fr);
+  grid-template-columns: var(--writer-rail-width) 5px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   min-width: 0;
@@ -13,6 +14,10 @@
   font: 13px/1.5 var(--dsw-font-family);
 }
 
+.writer-desk[data-rail-collapsed='true'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 /* Left rail: tabs → search slot → tree → footnote (Dashboard IA, DSH tokens). */
 .writer-rail {
   display: grid;
@@ -21,6 +26,66 @@
   min-height: 0;
   border-right: 1px solid var(--writer-border);
   background: var(--dsw-alias-bg-base);
+}
+
+.writer-rail-resize {
+  position: relative;
+  z-index: 2;
+  width: 5px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid transparent;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.writer-rail-resize::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 1px;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.writer-rail-resize:hover::after,
+.writer-rail-resize:focus-visible::after {
+  background: var(--writer-accent);
+  opacity: 0.55;
+}
+
+.writer-rail-resize:focus-visible {
+  outline: none;
+}
+
+.writer-rail-toggle {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--writer-border);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-secondary);
+  font: 14px/1 var(--dsw-font-family);
+  cursor: pointer;
+}
+
+.writer-rail-toggle:hover {
+  color: var(--dsw-alias-label-primary);
+  border-color: var(--writer-accent);
+}
+
+.writer-rail-toggle:focus-visible {
+  outline: 2px solid var(--writer-accent);
+  outline-offset: 1px;
 }
 
 .writer-tabs {
@@ -711,8 +776,8 @@
 }
 
 @media (max-width: 360px) {
-  .writer-desk {
-    grid-template-columns: minmax(120px, 42%) minmax(0, 1fr);
+  .writer-desk:not([data-rail-collapsed='true']) {
+    grid-template-columns: minmax(120px, 42%) 5px minmax(0, 1fr);
   }
 
   .writer-counts,

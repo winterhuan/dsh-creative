@@ -2,7 +2,7 @@
 import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import { writerExtension } from '../editable.ts'
 import {
@@ -38,6 +38,16 @@ import {
   type WriterSearchHit,
   type WriterSearchResult,
 } from './search.ts'
+import {
+  WRITER_RAIL_MAX_WIDTH,
+  WRITER_RAIL_MIN_WIDTH,
+  clampRailWidth,
+  readRailChrome,
+  setRailCollapsed,
+  setRailWidth,
+  writeRailChrome,
+  type WriterRailChrome,
+} from './rail-chrome.ts'
 import {
   workspaceShortName,
   writerScanHealth,
@@ -294,6 +304,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const saveRef = useRef<() => void>(() => {})
   const searchSeq = useRef(0)
+  const [railChrome, setRailChrome] = useState<WriterRailChrome>(() => readRailChrome())
+  const railDrag = useRef<{ pointerId: number, startX: number, startWidth: number } | undefined>(undefined)
 
   // Prefer libraries when any exist; otherwise projects (both empty → projects).
   // Honor an explicit tab pick even when that side's count is 0 so empty states stay switchable.
@@ -577,9 +589,83 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const tabPanelId = 'writer-workspace-panel'
   const librariesTabId = 'writer-tab-libraries'
   const projectsTabId = 'writer-tab-projects'
+  const railId = 'writer-rail'
+  const railCollapsed = railChrome.collapsed
+  const railWidth = railChrome.width
 
-  return <div className="writer-desk" data-workbench="writer">
-    <aside className="writer-rail" aria-label={t('tree')}>
+  const persistRail = (next: WriterRailChrome): void => {
+    setRailChrome(next)
+    writeRailChrome(next)
+  }
+
+  const toggleRail = (): void => {
+    persistRail(setRailCollapsed(railChrome))
+  }
+
+  const onRailResizePointerDown = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    if (event.button !== 0 || railCollapsed) return
+    event.preventDefault()
+    railDrag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startWidth: railWidth,
+    }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  const onRailResizePointerMove = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    const drag = railDrag.current
+    if (drag === undefined || drag.pointerId !== event.pointerId) return
+    const delta = event.clientX - drag.startX
+    const nextWidth = clampRailWidth(drag.startWidth + delta)
+    setRailChrome(current => setRailWidth(current, nextWidth))
+  }
+
+  const endRailResize = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    const drag = railDrag.current
+    if (drag === undefined || drag.pointerId !== event.pointerId) return
+    railDrag.current = undefined
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    setRailChrome((current) => {
+      writeRailChrome(current)
+      return current
+    })
+  }
+
+  const onRailResizeKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
+    if (railCollapsed) return
+    const step = event.shiftKey ? 32 : 16
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      persistRail(setRailWidth(railChrome, railWidth - step))
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      persistRail(setRailWidth(railChrome, railWidth + step))
+    } else if (event.key === 'Home') {
+      event.preventDefault()
+      persistRail(setRailWidth(railChrome, WRITER_RAIL_MIN_WIDTH))
+    } else if (event.key === 'End') {
+      event.preventDefault()
+      persistRail(setRailWidth(railChrome, WRITER_RAIL_MAX_WIDTH))
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      toggleRail()
+    }
+  }
+
+  const deskStyle = {
+    ['--writer-rail-width' as string]: `${String(railWidth)}px`,
+  } as CSSProperties
+
+  return <div
+    className="writer-desk"
+    data-workbench="writer"
+    data-rail-collapsed={railCollapsed ? 'true' : undefined}
+    style={deskStyle}
+  >
+    <aside id={railId} className="writer-rail" aria-label={t('tree')} hidden={railCollapsed || undefined}>
       <nav className="writer-tabs" aria-label={t('workspaceTabs')} role="tablist">
         <button
           type="button"
@@ -672,8 +758,38 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         <p title={`${cwd} · ${t('localWorkspace')}`}>{shortName} · {healthText} · {t('localWorkspace')}</p>
       </footer>
     </aside>
+    <div
+      className="writer-rail-resize"
+      role="separator"
+      tabIndex={railCollapsed ? -1 : 0}
+      aria-orientation="vertical"
+      aria-label={t('resizeRail')}
+      aria-valuemin={WRITER_RAIL_MIN_WIDTH}
+      aria-valuemax={WRITER_RAIL_MAX_WIDTH}
+      aria-valuenow={railWidth}
+      aria-controls={railId}
+      hidden={railCollapsed || undefined}
+      onPointerDown={onRailResizePointerDown}
+      onPointerMove={onRailResizePointerMove}
+      onPointerUp={endRailResize}
+      onPointerCancel={endRailResize}
+      onDoubleClick={(event) => {
+        event.preventDefault()
+        toggleRail()
+      }}
+      onKeyDown={onRailResizeKeyDown}
+    />
     <section className="writer-stage">
       <header className="writer-stage-heading">
+        <button
+          type="button"
+          className="writer-rail-toggle"
+          aria-expanded={!railCollapsed}
+          aria-controls={railId}
+          aria-label={railCollapsed ? t('expandRail') : t('collapseRail')}
+          title={railCollapsed ? t('expandRail') : t('collapseRail')}
+          onClick={toggleRail}
+        >{railCollapsed ? '›' : '‹'}</button>
         <div className="writer-masthead" aria-label={t('masthead')}>
           <span className="writer-workspace" title={cwd}>{shortName}</span>
           <span className="writer-counts" title={t('filesCountHint')}>{countsText}</span>
