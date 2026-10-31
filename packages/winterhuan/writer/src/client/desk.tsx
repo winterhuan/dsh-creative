@@ -712,7 +712,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
               <nav className="writer-breadcrumbs" aria-label={t('breadcrumbs')}>
                 {crumbs.map((part, index) => (
                   <span key={`${String(index)}-${part}`}>
-                    {index > 0 && <i aria-hidden="true">／</i>}
+                    {index > 0 && <i aria-hidden="true"> / </i>}
                     <span>{part}</span>
                   </span>
                 ))}
