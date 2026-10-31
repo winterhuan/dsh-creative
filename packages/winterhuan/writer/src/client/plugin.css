@@ -2,7 +2,7 @@
   --writer-border: var(--dsw-alias-border-l2);
   --writer-accent: var(--dsw-alias-brand-primary);
   display: grid;
-  grid-template-columns: clamp(148px, 40%, 280px) minmax(0, 1fr);
+  grid-template-columns: clamp(136px, 38%, 280px) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   min-width: 0;
@@ -156,6 +156,20 @@
   opacity: 0.7;
 }
 
+.writer-rail-dot[data-health='loading'] {
+  opacity: 0.4;
+}
+
+.writer-rail-dot[data-health='partial'] {
+  background: var(--dsw-alias-warning-label, var(--writer-accent));
+  opacity: 0.9;
+}
+
+.writer-rail-dot[data-health='failed'] {
+  background: var(--dsw-alias-danger-label, var(--writer-accent));
+  opacity: 1;
+}
+
 .writer-stage {
   display: flex;
   flex-direction: column;
@@ -173,8 +187,79 @@
   border-bottom: 1px solid var(--writer-border);
 }
 
+.writer-masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.writer-workspace {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.writer-counts {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.writer-health {
+  flex: 0 0 auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--dsw-alias-label-secondary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.writer-health[data-health='ok'] {
+  color: var(--dsw-alias-label-primary);
+}
+
+.writer-health[data-health='partial'] {
+  color: var(--dsw-alias-warning-label, var(--dsw-alias-label-primary));
+}
+
+.writer-health[data-health='failed'] {
+  color: var(--dsw-alias-danger-label, var(--dsw-alias-label-primary));
+}
+
+.writer-health[data-health='loading'] {
+  opacity: 0.75;
+}
+
 .writer-reload {
   margin-left: auto;
+}
+
+.writer-scan-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--writer-border);
+  border-radius: 6px;
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.writer-scan-banner p {
+  margin: 0;
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.writer-scan-banner-warn {
+  color: var(--dsw-alias-label-secondary);
 }
 
 .writer-stage-heading button,
@@ -449,3 +534,14 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
+
+@media (max-width: 360px) {
+  .writer-desk {
+    grid-template-columns: minmax(120px, 42%) minmax(0, 1fr);
+  }
+
+  .writer-counts {
+    display: none;
+  }
+}
+
