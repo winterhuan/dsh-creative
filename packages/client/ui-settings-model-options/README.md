@@ -27,7 +27,7 @@ Batch-enable the thinking and image capabilities a custom model supports, plus t
 
 ### Install
 
-Build this repository, then install the local bundle into an existing DSH web profile. Replace `model-options` with your profile name. DSH dependencies are pinned to `0.2.1-rc.3`; the bundle is independently installable and is not included by Creative.
+Build this repository, then install the local bundle into an existing DSH web profile. Replace `model-options` with your profile name. DSH dependencies are pinned to `0.2.1-rc.5`; the bundle is independently installable and is not included by Creative.
 
 ```sh
 dsh plugin --profile model-options add /Users/winter/dsh-creative/packages/client/ui-settings-model-options

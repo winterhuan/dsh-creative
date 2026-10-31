@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.2.1-rc.3; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-rc.5; re-sync when the DSH dependency version changes.
 /**
  * Shared browser platform modules. Seeding, bundling externals, and Vite
  * aliases consume this list so their module identities cannot drift.

@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.2.1-rc.3; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.1-rc.5; re-sync when the DSH dependency version changes.
 import { createHash } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
 import {

@@ -27,7 +27,7 @@ kind: "package-bundle"
 
 在新建或空白会话的原生模式菜单中选择**智能学习**，再从右侧栏打开对应工作台。工作台及领域技能、工具只在该模式中可用。已有会话保留原模式；要继续已有项目文件，请在该模式中新建会话。会话状态和项目文件不迁移。全局设置仍可使用。
 
-将已构建的包安装到 DSH `0.2.1-rc.3` 配置，打开独立的学习工作区并调用 `/study`。
+将已构建的包安装到 DSH `0.2.1-rc.5` 配置，打开独立的学习工作区并调用 `/study`。
 
 ```sh
 dsh plugin --profile student add /Users/winter/dsh-creative/packages/education/student

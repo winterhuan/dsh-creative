@@ -27,7 +27,7 @@ Guide a primary-school learner through short Chinese, mathematics and English ac
 
 In a new or blank conversation, select **智能学习** (Smart learning) from the native mode menu, then open its workbench in the right sidebar. The workbench and domain Skills/tools are available only in this mode. Existing conversations retain their selected mode; start a new conversation in this mode to continue existing project files. Session state and project files are not migrated. Global settings remain available.
 
-Install the built package into a DSH `0.2.1-rc.3` profile, open a dedicated learning workspace and invoke `/study`.
+Install the built package into a DSH `0.2.1-rc.5` profile, open a dedicated learning workspace and invoke `/study`.
 
 ```sh
 dsh plugin --profile student add /Users/winter/dsh-creative/packages/education/student

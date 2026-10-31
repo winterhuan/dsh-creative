@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-10-30。
+最后更新：2026-10-31。
 
 本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
 
@@ -22,6 +22,8 @@
 ## 1. 现状速览
 
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含四个独立创作插件、学生学习插件、项目默认模式插件、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
+
+2026-10-31 DSH 升级到 `0.2.1-rc.5`：现役包与根的 `@deepseek-ai/dsh-*` 依赖、`pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`、typert 补丁同步到 `0.2.1-rc.5`，子模块移到 `dsh-v0.2.1-rc.5`（`b830ec950f`）；`@deepseek-ai/cordis` 配套范围仍为 `~4.0.5`。第 8 节四个 rc.3 同步脚本与上游对照仅本地改动差异，更新复制版本标注。archive 下旧包与迁档删档未纳入本次提交。install 后未在本提交内跑全量 typecheck/build/test。
 
 2026-10-30 学生插件全面改造：取消时长/休息限制与 `timeNotice`；内置语数英习题知识库与工作区真题沉淀；复习曲线改为 1/7/16/35 天；西蒙四步、费曼小老师、任务微步骤与探究疑问；知识地图逻辑树；家长档案就地更新与面板自动确认；错题本面板增删改。见[全面改造](.agents/notes/implemented/feature/2026-10-30-student-overhaul.zh.md)。
 
@@ -47,7 +49,7 @@
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
-- 依赖 npm 上发布的 DSH `0.2.1-rc.3`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
+- 依赖 npm 上发布的 DSH `0.2.1-rc.5`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
 - 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
 - 11 个包都位于 `@winterhuan` scope 下。
 - 包目录采用 `packages/<组>/<包>` 两层布局。
@@ -161,7 +163,7 @@ dsh-creative/
 │   └── vitest-upstream-client.ts      仅测试用：从 upstream/ 读取 DSH 客户端源码（本仓库自有）
 ├── types/client-build-environment/    客户端构建期 process.env 的环境声明（上游拷贝）
 ├── patches/                           typert 生成器补丁（pnpm patchedDependencies）
-├── upstream/                          子模块，固定在 dsh-v0.2.1-rc.3；只读
+├── upstream/                          子模块，固定在 dsh-v0.2.1-rc.5；只读
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
@@ -341,7 +343,7 @@ pnpm run clean                # 删除 packages/*/*/lib
 下面的安装与启动步骤已在 DSH `0.2.1-alpha.1` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
 
 ```sh
-# 使用已安装的 DSH 0.2.1-rc.3
+# 使用已安装的 DSH 0.2.1-rc.5
 cd ~/dsh-creative && pnpm run build
 
 # 从 web 模板创建 profile，--dump-config 使它只创建、不启动
@@ -394,13 +396,13 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 
 ## 6. 依赖策略
 
-- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.1-rc.3`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
+- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.1-rc.5`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
 - **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.5`，`cordis-plugin-loader` 写 `~1.0.6`，`cordis-plugin-include` 写 `~1.0.10`，`schemastery` 写 `~3.18.5`。根开发依赖显式提供 `cordis-plugin-group` 的 `~1.0.5`，满足 `dsh-app-boot` 的 peer 范围。
 - **分类**：沿用上游的分类，上游已用 `package-dependency-policy` 检查过。
   - 需要与宿主共享实例的 DSH 包同时放进 `peerDependencies` 和 `devDependencies`。运行时 peer 由正在运行的 dsh 安装提供，devDependencies 只给类型检查和测试用。
   - 无状态工具放 `dependencies`。这是 DSH 发布文档（`upstream/docs/user/develop/basic/publish.md`）的规则。
 - **仓库内部包**之间用 `workspace:*`。
-- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.1-rc.3` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
+- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.1-rc.5` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
 - **根 `package.json` 的 devDependencies** 分三类：
   1. 工具链：`typescript` ^6.0.3、`tsdown` ^0.22.2、`vitest` ^4.1.8、`jsdom` 29.1.1、`lightningcss`、`@types/node`、`@testing-library/dom`、`@testing-library/react`，以及 `@deepseek-ai/dsh-typert-generator`。
   2. DSH 平台模块在 Node 里要用、却没有声明的依赖（浏览器里由 web 前端打包提供）：
@@ -444,7 +446,7 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
   - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
 
   从 npm 安装时，协议包在 `node_modules` 里，两个条件都不满足，skill-viewer 的 `@Remote` 方法被忽略。这是生成器只考虑 monorepo 场景造成的缺口。
-- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.1-rc.3.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
+- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.1-rc.5.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
 
   ```diff
            if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
@@ -549,7 +551,7 @@ Host 测试一开始就全部通过，失败的都是客户端测试，原因有
 
 ## 8. 从上游复制的文件及本地改动
 
-下面 8 个文件已核对至 `dsh-v0.2.1-rc.3`。`scripts/tsdown.client.ts`、`scripts/client-build-environment.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts` 跟上 rc.3 并更新复制版本标注；`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。其余 4 个文件的上游内容未变，保留原有复制版本标注（`bundle-input-isolation.ts` 为 `dsh-v0.2.1-alpha.2`，其余三个为 `dsh-v0.1.7-rc.2`）和现有本地改动。
+下面 8 个文件已核对至 `dsh-v0.2.1-rc.5`。`scripts/tsdown.client.ts`、`scripts/client-build-environment.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts` 与上游对照仅本地改动差异，复制版本标注更新为 rc.5；`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。其余 4 个文件的上游内容未变，保留原有复制版本标注（`bundle-input-isolation.ts` 为 `dsh-v0.2.1-alpha.2`，其余三个为 `dsh-v0.1.7-rc.2`）和现有本地改动。
 
 | 本仓库文件 | 上游来源 | 本地改动 |
 |---|---|---|
@@ -584,7 +586,7 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 `.agents/skills/` 下 11 个与上游同名的 skill 也是拷贝。链接指向本仓库已有的文档时保留本仓库路径；指向上游独有的文档、包或笔记时加 `upstream/` 前缀。比对方式：
 
 ```sh
-tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.3 .agents/skills | tar -x -C "$tmp" \
+tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.5 .agents/skills | tar -x -C "$tmp" \
   && diff -r "$tmp/.agents/skills" .agents/skills
 ```
 
