@@ -817,10 +817,8 @@
 }
 
 @media (max-width: 360px) {
-  .writer-desk:not([data-rail-collapsed='true']) {
-    grid-template-columns: minmax(0, min(42%, var(--writer-rail-width))) 5px minmax(0, 1fr);
-  }
-
+  /* Do not override rail track to minmax(0, …) here — that reintroduces mid-glyph
+     clipping under zoom/narrow host. JS fitRailWidth already caps --writer-rail-width. */
   .writer-counts,
   .writer-local {
     display: none;

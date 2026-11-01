@@ -79,6 +79,7 @@ it('plugin.css keeps the collapsed rail out of flow and search input shrinkable'
   // Fixed track width — minmax(0, var) was the clip bug under a narrow host.
   expect(css).toMatch(/grid-template-columns:\s*var\(--writer-rail-width\)\s+5px\s+minmax\(0,\s*1fr\)/)
   expect(css).not.toMatch(/minmax\(0,\s*var\(--writer-rail-width\)\)/)
+  expect(css).not.toMatch(/minmax\(0,\s*min\(42%/)
   expect(css).toContain('.writer-tab > span')
   expect(css).toMatch(/\.writer-tab\s*>\s*span\s*\{[\s\S]*?text-overflow:\s*ellipsis/)
   expect(css).toMatch(/\.writer-tree-label\s*\{[\s\S]*?flex:\s*1 1 0%/)
