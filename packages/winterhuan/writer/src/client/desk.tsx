@@ -816,20 +816,22 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         >{railCollapsed ? '›' : '‹'}</button>
         <div className="writer-masthead" aria-label={t('masthead')}>
           <span className="writer-workspace" title={cwd}>{shortName}</span>
-          <div className="writer-counts" title={t('filesCountHint')} aria-label={countsAria}>
-            <span className="writer-count"><b>{libraries.length}</b> {t('countLibraries')}</span>
-            <span className="writer-count"><b>{projects.length}</b> {t('countProjects')}</span>
-            <span className="writer-count"><b>{filesText}</b> {t('countFiles')}</span>
+          <div className="writer-masthead-actions">
+            <div className="writer-counts" title={t('filesCountHint')} aria-label={countsAria}>
+              <span className="writer-count"><b>{libraries.length}</b> {t('countLibraries')}</span>
+              <span className="writer-count"><b>{projects.length}</b> {t('countProjects')}</span>
+              <span className="writer-count"><b>{filesText}</b> {t('countFiles')}</span>
+            </div>
+            <span
+              className="writer-connection"
+              data-health={health}
+              role="status"
+              title={connectionTitle}
+            >
+              <span className="writer-status-dot" aria-hidden="true" />
+              <span className="writer-connection-label">{connectionLabel}</span>
+            </span>
           </div>
-          <span
-            className="writer-connection"
-            data-health={health}
-            role="status"
-            title={connectionTitle}
-          >
-            <span className="writer-status-dot" aria-hidden="true" />
-            <span className="writer-connection-label">{connectionLabel}</span>
-          </span>
         </div>
         <button
           type="button"

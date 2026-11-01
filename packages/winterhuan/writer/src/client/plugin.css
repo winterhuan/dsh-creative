@@ -310,8 +310,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 26%;
+  max-width: min(40%, 18rem);
   color: var(--dsw-alias-label-primary);
+}
+
+.writer-masthead-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .writer-counts {
@@ -319,7 +330,7 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 12px;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   color: var(--dsw-alias-label-secondary);
@@ -405,7 +416,7 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  margin-left: auto;
+  margin-left: 0;
   padding: 0;
   color: var(--dsw-alias-label-secondary);
   background: var(--dsw-alias-bg-base);

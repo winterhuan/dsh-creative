@@ -84,6 +84,10 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
   expect(container.querySelector('.writer-rail')).toBeTruthy()
   expect(container.querySelector('.writer-stage')).toBeTruthy()
   expect(container.querySelector('.writer-masthead')).toBeTruthy()
+  const mastheadActions = container.querySelector('.writer-masthead-actions')
+  expect(mastheadActions).toBeTruthy()
+  expect(mastheadActions?.querySelector('.writer-counts')).toBeTruthy()
+  expect(mastheadActions?.querySelector('.writer-connection')).toBeTruthy()
   const search = container.querySelector('.writer-search-slot input') as HTMLInputElement
   expect(search.disabled).toBe(false)
   expect(search.closest('[role="search"]')).toBeTruthy()
