@@ -287,9 +287,9 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 6px 8px;
-  min-height: 32px;
-  padding: 4px 10px;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--writer-border);
 }
 
@@ -297,7 +297,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 6px 8px;
+  gap: 10px;
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
@@ -305,64 +305,133 @@
 
 .writer-workspace {
   flex: 0 1 auto;
-  font-weight: 600;
+  font-weight: 650;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 28%;
+  max-width: 26%;
+  color: var(--dsw-alias-label-primary);
 }
 
 .writer-counts {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
   flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.writer-count {
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
 }
 
-.writer-local {
-  flex: 0 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
-  white-space: nowrap;
-  max-width: 36%;
-}
-
-.writer-health {
-  flex: 0 0 auto;
-  padding: 0 6px;
-  border-radius: 999px;
-  font-size: 11px;
-  line-height: 1.7;
-  color: var(--dsw-alias-label-secondary);
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-
-.writer-health[data-health='ok'] {
+.writer-count b {
   color: var(--dsw-alias-label-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
 }
 
-.writer-health[data-health='partial'] {
+.writer-connection {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.writer-status-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1.5px solid var(--writer-border);
+  background: transparent;
+}
+
+.writer-connection[data-health='ok'] .writer-status-dot {
+  background: var(--dsw-alias-success-label, #2f9e44);
+  border-color: var(--dsw-alias-success-label, #2f9e44);
+}
+
+.writer-connection[data-health='partial'] {
   color: var(--dsw-alias-warning-label, var(--dsw-alias-label-primary));
 }
 
-.writer-health[data-health='failed'] {
+.writer-connection[data-health='partial'] .writer-status-dot {
+  background: var(--dsw-alias-warning-label, #d97706);
+  border-color: var(--dsw-alias-warning-label, #d97706);
+}
+
+.writer-connection[data-health='failed'] {
   color: var(--dsw-alias-danger-label, var(--dsw-alias-label-primary));
 }
 
-.writer-health[data-health='loading'] {
+.writer-connection[data-health='failed'] .writer-status-dot {
+  background: var(--dsw-alias-danger-label, var(--writer-accent));
+  border-color: var(--dsw-alias-danger-label, var(--writer-accent));
+}
+
+.writer-connection[data-health='loading'] {
   opacity: 0.75;
 }
 
+.writer-connection-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 9em;
+}
+
 .writer-reload {
+  box-sizing: border-box;
+  display: grid;
   flex: 0 0 auto;
+  place-items: center;
+  width: 28px;
+  height: 28px;
   margin-left: auto;
-  white-space: nowrap;
+  padding: 0;
+  color: var(--dsw-alias-label-secondary);
+  background: var(--dsw-alias-bg-base);
+  border: 1px solid var(--writer-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.writer-reload:hover {
+  color: var(--dsw-alias-label-primary);
+  border-color: var(--writer-accent);
+}
+
+.writer-reload:focus-visible {
+  outline: 2px solid var(--writer-accent);
+  outline-offset: 1px;
+}
+
+.writer-reload svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .writer-scan-banner {
@@ -399,6 +468,12 @@
   padding: 2px 8px;
   background: var(--dsw-alias-bg-base);
   cursor: pointer;
+}
+
+.writer-stage-heading .writer-reload {
+  padding: 0;
+  color: var(--dsw-alias-label-secondary);
+  border-radius: 8px;
 }
 
 .writer-tree-panel button {
@@ -513,7 +588,7 @@
   flex: 1 1 auto;
   display: grid;
   align-content: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .writer-breadcrumbs {
@@ -557,14 +632,25 @@
   color: var(--writer-border);
 }
 
-.writer-path {
+.writer-document-title {
   min-width: 0;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 600;
-  font-size: 13px;
+  color: var(--dsw-alias-label-primary);
+  font-weight: 700;
+  font-size: 15px;
   line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+
+.writer-editor-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .writer-line-numbers-toggle {
@@ -711,18 +797,21 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 6px;
-  min-height: 28px;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+  padding: 2px 0 4px;
 }
 
-.writer-editor-toolbar > button {
+.writer-editor-toolbar > button,
+.writer-editor-actions > button {
   flex: 0 0 auto;
   white-space: nowrap;
 }
 
 .writer-dirty {
   flex: 0 0 auto;
-  padding: 0 6px;
+  padding: 0 7px;
   border-radius: 999px;
   font-size: 11px;
   line-height: 1.7;
@@ -742,22 +831,30 @@
 .writer-mode-switch {
   display: inline-flex;
   flex: 0 0 auto;
-  margin-left: auto;
-  border: 1px solid var(--writer-border);
-  border-radius: 6px;
+  gap: 2px;
+  padding: 2px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--dsw-alias-interactive-bg-hover);
   overflow: hidden;
 }
 
 .writer-mode-switch button {
+  height: 26px;
   border: 0 !important;
-  border-radius: 0 !important;
+  border-radius: 7px !important;
   background: transparent;
-  padding: 2px 8px;
+  padding: 0 10px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  font-weight: 550;
 }
 
 .writer-mode-switch button[aria-pressed='true'] {
-  background: var(--dsw-alias-interactive-bg-hover);
-  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-base);
+  font-weight: 650;
+  box-shadow: 0 0 0 1px var(--writer-border);
 }
 
 .writer-preview {
@@ -816,11 +913,16 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 420px) {
   /* Do not override rail track to minmax(0, …) here — that reintroduces mid-glyph
      clipping under zoom/narrow host. JS fitRailWidth caps --writer-rail-width to the desk. */
-  .writer-counts,
-  .writer-local {
+  .writer-counts {
+    display: none;
+  }
+}
+
+@media (max-width: 320px) {
+  .writer-connection-label {
     display: none;
   }
 }

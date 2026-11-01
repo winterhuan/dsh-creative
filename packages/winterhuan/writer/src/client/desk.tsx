@@ -581,10 +581,12 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const healthText = healthCopy(health, t)
   const loadedFileCount = countLoadedFiles(libraries) + countLoadedFiles(projects)
   const filesText = loadedFilesLabel(loadedFileCount, t('filesOnDemand'), t('filesLoaded'))
-  const countsText = t('countsSummary')
+  const countsAria = t('countsSummary')
     .replace('{libraries}', String(libraries.length))
     .replace('{projects}', String(projects.length))
     .replace('{files}', filesText)
+  const connectionTitle = `${t('localWorkspace')} · ${healthText}`
+  const connectionLabel = health === 'ok' || health === 'loading' ? t('localOnly') : healthText
   const crumbs = active === undefined ? [] : breadcrumbSegments(active)
   const byteLabel = formatBytes(editorByteSize(draft, eol))
   const extLabel = active === undefined ? '' : fileExtensionLabel(active)
@@ -814,11 +816,33 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
         >{railCollapsed ? '›' : '‹'}</button>
         <div className="writer-masthead" aria-label={t('masthead')}>
           <span className="writer-workspace" title={cwd}>{shortName}</span>
-          <span className="writer-counts" title={t('filesCountHint')}>{countsText}</span>
-          <span className="writer-local" title={t('localWorkspace')}>{t('localWorkspace')}</span>
-          <span className="writer-health" data-health={health} role="status">{healthText}</span>
+          <div className="writer-counts" title={t('filesCountHint')} aria-label={countsAria}>
+            <span className="writer-count"><b>{libraries.length}</b> {t('countLibraries')}</span>
+            <span className="writer-count"><b>{projects.length}</b> {t('countProjects')}</span>
+            <span className="writer-count"><b>{filesText}</b> {t('countFiles')}</span>
+          </div>
+          <span
+            className="writer-connection"
+            data-health={health}
+            role="status"
+            title={connectionTitle}
+          >
+            <span className="writer-status-dot" aria-hidden="true" />
+            <span className="writer-connection-label">{connectionLabel}</span>
+          </span>
         </div>
-        <button type="button" className="writer-reload" onClick={rescan}>{t('reload')}</button>
+        <button
+          type="button"
+          className="writer-reload"
+          title={t('reload')}
+          aria-label={t('reload')}
+          onClick={rescan}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 6v5h-5" />
+            <path d="M18.2 15.7A7 7 0 1 1 19 9.3L20 11" />
+          </svg>
+        </button>
       </header>
       <main className="writer-editor">
         {active === undefined && notice === undefined && <p className="writer-empty">{t('emptyHelp')}</p>}
@@ -855,22 +879,24 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
                   </span>
                 ))}
               </nav>
-              <span className="writer-path" title={active}>{crumbs[crumbs.length - 1] ?? active}</span>
+              <h2 className="writer-document-title" title={active}>{crumbs[crumbs.length - 1] ?? active}</h2>
             </div>
-            <span className="writer-dirty" data-state={dirtyState}>{dirtyText}</span>
-            <button
-              type="button"
-              className="writer-line-numbers-toggle"
-              title={t('toggleLineNumbers')}
-              aria-label={t('toggleLineNumbers')}
-              aria-pressed={showLineNumbers}
-              onClick={() => { setShowLineNumbers(value => !value) }}
-            >#</button>
-            <div className="writer-mode-switch" role="group" aria-label={t('editor')}>
-              <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit') }}>{t('modeEdit')}</button>
-              <button type="button" aria-pressed={mode === 'preview'} onClick={() => { setMode('preview') }}>{t('modePreview')}</button>
+            <div className="writer-editor-actions">
+              <span className="writer-dirty" data-state={dirtyState}>{dirtyText}</span>
+              <button
+                type="button"
+                className="writer-line-numbers-toggle"
+                title={t('toggleLineNumbers')}
+                aria-label={t('toggleLineNumbers')}
+                aria-pressed={showLineNumbers}
+                onClick={() => { setShowLineNumbers(value => !value) }}
+              >#</button>
+              <div className="writer-mode-switch" role="group" aria-label={t('editor')}>
+                <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit') }}>{t('modeEdit')}</button>
+                <button type="button" aria-pressed={mode === 'preview'} onClick={() => { setMode('preview') }}>{t('modePreview')}</button>
+              </div>
+              <button type="button" disabled={busy || conflict || version === undefined || draft === saved} onClick={save}>{t('save')}</button>
             </div>
-            <button type="button" disabled={busy || conflict || version === undefined || draft === saved} onClick={save}>{t('save')}</button>
           </header>
           {mode === 'edit' ? (
             <div className={showLineNumbers ? 'writer-editor-body show-line-numbers' : 'writer-editor-body'}>
