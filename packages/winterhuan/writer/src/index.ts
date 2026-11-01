@@ -36,6 +36,7 @@ export interface Config {
   readonly trustedHosts?: string[]
   readonly makersApiKeyEnv?: Volatile<string>
   readonly gptImageApiKeyEnv?: Volatile<string>
+  readonly gptImageBaseUrl?: Volatile<string>
 }
 
 /** Schema for the writing plugin. */
@@ -44,6 +45,7 @@ export const Config = z.object({
   editorMaxBytes: z.natural().min(65_536).max(8_388_608).default(2_097_152),
   makersApiKeyEnv: z.string().role('credential-ref').default('MAKERS_API_KEY').volatile(),
   gptImageApiKeyEnv: z.string().role('credential-ref').default('GPT_IMAGE_API_KEY').volatile(),
+  gptImageBaseUrl: z.string().default('').volatile(),
   trustedHosts: z.array(z.string()).default([]),
 }) as z<Config>
 
@@ -55,6 +57,8 @@ export interface WriterHost {
   readonly makersApiKeyEnv: string
   /** Credential environment name for cover image API. The host does not read the secret. */
   readonly gptImageApiKeyEnv: string
+  /** Cover image API base URL the host injects into GPT_IMAGE_BASE_URL; empty leaves the shell value. */
+  readonly gptImageBaseUrl: string
   sync(workspaceDir: string, force: boolean): Promise<SyncResult>
   unsync(workspaceDir: string): Promise<UnsyncResult>
 }
@@ -77,6 +81,16 @@ function credentialName(value: Volatile<string> | string | undefined, fallback: 
   return fallback
 }
 
+/** Resolved text of an optional setting: trimmed, empty when absent or blank. */
+function optionalText(value: Volatile<string> | string | undefined): string {
+  if (typeof value === 'string') return value.trim()
+  if (value !== undefined && typeof value !== 'string') {
+    const current = value.get()
+    if (typeof current === 'string') return current.trim()
+  }
+  return ''
+}
+
 function restoreEnv(name: string, previous: string | undefined): void {
   if (previous === undefined) delete process.env[name]
   else process.env[name] = previous
@@ -95,22 +109,28 @@ export function apply(context: Context, config: Config = {}): void {
   const maxBytes = config.editorMaxBytes ?? 2_097_152
   const makersApiKeyEnv = credentialName(config.makersApiKeyEnv, 'MAKERS_API_KEY')
   const gptImageApiKeyEnv = credentialName(config.gptImageApiKeyEnv, 'GPT_IMAGE_API_KEY')
+  const gptImageBaseUrl = optionalText(config.gptImageBaseUrl)
   const previousMount = process.env[MOUNT_ENV]
   const previousKeyEnv = process.env.WRITER_ZHUQUE_KEY_ENV
   const previousCoverKeyEnv = process.env.WRITER_COVER_KEY_ENV
+  const previousCoverBaseUrl = process.env.GPT_IMAGE_BASE_URL
   process.env[MOUNT_ENV] = skillMount
   process.env.WRITER_ZHUQUE_KEY_ENV = makersApiKeyEnv
   process.env.WRITER_COVER_KEY_ENV = gptImageApiKeyEnv
+  // A blank setting leaves the variable alone, so a shell-exported test value keeps working.
+  if (gptImageBaseUrl !== '') process.env.GPT_IMAGE_BASE_URL = gptImageBaseUrl
   context.effect(() => () => {
     restoreEnv(MOUNT_ENV, previousMount)
     restoreEnv('WRITER_ZHUQUE_KEY_ENV', previousKeyEnv)
     restoreEnv('WRITER_COVER_KEY_ENV', previousCoverKeyEnv)
+    restoreEnv('GPT_IMAGE_BASE_URL', previousCoverBaseUrl)
   }, 'writer: skill mount')
   const host: WriterHost = {
     skillMount,
     skillsDir,
     makersApiKeyEnv,
     gptImageApiKeyEnv,
+    gptImageBaseUrl,
     sync: (workspaceDir, force) => syncWriterSkills({ sourceDir: skillsDir, workspaceDir, force }),
     unsync: workspaceDir => unsyncWriterSkills({ sourceDir: skillsDir, workspaceDir }),
   }

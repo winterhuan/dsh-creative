@@ -10,18 +10,21 @@ import type {} from '@deepseek-ai/dsh-api-settings-controller/remote'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import {
   SettingsFormModel,
+  settingsTextField,
   type SettingsFieldState, type SettingsFormActions, type SettingsFormScope, type SettingsFormScopeSnapshot, type SettingsFormShell,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 
 /** Namespace of the writer plugin. Spelled here so the client half does not import Host values. */
 export const WRITER_SETTINGS_NS = 'writer'
 
-/** Section fields this page reads for credential reference names. */
+/** Section fields this page reads for credential reference names and cover API endpoints. */
 export interface WriterZhuqueSettings {
   /** Credential reference naming the EdgeOne Makers key. Defaults to MAKERS_API_KEY. */
   makersApiKeyEnv?: string
   /** Credential reference naming the cover image API key. Defaults to GPT_IMAGE_API_KEY. */
   gptImageApiKeyEnv?: string
+  /** Cover image API base URL; the host injects it into GPT_IMAGE_BASE_URL when set. */
+  gptImageBaseUrl?: string
 }
 
 /** What the credentials domain last reported for one key. */
@@ -50,6 +53,8 @@ export interface WriterZhuqueCardState extends SettingsFormShell {
   key: WriterZhuqueKeyControlState
   /** The cover image API key control. */
   coverKey: WriterZhuqueKeyControlState
+  /** The cover image API base URL draft. */
+  gptImageBaseUrl: SettingsFieldState
 }
 
 /** The registration-side face the page's slot entry injects. */
@@ -58,18 +63,6 @@ export interface WriterZhuqueCardFace extends SettingsFormActions {
     /** Page snapshot bound by the renderer as useWriterZhuqueCard. */
     writerZhuqueCard: SnapshotStore<WriterZhuqueCardState>
   }
-  /**
-   * Write the Zhuque key pool immediately. The bulk dialog owns its own save gesture.
-   * @param text - one key per line.
-   * @returns whether the Host reports a configured credential afterwards.
-   */
-  saveKeys: (text: string) => Promise<boolean>
-  /**
-   * Write the cover key pool immediately.
-   * @param text - one key per line.
-   * @returns whether the Host reports a configured credential afterwards.
-   */
-  saveCoverKeys: (text: string) => Promise<boolean>
 }
 
 const FALLBACK_MAKERS_REF = 'MAKERS_API_KEY'
@@ -90,7 +83,9 @@ export class WriterZhuqueCardController {
     private readonly scope: SettingsFormScope<WriterZhuqueSettings>,
     private readonly ctx: ClientContext,
   ) {
-    this.form = new SettingsFormModel(scope, [], [
+    this.form = new SettingsFormModel(scope, [
+      settingsTextField('gptImageBaseUrl'),
+    ], [
       { field: 'makersApiKey', write: (text: string) => this.writeKey('makers', text) },
       { field: 'gptImageApiKey', write: (text: string) => this.writeKey('cover', text) },
     ])
@@ -112,6 +107,7 @@ export class WriterZhuqueCardController {
         configured: this.coverState.configured,
         writable: this.coverState.writable,
       },
+      gptImageBaseUrl: this.form.field('gptImageBaseUrl'),
     }
   }
 
@@ -175,20 +171,7 @@ export class WriterZhuqueCardController {
     return {
       hooks: { writerZhuqueCard: this.store },
       ...this.form.actions(),
-      saveKeys: (text) => this.saveKeys('makers', text),
-      saveCoverKeys: (text) => this.saveKeys('cover', text),
     }
-  }
-
-  /**
-   * Write a key pool from a bulk dialog.
-   * @param which - Zhuque or cover.
-   * @param text - the dialog's whole text, one key per line.
-   * @returns whether the Host reports a configured credential afterwards.
-   */
-  async saveKeys(which: 'makers' | 'cover', text: string): Promise<boolean> {
-    if (text.trim() === '') return false
-    return this.writeKey(which, text.trim())
   }
 
   /**

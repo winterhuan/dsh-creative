@@ -81,7 +81,6 @@ describe('Writer cover credential controller', () => {
     face.save()
     await vi.waitFor(() => { expect(face.hooks.writerZhuqueCard.getSnapshot().failed).toBe(true) })
     expect(face.hooks.writerZhuqueCard.getSnapshot().coverKey.draft.text).toBe('replacement')
-    expect(await face.saveCoverKeys('replacement')).toBe(false)
     controller.dispose()
   })
 

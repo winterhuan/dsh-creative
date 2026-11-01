@@ -1,6 +1,6 @@
 # API 回退生图
 
-只在会话没有内置生图工具或作者明确要求走 API 时使用。在 DSH 上，密钥名来自写作插件的 `gptImageApiKeyEnv`（默认 `GPT_IMAGE_API_KEY`），由 Host 镜像到 `WRITER_COVER_KEY_ENV`；实际密钥走 DSH 凭据，不要写进设置文件。`gpt-image-2` 返回 base64，请求体不带 `response_format`。无参考图走文生图，有参考图走图生图。
+只在会话没有内置生图工具或作者明确要求走 API 时使用。在 DSH 上，密钥名来自写作插件的 `gptImageApiKeyEnv`（默认 `GPT_IMAGE_API_KEY`），由 Host 镜像到 `WRITER_COVER_KEY_ENV`；实际密钥走 DSH 凭据，不要写进设置文件。`GPT_IMAGE_BASE_URL` 也可在写作插件设置页配置，设置页的值优先于 shell 导出。`gpt-image-2` 返回 base64，请求体不带 `response_format`；部分渠道返回 JPEG 字节，脚本按魔数落 `.png`/`.jpg` 扩展名。无参考图走文生图，有参考图走图生图。
 
 ## 环境变量
 
@@ -29,7 +29,7 @@ mkdir -p "$BOOK_DIR/封面"
 
 # 自增版本号，避免覆盖之前生成的封面
 i=1
-while [ -f "$BOOK_DIR/封面/封面_v${i}.png" ]; do i=$((i+1)); done
+while [ -e "$BOOK_DIR/封面/封面_v${i}.png" ] || [ -e "$BOOK_DIR/封面/封面_v${i}.jpg" ]; do i=$((i+1)); done
 OUT="$BOOK_DIR/封面/封面_v${i}.png"
 RESP=$(mktemp)
 trap 'rm -f "$RESP"' EXIT
@@ -58,8 +58,14 @@ fi
 jq -er '.data[0].b64_json // empty' "$RESP" | base64 --decode > "$OUT"
 [ -s "$OUT" ] || { echo "empty or malformed output: $OUT" >&2; head -c 300 "$RESP" >&2; exit 1; }
 
+# 兼容返回 JPEG 字节的渠道：按魔数落扩展名，不把 JPEG 冒充成 .png
+if [ "$(head -c 3 "$OUT" | od -An -tx1 | tr -d ' \n')" = "ffd8ff" ]; then
+  mv "$OUT" "${OUT%.png}.jpg"
+  OUT="${OUT%.png}.jpg"
+fi
+
 # 落地提示词副本，方便迭代时基于上一次微调
-printf '%s\n' "$PROMPT" > "${OUT%.png}.prompt.txt"
+printf '%s\n' "$PROMPT" > "${OUT%.*}.prompt.txt"
 
 file "$OUT"
 ls -lt "$BOOK_DIR/封面/"
@@ -83,7 +89,7 @@ mkdir -p "$BOOK_DIR/封面"
 
 # 自增版本号
 i=1
-while [ -f "$BOOK_DIR/封面/封面_v${i}.png" ]; do i=$((i+1)); done
+while [ -e "$BOOK_DIR/封面/封面_v${i}.png" ] || [ -e "$BOOK_DIR/封面/封面_v${i}.jpg" ]; do i=$((i+1)); done
 OUT="$BOOK_DIR/封面/封面_v${i}.png"
 RESP=$(mktemp)
 REF_TMP=""
@@ -120,8 +126,14 @@ fi
 jq -er '.data[0].b64_json // empty' "$RESP" | base64 --decode > "$OUT"
 [ -s "$OUT" ] || { echo "empty or malformed output: $OUT" >&2; head -c 300 "$RESP" >&2; exit 1; }
 
-printf '%s\n' "$PROMPT"    > "${OUT%.png}.prompt.txt"
-printf '%s\n' "$REF_IMAGE" > "${OUT%.png}.ref.txt"
+# 兼容返回 JPEG 字节的渠道：按魔数落扩展名，不把 JPEG 冒充成 .png
+if [ "$(head -c 3 "$OUT" | od -An -tx1 | tr -d ' \n')" = "ffd8ff" ]; then
+  mv "$OUT" "${OUT%.png}.jpg"
+  OUT="${OUT%.png}.jpg"
+fi
+
+printf '%s\n' "$PROMPT"    > "${OUT%.*}.prompt.txt"
+printf '%s\n' "$REF_IMAGE" > "${OUT%.*}.ref.txt"
 
 file "$OUT"
 ls -lt "$BOOK_DIR/封面/"

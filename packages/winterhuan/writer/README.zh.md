@@ -53,7 +53,7 @@ dsh plugin --profile web add packages/winterhuan/writer
     skillMount: workspace
 ```
 
-`makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。`gptImageApiKeyEnv` 是封面生图用的环境变量名，默认 `GPT_IMAGE_API_KEY`。Host 只保存名字，并分别镜像到 `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`。安装本 Host 行后，插件页会出现「写作」入口，密钥经 DSH 凭据服务绑定（不写入设置文件）。`story-zhuque` 与 `story-cover`（API 通路）读取对应变量；作者没有明确要求时不运行。
+`makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。`gptImageApiKeyEnv` 是封面生图用的环境变量名，默认 `GPT_IMAGE_API_KEY`。Host 只保存名字，并分别镜像到 `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`。安装本 Host 行后，插件页会出现「写作」入口，密钥经 DSH 凭据服务绑定（不写入设置文件）。`story-zhuque` 与 `story-cover`（API 通路）读取对应变量；作者没有明确要求时不运行。 设置页还可保存封面生图的 `gptImageBaseUrl`（普通设置字段；Host 注入 `GPT_IMAGE_BASE_URL`，设置页的值优先于 shell 导出，留空则用 shell 值或默认）。生图模型无需设置：skill 按 `GPT_IMAGE_MODEL` → 默认 `gpt-image-2` 兜底。
 
 ### 扫榜、拆文与封面技能
 

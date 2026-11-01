@@ -19,7 +19,7 @@ metadata: {"openclaw":{"requires":{"env":["GPT_IMAGE_API_KEY"],"bins":["curl","j
 
 ### DSH 宿主
 
-DSH 没有 Codex 的 `$imagegen` / `image_gen`。默认「仅提示词」即可交付完整提示词，不需要 API Key，也不要假装已出图。作者明确要求封面图时再走 API 回退：读取写作插件配置的 `gptImageApiKeyEnv` 所指向的环境变量（默认 `GPT_IMAGE_API_KEY`；Host 会把该名字同步到 `WRITER_COVER_KEY_ENV`，密钥经 DSH 凭据绑定，不写进设置文件）。Codex 内置通路留给其它宿主，不要在 DSH 上虚构 `$imagegen`。
+DSH 没有 Codex 的 `$imagegen` / `image_gen`。默认「仅提示词」即可交付完整提示词，不需要 API Key，也不要假装已出图。作者明确要求封面图时再走 API 回退：读取写作插件配置的 `gptImageApiKeyEnv` 所指向的环境变量（默认 `GPT_IMAGE_API_KEY`；Host 会把该名字同步到 `WRITER_COVER_KEY_ENV`，密钥经 DSH 凭据绑定，不写进设置文件）。Base URL 也可以在写作插件设置页配置（`gptImageBaseUrl`，Host 注入 `GPT_IMAGE_BASE_URL`；设置页的值优先于 shell 导出，留空则用 shell 值或默认）。模型不需要设置：`GPT_IMAGE_MODEL` 未导出时脚本用默认 `gpt-image-2`。Codex 内置通路留给其它宿主，不要在 DSH 上虚构 `$imagegen`。
 
 ## 生成流程
 
@@ -95,7 +95,7 @@ Professional book cover, high detail digital painting, portrait [平台比例：
 
 #### API 回退
 
-读 [references/api-fallback.md](references/api-fallback.md)，按其中的环境变量和命令生成；没有参考图走文生图，有参考图走图生图。生成后把原图绝对路径交给 Step 5。
+读 [references/api-fallback.md](references/api-fallback.md)，按其中的环境变量和命令生成；没有参考图走文生图，有参考图走图生图。生成后把原图绝对路径交给 Step 5；原图可能是 `.png` 或 `.jpg`，Step 5 统一转 PNG 上传版。
 
 ### Step 5：导出平台上传尺寸（平台有固定像素时）
 
@@ -106,7 +106,7 @@ SRC='<Step 4 生成的原图绝对路径>'
 TARGET='<Step 1 确定的平台上传尺寸；无则留空>'
 [ -f "$SRC" ] || { echo "封面原图不存在: $SRC" >&2; exit 1; }
 if [ -n "$TARGET" ] && [ -f "$SRC" ]; then
-  UP="${SRC%.png}_上传.png"; W="${TARGET%x*}"; H="${TARGET#*x}"
+  UP="${SRC%.*}_上传.png"; W="${TARGET%x*}"; H="${TARGET#*x}"   # 源可能是 .png 或 .jpg
   if command -v magick >/dev/null 2>&1; then M=magick
   elif command -v convert >/dev/null 2>&1; then M=convert; else M=""; fi
   if [ -n "$M" ]; then
@@ -115,9 +115,9 @@ if [ -n "$TARGET" ] && [ -f "$SRC" ]; then
     cp "$SRC" "$UP"
     sw=$(sips -g pixelWidth "$UP" | awk '/pixelWidth/{print $NF}')
     sh=$(sips -g pixelHeight "$UP" | awk '/pixelHeight/{print $NF}')
-    if [ $((sw*H)) -ge $((sh*W)) ]; then sips --resampleHeight "$H" "$UP" >/dev/null
-    else sips --resampleWidth "$W" "$UP" >/dev/null; fi
-    sips -c "$H" "$W" "$UP" >/dev/null   # sips -c 是 高 宽，居中裁
+    if [ $((sw*H)) -ge $((sh*W)) ]; then sips -s format png --resampleHeight "$H" "$UP" >/dev/null
+    else sips -s format png --resampleWidth "$W" "$UP" >/dev/null; fi
+    sips -s format png -c "$H" "$W" "$UP" >/dev/null   # sips -c 是 高 宽，居中裁；统一转 PNG 落盘
   else
     echo "无 magick/convert/sips，跳过；手动把 $SRC 居中裁剪+缩放到 $TARGET 再上传" >&2
   fi

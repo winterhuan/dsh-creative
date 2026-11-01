@@ -53,7 +53,7 @@ Either mode can run `/writer-sync-skills` to force-write packaged skill director
     skillMount: workspace
 ```
 
-`makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. `gptImageApiKeyEnv` names the variable for cover image generation. The default is `GPT_IMAGE_API_KEY`. The host stores the names only and mirrors them to `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`. The Plugins page shows a Writing entry while this Host row is installed: bind secrets through DSH credentials (never into the settings document). `story-zhuque` and `story-cover` (API path) read those variables and do not run unless the author asks.
+`makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. `gptImageApiKeyEnv` names the variable for cover image generation. The default is `GPT_IMAGE_API_KEY`. The host stores the names only and mirrors them to `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`. The Plugins page shows a Writing entry while this Host row is installed: bind secrets through DSH credentials (never into the settings document). `story-zhuque` and `story-cover` (API path) read those variables and do not run unless the author asks. The settings page also stores the cover API's `gptImageBaseUrl` (plain settings field; the host injects it as `GPT_IMAGE_BASE_URL`, where a configured value wins over a shell export and blank defers to the shell or the default). The image model needs no setting: the skill falls back from `GPT_IMAGE_MODEL` to `gpt-image-2`.
 
 ### Scan, analyze, and cover skills
 

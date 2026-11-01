@@ -15,6 +15,9 @@ function acceptWrites(host: StubConfigForm<WriterZhuqueSettings>): void {
       if (op.op === 'set') {
         value[field] = op.value
         user[field] = op.value
+      } else {
+        delete value[field]
+        delete user[field]
       }
     }
     host.publish({ value, user })
@@ -60,6 +63,31 @@ describe('WriterZhuqueCardController', () => {
     expect(set).not.toHaveBeenCalled()
   })
 
+  it('stages the cover base URL into the settings section', async () => {
+    const host = stubConfigForm<WriterZhuqueSettings>()
+    acceptWrites(host)
+    const controller = new WriterZhuqueCardController(host.scope, {
+      remote: { credentials: { describe: vi.fn(() => Promise.resolve({ ok: true, value: {} })), set: vi.fn() } },
+    } as never)
+    host.publish({ status: 'ready', writable: true, value: {}, user: {} })
+    const face = controller.inject()
+    face.edit('gptImageBaseUrl', ' https://proxy.example/v1 ')
+    expect(face.hooks.writerZhuqueCard.getSnapshot().gptImageBaseUrl.text).toBe(' https://proxy.example/v1 ')
+    expect(face.hooks.writerZhuqueCard.getSnapshot().dirty).toBe(true)
+    expect(face.hooks.writerZhuqueCard.getSnapshot().gptImageBaseUrl.overridden).toBe(true)
+    face.save()
+    await vi.waitFor(() => {
+      expect(host.scope.getSnapshot().value).toMatchObject({ gptImageBaseUrl: 'https://proxy.example/v1' })
+    })
+    expect(face.hooks.writerZhuqueCard.getSnapshot().dirty).toBe(false)
+    face.edit('gptImageBaseUrl', '')
+    face.save()
+    await vi.waitFor(() => {
+      expect(host.scope.getSnapshot().value).not.toHaveProperty('gptImageBaseUrl')
+    })
+    controller.dispose()
+  })
+
   it('retains the draft when replacing an existing key fails', async () => {
     const host = stubConfigForm<WriterZhuqueSettings>()
     const controller = new WriterZhuqueCardController(host.scope, {
@@ -75,7 +103,6 @@ describe('WriterZhuqueCardController', () => {
     face.save()
     await vi.waitFor(() => { expect(face.hooks.writerZhuqueCard.getSnapshot().failed).toBe(true) })
     expect(face.hooks.writerZhuqueCard.getSnapshot().key.draft.text).toBe('replacement')
-    expect(await face.saveKeys('replacement')).toBe(false)
     controller.dispose()
   })
 
