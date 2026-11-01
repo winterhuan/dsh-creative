@@ -46,7 +46,7 @@ Each request resolves a view position before touching a registry. A live Agent a
 
 Local references belong to the provider's absolute resource directory, which may be outside the Session workspace. Discovery examines only `references/`, omits hidden entries and symbolic links, and returns sorted paths. Reads resolve the current winning skill again, reject traversal and links, verify the opened file's identity, and return only bounded UTF-8 text. The provider's directory is never supplied by the browser. URL, opaque and relative resource bases return `references: null`; a missing local references directory returns an empty listing.
 
-The [Creative decision](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md#read-only-skill-viewer) records the viewer namespace and caching trade-offs.
+The [Creative decision](../../../.agents/notes/archived/feature/2026-09-03-creative-workbench.md#read-only-skill-viewer) records the viewer namespace and caching trade-offs.
 
 <a id="failure-modes"></a>
 ## Failure modes

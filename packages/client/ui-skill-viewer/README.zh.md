@@ -40,7 +40,7 @@ kind: "package-reference"
 
 各项注册随插件 fiber 生命周期：字典、底部槽位、Remote 事件订阅与控制器的会话订阅在卸载时一并撤除，重载可干净再注册。
 
-[Creative 决策](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md#read-only-skill-viewer)记录查看器命名空间与缓存的取舍。
+[Creative 决策](../../../.agents/notes/archived/feature/2026-09-03-creative-workbench.md#read-only-skill-viewer)记录查看器命名空间与缓存的取舍。
 
 <a id="model-experience"></a>
 ## Model Experience

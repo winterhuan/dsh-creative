@@ -40,7 +40,7 @@ Reference previews are read afresh when selected. Leaving a reference, changing 
 
 Registrations ride the plugin fiber: dictionaries, the foot slot, the Remote event subscriptions, and the controller's session subscription all withdraw on disposal, so a reload re-registers cleanly.
 
-The [Creative decision](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.md#read-only-skill-viewer) records the viewer namespace and caching trade-offs.
+The [Creative decision](../../../.agents/notes/archived/feature/2026-09-03-creative-workbench.md#read-only-skill-viewer) records the viewer namespace and caching trade-offs.
 
 <a id="model-experience"></a>
 ## Model Experience

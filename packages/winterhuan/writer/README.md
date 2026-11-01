@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-This bundle adds 写作模式 to a DSH profile. A new session can use the oh-story skills for serials, short stories, and revision, and the right sidebar browses libraries and writing projects with Dashboard-aligned navigation and editable text files. By default `skillMount` is `bundled`: the preset reads the package `skills` directory and does not auto-copy into the project. Run `/writer-sync-skills` to write packaged skills into `<project>/.agents/skills` (force replace). Run `/writer-unsync-skills` to remove only those Writer skill directories and keep other project skills. Set `skillMount` to `workspace` and restart if you want first-entry auto-copy. The sidebar does not embed or start the oh-story dashboard.
+This bundle adds 写作模式 to a DSH profile. A new session can use the oh-story skills for serials, short stories, and revision, and the right sidebar browses libraries and writing projects with Dashboard-aligned navigation and editable text files. By default `skillMount` is `bundled`: the preset reads the package `skills` directory without copying into the project. Run `/writer-sync-skills` to write packaged skills into `<project>/.agents/skills` (force replace). Run `/writer-unsync-skills` to remove only those Writer skill directories and keep other project skills. Set `skillMount` to `workspace` and restart for first-entry auto-copy. The sidebar does not embed or start the oh-story dashboard.
 
 ## Table of Contents
 

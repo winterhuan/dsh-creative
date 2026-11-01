@@ -10,7 +10,7 @@ Young learners need short, encouraging practice that preserves mistakes and lear
 
 ## Decision
 
-The [domain mode decision](2026-10-06-domain-modes.md) owns activation for short-drama, game, video-recap and learning Sessions. The [paper-practice decision](2026-10-11-student-knowledge-paper-practice.md) owns concept links, worksheets and offline results.
+The [domain mode decision](../../archived/feature/2026-10-06-domain-modes.md) owns activation for short-drama, game, video-recap and learning Sessions. The [paper-practice decision](2026-10-11-student-knowledge-paper-practice.md) owns concept links, worksheets and offline results.
 
 The repository provides an independently installed `@winterhuan/dsh-student` in `packages/education/student`. An interactive native sidebar starts and stops learning, accepts answers and photo attachments, shows progress and collects parent-confirmed settings. Native DSH Skills guide Chinese, mathematics and English; tools retain one learner's term in each workspace. The first teaching reference targets Shanghai, grade two, first term. Parents confirm the school year, each textbook and current unit. Generic practice remains available while course alignment is unconfirmed.
 

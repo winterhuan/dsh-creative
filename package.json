@@ -9,10 +9,10 @@
   },
   "scripts": {
     "build": "pnpm run build:host && pnpm run build:client",
-    "build:host": "python3 scripts/sync-video-runtime.py && tsc -b tsconfig.host.json && tsdown --config-loader native --env.DSH_BUILD_FACE host",
+    "build:host": "tsc -b tsconfig.host.json && tsdown --config-loader native --env.DSH_BUILD_FACE host",
     "build:client": "tsc -b tsconfig.client.json && tsdown --config-loader native --env.DSH_BUILD_FACE client",
     "typecheck": "pnpm run build:host && tsc -b tsconfig.client.json && tsc -p tsconfig.scripts.json",
-    "test": "python3 scripts/sync-video-runtime.py --check && vitest run",
+    "test": "vitest run",
     "clean": "rm -rf packages/*/*/lib",
     "doc-sync": "tsx scripts/run-checks.ts docs",
     "test:docs": "tsx scripts/run-checks.ts docs",

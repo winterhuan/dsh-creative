@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概要
 
-本 bundle 给 DSH 增加写作模式。新会话可以使用 oh-story 的长篇、短篇和去 AI 味技能，右侧栏按 Dashboard 模型浏览拆文库与写作项目并编辑允许的文本文件。默认 `skillMount` 为 `bundled`：预设直接读插件包内 `skills`，不会自动拷进项目。需要写入项目时执行 `/writer-sync-skills`（强制覆盖包内同名目录）；用 `/writer-unsync-skills` 只删除这些 Writer 技能目录，保留其它 `.agents/skills`。若要首次进入写作模式自动拷贝，把 `skillMount` 改成 `workspace` 并重启。侧栏不嵌入、也不启动 oh-story Dashboard。
+本 bundle 给 DSH 增加写作模式。新会话可以使用 oh-story 的长篇、短篇和去 AI 味技能，右侧栏按 Dashboard 模型浏览拆文库与写作项目并编辑允许的文本文件。默认 `skillMount` 为 `bundled`：预设直接读插件包内 `skills`，不自动拷进项目。需要写入项目时执行 `/writer-sync-skills`（强制覆盖包内同名目录）；用 `/writer-unsync-skills` 只删除这些 Writer 技能目录，保留其它 `.agents/skills`。把 `skillMount` 改成 `workspace` 并重启，即可在首次进入写作模式时自动拷贝。侧栏不嵌入、也不启动 oh-story Dashboard。
 
 ## 目录
 

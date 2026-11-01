@@ -10,15 +10,9 @@ import AgentPresets from '@deepseek-ai/dsh-agent-preset-registry'
 import SkillRegistry from '@deepseek-ai/dsh-skill'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { expect, it, onTestFinished } from 'vitest'
-import * as drama from '../packages/creative/short-drama/src/agent.ts'
-import * as game from '../packages/creative/novel-to-game/src/agent.ts'
-import * as video from '../packages/creative/video-recap/src/agent.ts'
 import * as student from '../packages/education/student/src/agent.ts'
 
 const domains = [
-  { id: 'short-drama', group: 'creative', agent: drama, tools: ['drama_produce_run', 'drama_produce_status', 'creative_production'], skills: 5 },
-  { id: 'novel-to-game', group: 'creative', agent: game, tools: ['game_qa'], skills: 4 },
-  { id: 'video-recap', group: 'creative', agent: video, tools: ['video_produce_run', 'video_recap_produce_status'], skills: 2 },
   { id: 'student', group: 'education', agent: student, tools: ['study_status', 'study_update'], skills: 1 },
 ]
 

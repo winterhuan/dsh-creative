@@ -6,11 +6,6 @@
     "docs/AGENTS.md",
     "docs/i18n/style-samples.md",
     "docs/i18n/terminology.md",
-    "docs/i18n/translation-prompt.md",
-    "webnovel-writer/",
-    "packages/creative/story/knowledge/",
-    "packages/creative/short-drama/knowledge/",
-    "packages/creative/novel-to-game/knowledge/",
-    "packages/creative/video-recap/knowledge/"
+    "docs/i18n/translation-prompt.md"
   ]
 }

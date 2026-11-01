@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/archived/feature/2026-10-06-domain-modes.i18n.yaml
+2026-10-06-domain-modes.md: 466b54f1d3b3a419225cdb3ebb67b2a5398c84c7
+2026-10-06-domain-modes.zh.md: 0480af5a12b9a7fcd60576fa58294b68e42c818a

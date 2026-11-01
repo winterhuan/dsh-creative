@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/archived/architecture/2026-10-29-story-architecture-structure.i18n.yaml
+2026-10-29-story-architecture-structure.md: 31e1b2ef472a21d0a4363423e01b084f5cc4c326
+2026-10-29-story-architecture-structure.zh.md: 9611b126e3521da5d9fd5c5d5d429b2ac59b96ee

@@ -46,7 +46,7 @@ composer 侧的 `skills` Remote 命名空间继续服务斜杠来源。那份载
 
 本地参考文件属于提供方声明的绝对资源目录，该目录可以位于 Session 工作区之外。发现只检查 `references/`，跳过隐藏条目与符号链接，返回排序后的路径。读取时重新解析当前胜出的技能，拒绝越界与链接，核对打开文件的身份，只返回有界 UTF-8 文本。浏览器不提供资源根目录。URL、opaque 与相对资源基返回 `references: null`；不存在本地参考目录时返回空列表。
 
-[Creative 决策](../../../.agents/notes/implemented/feature/2026-09-03-creative-workbench.zh.md#read-only-skill-viewer)记录查看器命名空间与缓存的取舍。
+[Creative 决策](../../../.agents/notes/archived/feature/2026-09-03-creative-workbench.md#read-only-skill-viewer)记录查看器命名空间与缓存的取舍。
 
 <a id="failure-modes"></a>
 ## Failure modes
