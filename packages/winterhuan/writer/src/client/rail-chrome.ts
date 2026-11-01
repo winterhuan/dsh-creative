@@ -28,8 +28,12 @@ export function clampRailWidth(width: number): number {
 
 /**
  * Cap a preferred rail width so rail + handle + stage still fit in the desk.
- * When the desk is narrower than the minimum usable split, returns the largest
- * non-negative width that leaves room for the handle (stage may collapse to 0).
+ * The CSS rail track is a *fixed* `var(--writer-rail-width)` (not minmax(0, …)),
+ * so this value must never exceed `desk - handle - stageMin` when that is
+ * positive — otherwise the desk `overflow:hidden` clips mid-glyph. When the
+ * host sidebar is too narrow for min-rail + stage, the result may drop below
+ * {@link WRITER_RAIL_MIN_WIDTH}; only when even stage-min cannot fit does the
+ * rail take `desk - handle` (stage may go to 0).
  * @param preferred - stored or dragged width (will be clamped first).
  * @param deskWidth - `.writer-desk` clientWidth in CSS px.
  * @returns width to apply as `--writer-rail-width`.
@@ -38,8 +42,8 @@ export function fitRailWidth(preferred: number, deskWidth: number): number {
   const width = clampRailWidth(preferred)
   if (!Number.isFinite(deskWidth) || deskWidth <= 0) return width
   const maxWithStage = deskWidth - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH
-  if (maxWithStage >= WRITER_RAIL_MIN_WIDTH) return Math.min(width, maxWithStage)
-  return Math.max(0, Math.min(width, deskWidth - WRITER_RAIL_HANDLE_WIDTH))
+  if (maxWithStage > 0) return Math.min(width, Math.round(maxWithStage))
+  return Math.max(0, Math.round(deskWidth - WRITER_RAIL_HANDLE_WIDTH))
 }
 
 /**

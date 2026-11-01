@@ -3,8 +3,11 @@
   --writer-accent: var(--dsw-alias-brand-primary);
   --writer-rail-width: 220px;
   display: grid;
-  /* minmax(0, …) lets the rail shrink when the host sidebar is narrower than the preferred width. */
-  grid-template-columns: minmax(0, var(--writer-rail-width)) 5px minmax(0, 1fr);
+  /* Fixed rail track (not minmax(0, var)): under space pressure a min-0 track
+     shrinks below --writer-rail-width while 1fr stage eats the rest, and
+     overflow:hidden clips Tab/search mid-glyph. JS fitRailWidth keeps
+     rail+handle+stage inside the desk. */
+  grid-template-columns: var(--writer-rail-width) 5px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   min-width: 0;
