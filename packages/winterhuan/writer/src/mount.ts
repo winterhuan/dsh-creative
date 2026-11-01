@@ -3,14 +3,14 @@ export type SkillMount = 'workspace' | 'bundled'
 
 /**
  * Resolve the mount the preset rows read.
- * A missing host value falls through to the process environment, then workspace.
+ * A missing host value falls through to the process environment, then bundled.
  * @param hostMount - `writerHost.skillMount` when the service is visible.
  * @param envMount - `DSH_WRITER_SKILL_MOUNT` when the service is not visible yet.
  * @returns the mount that may copy skills or set `bundledSkillDir`.
  */
 export function writerSkillMount(hostMount: string | undefined, envMount: string | undefined): SkillMount {
-  const raw = hostMount ?? envMount ?? 'workspace'
-  return raw === 'bundled' ? 'bundled' : 'workspace'
+  const raw = hostMount ?? envMount ?? 'bundled'
+  return raw === 'workspace' ? 'workspace' : 'bundled'
 }
 
 /**

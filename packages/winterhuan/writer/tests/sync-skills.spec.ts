@@ -6,7 +6,7 @@ import SkillRegistry from '@deepseek-ai/dsh-skill'
 import * as SkillFileSystem from '@deepseek-ai/dsh-skill-filesystem'
 import { afterEach, expect, it } from 'vitest'
 import { packageSkillsDir } from '../src/skills-dir.ts'
-import { syncWriterSkills } from '../src/sync-skills.ts'
+import { syncWriterSkills, unsyncWriterSkills } from '../src/sync-skills.ts'
 
 const tempDirs: string[] = []
 afterEach(async () => {
@@ -76,4 +76,33 @@ it('discovers story skills from the workspace copy and not from an unused bundle
     await ctx.fiber.dispose()
     await bundledCtx.fiber.dispose()
   }
+})
+
+it('unsync removes only packaged Writer skill directories and leaves other project skills', async () => {
+  const project = await tempDir('unsync')
+  await mkdir(join(project, '.git'))
+  const source = packageSkillsDir()
+  await syncWriterSkills({ sourceDir: source, workspaceDir: project, force: false })
+  const custom = join(project, '.agents/skills/my-custom-skill')
+  await mkdir(custom, { recursive: true })
+  await writeFile(join(custom, 'SKILL.md'), '---\nname: my-custom-skill\ndescription: keep me\n---\n\nkeep\n')
+  const storyFile = join(project, '.agents/skills/story/SKILL.md')
+  expect(await readFile(storyFile, 'utf8')).toContain('name: story')
+  const result = await unsyncWriterSkills({ sourceDir: source, workspaceDir: project })
+  expect(result.removed).toEqual(expect.arrayContaining(['story', 'story-long-write', 'story-cover']))
+  expect(result.removed).not.toContain('my-custom-skill')
+  await expect(readFile(storyFile, 'utf8')).rejects.toThrow()
+  expect(await readFile(join(custom, 'SKILL.md'), 'utf8')).toContain('keep me')
+  const again = await unsyncWriterSkills({ sourceDir: source, workspaceDir: project })
+  expect(again.removed).toEqual([])
+  expect(again.missing).toEqual(expect.arrayContaining(['story', 'story-long-write']))
+})
+
+it('sync can still force-write packaged skills after default mounts as bundled', async () => {
+  const project = await tempDir('sync-after-bundled')
+  await mkdir(join(project, '.git'))
+  const source = packageSkillsDir()
+  const forced = await syncWriterSkills({ sourceDir: source, workspaceDir: project, force: true })
+  expect(forced.copied).toEqual(expect.arrayContaining(['story', 'story-zhuque']))
+  expect(await readFile(join(project, '.agents/skills/story/SKILL.md'), 'utf8')).toContain('name: story')
 })

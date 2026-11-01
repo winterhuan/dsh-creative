@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-This bundle adds 写作模式 to a DSH profile. A new session can use the oh-story skills for serials, short stories, and revision, and the right sidebar browses libraries and writing projects with Dashboard-aligned navigation and editable text files. Skills are copied into the workspace `.agents/skills` directory by default, without replacing files that already exist. Set `skillMount` to `bundled` and restart to read the package `skills` directory instead. The sidebar does not embed or start the oh-story dashboard.
+This bundle adds 写作模式 to a DSH profile. A new session can use the oh-story skills for serials, short stories, and revision, and the right sidebar browses libraries and writing projects with Dashboard-aligned navigation and editable text files. By default `skillMount` is `bundled`: the preset reads the package `skills` directory and does not auto-copy into the project. Run `/writer-sync-skills` to write packaged skills into `<project>/.agents/skills` (force replace). Run `/writer-unsync-skills` to remove only those Writer skill directories and keep other project skills. Set `skillMount` to `workspace` and restart if you want first-entry auto-copy. The sidebar does not embed or start the oh-story dashboard.
 
 ## Table of Contents
 
@@ -38,17 +38,19 @@ Restart the profile after install or rebuild. The patch adds the `writer` host r
 
 ### Choose how skills are mounted
 
-`skillMount` is `workspace` or `bundled`. The default is `workspace`. Only one mode is active.
+`skillMount` is `workspace` or `bundled`. The default is `bundled`. Only one mode is active.
 
-In `workspace` mode the host does not set `bundledSkillDir`. The first time a session enters 写作模式, the host copies each packaged skill directory to `<project>/.agents/skills/<name>/`, where the project is the nearest ancestor containing `.git`, or the session directory when there is none. A directory that already exists is left unchanged. Skill discovery uses the normal project root `.agents/skills`. Run `/writer-sync-skills` in that session to replace those directories with the packaged copies.
+In `bundled` mode the host does not auto-copy skills. The preset's skill-filesystem row sets `bundledSkillDir` to the absolute `skills` directory of this package, resolved with `createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')`. That root is trusted by skill-filesystem. The workspace row of skill-filesystem is disabled, so the two rows do not load together.
 
-In `bundled` mode the host does not copy skills. The preset's skill-filesystem row sets `bundledSkillDir` to the absolute `skills` directory of this package, resolved with `createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')`. That root is trusted by skill-filesystem. The workspace row of skill-filesystem is disabled, so the two rows do not load together. Restart after changing `skillMount`, because the preset reads the mode when it mounts.
+In `workspace` mode the host does not set `bundledSkillDir`. The first time a session enters 写作模式, the host copies each packaged skill directory to `<project>/.agents/skills/<name>/`, where the project is the nearest ancestor containing `.git`, or the session directory when there is none. A directory that already exists is left unchanged. Skill discovery uses the normal project root `.agents/skills`.
+
+Either mode can run `/writer-sync-skills` to force-write packaged skill directories into `.agents/skills`. Run `/writer-unsync-skills` to delete only the packaged skill names (the same directory names under this package's `skills/`); other folders under `.agents/skills` stay. Restart after changing `skillMount`, because the preset reads the mode when it mounts.
 
 ```yaml
 - id: writer
   name: '@winterhuan/dsh-writer'
   config:
-    skillMount: bundled
+    skillMount: workspace
 ```
 
 `makersApiKeyEnv` names the environment variable for an explicit Zhuque check. The default is `MAKERS_API_KEY`. `gptImageApiKeyEnv` names the variable for cover image generation. The default is `GPT_IMAGE_API_KEY`. The host stores the names only and mirrors them to `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`. The Plugins page shows a Writing entry while this Host row is installed: bind secrets through DSH credentials (never into the settings document). `story-zhuque` and `story-cover` (API path) read those variables and do not run unless the author asks.
@@ -80,7 +82,7 @@ On DSH, `story-setup` treats the host as `dsh` and does not deploy Claude Code `
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The patch in [cordis.patch.yml](cordis.patch.yml) inserts the host and the preset. The preset carries persona, instructions, time, shell, filesystem, search, jobs, skills, compaction, delegation, ask-user, todo, and web. It does not load an `agent` entry or a skill provider. [src/index.ts](src/index.ts) copies skills, registers `/writer-sync-skills`, and mounts `PUT /writer/file`. [src/client/sidebar.tsx](src/client/sidebar.tsx) registers the sidebar tab and its body slot, and shows them only when the session preset is `writer`.
+The patch in [cordis.patch.yml](cordis.patch.yml) inserts the host and the preset. The preset carries persona, instructions, time, shell, filesystem, search, jobs, skills, compaction, delegation, ask-user, todo, and web. It does not load an `agent` entry or a skill provider. [src/index.ts](src/index.ts) mounts skills, registers `/writer-sync-skills` and `/writer-unsync-skills`, and mounts `PUT /writer/file`. [src/client/sidebar.tsx](src/client/sidebar.tsx) registers the sidebar tab and its body slot, and shows them only when the session preset is `writer`.
 
 </details>
 
@@ -110,11 +112,11 @@ The persona prefix is sent on every turn of a writing session. Loading a skill a
 
 #### KV Cache effect
 
-The persona is stable for the life of the preset revision. Copying skills into `.agents/skills` can change the skill catalog on a later turn after the first entry into 写作模式. A forced `/writer-sync-skills` can change skill text the same way. Switching `skillMount` applies only after restart, so it does not rewrite an in-flight prompt.
+The persona is stable for the life of the preset revision. With the default `bundled` mount the skill catalog comes from the package and stays stable across sessions. In `workspace` mode, copying skills into `.agents/skills` can change the skill catalog on a later turn after the first entry into 写作模式. A forced `/writer-sync-skills` (or `/writer-unsync-skills`) can change what project discovery sees the same way. Switching `skillMount` applies only after restart, so it does not rewrite an in-flight prompt.
 
 ## Known Limitations and Deferred Work
 
-- The sidebar mirrors Dashboard library/project discovery, editable extensions, filename search, preview, editor-shell basics, P3d masthead/health polish, and P3e breadcrumbs/line numbers/byte meta/conflict dialog/draft counts/local-workspace copy, without starting a local dashboard-server or adopting the zs theme. Delete and view-state localStorage persistence are still deferred. It does not create a book, run chapter guards, or list files through a private read API. `workspace` mode will not replace an existing skill directory until `/writer-sync-skills`. A project copy still outranks a bundled skill if both are present after an earlier copy. Zhuque runs only when `story-zhuque` is invoked and the named environment variable is set. Cover image generation needs `GPT_IMAGE_API_KEY` (or the configured name) only when the author asks for an image; prompt-only delivery does not. This environment did not install the bundle into a live DSH profile.
+- The sidebar mirrors Dashboard library/project discovery, editable extensions, filename search, preview, editor-shell basics, P3d masthead/health polish, and P3e breadcrumbs/line numbers/byte meta/conflict dialog/draft counts/local-workspace copy, without starting a local dashboard-server or adopting the zs theme. Delete and view-state localStorage persistence are still deferred. It does not create a book, run chapter guards, or list files through a private read API. `workspace` mode will not replace an existing skill directory until `/writer-sync-skills`. `/writer-unsync-skills` removes only packaged Writer skill names. A project copy still outranks a bundled skill if both are present after an earlier copy and discovery includes project roots. Zhuque runs only when `story-zhuque` is invoked and the named environment variable is set. Cover image generation needs `GPT_IMAGE_API_KEY` (or the configured name) only when the author asks for an image; prompt-only delivery does not. This environment did not install the bundle into a live DSH profile.
 
 <a id="dev-note"></a>
 ### Dev Note

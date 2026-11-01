@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { skillFilesystemRowDisabled, writerSkillMount } from '../src/mount.ts'
 
 describe('skill mount', () => {
-  it('defaults to workspace and treats only bundled as bundled', () => {
-    expect(writerSkillMount(undefined, undefined)).toBe('workspace')
-    expect(writerSkillMount(undefined, 'workspace')).toBe('workspace')
-    expect(writerSkillMount('bundled', 'workspace')).toBe('bundled')
+  it('defaults to bundled and treats only workspace as workspace', () => {
+    expect(writerSkillMount(undefined, undefined)).toBe('bundled')
     expect(writerSkillMount(undefined, 'bundled')).toBe('bundled')
+    expect(writerSkillMount('workspace', 'bundled')).toBe('workspace')
+    expect(writerSkillMount(undefined, 'workspace')).toBe('workspace')
   })
 
   it('enables exactly one skill-filesystem row', () => {
@@ -22,8 +22,10 @@ describe('skill mount', () => {
     const workspace = patch.slice(patch.indexOf('id: skill-filesystem\n'), patch.indexOf('id: skill-filesystem-bundled'))
     const bundled = patch.slice(patch.indexOf('id: skill-filesystem-bundled'))
     expect(workspace).toContain("=== 'bundled'")
+    expect(workspace).toContain("?? 'bundled'")
     expect(workspace).not.toContain('bundledSkillDir')
     expect(bundled).toContain("!== 'bundled'")
+    expect(bundled).toContain("?? 'bundled'")
     expect(bundled).toContain("createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')), 'skills'")
     expect(patch).toContain('name: 写作模式')
     expect(patch).toContain('story-long-write')

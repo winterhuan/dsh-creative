@@ -13,13 +13,13 @@ import { writerSkillMount, type SkillMount } from './mount.ts'
 import { assertTrustedWriterAuthority } from './request-trust.ts'
 import { packageSkillsDir } from './skills-dir.ts'
 import { resolveWriterSyncPreset } from './sync-gate.ts'
-import { syncWriterSkills, type SyncResult } from './sync-skills.ts'
+import { syncWriterSkills, unsyncWriterSkills, type SyncResult, type UnsyncResult } from './sync-skills.ts'
 import { registerWriterRoute } from './write-route.ts'
 
 export { packageSkillsDir } from './skills-dir.ts'
 export { skillFilesystemRowDisabled, writerSkillMount } from './mount.ts'
 export { resolveWriterSyncPreset } from './sync-gate.ts'
-export { syncWriterSkills, projectRootFor } from './sync-skills.ts'
+export { syncWriterSkills, unsyncWriterSkills, packagedSkillNames, projectRootFor } from './sync-skills.ts'
 export { registerWriterRoute } from './write-route.ts'
 export { classifyWriterPath, isEditableWriterPath } from './editable.ts'
 
@@ -40,7 +40,7 @@ export interface Config {
 
 /** Schema for the writing plugin. */
 export const Config = z.object({
-  skillMount: z.union(['workspace', 'bundled'] as const).default('workspace'),
+  skillMount: z.union(['workspace', 'bundled'] as const).default('bundled'),
   editorMaxBytes: z.natural().min(65_536).max(8_388_608).default(2_097_152),
   makersApiKeyEnv: z.string().role('credential-ref').default('MAKERS_API_KEY').volatile(),
   gptImageApiKeyEnv: z.string().role('credential-ref').default('GPT_IMAGE_API_KEY').volatile(),
@@ -56,6 +56,7 @@ export interface WriterHost {
   /** Credential environment name for cover image API. The host does not read the secret. */
   readonly gptImageApiKeyEnv: string
   sync(workspaceDir: string, force: boolean): Promise<SyncResult>
+  unsync(workspaceDir: string): Promise<UnsyncResult>
 }
 
 declare module '@deepseek-ai/cordis' {
@@ -82,7 +83,7 @@ function restoreEnv(name: string, previous: string | undefined): void {
 }
 
 /**
- * Install the mount, the first-entry copy, the save route, and `/writer-sync-skills`.
+ * Install the mount, optional first-entry copy, the save route, and skill sync/unsync commands.
  * @param context - host context.
  * @param config - plugin configuration after schema defaults.
  */
@@ -111,6 +112,7 @@ export function apply(context: Context, config: Config = {}): void {
     makersApiKeyEnv,
     gptImageApiKeyEnv,
     sync: (workspaceDir, force) => syncWriterSkills({ sourceDir: skillsDir, workspaceDir, force }),
+    unsync: workspaceDir => unsyncWriterSkills({ sourceDir: skillsDir, workspaceDir }),
   }
   context.provide('writerHost', host)
   const copy = (agent: Agent, eventPreset?: string): void => {
@@ -143,9 +145,15 @@ export function apply(context: Context, config: Config = {}): void {
     ctx.effect(() => ctx.commands.register({
       definitionId: CommandDefinitionId('@winterhuan/dsh-writer/sync-skills'),
       name: 'writer-sync-skills',
-      description: '强制把随包写作技能同步到当前工作区 .agents/skills',
+      description: '把随包写作技能强制写入当前项目 .agents/skills（bundled 默认下也可写入，便于改副本或切 workspace）',
       handler: invocation => syncCommand(ctx, invocation),
     }), 'writer: sync command')
+    ctx.effect(() => ctx.commands.register({
+      definitionId: CommandDefinitionId('@winterhuan/dsh-writer/unsync-skills'),
+      name: 'writer-unsync-skills',
+      description: '删除此前 sync 写入的 Writer 技能目录，保留项目里其它 .agents/skills',
+      handler: invocation => unsyncCommand(ctx, invocation),
+    }), 'writer: unsync command')
   })
 }
 
@@ -153,11 +161,27 @@ async function syncCommand(context: Context, invocation: CommandInvocation): Pro
   if (invocation.rawInput.trim() !== '') return { kind: 'error', text: '用法：/writer-sync-skills' }
   const host = context.get('writerHost')
   if (host === undefined) return { kind: 'error', text: '写作插件还没有就绪。' }
-  if (host.skillMount === 'bundled') {
-    return { kind: 'error', text: '当前是 bundled 挂载，技能从插件目录读取，不会写入工作区。把 skillMount 改为 workspace 并重启后再同步。' }
-  }
   const cwd = invocation.agent.session.header.cwd
   if (cwd === undefined) return { kind: 'error', text: '这个会话没有工作区目录。' }
   const result = await host.sync(cwd, true)
-  return { kind: 'success', text: `已强制同步 ${String(result.copied.length)} 个技能到 ${result.destination}。` }
+  const mountNote = host.skillMount === 'bundled'
+    ? ' 当前是 bundled 挂载：会话仍读包内技能；项目副本供改稿或切到 workspace 后使用。'
+    : ''
+  return { kind: 'success', text: `已强制同步 ${String(result.copied.length)} 个技能到 ${result.destination}。${mountNote}` }
+}
+
+async function unsyncCommand(context: Context, invocation: CommandInvocation): Promise<CommandResult> {
+  if (invocation.rawInput.trim() !== '') return { kind: 'error', text: '用法：/writer-unsync-skills' }
+  const host = context.get('writerHost')
+  if (host === undefined) return { kind: 'error', text: '写作插件还没有就绪。' }
+  const cwd = invocation.agent.session.header.cwd
+  if (cwd === undefined) return { kind: 'error', text: '这个会话没有工作区目录。' }
+  const result = await host.unsync(cwd)
+  if (result.removed.length === 0) {
+    return { kind: 'success', text: `没有找到可撤销的 Writer 技能目录（已对照包内 skills）。目标：${result.destination}` }
+  }
+  return {
+    kind: 'success',
+    text: `已删除 ${String(result.removed.length)} 个 Writer 技能目录（${result.removed.join('、')}）。未触碰其它 .agents/skills。`,
+  }
 }

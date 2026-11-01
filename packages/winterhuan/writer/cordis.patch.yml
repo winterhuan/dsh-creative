@@ -40,10 +40,10 @@
             name: '@deepseek-ai/dsh-tool-jobs'
           - id: skill-filesystem
             name: '@deepseek-ai/dsh-skill-filesystem'
-            disabled: !!js (ctx.get('writerHost')?.skillMount ?? process.env.DSH_WRITER_SKILL_MOUNT ?? 'workspace') === 'bundled'
+            disabled: !!js (ctx.get('writerHost')?.skillMount ?? process.env.DSH_WRITER_SKILL_MOUNT ?? 'bundled') === 'bundled'
           - id: skill-filesystem-bundled
             name: '@deepseek-ai/dsh-skill-filesystem'
-            disabled: !!js (ctx.get('writerHost')?.skillMount ?? process.env.DSH_WRITER_SKILL_MOUNT ?? 'workspace') !== 'bundled'
+            disabled: !!js (ctx.get('writerHost')?.skillMount ?? process.env.DSH_WRITER_SKILL_MOUNT ?? 'bundled') !== 'bundled'
             config:
               bundledSkillDir: !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')), 'skills')
           - id: tool-skill

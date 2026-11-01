@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概要
 
-本 bundle 给 DSH 增加写作模式。新会话可以使用 oh-story 的长篇、短篇和去 AI 味技能，右侧栏按 Dashboard 模型浏览拆文库与写作项目并编辑允许的文本文件。默认把技能拷进工作区 `.agents/skills`，已经存在的目录不覆盖。把 `skillMount` 改成 `bundled` 并重启后，改为直接读插件包里的 `skills` 目录。侧栏不嵌入、也不启动 oh-story Dashboard。
+本 bundle 给 DSH 增加写作模式。新会话可以使用 oh-story 的长篇、短篇和去 AI 味技能，右侧栏按 Dashboard 模型浏览拆文库与写作项目并编辑允许的文本文件。默认 `skillMount` 为 `bundled`：预设直接读插件包内 `skills`，不会自动拷进项目。需要写入项目时执行 `/writer-sync-skills`（强制覆盖包内同名目录）；用 `/writer-unsync-skills` 只删除这些 Writer 技能目录，保留其它 `.agents/skills`。若要首次进入写作模式自动拷贝，把 `skillMount` 改成 `workspace` 并重启。侧栏不嵌入、也不启动 oh-story Dashboard。
 
 ## 目录
 
@@ -38,17 +38,19 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 ### 选择技能挂载
 
-`skillMount` 只能是 `workspace` 或 `bundled`，默认 `workspace`。两种模式不会同时生效。
+`skillMount` 只能是 `workspace` 或 `bundled`，默认 `bundled`。两种模式不会同时生效。
 
-`workspace` 不设置 `bundledSkillDir`。会话第一次进入写作模式时，Host 把包内每个技能目录拷到 `<项目>/.agents/skills/<name>/`。项目是含 `.git` 的最近祖先；没有时用会话目录。目标目录已存在则不覆盖。技能靠项目根的 `.agents/skills` 被发现。在该会话执行 `/writer-sync-skills` 会用包内副本替换这些目录。
+`bundled` 不会自动拷贝技能。预设里的 skill-filesystem 行把 `bundledSkillDir` 设为包内 `skills` 的绝对路径，用 `createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')` 定位。skill-filesystem 把这个根当作可信宿主目录。另一行 skill-filesystem 被禁用，因此两行不会一起加载。
 
-`bundled` 不拷贝技能。预设里的 skill-filesystem 行把 `bundledSkillDir` 设为包内 `skills` 的绝对路径，用 `createRequire(baseUrl).resolve('@winterhuan/dsh-writer/package.json')` 定位。skill-filesystem 把这个根当作可信宿主目录。另一行 skill-filesystem 被禁用，因此两行不会一起加载。修改 `skillMount` 后要重启，预设在挂载时读取这个值。
+`workspace` 不设置 `bundledSkillDir`。会话第一次进入写作模式时，Host 把包内每个技能目录拷到 `<项目>/.agents/skills/<name>/`。项目是含 `.git` 的最近祖先；没有时用会话目录。目标目录已存在则不覆盖。技能靠项目根的 `.agents/skills` 被发现。
+
+两种模式下都可以执行 `/writer-sync-skills`，强制把包内技能写入 `.agents/skills`。`/writer-unsync-skills` 只删除与包内 `skills/` 同名的目录，不会动项目里其它技能。修改 `skillMount` 后要重启，预设在挂载时读取这个值。
 
 ```yaml
 - id: writer
   name: '@winterhuan/dsh-writer'
   config:
-    skillMount: bundled
+    skillMount: workspace
 ```
 
 `makersApiKeyEnv` 是明确要求朱雀检测时使用的环境变量名，默认 `MAKERS_API_KEY`。`gptImageApiKeyEnv` 是封面生图用的环境变量名，默认 `GPT_IMAGE_API_KEY`。Host 只保存名字，并分别镜像到 `WRITER_ZHUQUE_KEY_ENV` / `WRITER_COVER_KEY_ENV`。安装本 Host 行后，插件页会出现「写作」入口，密钥经 DSH 凭据服务绑定（不写入设置文件）。`story-zhuque` 与 `story-cover`（API 通路）读取对应变量；作者没有明确要求时不运行。
@@ -80,7 +82,7 @@ dsh plugin --profile web add packages/winterhuan/writer
 <details>
 <summary>实现细节——点击展开</summary>
 
-[cordis.patch.yml](cordis.patch.yml) 插入 Host 和预设。预设包含 persona、说明、时间、shell、文件系统、搜索、jobs、技能、压缩、委派、提问、待办和网页。它不加载 `agent` 入口，也不注册 skill provider。[src/index.ts](src/index.ts) 负责拷贝技能、登记 `/writer-sync-skills`，并挂上 `PUT /writer/file`。[src/client/sidebar.tsx](src/client/sidebar.tsx) 登记侧栏类型和正文 slot，只在会话预设为 `writer` 时显示。
+[cordis.patch.yml](cordis.patch.yml) 插入 Host 和预设。预设包含 persona、说明、时间、shell、文件系统、搜索、jobs、技能、压缩、委派、提问、待办和网页。它不加载 `agent` 入口，也不注册 skill provider。[src/index.ts](src/index.ts) 负责挂载技能、登记 `/writer-sync-skills` 与 `/writer-unsync-skills`，并挂上 `PUT /writer/file`。[src/client/sidebar.tsx](src/client/sidebar.tsx) 登记侧栏类型和正文 slot，只在会话预设为 `writer` 时显示。
 
 </details>
 
@@ -110,12 +112,12 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 #### KV Cache 影响
 
-persona 在该预设修订的生命周期内保持稳定。第一次进入写作模式时把技能拷进 `.agents/skills`，可能让后面某一轮的技能目录发生变化。`/writer-sync-skills` 同样会改变技能正文。切换 `skillMount` 只在重启后生效，不会改写正在进行的提示。
+persona 在该预设修订的生命周期内保持稳定。默认 `bundled` 时技能目录来自包内，跨会话保持稳定。`workspace` 模式下第一次进入写作模式时把技能拷进 `.agents/skills`，可能让后面某一轮的技能目录发生变化。`/writer-sync-skills` 或 `/writer-unsync-skills` 同样会改变项目侧发现到的技能。切换 `skillMount` 只在重启后生效，不会改写正在进行的提示。
 
 <a id="known-limitations-and-deferred-work"></a>
 ## 已知限制与待办
 
-- 侧栏对标 Dashboard 的拆文库/写作项目发现、可编扩展、文件名搜索、预览、编辑器壳、P3d 顶栏/健康态与 P3e 面包屑/行号/底栏字节/冲突 dialog/文稿计数/仅本机文案，但不启本机 dashboard-server，也不换 zs 主题。删文件与视图态 localStorage 持久化尚未做。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。若以前拷过一份，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
+- 侧栏对标 Dashboard 的拆文库/写作项目发现、可编扩展、文件名搜索、预览、编辑器壳、P3d 顶栏/健康态与 P3e 面包屑/行号/底栏字节/冲突 dialog/文稿计数/仅本机文案，但不启本机 dashboard-server，也不换 zs 主题。删文件与视图态 localStorage 持久化尚未做。它不创建书、不做章节守卫，也不自建读取接口。`workspace` 在执行 `/writer-sync-skills` 之前不会替换已有技能目录。`/writer-unsync-skills` 只删除包内同名 Writer 技能目录。若以前拷过一份且发现仍包含项目根，项目里的副本仍然优先于 bundled 技能。朱雀只在调用 `story-zhuque` 且对应环境变量已设置时运行。封面生图只在作者要求出图且已配置 `GPT_IMAGE_API_KEY`（或配置的名字）时走 API；仅提示词不需要密钥。本环境没有把 bundle 装进正在运行的 DSH profile。
 
 <a id="dev-note"></a>
 ### 开发备注
