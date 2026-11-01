@@ -2,10 +2,13 @@
 import { expect, it } from 'vitest'
 import {
   WRITER_RAIL_DEFAULT_WIDTH,
+  WRITER_RAIL_HANDLE_WIDTH,
   WRITER_RAIL_MAX_WIDTH,
   WRITER_RAIL_MIN_WIDTH,
+  WRITER_STAGE_MIN_WIDTH,
   clampRailWidth,
   defaultRailChrome,
+  fitRailWidth,
   readRailChrome,
   setRailCollapsed,
   setRailWidth,
@@ -30,6 +33,14 @@ it('clamps rail width into the usable range', () => {
   expect(clampRailWidth(9999)).toBe(WRITER_RAIL_MAX_WIDTH)
   expect(clampRailWidth(240.6)).toBe(241)
   expect(defaultRailChrome()).toEqual({ width: WRITER_RAIL_DEFAULT_WIDTH, collapsed: false })
+})
+
+it('fits rail width into the desk so the stage is not covered', () => {
+  expect(fitRailWidth(220, 0)).toBe(220)
+  expect(fitRailWidth(400, 500)).toBe(500 - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH)
+  expect(fitRailWidth(220, 500)).toBe(220)
+  expect(fitRailWidth(220, WRITER_RAIL_MIN_WIDTH + WRITER_RAIL_HANDLE_WIDTH + WRITER_STAGE_MIN_WIDTH)).toBe(WRITER_RAIL_MIN_WIDTH)
+  expect(fitRailWidth(220, 100)).toBe(Math.max(0, 100 - WRITER_RAIL_HANDLE_WIDTH))
 })
 
 it('reads defaults and persists width plus collapsed', () => {
@@ -60,5 +71,11 @@ it('plugin.css keeps the collapsed rail out of flow and search input shrinkable'
   expect(css).toContain('.writer-rail[hidden]')
   expect(css).toMatch(/\.writer-rail\[hidden\][\s\S]*?display:\s*none/)
   expect(css).toMatch(/\.writer-search-slot\s+input\s*\{[\s\S]*?min-width:\s*0/)
-  expect(css).toMatch(/\.writer-search-slot\s+input\s*\{[\s\S]*?width:\s*100%/)
+  expect(css).toMatch(/\.writer-search-slot\s+input\s*\{[\s\S]*?width:\s*0/)
+  expect(css).toMatch(/grid-template-columns:\s*minmax\(0,\s*var\(--writer-rail-width\)\)/)
+  expect(css).toContain('.writer-tab > span')
+  expect(css).toMatch(/\.writer-tab\s*>\s*span\s*\{[\s\S]*?text-overflow:\s*ellipsis/)
+  expect(css).toMatch(/\.writer-tree-label\s*\{[\s\S]*?flex:\s*1 1 0%/)
+  const cssNoComments = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  expect(cssNoComments).not.toMatch(/\.writer-search-slot\s*\{[^}]*max-width:\s*100%/)
 })

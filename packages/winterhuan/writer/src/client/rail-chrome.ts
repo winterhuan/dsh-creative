@@ -4,6 +4,10 @@ export const WRITER_RAIL_STORAGE_KEY = 'writer.rail.chrome'
 export const WRITER_RAIL_MIN_WIDTH = 180
 export const WRITER_RAIL_MAX_WIDTH = 480
 export const WRITER_RAIL_DEFAULT_WIDTH = 220
+/** Resize handle column width (must match plugin.css). */
+export const WRITER_RAIL_HANDLE_WIDTH = 5
+/** Minimum stage column so the editor is still usable beside the rail. */
+export const WRITER_STAGE_MIN_WIDTH = 160
 
 export interface WriterRailChrome {
   width: number
@@ -20,6 +24,22 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 export function clampRailWidth(width: number): number {
   if (!Number.isFinite(width)) return WRITER_RAIL_DEFAULT_WIDTH
   return Math.min(WRITER_RAIL_MAX_WIDTH, Math.max(WRITER_RAIL_MIN_WIDTH, Math.round(width)))
+}
+
+/**
+ * Cap a preferred rail width so rail + handle + stage still fit in the desk.
+ * When the desk is narrower than the minimum usable split, returns the largest
+ * non-negative width that leaves room for the handle (stage may collapse to 0).
+ * @param preferred - stored or dragged width (will be clamped first).
+ * @param deskWidth - `.writer-desk` clientWidth in CSS px.
+ * @returns width to apply as `--writer-rail-width`.
+ */
+export function fitRailWidth(preferred: number, deskWidth: number): number {
+  const width = clampRailWidth(preferred)
+  if (!Number.isFinite(deskWidth) || deskWidth <= 0) return width
+  const maxWithStage = deskWidth - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH
+  if (maxWithStage >= WRITER_RAIL_MIN_WIDTH) return Math.min(width, maxWithStage)
+  return Math.max(0, Math.min(width, deskWidth - WRITER_RAIL_HANDLE_WIDTH))
 }
 
 /**
