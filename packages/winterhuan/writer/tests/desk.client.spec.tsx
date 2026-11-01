@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /** Dual-tab workspace tree: rail shell, root expand, dirty confirm, save. */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import { SessionId } from '@deepseek-ai/dsh-session'
@@ -18,6 +18,7 @@ import {
   WRITER_RAIL_DEFAULT_WIDTH,
   WRITER_RAIL_MIN_WIDTH,
   WRITER_RAIL_STORAGE_KEY,
+  fitRailWidth,
   readRailChrome,
 } from '../src/client/rail-chrome.ts'
 
@@ -334,4 +335,37 @@ it('drags the rail resize handle to set width', async () => {
 
   expect(desk.style.getPropertyValue('--writer-rail-width')).toBe('300px')
   expect(readRailChrome()).toEqual({ width: 300, collapsed: false })
+})
+
+it('caps the CSS rail width when the desk is narrower than the preferred rail', async () => {
+  const Original = globalThis.ResizeObserver
+  class FakeObserver {
+    callback: ResizeObserverCallback
+    constructor(callback: ResizeObserverCallback) {
+      this.callback = callback
+    }
+    observe(target: Element) {
+      void target
+      this.callback(
+        [{ contentRect: { width: 200 } } as ResizeObserverEntry],
+        this as unknown as ResizeObserver,
+      )
+    }
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', FakeObserver)
+  try {
+    const { container } = render(<WriterDesk sessionId={SessionId('session-fit')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
+    await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
+    const desk = container.querySelector('.writer-desk') as HTMLElement
+    const deskClientWidth = 200
+    const expected = fitRailWidth(WRITER_RAIL_DEFAULT_WIDTH, deskClientWidth)
+    expect(expected).toBeLessThan(WRITER_RAIL_DEFAULT_WIDTH)
+    await waitFor(() => {
+      expect(desk.style.getPropertyValue('--writer-rail-width')).toBe(`${String(expected)}px`)
+    })
+  } finally {
+    vi.stubGlobal('ResizeObserver', Original)
+  }
 })

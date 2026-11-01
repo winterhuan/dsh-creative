@@ -42,6 +42,7 @@ import {
   WRITER_RAIL_MAX_WIDTH,
   WRITER_RAIL_MIN_WIDTH,
   clampRailWidth,
+  fitRailWidth,
   readRailChrome,
   setRailCollapsed,
   setRailWidth,
@@ -305,6 +306,8 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const saveRef = useRef<() => void>(() => {})
   const searchSeq = useRef(0)
   const [railChrome, setRailChrome] = useState<WriterRailChrome>(() => readRailChrome())
+  const [deskWidth, setDeskWidth] = useState(0)
+  const deskRef = useRef<HTMLDivElement | null>(null)
   const railDrag = useRef<{ pointerId: number, startX: number, startWidth: number } | undefined>(undefined)
 
   // Prefer libraries when any exist; otherwise projects (both empty → projects).
@@ -590,8 +593,26 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   const librariesTabId = 'writer-tab-libraries'
   const projectsTabId = 'writer-tab-projects'
   const railId = 'writer-rail'
+  useEffect(() => {
+    const node = deskRef.current
+    if (node === null) return
+    const apply = (width: number): void => {
+      setDeskWidth(current => (current === width ? current : width))
+    }
+    apply(node.clientWidth)
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(entries => {
+      const entry = entries[0]
+      if (entry === undefined) return
+      apply(entry.contentRect.width)
+    })
+    observer.observe(node)
+    return () => { observer.disconnect() }
+  }, [])
+
   const railCollapsed = railChrome.collapsed
   const railWidth = railChrome.width
+  const fittedRailWidth = railCollapsed ? railWidth : fitRailWidth(railWidth, deskWidth)
 
   const persistRail = (next: WriterRailChrome): void => {
     setRailChrome(next)
@@ -656,10 +677,11 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
   }
 
   const deskStyle = {
-    ['--writer-rail-width' as string]: `${String(railWidth)}px`,
+    ['--writer-rail-width' as string]: `${String(fittedRailWidth)}px`,
   } as CSSProperties
 
   return <div
+    ref={deskRef}
     className="writer-desk"
     data-workbench="writer"
     data-rail-collapsed={railCollapsed ? 'true' : undefined}
