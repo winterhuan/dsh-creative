@@ -284,18 +284,32 @@ it('defaults the left rail width and persists collapse / resize chrome', async (
   expect(desk.getAttribute('data-rail-collapsed')).toBeNull()
   expect(desk.style.getPropertyValue('--writer-rail-width')).toBe(`${String(WRITER_RAIL_DEFAULT_WIDTH)}px`)
 
+  const rail = container.querySelector('.writer-rail') as HTMLElement
+  const handle = container.querySelector('.writer-rail-resize') as HTMLElement
+  const searchSlot = container.querySelector('.writer-search-slot') as HTMLElement
+  const searchInput = searchSlot.querySelector('input') as HTMLInputElement
+  expect(rail.hidden).toBe(false)
+  expect(handle.hidden).toBe(false)
+  expect(searchSlot).toBeTruthy()
+  expect(searchInput).toBeTruthy()
+
   const toggle = screen.getByRole('button', { name: zh.collapseRail })
   expect(toggle.getAttribute('aria-expanded')).toBe('true')
   expect(toggle.getAttribute('aria-controls')).toBe('writer-rail')
   fireEvent.click(toggle)
   expect(desk.getAttribute('data-rail-collapsed')).toBe('true')
+  expect(rail.hidden).toBe(true)
+  expect(handle.hidden).toBe(true)
+  expect(screen.queryByRole('tab', { name: new RegExp(zh.libraries) })).toBeNull()
   expect(screen.getByRole('button', { name: zh.expandRail }).getAttribute('aria-expanded')).toBe('false')
   expect(readRailChrome()).toEqual({ width: WRITER_RAIL_DEFAULT_WIDTH, collapsed: true })
 
   fireEvent.click(screen.getByRole('button', { name: zh.expandRail }))
   expect(desk.getAttribute('data-rail-collapsed')).toBeNull()
+  expect(rail.hidden).toBe(false)
+  expect(handle.hidden).toBe(false)
+  expect(screen.getByRole('tab', { name: new RegExp(zh.libraries) })).toBeTruthy()
 
-  const handle = container.querySelector('.writer-rail-resize') as HTMLElement
   expect(handle.getAttribute('role')).toBe('separator')
   expect(handle.getAttribute('aria-valuenow')).toBe(String(WRITER_RAIL_DEFAULT_WIDTH))
   fireEvent.keyDown(handle, { key: 'Home' })

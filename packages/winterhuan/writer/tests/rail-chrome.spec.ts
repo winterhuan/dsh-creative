@@ -49,3 +49,16 @@ it('ignores corrupt storage payloads', () => {
   storage.setItem('writer.rail.chrome', JSON.stringify({ width: 'wide', collapsed: 'yes' }))
   expect(readRailChrome(storage)).toEqual(defaultRailChrome())
 })
+
+it('plugin.css keeps the collapsed rail out of flow and search input shrinkable', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const { fileURLToPath } = await import('node:url')
+  const { dirname, join } = await import('node:path')
+  const here = dirname(fileURLToPath(import.meta.url))
+  const css = await readFile(join(here, '../src/client/plugin.css'), 'utf8')
+  expect(css).toContain(".writer-desk[data-rail-collapsed='true'] > .writer-rail")
+  expect(css).toContain('.writer-rail[hidden]')
+  expect(css).toMatch(/\.writer-rail\[hidden\][\s\S]*?display:\s*none/)
+  expect(css).toMatch(/\.writer-search-slot\s+input\s*\{[\s\S]*?min-width:\s*0/)
+  expect(css).toMatch(/\.writer-search-slot\s+input\s*\{[\s\S]*?width:\s*100%/)
+})
