@@ -16,8 +16,10 @@ import { WriterDesk } from '../src/client/desk.tsx'
 import { zh } from '../src/client/locales.ts'
 import {
   WRITER_RAIL_DEFAULT_WIDTH,
+  WRITER_RAIL_HANDLE_WIDTH,
   WRITER_RAIL_MIN_WIDTH,
   WRITER_RAIL_STORAGE_KEY,
+  WRITER_STAGE_MIN_WIDTH,
   fitRailWidth,
   readRailChrome,
 } from '../src/client/rail-chrome.ts'
@@ -337,7 +339,7 @@ it('drags the rail resize handle to set width', async () => {
   expect(readRailChrome()).toEqual({ width: 300, collapsed: false })
 })
 
-it('floors the CSS rail width at rail min when the desk is narrow', async () => {
+it('caps the CSS rail width when the desk is narrower than the preferred rail', async () => {
   const Original = globalThis.ResizeObserver
   class FakeObserver {
     callback: ResizeObserverCallback
@@ -361,9 +363,9 @@ it('floors the CSS rail width at rail min when the desk is narrow', async () => 
     const desk = container.querySelector('.writer-desk') as HTMLElement
     const deskClientWidth = 200
     const expected = fitRailWidth(WRITER_RAIL_DEFAULT_WIDTH, deskClientWidth)
-    expect(expected).toBeGreaterThanOrEqual(WRITER_RAIL_MIN_WIDTH)
+    expect(expected).toBeLessThan(WRITER_RAIL_MIN_WIDTH)
     expect(expected).toBeLessThan(WRITER_RAIL_DEFAULT_WIDTH)
-    expect(expected).toBe(deskClientWidth - 5) // handle; stage shrinks instead of crushing rail
+    expect(expected).toBe(deskClientWidth - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH) // rail shrinks with desk
     await waitFor(() => {
       expect(desk.style.getPropertyValue('--writer-rail-width')).toBe(`${String(expected)}px`)
     })

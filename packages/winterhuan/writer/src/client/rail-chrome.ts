@@ -27,27 +27,27 @@ export function clampRailWidth(width: number): number {
 }
 
 /**
- * Cap a preferred rail width for the desk without mid-glyph clipping the rail.
- * The CSS rail track is a *fixed* `var(--writer-rail-width)` (not minmax(0, …))
- * with `overflow:hidden` on the rail — shrinking below
- * {@link WRITER_RAIL_MIN_WIDTH} clips Tab / search / tree mid-glyph (same
- * visual as the old minmax(0, …) track). Prefer leaving
- * {@link WRITER_STAGE_MIN_WIDTH} for the stage only when that still keeps the
- * rail at or above min; otherwise keep the rail at min and let the stage
- * `minmax(0, 1fr)` track shrink (user can collapse with ‹›).
+ * Cap a preferred rail width so rail + handle (+ stage min when possible) fit
+ * inside the desk. The CSS rail track is a *fixed* `var(--writer-rail-width)`
+ * (not minmax(0, …)) with `overflow:hidden` on the desk — if the track is
+ * wider than the visible desk, the right side of the rail is clipped while
+ * the left Tab (`拆文库`) keeps its full layout width (looks like it "won't
+ * shrink" while `写作项目` is covered). So this may drop *below*
+ * {@link WRITER_RAIL_MIN_WIDTH} on a narrow host: equal Tab columns then
+ * ellipsis together instead of mid-glyph clipping. Manual drag still clamps
+ * to min via {@link clampRailWidth}.
  * @param preferred - stored or dragged width (will be clamped first).
  * @param deskWidth - `.writer-desk` clientWidth in CSS px.
- * @returns width to apply as `--writer-rail-width` (always ≥ min when preferred is finite).
+ * @returns width to apply as `--writer-rail-width` (≤ desk − handle when desk > 0).
  */
 export function fitRailWidth(preferred: number, deskWidth: number): number {
   const width = clampRailWidth(preferred)
   if (!Number.isFinite(deskWidth) || deskWidth <= 0) return width
-  const idealMax = deskWidth - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH
-  // Enough room for min-rail + handle + stage-min: cap so stage keeps its floor.
-  if (idealMax >= WRITER_RAIL_MIN_WIDTH) return Math.min(width, Math.round(idealMax))
-  // Prefer readable rail over stage floor — never below rail min; stage may shrink to 0.
-  const maxByDesk = Math.round(deskWidth - WRITER_RAIL_HANDLE_WIDTH)
-  return Math.min(width, Math.max(WRITER_RAIL_MIN_WIDTH, maxByDesk))
+  const maxWithStage = deskWidth - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH
+  // Keep stage floor when anything positive remains for the rail.
+  if (maxWithStage > 0) return Math.min(width, Math.round(maxWithStage))
+  // Extremely narrow: stage min cannot fit — rail takes desk − handle (may be 0).
+  return Math.max(0, Math.round(deskWidth - WRITER_RAIL_HANDLE_WIDTH))
 }
 
 /**

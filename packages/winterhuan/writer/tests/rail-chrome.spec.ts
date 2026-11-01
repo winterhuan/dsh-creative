@@ -35,22 +35,25 @@ it('clamps rail width into the usable range', () => {
   expect(defaultRailChrome()).toEqual({ width: WRITER_RAIL_DEFAULT_WIDTH, collapsed: false })
 })
 
-it('fits rail width into the desk without crushing below rail min', () => {
+it('fits rail width into the desk so both tabs can shrink (may go below rail min)', () => {
   expect(fitRailWidth(220, 0)).toBe(220)
   expect(fitRailWidth(400, 500)).toBe(500 - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH)
   expect(fitRailWidth(220, 500)).toBe(220)
   expect(fitRailWidth(220, WRITER_RAIL_MIN_WIDTH + WRITER_RAIL_HANDLE_WIDTH + WRITER_STAGE_MIN_WIDTH)).toBe(WRITER_RAIL_MIN_WIDTH)
-  // Wide enough for min-rail + stage-min: still cap so stage keeps its floor.
-  const roomy = WRITER_RAIL_MIN_WIDTH + WRITER_RAIL_HANDLE_WIDTH + WRITER_STAGE_MIN_WIDTH + 40
-  expect(fitRailWidth(220, roomy)).toBe(roomy - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH)
-  expect(fitRailWidth(220, roomy)).toBeGreaterThanOrEqual(WRITER_RAIL_MIN_WIDTH)
-  // Narrow host: prefer rail (≥ min) over stage min; stage track may shrink to 0.
-  expect(fitRailWidth(220, 200)).toBe(200 - WRITER_RAIL_HANDLE_WIDTH) // 195 ≥ min
-  expect(fitRailWidth(220, 200)).toBeGreaterThanOrEqual(WRITER_RAIL_MIN_WIDTH)
-  expect(fitRailWidth(220, 100)).toBe(WRITER_RAIL_MIN_WIDTH) // floor even if desk overflows
-  // Invariant: never mid-glyph-crush the rail for a finite preferred width.
-  for (const desk of [0, 50, 100, 200, 345, 500, 900]) {
-    expect(fitRailWidth(220, desk)).toBeGreaterThanOrEqual(WRITER_RAIL_MIN_WIDTH)
+  // Narrow host: keep stage min, allow rail below WRITER_RAIL_MIN_WIDTH so the
+  // fixed track does not overflow and mid-clip only the right Tab.
+  expect(fitRailWidth(220, 200)).toBe(200 - WRITER_RAIL_HANDLE_WIDTH - WRITER_STAGE_MIN_WIDTH)
+  expect(fitRailWidth(220, 200)).toBeLessThan(WRITER_RAIL_MIN_WIDTH)
+  // Extremely narrow: stage min cannot fit — rail takes desk - handle.
+  expect(fitRailWidth(220, 100)).toBe(Math.max(0, 100 - WRITER_RAIL_HANDLE_WIDTH))
+  // Invariant: fitted rail + handle never exceeds a positive desk (no overflow clip).
+  for (const desk of [50, 100, 200, 345, 500, 900]) {
+    const fitted = fitRailWidth(220, desk)
+    expect(fitted + WRITER_RAIL_HANDLE_WIDTH).toBeLessThanOrEqual(desk)
+    // Narrower desk → fitted rail must not stay stuck at preferred/min.
+    if (desk < WRITER_RAIL_MIN_WIDTH + WRITER_RAIL_HANDLE_WIDTH + WRITER_STAGE_MIN_WIDTH) {
+      expect(fitted).toBeLessThan(WRITER_RAIL_MIN_WIDTH)
+    }
   }
 })
 
@@ -87,7 +90,10 @@ it('plugin.css keeps the collapsed rail out of flow and search input shrinkable'
   expect(css).toMatch(/grid-template-columns:\s*var\(--writer-rail-width\)\s+5px\s+minmax\(0,\s*1fr\)/)
   expect(css).not.toMatch(/minmax\(0,\s*var\(--writer-rail-width\)\)/)
   expect(css).not.toMatch(/minmax\(0,\s*min\(42%/)
-  expect(css).toMatch(/\.writer-desk\s*>\s*\.writer-rail\s*\{[\s\S]*?min-width:\s*var\(--writer-rail-width\)/)
+  // Do not pin rail min-width to the CSS var — that blocks host narrowing.
+  expect(css).not.toMatch(/\.writer-desk\s*>\s*\.writer-rail\s*\{[\s\S]*?min-width:\s*var\(--writer-rail-width\)/)
+  // Equal Tab columns + ellipsis so 拆文库 / 写作项目 shrink together.
+  expect(css).toMatch(/\.writer-tabs\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
   expect(css).toContain('.writer-tab > span')
   expect(css).toMatch(/\.writer-tab\s*>\s*span\s*\{[\s\S]*?text-overflow:\s*ellipsis/)
   expect(css).toMatch(/\.writer-tree-label\s*\{[\s\S]*?flex:\s*1 1 0%/)

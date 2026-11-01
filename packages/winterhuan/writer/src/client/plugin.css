@@ -3,9 +3,10 @@
   --writer-accent: var(--dsw-alias-brand-primary);
   --writer-rail-width: 220px;
   display: grid;
-  /* Fixed rail track (not minmax(0, var)): a min-0 track shrinks under pressure
-     and overflow:hidden clips Tab/search mid-glyph. JS fitRailWidth floors at
-     rail min and only then leaves stage min — stage uses minmax(0, 1fr). */
+  /* Fixed rail track (not minmax(0, var)): under space pressure a min-0 track
+     shrinks below --writer-rail-width while 1fr stage eats the rest, and
+     overflow:hidden clips the right Tab/search mid-glyph. JS fitRailWidth
+     keeps rail+handle(+stageMin) inside the desk — may go below rail min. */
   grid-template-columns: var(--writer-rail-width) 5px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
@@ -19,13 +20,6 @@
 
 .writer-desk > * {
   min-width: 0;
-}
-
-/* Hold the rail grid item at the fitted track width so the blanket min-width:0
-   cannot let stage paint over / crush mid-glyph chrome under a tight host. */
-.writer-desk > .writer-rail {
-  min-width: var(--writer-rail-width);
-  z-index: 1;
 }
 
 .writer-desk[data-rail-collapsed='true'] {
@@ -44,7 +38,6 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  /* min-width comes from .writer-desk > .writer-rail (track width); keep 0 only as fallback. */
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -825,7 +818,7 @@
 
 @media (max-width: 360px) {
   /* Do not override rail track to minmax(0, …) here — that reintroduces mid-glyph
-     clipping under zoom/narrow host. JS fitRailWidth floors --writer-rail-width at rail min. */
+     clipping under zoom/narrow host. JS fitRailWidth caps --writer-rail-width to the desk. */
   .writer-counts,
   .writer-local {
     display: none;
