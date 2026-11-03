@@ -34,7 +34,7 @@ function stubAgent(options: {
   return {
     id: SessionId('session-one'),
     ctx: new Context(),
-    session: { header } as never,
+    session: { id: SessionId('session-one'), header } as never,
   } as never
 }
 
@@ -48,10 +48,14 @@ async function bench(options: {
   composed?: string | undefined
   defaultId?: string
   select?: (agent: Agent, preset: string) => Promise<string>
+  /** When set, the `agents` registry resolves this Agent and `sessionProjections` reports `blank`. */
+  live?: Agent
+  blank?: boolean
 } = {}): Promise<{
   select: ReturnType<typeof vi.fn>
   warnings: string[]
   fire: (agent: Agent, source: SessionStartSource) => Promise<void>
+  emitSelection: (agent: Agent, agentPreset: string) => Promise<void>
 }> {
   const ctx = new Context()
   const warnings: string[] = []
@@ -68,15 +72,28 @@ async function bench(options: {
     composedPreset: () => options.composed,
     defaultId: options.defaultId ?? 'standard',
   } as never)
+  if (options.live !== undefined) {
+    const live = options.live
+    ctx.provide('agents', { get: (id: SessionId) => id === live.id ? live : undefined } as never)
+  }
+  if (options.blank !== undefined) {
+    const boundary = options.blank ? { openTurnStartSeq: null, lastTurn: 0 } : { openTurnStartSeq: 0, lastTurn: 1 }
+    ctx.provide('sessionProjections', { stateOf: () => boundary } as never)
+  }
   let fire: (agent: Agent, source: SessionStartSource) => Promise<void> = async () => {}
+  let emitSelection: (agent: Agent, agentPreset: string) => Promise<void> = async () => {}
   await ctx.plugin({
     apply(child: Context) {
       apply(child, { rules: volatileRules(options.rules ?? []) } as Config)
       // The Host dispatches this event serially and awaits every listener; the switch follows the dispatch.
       fire = async (agent, source) => { await child.serial('agent/created', { agent, source }); await settled() }
+      emitSelection = async (agent, agentPreset) => {
+        child.emit('session/event', agent.session, { type: 'agent-preset/selected', data: { agentPreset } })
+        await settled()
+      }
     },
   })
-  return { select, warnings, fire }
+  return { select, warnings, fire, emitSelection }
 }
 
 const WORKSPACES = new Map([['/projects/novel', { id: 'ws-novel' }]])
@@ -209,6 +226,78 @@ describe('project default mode host', () => {
     await fire(stubAgent({ cwd: '/projects/novel' }), 'startup')
     expect(select).toHaveBeenCalledOnce()
     expect(select.mock.calls[0]![1]).toBe('story')
+  })
+})
+
+describe('project default mode on a reused blank session', () => {
+  // DSH's web client claims an existing live blank session by selecting the
+  // global default onto it, after `agent/created` settled. These cases pin that
+  // the project default survives that fallback.
+
+  it('re-asserts the project default when a blank ruled session falls back to the global default', async () => {
+    const agent = stubAgent({ cwd: '/projects/novel', headerPreset: 'standard' })
+    const b = await bench({
+      rules: [{ workspaceId: 'ws-novel', agentPreset: 'story' }],
+      workspaces: WORKSPACES,
+      defaultId: 'standard',
+      live: agent,
+      blank: true,
+    })
+    await b.emitSelection(agent, 'standard')
+    expect(b.select).toHaveBeenCalledOnce()
+    expect(b.select.mock.calls[0]![1]).toBe('story')
+  })
+
+  it('leaves a session past its first turn on the log\'s composition', async () => {
+    const agent = stubAgent({ cwd: '/projects/novel', headerPreset: 'standard' })
+    const b = await bench({
+      rules: [{ workspaceId: 'ws-novel', agentPreset: 'story' }],
+      workspaces: WORKSPACES,
+      defaultId: 'standard',
+      live: agent,
+      blank: false,
+    })
+    await b.emitSelection(agent, 'standard')
+    expect(b.select).not.toHaveBeenCalled()
+  })
+
+  it('ignores a selection of a non-default preset', async () => {
+    const agent = stubAgent({ cwd: '/projects/novel', headerPreset: 'standard' })
+    const b = await bench({
+      rules: [{ workspaceId: 'ws-novel', agentPreset: 'story' }],
+      workspaces: WORKSPACES,
+      defaultId: 'standard',
+      live: agent,
+      blank: true,
+    })
+    await b.emitSelection(agent, 'ptc')
+    expect(b.select).not.toHaveBeenCalled()
+  })
+
+  it('does not fight a session created with an explicit non-default preset', async () => {
+    const agent = stubAgent({ cwd: '/projects/novel', headerPreset: 'ptc' })
+    const b = await bench({
+      rules: [{ workspaceId: 'ws-novel', agentPreset: 'story' }],
+      workspaces: WORKSPACES,
+      defaultId: 'standard',
+      live: agent,
+      blank: true,
+    })
+    await b.emitSelection(agent, 'standard')
+    expect(b.select).not.toHaveBeenCalled()
+  })
+
+  it('ignores a fallback outside a ruled workspace', async () => {
+    const agent = stubAgent({ cwd: '/tmp/scratch', headerPreset: 'standard' })
+    const b = await bench({
+      rules: [{ workspaceId: 'ws-novel', agentPreset: 'story' }],
+      workspaces: WORKSPACES,
+      defaultId: 'standard',
+      live: agent,
+      blank: true,
+    })
+    await b.emitSelection(agent, 'standard')
+    expect(b.select).not.toHaveBeenCalled()
   })
 })
 
