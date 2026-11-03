@@ -101,4 +101,16 @@ describe('project default mode in a real composition', () => {
     expect(ctx.agentPresets.composedPreset(agent.ctx)).toBe('standard')
     expect(ctx.tools.schemas(agent).map(row => row.name)).toEqual(expect.arrayContaining(['standard', 'subagent']))
   })
+
+  it('re-asserts the project preset when a blank session falls back to the global default', async (test) => {
+    const { ctx, directory } = await compose(test, [{ workspaceId: WORKSPACE, agentPreset: 'student' }])
+    const agent = await createSession(ctx, 'reused', directory)
+    await vi.waitFor(() => { expect(ctx.agentPresets.composedPreset(agent.ctx)).toBe('student') })
+    // The web client reuses the live blank session by selecting the global default onto it.
+    await ctx.agentPresets.select(agent, 'standard')
+    await vi.waitFor(() => {
+      expect(ctx.agentPresets.composedPreset(agent.ctx)).toBe('student')
+      expect(ctx.sessionProjections.stateOf(agent.session, 'agentPreset')).toBe('student')
+    })
+  })
 })

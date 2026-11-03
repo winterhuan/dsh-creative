@@ -12,11 +12,20 @@
  * runs is recorded in its log, as the model-visible-implies-logged rule
  * requires. `select` recomposes a published Agent, so the switch runs once the
  * serial `agent/created` dispatch has settled and before the first turn. Only a
- * freshly created ordinary session is retargeted; a resumed, forked, or
- * subagent child keeps the composition its lineage already carries, and a
- * creation request that names a preset other than the global default wins. A
- * request that names the global default explicitly is indistinguishable from
- * an omission and is retargeted like one.
+ * fresh ordinary session (or a blank session another surface falls back to the
+ * global default) is retargeted; a forked or subagent child keeps the
+ * composition its lineage already carries, a session whose first turn already
+ * started keeps the composition its log fixed, and a request that names a
+ * preset other than the global default wins. A request that names the global
+ * default explicitly is indistinguishable from an omission and is retargeted
+ * like one.
+ *
+ * DSH reuses a live blank session by selecting the global default onto it when
+ * the web client opens its workspace without naming a preset. That selection
+ * lands after `agent/created` settled and would silently undo the project
+ * default before the first turn, so the Host also watches `agent-preset/selected`
+ * events and re-asserts the rule on a blank session that falls back to the
+ * global default.
  *
  * This module owns no Remote namespace: rules are ordinary volatile Config the
  * browser half edits through the settings form, and the Host reads them at
@@ -71,24 +80,80 @@ export const Config = z.object({
  */
 export function apply(context: Context, config: Config): void {
   context.on('agent/created', ({ agent, source }) => {
-    // A fresh ordinary creation is the only retarget: resume and compaction
-    // reuse a composition the log already fixed, and a forked or subagent child
-    // (both published with source 'startup') inherits its parent's preset.
+    // A fresh ordinary creation is the only creation retarget: resume and
+    // compaction reuse a composition the log already fixed, and a forked or
+    // subagent child (both published with source 'startup') inherits its
+    // parent's preset.
     if (source !== 'startup') return
-    const header = agent.session.header
-    if (header.parentSession !== undefined || header.origin === 'subagent') return
+    if (!isRetargetable(context, agent.session)) return
     // `select` rebinds the Agent's scope and emits `tools/change`, which
     // preset-scoped plugins answer by installing and disposing Agent-scoped
     // fibers. The serial `agent/created` dispatch is still running those
     // plugins' listeners against the creation-time preset, so the switch waits
     // for the dispatch to settle instead of recomposing the Agent mid-flight.
-    // Every failure is contained and logged; creation is never vetoed.
-    setImmediate(() => {
-      retarget(context, config, agent).catch((error: unknown) => {
-        context.logger.warn(`project-default-mode: session "${agent.id}" kept its default preset: ${String(error)}`)
-      })
+    scheduleRetarget(context, config, agent)
+  })
+  // A live blank session reused by the web client's "open workspace" is
+  // re-selected onto the global default after creation settled, which would
+  // quietly undo the project default before the first turn. Re-assert the rule
+  // whenever a blank session that is still eligible for a project default falls
+  // back to the global default; a session already on another preset, or past its
+  // first turn, is left alone.
+  context.on('session/event', (session, event) => {
+    if (event.type !== 'agent-preset/selected') return
+    const presets = context.get('agentPresets')
+    if (presets === undefined || event.data.agentPreset !== presets.defaultId) return
+    if (!isRetargetable(context, session) || !isBlank(context, session)) return
+    const agent = context.get('agents')?.get(session.id)
+    if (agent === undefined) return
+    scheduleRetarget(context, config, agent)
+  })
+}
+
+/**
+ * Schedule one retarget after the current event dispatch settles. Every failure
+ * is contained and logged; creation and the log append are never vetoed.
+ * @param context - Host context carrying the logger.
+ * @param config - per-project default rules.
+ * @param agent - the Agent whose session may be retargeted.
+ */
+function scheduleRetarget(context: Context, config: Config, agent: Agent): void {
+  setImmediate(() => {
+    retarget(context, config, agent).catch((error: unknown) => {
+      context.logger.warn(`project-default-mode: session "${agent.id}" kept its default preset: ${String(error)}`)
     })
   })
+}
+
+/**
+ * Whether a session is an ordinary top-level session this plugin may retarget:
+ * not a forked or subagent child, which inherit their parent's composition.
+ * @param context - Host context; reads the preset registry's default id.
+ * @param session - the session whose header decides eligibility.
+ * @returns whether the session may adopt a project default.
+ */
+function isRetargetable(context: Context, session: Agent['session']): boolean {
+  const header = session.header
+  if (header.parentSession !== undefined || header.origin === 'subagent') return false
+  // The header records the creation request's resolved preset. The web client
+  // names no preset, so its session resolves to the global default; any other
+  // value was named explicitly (webhook, SDK, session.create) and must win over
+  // this bundle's project default.
+  return header.agentPreset === undefined || header.agentPreset === context.get('agentPresets')?.defaultId
+}
+
+/**
+ * Whether a session is still blank — its first turn has not started — using the
+ * same boundary projection the preset registry's `select` guards on.
+ * @param context - Host context carrying the projection registry.
+ * @param session - the session to test.
+ * @returns whether no turn has started; false when the registry is absent.
+ */
+function isBlank(context: Context, session: Agent['session']): boolean {
+  const projections = context.get('sessionProjections')
+  if (projections === undefined) return false
+  const boundary = projections.stateOf(session, 'turnBoundary')
+  return boundary === undefined || boundary.openTurnStartSeq === null && boundary.lastTurn === 0
 }
 
 /**
@@ -108,12 +173,6 @@ async function retarget(context: Context, config: Config, agent: Agent): Promise
   if (agents !== undefined && agents.get(agent.id) !== agent) return
   const cwd = agent.session.header.cwd
   if (cwd === undefined) return
-  // The header records the creation request's resolved preset. The web client
-  // names no preset, so its session resolves to the global default; any other
-  // value was named explicitly (webhook, SDK, session.create) and must win over
-  // this bundle's project default.
-  if (agent.session.header.agentPreset !== undefined
-    && agent.session.header.agentPreset !== presets.defaultId) return
   const workspace = await workspaces.resolveByPath(cwd)
   if (workspace === undefined) return
   const rule = ruleForWorkspace(config.rules.get(), workspace.id)
