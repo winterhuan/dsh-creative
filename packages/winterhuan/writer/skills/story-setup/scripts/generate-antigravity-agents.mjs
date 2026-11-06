@@ -121,23 +121,13 @@ function adaptBody(body, name, tools) {
   }
 
   if (name === "story-researcher") {
-    adapted = adapted
-      .replace("WebSearch/webReader 作为兜底。", "CDP 不可用时返回结构化缺口，由父会话完成联网检索。")
-      .replace("**核心原则：CDP 优先，WebSearch 兜底。**", "**核心原则：只在 CDP 可用时研究；否则交回父会话。**")
-      .replace("CDP 能打开真实页面拿到完整正文；WebSearch 只返回摘要节选，信息量远不如全文。", "Antigravity custom subagent 只通过 `run_command` 使用 CDP；不假定存在额外联网工具。")
-      .replace("3. WebSearch / webReader → 兜底（CDP 不可用或页面打不开时）", "3. CDP 不可用或页面打不开 → 返回结构化 research gap，由父会话继续")
-      .replaceAll("直接降级到 WebSearch/webReader", "返回结构化 research gap，由父会话继续")
-      .replaceAll("降级到 WebSearch/webReader 兜底", "返回结构化 research gap，由父会话继续")
-      .replaceAll("降级到 WebSearch", "返回结构化 research gap，由父会话继续")
-      .replace(
-        /### 第四步：WebSearch\/webReader（兜底）[\s\S]*?(?=\n### 第五步：整理输出)/,
-        "### 第四步：CDP 不可用时交回父会话\n\n返回 `status: \"failed\"`，在 `gaps` 中说明 CDP 不可用或页面提取失败，并给出建议检索词与候选来源类型。不要自行声称已调用联网兜底，也不要编造内容。\n",
-      )
-      .replace("{google | bing | websearch}", "{google | bing}")
+    // The researcher template already sends unavailable-browser cases back to
+    // the parent agent, so Antigravity needs no fallback rewrite. Only the
+    // host-specific tool note below differs.
   }
 
   const researchNote = name === "story-researcher"
-    ? "- This custom subagent has no WebSearch/webReader tool. Prefer CDP through `run_command`; if CDP is unavailable, return a structured research gap to the parent agent and never claim that web fallback ran.\n"
+    ? "- This custom subagent has no web search or web-reader tool. Use ego-browser through `run_command`; if it is unavailable, return a structured research gap to the parent agent.\n"
     : ""
 
   return `${adapted.trimEnd()}\n\n---\n\nAntigravity adaptation notes:\n` +
@@ -166,9 +156,7 @@ function renderAgent(sourceFile) {
   const sourceModel = String(data.model || "").toLowerCase()
   const model = sourceModel === "haiku" ? "flash" : "pro"
   const sourceSkills = parseInlineList(data.skills)
-  const description = name === "story-researcher"
-    ? String(data.description).replace("WebSearch/webReader 作为兜底", "CDP 不可用时返回缺口，由父会话联网检索")
-    : String(data.description)
+  const description = String(data.description)
 
   const frontmatter = [
     "---",

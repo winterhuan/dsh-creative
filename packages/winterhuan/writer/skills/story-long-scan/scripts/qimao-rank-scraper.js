@@ -2,7 +2,7 @@
 /**
  * 七猫小说排行榜采集脚本
  *
- * 配合 browser-cdp skill 使用。先启动 Chrome CDP 环境，再运行本脚本。
+ * 配合 browser-cdp skill 使用。先安装 Ego Lite（ego-browser 可用），再运行本脚本。
  * 采集策略：tab 切换男生榜/女生榜和榜单类型，滚动加载后从页面文本解析结构化数据。
  * 输出的榜单 Markdown 格式见 aggregate-rank.js 文件头，聚合按它解析。
  *
@@ -15,21 +15,20 @@
  *   node qimao-rank-scraper.js --source library --pages 3       # 书库筛选页：点击量前 3 页新书
  *
  * 前置（排行榜）：
- *   node {SKILL_DIR}/browser-cdp/scripts/setup-cdp-chrome.js 9222
- * 书库筛选页是服务端渲染，直接走 HTTPS，不需要 Chrome。
+ *   Ego Lite 已安装（见 {SKILL_DIR}/browser-cdp/SKILL.md）
+ * 书库筛选页是服务端渲染，直接走 HTTPS，不需要浏览器。
  */
 
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
-const { ab, sleep, evalJSONBase64, scrollLoad, getArg, localDateStamp, runCli } = require("./cdp-utils");
+const { createSession, sleep, getArg, localDateStamp, runCli } = require("../../browser-cdp/scripts/ego-session.cjs");
 
 const RANK_URL = "https://www.qimao.com/paihang";
 
 /** 连通性 + 页面就绪自检 */
-function probePage(port) {
-  return evalJSONBase64(
-    port,
+function probePage(session) {
+  return session.evalJSON(
     "JSON.stringify({host:location.host,path:location.pathname,len:(document.body&&document.body.innerText||'').length})"
   );
 }
@@ -65,12 +64,12 @@ function rankUrl(channelId, rankTypeId, periodId) {
 }
 
 /** 读取页面实际 active 状态；输出文件标签必须由该状态校验后才能使用。 */
-function extractObservedSelection(port) {
+function extractObservedSelection(session) {
   const js = `JSON.stringify((function(){
     function text(selector){var e=document.querySelector(selector);return e?(e.textContent||'').replace(/\\s+/g,'').trim():'';}
     return {path:location.pathname,channel:text('.qm-switch-tab .item.active'),rankType:text('.child-tabs-item.menu-tab.active'),period:text('.date-type-tabs .tab.active')};
   })())`;
-  return evalJSONBase64(port, js) || {};
+  return session.evalJSON(js) || {};
 }
 
 function selectionMatches(observed, channelId, rankTypeId, periodId) {
@@ -95,7 +94,7 @@ function selectionMatches(observed, channelId, rankTypeId, periodId) {
  * 按 bookId 聚合后取最像书名的文本（非纯数字、非"最近更新"前缀、最长），
  * 否则书名会被排名数字 anchor 覆盖，导致后续按书名回填链接全失败。
  */
-function extractBookUrls(port) {
+function extractBookUrls(session) {
   const js = `JSON.stringify((function(){
     var byId={};var order=[];
     Array.from(document.querySelectorAll('a')).forEach(function(a){
@@ -110,14 +109,14 @@ function extractBookUrls(port) {
     });
     return order.map(function(id){return {bookId:id,title:byId[id],url:'https://www.qimao.com/shuku/'+id+'/'};});
   })())`;
-  return evalJSONBase64(port, js) || [];
+  return session.evalJSON(js) || [];
 }
 
 /**
  * 从页面 innerText 解析结构化书籍数据。
  * 七猫页面文本结构固定：排名→书名→作者→题材→子分类→状态→字数→简介→更新→热度
  */
-function extractBooksFromText(port) {
+function extractBooksFromText(session) {
   const js =
     "JSON.stringify((()=>{" +
     "var text=document.body.innerText||'';" +
@@ -162,7 +161,7 @@ function extractBooksFromText(port) {
     "if(cur&&cur.title)books.push(cur);" +
     "return books" +
     "})())";
-  return evalJSONBase64(port, js) || [];
+  return session.evalJSON(js) || [];
 }
 
 /**
@@ -674,7 +673,6 @@ async function scrapeLibrary(pages) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const PORT = parseInt(getArg(args, "--port") || "9222", 10);
 const OUTDIR = getArg(args, "--outdir") || ".";
 const CHANNEL = getArg(args, "--channel") || "male";
 const RANKTYPE = getArg(args, "--type") || "hot";
@@ -687,7 +685,7 @@ function hasArg(argv, name) {
   return argv.some((arg) => arg === name || String(arg).startsWith(`${name}=`));
 }
 
-function scrapeRank(port, channelId, rankTypeId, periodId) {
+function scrapeRank(session, channelId, rankTypeId, periodId) {
   const ch = CHANNELS.find((c) => c.id === channelId);
   const rt = RANK_TYPES.find((r) => r.id === rankTypeId);
   const period = periodId ? PERIODS.find((p) => p.id === periodId) : null;
@@ -702,14 +700,14 @@ function scrapeRank(port, channelId, rankTypeId, periodId) {
 
   let books, urls, rawCount;
   try {
-    ab(port, "open", url);
+    session.open(url);
     sleep(3000);
 
-    // 连通性自检：CDP 未起/被重定向时给可操作报错，而非静默产空
-    const probe = probePage(port);
+    // 连通性自检：浏览器未响应/被重定向时给可操作报错，而非静默产空
+    const probe = probePage(session);
     if (!probe) {
       console.error(
-        `  ✗ CDP 无响应。请确认已用 browser-cdp 启动 Chrome（端口 ${port}），且 agent-browser 可用。`
+        `  ✗ 浏览器无响应。请确认已安装 Ego Lite 且 ego-browser 可用（见 browser-cdp skill）。`
       );
       return null;
     }
@@ -717,7 +715,7 @@ function scrapeRank(port, channelId, rankTypeId, periodId) {
       console.error(`  ✗ 当前页面非七猫（host=${probe.host}），可能被重定向，已跳过。`);
       return null;
     }
-    const observed = extractObservedSelection(port);
+    const observed = extractObservedSelection(session);
     if (!selectionMatches(observed, channelId, rankTypeId, periodId)) {
       console.error(
         `  ✗ 页面实际榜单与请求不一致（请求 ${ch.tab}/${rt.label}/${periodLabel || "日榜"}，` +
@@ -728,14 +726,14 @@ function scrapeRank(port, channelId, rankTypeId, periodId) {
     console.log(`  ✓ 已验证页面实际榜单：${observed.channel}/${observed.rankType}${observed.period ? "/" + observed.period : ""}`);
 
     // 滚动加载更多
-    scrollLoad(port, 5);
+    session.scroll(5, 1000);
     sleep(1000);
 
     // 文本解析获取书籍数据 + DOM 获取链接
-    const rawBooks = extractBooksFromText(port);
+    const rawBooks = extractBooksFromText(session);
     rawCount = rawBooks.length;
     books = rawBooks.filter(isUsableBook);
-    urls = extractBookUrls(port);
+    urls = extractBookUrls(session);
   } catch (err) {
     console.error(`[qimao] ${ch.label}${rt.label}${periodLabel} 页面加载或提取出错: ${err.message}`);
     return null;
@@ -828,27 +826,35 @@ async function main() {
   let failed = 0;
   const partialReasons = [];
 
-  for (const target of targets) {
-    let content;
-    if (target.rankType === LIBRARY_ID) {
-      // 书库一次只有一个目标：整份失败直接抛错（exit 1，不写文件），页级失败带回 partialReasons。
-      const library = await scrapeLibrary(pages);
-      content = library.content;
-      partialReasons.push(...library.partialReasons);
-    } else {
-      content = scrapeRank(PORT, target.channel, target.rankType, target.period);
-    }
-    if (!content) {
-      failed++;
-      continue;
-    }
+  // 书库走纯 Node HTTPS，不需要浏览器；只有排行榜目标才创建 Space
+  const needsBrowser = targets.some((t) => t.rankType !== LIBRARY_ID);
+  const session = needsBrowser ? createSession({ spaceName: "writer qimao scan" }) : null;
+  try {
+    for (const target of targets) {
+      let content;
+      if (target.rankType === LIBRARY_ID) {
+        // 书库一次只有一个目标：整份失败直接抛错（exit 1，不写文件），页级失败带回 partialReasons。
+        const library = await scrapeLibrary(pages);
+        content = library.content;
+        partialReasons.push(...library.partialReasons);
+      } else {
+        content = scrapeRank(session, target.channel, target.rankType, target.period);
+      }
+      if (!content) {
+        failed++;
+        continue;
+      }
 
-    const filename = outputFilename(target.channel, target.rankType, target.period, localDateStamp());
-    fs.mkdirSync(OUTDIR, { recursive: true });
-    const filepath = path.join(OUTDIR, filename);
-    fs.writeFileSync(filepath, content, "utf-8");
-    written++;
-    console.log(`  ✓ 已保存: ${filepath}`);
+      const filename = outputFilename(target.channel, target.rankType, target.period, localDateStamp());
+      fs.mkdirSync(OUTDIR, { recursive: true });
+      const filepath = path.join(OUTDIR, filename);
+      fs.writeFileSync(filepath, content, "utf-8");
+      written++;
+      console.log(`  ✓ 已保存: ${filepath}`);
+    }
+  } finally {
+    // 书库模式不创建会话，也没有需要清理的 Space
+    if (session) session.endAndReport("qimao");
   }
   return {
     planned: targets.length,

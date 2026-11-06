@@ -5,7 +5,7 @@
 助手版本 38（v0.9.2）。已有项目更新技能包后，在项目根重跑 `/story-setup`（Codex 用 `$story-setup`，Antigravity 用 `/skills` 或直接点名），再新开会话。
 
 - `setup_skill_version: 1.3.6`
-- `agents_version: 38`
+- `agents_version: 39`
 
 `.story-deployed` 字段不全，或 `agents_version` 不是整数、低于 38，都算待更新，重跑 story-setup 即可。项目里的 `agents_version` 大于 38，说明本机技能包比项目旧：先更新 oh-story-claudecode，不要用旧包覆盖。各版本改了什么见仓库根目录 `CHANGELOG.md`。
 

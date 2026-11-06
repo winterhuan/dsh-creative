@@ -28,6 +28,10 @@ The sidebar registers a tab and body for preset `writer`. It reads and lists thr
 
 Installing the bundle does not change other presets. Switching `skillMount` needs a restart. A skill directory already in the workspace is not refreshed until the sync command. Zhuque stays an explicit `story-zhuque` request and does not guard chapter saves.
 
+## Related
+
+The [Ego Lite browser proposal](../../proposed/architecture/2026-11-06-writer-ego-browser.md) changes browser execution while preserving this preset's mounting and no-overwrite decisions; it is not implemented.
+
 ## Verification
 
 Package tests cover the mutually exclusive mount flags, a workspace copy that discovers `story`, `story-long-write`, `story-short-write`, `story-deslop`, and `story-zhuque` without using an unused bundled directory, no-overwrite then force sync, the versioned save, and the DSH branch in `story-setup`. The bundle was not installed into a live DSH profile in this environment.

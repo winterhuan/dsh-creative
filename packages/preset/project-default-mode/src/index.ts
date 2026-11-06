@@ -145,15 +145,15 @@ function isRetargetable(context: Context, session: Agent['session']): boolean {
 /**
  * Whether a session is still blank — its first turn has not started — using the
  * same boundary projection the preset registry's `select` guards on.
- * @param context - Host context carrying the projection registry.
+ * @param context - Host context carrying the Agent registry.
  * @param session - the session to test.
- * @returns whether no turn has started; false when the registry is absent.
+ * @returns whether no turn has started; false when the Agent registry is absent.
  */
 function isBlank(context: Context, session: Agent['session']): boolean {
-  const projections = context.get('sessionProjections')
-  if (projections === undefined) return false
-  const boundary = projections.stateOf(session, 'turnBoundary')
-  return boundary === undefined || boundary.openTurnStartSeq === null && boundary.lastTurn === 0
+  const agents = context.get('agents')
+  if (agents === undefined) return false
+  const boundary = agents.turnBoundaryOf(session)
+  return boundary.openTurnStartSeq === null && boundary.lastTurn === 0
 }
 
 /**

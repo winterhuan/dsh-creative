@@ -1,4 +1,5 @@
 /** EOL helpers so textarea stays LF while disk keeps its style. */
+import { EOL_NAMES } from './locales.ts'
 
 export type WriterEol = '\n' | '\r\n' | '\r'
 
@@ -54,7 +55,7 @@ export function applyEol(content: string, eol: WriterEol): string {
  * @returns `LF` / `CRLF` / `CR`.
  */
 export function eolLabel(eol: WriterEol): string {
-  if (eol === '\r\n') return 'CRLF'
-  if (eol === '\r') return 'CR'
-  return 'LF'
+  if (eol === '\r\n') return EOL_NAMES.crlf
+  if (eol === '\r') return EOL_NAMES.cr
+  return EOL_NAMES.lf
 }

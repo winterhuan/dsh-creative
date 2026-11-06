@@ -3,6 +3,9 @@ import type {} from '@deepseek-ai/dsh-client-ui-slots'
 
 export const NS = 'writerDesk'
 
+/** Standard line-ending names shown unchanged in either locale. */
+export const EOL_NAMES = { lf: 'LF', crlf: 'CRLF', cr: 'CR' } as const
+
 export const zh = {
   title: '写作',
   description: '拆文库与写作项目',

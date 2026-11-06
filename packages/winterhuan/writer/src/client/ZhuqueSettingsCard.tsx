@@ -61,7 +61,7 @@ export function ZhuqueSettingsCard(props: ZhuqueSettingsCardProps): ReactNode {
         overriddenLabel={t('overridden')}
         resetLabel={t('reset')}
         invalidLabel={t('invalidText')}
-        placeholder="https://api.openai.com/v1"
+        placeholder={t('gptImageBaseUrlPlaceholder')}
         disabled={!state.writable}
         {...state.gptImageBaseUrl}
         onEdit={(text) => { props.edit('gptImageBaseUrl', text) }}

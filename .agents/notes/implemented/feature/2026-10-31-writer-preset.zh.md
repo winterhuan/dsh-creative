@@ -28,6 +28,10 @@ Status: implemented
 
 安装本 bundle 不改变其他预设。切换 `skillMount` 需要重启。工作区里已有的技能目录在同步命令之前不会刷新。朱雀仍是明确的 `story-zhuque` 请求，不守卫章节保存。
 
+## 相关记录
+
+[Ego Lite 浏览器提案](../../proposed/architecture/2026-11-06-writer-ego-browser.zh.md)改变浏览器执行方式，保留本预设的挂载与不覆盖决策；该提案尚未实现。
+
 ## 验证
 
 包内测试覆盖互斥挂载、workspace 拷贝后能发现 `story`、`story-long-write`、`story-short-write`、`story-deslop` 和 `story-zhuque` 且不会发现未使用的 bundled 目录、不覆盖后再强制同步、带版本的保存，以及 `story-setup` 的 DSH 分支。本环境没有把 bundle 装进正在运行的 DSH profile。

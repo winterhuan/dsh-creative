@@ -212,25 +212,35 @@
   color: var(--dsw-alias-label-secondary);
 }
 
-.writer-search-path {
-  margin: 0 0 6px;
-  padding: 0 8px 0 calc(6px + 1.5em);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
+/* Inline location hint after a hit's name; collapses before the name does. */
+.writer-search-dir {
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+}
+
+/* Outranks `.writer-tree-panel button`'s ink so the matched run reads as emphasis.
+   The link token stays legible in both themes; the accent is near-black ink here. */
+.writer-tree-panel .writer-search-hits mark {
+  background: transparent;
+  color: var(--dsw-alias-link, var(--writer-accent));
+  font-weight: 500;
 }
 
 .writer-search-hits > li + li {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .writer-tree-panel {
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding: 2px 4px 6px;
+  /* The extra right padding keeps the scrollbar inset from the rounded edge. */
+  padding: 2px 6px 6px 4px;
 }
 
 .writer-rail-note {
@@ -281,7 +291,10 @@
   min-height: 0;
   overflow: hidden;
   background: var(--dsw-alias-bg-base);
+  /* Size container for the masthead's narrow-stage downgrade below. */
+  container-type: inline-size;
 }
+
 
 .writer-stage-heading {
   display: flex;
@@ -351,6 +364,14 @@
   font-variant-numeric: tabular-nums;
   font-weight: 650;
 }
+/* When the stage is squeezed (wide rail), the three counts drop first —
+   the rail tabs already carry the library/project counts. */
+@container (max-width: 399px) {
+  .writer-counts {
+    display: none;
+  }
+}
+
 
 .writer-connection {
   display: inline-flex;
@@ -534,20 +555,13 @@
   font-weight: 600;
 }
 
-.writer-tree-chevron {
-  display: inline-block;
-  width: 0.9em;
-  flex: 0 0 auto;
-  font-size: 10px;
-  line-height: 1;
-  color: var(--dsw-alias-label-secondary);
-}
-
 .writer-tree-kind {
   flex: 0 0 auto;
-  font-size: 12px;
-  line-height: 1;
-  opacity: 0.85;
+}
+
+/* Folder glyph rides the tertiary ink, matching the workspace files tree. */
+.writer-tree-toggle .writer-tree-kind {
+  color: var(--dsw-alias-label-tertiary);
 }
 
 .writer-tree-label {

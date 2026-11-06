@@ -48,7 +48,7 @@ async function bench(options: {
   composed?: string | undefined
   defaultId?: string
   select?: (agent: Agent, preset: string) => Promise<string>
-  /** When set, the `agents` registry resolves this Agent and `sessionProjections` reports `blank`. */
+  /** When set, the Agent registry resolves this Agent and exposes its turn boundary. */
   live?: Agent
   blank?: boolean
 } = {}): Promise<{
@@ -74,11 +74,11 @@ async function bench(options: {
   } as never)
   if (options.live !== undefined) {
     const live = options.live
-    ctx.provide('agents', { get: (id: SessionId) => id === live.id ? live : undefined } as never)
-  }
-  if (options.blank !== undefined) {
     const boundary = options.blank ? { openTurnStartSeq: null, lastTurn: 0 } : { openTurnStartSeq: 0, lastTurn: 1 }
-    ctx.provide('sessionProjections', { stateOf: () => boundary } as never)
+    ctx.provide('agents', {
+      get: (id: SessionId) => id === live.id ? live : undefined,
+      turnBoundaryOf: () => boundary,
+    } as never)
   }
   let fire: (agent: Agent, source: SessionStartSource) => Promise<void> = async () => {}
   let emitSelection: (agent: Agent, agentPreset: string) => Promise<void> = async () => {}

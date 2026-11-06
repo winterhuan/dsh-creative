@@ -2,7 +2,7 @@
 /**
  * 点众阅读短篇采集脚本
  *
- * 配合 browser-cdp skill 使用。先启动 Chrome CDP 环境，再运行本脚本。
+ * 配合 browser-cdp skill 使用。先安装 Ego Lite（ego-browser 可用），再运行本脚本。
  * 采集策略：以 /book/{id} 链接为骨架，按 bookId 聚合每本书的多个 anchor
  * （封面/书名+评分/简介各一个），从中解出书名、评分、简介、作品页，再从卡片
  * 容器文本里解出 作者·标签·状态·字数 与最新章节。避免纯 innerText 行序解析把
@@ -15,12 +15,12 @@
  *   node dz-browse-scraper.js --channel all                # 全部
  *
  * 前置：
- *   node {SKILL_DIR}/browser-cdp/scripts/setup-cdp-chrome.js 9222
+ *   Ego Lite 已安装（见 {SKILL_DIR}/browser-cdp/SKILL.md）
  */
 
 const fs = require("fs");
 const path = require("path");
-const { ab, sleep, evalJSONBase64, safeStr, scrollLoad, getArg, localDateStamp, runCli } = require("./cdp-utils");
+const { createSession, sleep, safeStr, getArg, localDateStamp, runCli } = require("../../browser-cdp/scripts/ego-session.cjs");
 
 const CHANNELS = [
   { id: "male", label: "男频", tab: "男频", url: "https://www.ishugui.com/browse" },
@@ -32,22 +32,21 @@ const CHANNELS = [
 // ---------------------------------------------------------------------------
 
 /** 连通性 + 页面就绪自检 */
-function probePage(port) {
-  return evalJSONBase64(
-    port,
+function probePage(session) {
+  return session.evalJSON(
     "JSON.stringify({host:location.host,len:(document.body&&document.body.innerText||'').length})"
   );
 }
 
 /** 点击指定文本的 tab */
-function clickTab(port, text) {
+function clickTab(session, text) {
   const js =
     "JSON.stringify((function(){" +
     "var all=document.querySelectorAll('div,span,a,button,li');" +
     "var el=Array.from(all).find(function(e){return (e.textContent||'').trim()===" + safeStr(text) + "});" +
     "if(el){el.click();return true}return false" +
     "})())";
-  return evalJSONBase64(port, js);
+  return session.evalJSON(js);
 }
 
 /**
@@ -100,8 +99,8 @@ function buildStoriesJS() {
   })())`;
 }
 
-function extractStories(port) {
-  const list = evalJSONBase64(port, buildStoriesJS());
+function extractStories(session) {
+  const list = session.evalJSON(buildStoriesJS());
   return Array.isArray(list) ? list : [];
 }
 
@@ -110,11 +109,10 @@ function extractStories(port) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const PORT = parseInt(getArg(args, "--port") || "9222", 10);
 const OUTDIR = getArg(args, "--outdir") || ".";
 const CHANNEL = getArg(args, "--channel") || "male";
 
-function scrapeChannel(port, channelId) {
+function scrapeChannel(session, channelId) {
   const ch = CHANNELS.find((c) => c.id === channelId);
   if (!ch) return null;
 
@@ -122,14 +120,14 @@ function scrapeChannel(port, channelId) {
 
   let stories;
   try {
-    ab(port, "open", ch.url);
+    session.open(ch.url);
     sleep(3000);
 
-    // 连通性自检：CDP 未起/被重定向时给可操作报错，而非静默产空
-    const probe = probePage(port);
+    // 连通性自检：浏览器未响应/被重定向时给可操作报错，而非静默产空
+    const probe = probePage(session);
     if (!probe) {
       console.error(
-        `  ✗ CDP 无响应。请确认已用 browser-cdp 启动 Chrome（端口 ${port}），且 agent-browser 可用。`
+        `  ✗ 浏览器无响应。请确认已安装 Ego Lite 且 ego-browser 可用（见 browser-cdp skill）。`
       );
       return null;
     }
@@ -140,7 +138,7 @@ function scrapeChannel(port, channelId) {
 
     // 切换频道（female 已有独立 URL，tab 失败不致命）
     try {
-      if (clickTab(port, ch.tab)) {
+      if (clickTab(session, ch.tab)) {
         console.log(`  ✓ 切换到${ch.tab}`);
         sleep(2000);
       }
@@ -148,10 +146,10 @@ function scrapeChannel(port, channelId) {
       console.error(`[dz] ${ch.label} tab切换出错，继续采集: ${tabErr.message}`);
     }
 
-    scrollLoad(port, 8);
+    session.scroll(8, 1000);
     sleep(1000);
 
-    stories = extractStories(port);
+    stories = extractStories(session);
   } catch (err) {
     console.error(`[dz] ${ch.label} 页面加载或提取出错: ${err.message}`);
     return null;
@@ -212,17 +210,22 @@ function main() {
   const channels = CHANNEL === "all" ? CHANNELS.map((c) => c.id) : [CHANNEL];
   let written = 0;
 
-  for (const ch of channels) {
-    const content = scrapeChannel(PORT, ch);
-    if (!content) continue;
+  const session = createSession({ spaceName: "writer dianzhong scan" });
+  try {
+    for (const ch of channels) {
+      const content = scrapeChannel(session, ch);
+      if (!content) continue;
 
-    const chInfo = CHANNELS.find((c) => c.id === ch);
-    const filename = `点众${chInfo.label}短篇_${localDateStamp()}.md`;
-    fs.mkdirSync(OUTDIR, { recursive: true });
-    const filepath = path.join(OUTDIR, filename);
-    fs.writeFileSync(filepath, content, "utf-8");
-    written++;
-    console.log(`  ✓ 已保存: ${filepath}`);
+      const chInfo = CHANNELS.find((c) => c.id === ch);
+      const filename = `点众${chInfo.label}短篇_${localDateStamp()}.md`;
+      fs.mkdirSync(OUTDIR, { recursive: true });
+      const filepath = path.join(OUTDIR, filename);
+      fs.writeFileSync(filepath, content, "utf-8");
+      written++;
+      console.log(`  ✓ 已保存: ${filepath}`);
+    }
+  } finally {
+    session.endAndReport("dz");
   }
   return written;
 }

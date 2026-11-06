@@ -2,7 +2,7 @@
 /**
  * 晋江文学城排行榜采集脚本
  *
- * 配合 browser-cdp skill 使用。先启动 Chrome CDP 环境，再运行本脚本。
+ * 配合 browser-cdp skill 使用。先安装 Ego Lite（ego-browser 可用），再运行本脚本。
  * 采集策略：
  *   1) topten.php 列表页（纯文本，频道名直接出现，书名/作者交替行）解出频道分组。
  *   2) 从书名 anchor 取 novelid，逐本进 onebook.php 详情页补采核心指标
@@ -19,12 +19,13 @@
  *   node jjwxc-rank-scraper.js --type all                 # 全部榜单
  *
  * 前置：
- *   node {SKILL_DIR}/browser-cdp/scripts/setup-cdp-chrome.js 9222
+ *   Ego Lite 已安装（见 {SKILL_DIR}/browser-cdp/SKILL.md）
  */
 
 const fs = require("fs");
 const path = require("path");
-const { ab, sleep, evalJSONBase64, getArg, localDateStamp, runCli } = require("./cdp-utils");
+const { createHash } = require("node:crypto");
+const { createSession, openRunStore, sleep, getArg, localDateStamp, runCli } = require("../../browser-cdp/scripts/ego-session.cjs");
 
 const BASE_URL = "https://www.jjwxc.net/topten.php";
 
@@ -37,13 +38,12 @@ const RANK_TYPES = [
   { id: "17", label: "千字金榜" },
 ];
 
-// 详情请求批大小（async fetch 并发，整批控制在 ab() 20s 超时内）
+// 详情请求批大小（async fetch 并发，整批控制在传输层单次调用超时内）
 const DETAIL_CHUNK = 6;
 
 /** 连通性 + 页面就绪自检 */
-function probePage(port) {
-  return evalJSONBase64(
-    port,
+function probePage(session) {
+  return session.evalJSON(
     "JSON.stringify({host:location.host,len:(document.body&&document.body.innerText||'').length})"
   );
 }
@@ -55,7 +55,7 @@ function probePage(port) {
 /**
  * 提取晋江榜单数据（频道分组 + 书名/作者交替），并从书名 anchor 附上 novelid。
  */
-function extractRankData(port) {
+function extractRankData(session) {
   const js =
     "JSON.stringify((function(){" +
     "var result={channels:[]};" +
@@ -103,7 +103,7 @@ function extractRankData(port) {
     "}" +
     "return result" +
     "})())";
-  return evalJSONBase64(port, js);
+  return session.evalJSON(js);
 }
 
 // ---------------------------------------------------------------------------
@@ -129,16 +129,27 @@ function buildDetailJS(ids) {
 
 /**
  * 分批解码详情，合并结果。
- * 每批单独 try/catch：整批的并发 fetch 贴着 ab() 的 20s 超时线，一次瞬时超时（或
+ * 每批单独 try/catch：整批的并发 fetch 贴着传输层单次调用超时线，一次瞬时超时（或
  * 返回非 JSON）只该丢这 6 本，不能连坐后面几十本，更不能把已解析好的列表带走。
  */
-function fetchDetails(port, ids) {
+function fetchDetails(session, ids, run, rankTypeId, channelId) {
   const map = {};
   let failedChunks = 0;
   for (let i = 0; i < ids.length; i += DETAIL_CHUNK) {
     const chunk = ids.slice(i, i + DETAIL_CHUNK);
+    const inputHash = createHash("sha256").update(JSON.stringify(chunk), "utf8").digest("hex");
+    const identity = `${rankTypeId || "unknown"}-${channelId || "unknown"}`;
+    const cacheKey = `detail-${identity}-${i / DETAIL_CHUNK}-${inputHash}`;
+    const cached = run ? run.get(cacheKey) : undefined;
+    if (cached) {
+      console.log(`  ↺ ${cacheKey}：复用已提交的检查点`);
+      Object.assign(map, cached);
+      continue;
+    }
     try {
-      const part = evalJSONBase64(port, buildDetailJS(chunk)) || {};
+      const part = session.evalJSON(buildDetailJS(chunk)) || {};
+      const valid = chunk.every((id) => part[id] && part[id].collect && !part[id].err);
+      if (run && valid) run.commit(cacheKey, part);
       Object.assign(map, part);
     } catch (chunkErr) {
       failedChunks++;
@@ -171,15 +182,18 @@ function fmtWan(s, unit) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const PORT = parseInt(getArg(args, "--port") || "9222", 10);
 const OUTDIR = getArg(args, "--outdir") || ".";
 const RANKTYPE = getArg(args, "--type") || "12";
 const CHANNEL = getArg(args, "--channel") || "0";
 const TOP = parseInt(getArg(args, "--top") || "10", 10);
 const DETAIL_LIMIT = parseInt(getArg(args, "--detail-limit") || "100", 10);
 const LIST_ONLY = args.includes("--list-only");
+// --resume <runId>：断点续采详情批次；参数与解析器版本必须与首次运行一致
+const RESUME_RUN = getArg(args, "--resume");
+// 解析器版本：改动提取逻辑时递增，使旧检查点失效而不是混入两版结果
+const PARSER_REVISION = "1";
 
-function scrapeRank(port, rankTypeId, channelId) {
+function scrapeRank(session, rankTypeId, channelId, run) {
   const rt = RANK_TYPES.find((r) => r.id === rankTypeId);
   if (!rt) {
     console.log(`  ⚠ 未知榜单类型: ${rankTypeId}`);
@@ -193,14 +207,14 @@ function scrapeRank(port, rankTypeId, channelId) {
 
   let data;
   try {
-    ab(port, "open", url);
+    session.open(url);
     sleep(4000);
 
-    // 连通性自检：CDP 未起/被重定向时给可操作报错，而非误报"结构已变"
-    const probe = probePage(port);
+    // 连通性自检：浏览器未响应/被重定向时给可操作报错，而非误报"结构已变"
+    const probe = probePage(session);
     if (!probe) {
       console.error(
-        `  ✗ CDP 无响应。请确认已用 browser-cdp 启动 Chrome（端口 ${port}），且 agent-browser 可用。`
+        `  ✗ 浏览器无响应。请确认已安装 Ego Lite 且 ego-browser 可用（见 browser-cdp skill）。`
       );
       return null;
     }
@@ -209,7 +223,7 @@ function scrapeRank(port, rankTypeId, channelId) {
       return null;
     }
 
-    data = extractRankData(port);
+    data = extractRankData(session);
     if (!data?.channels?.length) {
       console.error(`[jjwxc] 采集失败：未解析到榜单（页面结构可能变动或未加载）。请人工打开 ${url} 确认。`);
       return null;
@@ -251,7 +265,7 @@ function scrapeRank(port, rankTypeId, channelId) {
       // 详情是列表的增补，不是前提：整段失败也要保住已解析好的列表落盘
       // （下面的质量门会把 detailOk===0 标成 [详情解析异常/登录态缺失]）
       try {
-        const detailResult = fetchDetails(port, picked);
+        const detailResult = fetchDetails(session, picked, run, rankTypeId, channelId);
         detailMap = detailResult.map;
         detailFailedChunks = detailResult.failedChunks;
       } catch (detailErr) {
@@ -351,40 +365,52 @@ function main() {
   let partial = false;
   const partialReasons = [];
 
-  for (const rt of rankTypes) {
-    for (const ch of channels) {
-      // per-榜单隔离：一个榜单出错不该掐掉 --type all 后面的榜单（与番茄/刺猬猫一致）
-      try {
-        const result = scrapeRank(PORT, rt, ch);
-        if (!result) {
+  const run = openRunStore({
+    resume: RESUME_RUN,
+    params: { type: RANKTYPE, top: TOP, detailLimit: DETAIL_LIMIT, listOnly: LIST_ONLY },
+    parserRevision: PARSER_REVISION,
+  });
+  console.log(`  运行 ${run.runId}（检查点 ${run.dir}；中断后加 --resume ${run.runId} 续采）`);
+
+  const session = createSession({ spaceName: "writer jjwxc scan" });
+  try {
+    for (const rt of rankTypes) {
+      for (const ch of channels) {
+        // per-榜单隔离：一个榜单出错不该掐掉 --type all 后面的榜单（与番茄/刺猬猫一致）
+        try {
+          const result = scrapeRank(session, rt, ch, run);
+          if (!result) {
+            failed++;
+            const rtInfo = RANK_TYPES.find((r) => r.id === rt);
+            partialReasons.push(`${rtInfo ? rtInfo.label : rt}: no usable data`);
+            continue;
+          }
+          if (result.partial) {
+            partial = true;
+            if (result.partialReason) partialReasons.push(result.partialReason);
+          }
+
+          const rtInfo = RANK_TYPES.find((r) => r.id === rt);
+          const chLabel = ch === "0" ? "全站" : `频道${ch}`;
+          const filename = `晋江${rtInfo.label}_${chLabel}_${localDateStamp()}.md`;
+          fs.mkdirSync(OUTDIR, { recursive: true });
+          const filepath = path.join(OUTDIR, filename);
+          fs.writeFileSync(filepath, result.content, "utf-8");
+          written++;
+          console.log(`  ✓ 已保存: ${filepath}`);
+        } catch (rankErr) {
           failed++;
           const rtInfo = RANK_TYPES.find((r) => r.id === rt);
-          partialReasons.push(`${rtInfo ? rtInfo.label : rt}: no usable data`);
-          continue;
+          const message = rankErr && rankErr.message ? rankErr.message : String(rankErr);
+          partialReasons.push(`${rtInfo ? rtInfo.label : rt}: ${message}`);
+          console.error(
+            `[jjwxc] ${rtInfo ? rtInfo.label : rt} 采集失败，跳过: ${message}`
+          );
         }
-        if (result.partial) {
-          partial = true;
-          if (result.partialReason) partialReasons.push(result.partialReason);
-        }
-
-        const rtInfo = RANK_TYPES.find((r) => r.id === rt);
-        const chLabel = ch === "0" ? "全站" : `频道${ch}`;
-        const filename = `晋江${rtInfo.label}_${chLabel}_${localDateStamp()}.md`;
-        fs.mkdirSync(OUTDIR, { recursive: true });
-        const filepath = path.join(OUTDIR, filename);
-        fs.writeFileSync(filepath, result.content, "utf-8");
-        written++;
-        console.log(`  ✓ 已保存: ${filepath}`);
-      } catch (rankErr) {
-        failed++;
-        const rtInfo = RANK_TYPES.find((r) => r.id === rt);
-        const message = rankErr && rankErr.message ? rankErr.message : String(rankErr);
-        partialReasons.push(`${rtInfo ? rtInfo.label : rt}: ${message}`);
-        console.error(
-          `[jjwxc] ${rtInfo ? rtInfo.label : rt} 采集失败，跳过: ${message}`
-        );
       }
     }
+  } finally {
+    session.endAndReport("jjwxc");
   }
   return {
     planned: rankTypes.length * channels.length,
@@ -398,3 +424,5 @@ function main() {
 if (require.main === module) {
   runCli(main, "晋江采集");
 }
+
+module.exports = { fetchDetails, buildDetailJS };

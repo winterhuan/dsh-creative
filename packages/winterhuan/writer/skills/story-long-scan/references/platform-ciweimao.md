@@ -1,6 +1,6 @@
 # 刺猬猫：采集与分析
 
-先用 `/browser-cdp` 启动 Chrome。刺猬猫是小平台，每榜只有前 10 本；同方向不足 10 本，聚合标为样本少。
+需要 Ego Lite 已安装（见 `/browser-cdp`）。刺猬猫是小平台，每榜只有前 10 本；同方向不足 10 本，聚合标为样本少。
 
 ## 默认命令
 
@@ -21,7 +21,7 @@ node scripts/ciweimao-rank-scraper.js --type subscribe --outdir {outdir}  # 订�
 
 ## 采不到时
 
-终端提示「未解析到榜单」或文件头「数据质量」标了问题：在 Chrome 里打开 `https://www.ciweimao.com/rank-index`，确认页面正常、没有跳到登录或验证页，再重采。
+终端提示「未解析到榜单」或文件头「数据质量」标了问题：请作者在 Ego Lite 里打开 `https://www.ciweimao.com/rank-index`，确认页面正常、没有跳到登录或验证页，再重采。
 
 ## 分析维度
 

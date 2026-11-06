@@ -2,7 +2,7 @@
 /**
  * 番茄小说排行榜采集脚本
  *
- * 配合 browser-cdp skill 使用。先启动 Chrome CDP 环境，再运行本脚本。
+ * 配合 browser-cdp skill 使用。先安装 Ego Lite（ego-browser 可用），再运行本脚本。
  * 采集策略：从榜单页 __INITIAL_STATE__ 取结构化列表，再逐本请求详情页解码真实
  * 书名/作者/简介/题材/标签（番茄列表页有字体反爬，详情页 HTML 里是明文）。
  * 输出的榜单 Markdown 格式见 aggregate-rank.js 文件头，聚合按它解析。
@@ -17,15 +17,16 @@
  *   node fanqie-rank-scraper.js --source library --channel mix --pages 5  # 不分男女，取 5 页
  *
  * 前置：
- *   node {SKILL_DIR}/browser-cdp/scripts/setup-cdp-chrome.js 9222
+ *   Ego Lite 已安装（见 {SKILL_DIR}/browser-cdp/SKILL.md）
  */
 
 const fs = require("fs");
 const path = require("path");
-const { ab, sleep, evalJSONBase64, scrollLoad, getArg, localDateStamp, runCli } = require("./cdp-utils");
+const { createHash } = require("node:crypto");
+const { createSession, openRunStore, sleep, getArg, localDateStamp, runCli } = require("../../browser-cdp/scripts/ego-session.cjs");
 
 // 一次详情请求的并发批大小。番茄详情页用同步 XHR 拉取，批太大会撞上
-// cdp-utils 里 ab() 的 20s 超时；超时会显式失败，这里分批是为了避免整个题材被中断。
+// 传输层单次调用的超时；超时会显式失败，这里分批是为了避免整个题材被中断。
 const DETAIL_CHUNK = 5;
 
 // ---------------------------------------------------------------------------
@@ -33,9 +34,8 @@ const DETAIL_CHUNK = 5;
 // ---------------------------------------------------------------------------
 
 /** 连通性 + 页面就绪自检 */
-function probePage(port) {
-  return evalJSONBase64(
-    port,
+function probePage(session) {
+  return session.evalJSON(
     "JSON.stringify({host:location.host,hasState:!!window.__INITIAL_STATE__})"
   );
 }
@@ -58,9 +58,9 @@ function buildCategoriesJS(prefix) {
 }
 
 /** 提取侧边菜单品类链接 */
-function extractCategories(port, channel, type) {
+function extractCategories(session, channel, type) {
   const prefix = `/rank/${channel}_${type}_`;
-  return evalJSONBase64(port, buildCategoriesJS(prefix)) || [];
+  return session.evalJSON(buildCategoriesJS(prefix)) || [];
 }
 
 /**
@@ -99,8 +99,8 @@ function buildBookListJS() {
   })())`;
 }
 
-function extractBookList(port) {
-  const list = evalJSONBase64(port, buildBookListJS());
+function extractBookList(session) {
+  const list = session.evalJSON(buildBookListJS());
   return Array.isArray(list) ? list : [];
 }
 
@@ -249,16 +249,26 @@ function buildDetailJS(ids) {
   })())`;
 }
 
-function fetchDetailsChunk(port, ids) {
-  return evalJSONBase64(port, buildDetailJS(ids)) || {};
+function fetchDetailsChunk(session, ids) {
+  return session.evalJSON(buildDetailJS(ids)) || {};
 }
 
-/** 分批解码，避免单次 eval 超时；返回合并后的 map */
-function fetchDetails(port, bookIds) {
+/** 分批解码，避免单次调用超时；返回合并后的 map */
+function fetchDetails(session, bookIds, run, namespace) {
   const map = {};
   for (let i = 0; i < bookIds.length; i += DETAIL_CHUNK) {
     const chunk = bookIds.slice(i, i + DETAIL_CHUNK);
-    const part = fetchDetailsChunk(port, chunk);
+    const inputHash = createHash("sha256").update(JSON.stringify(chunk), "utf8").digest("hex");
+    const cacheKey = `detail-${namespace}-${i / DETAIL_CHUNK}-${inputHash}`;
+    const cached = run ? run.get(cacheKey) : undefined;
+    if (cached) {
+      console.log(`  ↺ ${cacheKey}：复用已提交的检查点`);
+      Object.assign(map, cached);
+      continue;
+    }
+    const part = fetchDetailsChunk(session, chunk);
+    const valid = chunk.every((id) => part[id] && part[id].title && !part[id].err);
+    if (run && valid) run.commit(cacheKey, part);
     Object.assign(map, part);
     sleep(300);
   }
@@ -315,7 +325,6 @@ function cleanDesc(raw) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const PORT = parseInt(getArg(args, "--port") || "9222", 10);
 const OUTDIR = getArg(args, "--outdir") || ".";
 const CHANNEL = getArg(args, "--channel") || "1";
 const TYPE = getArg(args, "--type") || "2";
@@ -324,6 +333,10 @@ const SOURCE = getArg(args, "--source") || "rank";
 const PAGES = parseInt(getArg(args, "--pages") || "3", 10);
 const STAT = getArg(args, "--stat") || "1";
 const COUNT = getArg(args, "--count") || "0";
+// --resume <runId>：断点续采详情批次；参数与解析器版本必须与首次运行一致
+const RESUME_RUN = getArg(args, "--resume");
+// 解析器版本：改动提取逻辑时递增，使旧检查点失效而不是混入两版结果
+const PARSER_REVISION = "1";
 
 function channelLabel(ch) {
   return ch === "1" ? "男频" : "女频";
@@ -331,6 +344,16 @@ function channelLabel(ch) {
 
 function typeLabel(t) {
   return t === "2" ? "阅读榜" : "新书榜";
+}
+
+// 本次运行的浏览器会话与检查点：main()/mainLibrary() 创建，采集函数共用
+let SESSION = null;
+let RUN = null;
+
+/** 批次键里可用的短名称；网页 href 含斜杠，不能直接做文件名。 */
+function slug(value) {
+  const norm = String(value || "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return norm.slice(0, 60) || "root";
 }
 
 function scrapeChannel(ch, type) {
@@ -341,13 +364,13 @@ function scrapeChannel(ch, type) {
   // 用已知品类 ID 作为入口，确保菜单只显示当前频道/类型的品类
   const initCatId = ch === "1" ? "1141" : "1139"; // 男频:西方奇幻 / 女频:古风世情
   const initUrl = `https://fanqienovel.com/rank/${ch}_${type}_${initCatId}`;
-  ab(PORT, "open", initUrl);
+  SESSION.open(initUrl);
   sleep(3000);
 
   // 连通性自检：把"静默写出一堆 bookId"变成可操作的报错
-  const probe = probePage(PORT);
+  const probe = probePage(SESSION);
   if (!probe) {
-    throw new Error(`CDP 无响应。请确认已用 browser-cdp 启动 Chrome（端口 ${PORT}），且 agent-browser 可用`);
+    throw new Error(`浏览器无响应。请确认已安装 Ego Lite 且 ego-browser 可用（见 browser-cdp skill）`);
   }
   if (probe.host && probe.host.indexOf("fanqie") === -1) {
     throw new Error(`当前页面非番茄（host=${probe.host}），可能被重定向到登录/验证页`);
@@ -356,12 +379,12 @@ function scrapeChannel(ch, type) {
     console.error(`  ⚠ 页面未挂载 __INITIAL_STATE__，将尝试兜底扫描，结果可能不完整。`);
   }
 
-  let categories = extractCategories(PORT, ch, type);
+  let categories = extractCategories(SESSION, ch, type);
   if (!categories.length) {
     // 菜单可能懒加载，滚动后重试一次
-    scrollLoad(PORT, 2);
+    SESSION.scroll(2, 1000);
     sleep(1000);
-    categories = extractCategories(PORT, ch, type);
+    categories = extractCategories(SESSION, ch, type);
   }
   if (!categories.length) {
     // 仍失败：降级为只采当前入口页，至少产出数据而不是空跑
@@ -392,11 +415,11 @@ function scrapeChannel(ch, type) {
     console.log(`  [${ci + 1}/${categories.length}] ${cat.name}`);
 
     try {
-      ab(PORT, "open", `https://fanqienovel.com${cat.href}`);
+      SESSION.open(`https://fanqienovel.com${cat.href}`);
       sleep(2500);
-      scrollLoad(PORT, 2);
+      SESSION.scroll(2, 1000);
 
-      let books = extractBookList(PORT);
+      let books = extractBookList(SESSION);
       if (!Array.isArray(books) || !books.length) {
         bodyLines.push(`## ${cat.name} — 0 本`, "", "---", "");
         continue;
@@ -405,7 +428,7 @@ function scrapeChannel(ch, type) {
 
       // 分批解码真实书名/作者/简介/题材/评分/标签
       const bookIds = books.map((b) => String(b.bookId));
-      const details = fetchDetails(PORT, bookIds);
+      const details = fetchDetails(SESSION, bookIds, RUN, slug(cat.href));
 
       bodyLines.push(`## ${cat.name} — ${books.length} 本`, "");
 
@@ -464,7 +487,7 @@ function scrapeChannel(ch, type) {
   if (resolvedTitles === 0) {
     console.error(
       `  ✗ ${chLabel}${tyLabel}：${totalBooks} 本全部标题解析失败。多为详情页结构变动或登录/验证拦截，` +
-      `请在 Chrome 内手动打开任一 https://fanqienovel.com/page/{bookId} 确认页面正常。`
+      `请在 Ego Lite 内手动打开任一 https://fanqienovel.com/page/{bookId} 确认页面正常。`
     );
   } else if (ratio < 0.5) {
     console.error(
@@ -517,19 +540,19 @@ function scrapeLibrary(ch) {
   const ids = [];
   for (let page = 1; page <= PAGES; page++) {
     const url = `https://fanqienovel.com/library/${seg}/page_${page}?sort=hottes`;
-    ab(PORT, "open", url);
+    SESSION.open(url);
     sleep(3000);
     if (page === 1) {
-      const probe = probePage(PORT);
+      const probe = probePage(SESSION);
       if (!probe) {
-        throw new Error(`CDP 无响应。请确认已用 browser-cdp 启动 Chrome（端口 ${PORT}），且 agent-browser 可用`);
+        throw new Error(`浏览器无响应。请确认已安装 Ego Lite 且 ego-browser 可用（见 browser-cdp skill）`);
       }
       if (probe.host && probe.host.indexOf("fanqie") === -1) {
         throw new Error(`当前页面非番茄（host=${probe.host}），可能被重定向到登录/验证页`);
       }
     }
     const readIds = () => {
-      const got = evalJSONBase64(PORT, buildLibraryIdsJS());
+      const got = SESSION.evalJSON(buildLibraryIdsJS());
       return Array.isArray(got) ? got : [];
     };
     let pageIds = readIds();
@@ -547,7 +570,7 @@ function scrapeLibrary(ch) {
     // 一本都没抓到时不写空文件：空文件进了聚合只会让结论悄悄少一块。
     throw new Error("书库列表页一本都没抓到（可能被登录/验证页拦住，或页面改版）");
   }
-  const details = fetchDetails(PORT, ids);
+  const details = fetchDetails(SESSION, ids, RUN, `library-${seg}`);
   const now = new Date().toISOString();
   let resolved = 0;
   const body = [`## 全部（书库最热） — ${ids.length} 本`, ""];
@@ -567,7 +590,7 @@ function scrapeLibrary(ch) {
   });
   const quality = resolved / ids.length < 0.5 ? "[标题解析异常]" : "[OK]";
   if (resolved / ids.length < 0.5) {
-    console.error(`  ⚠ 标题解析率偏低（${resolved}/${ids.length}），请在 Chrome 内手动打开任一作品页确认不是验证页。`);
+    console.error(`  ⚠ 标题解析率偏低（${resolved}/${ids.length}），请在 Ego Lite 内手动打开任一作品页确认不是验证页。`);
   }
   // 列表名带「新书」：连载中、30 万字以下按热度排，本质是新书热度，聚合时进「新书榜」列。
   const listName = `${who}书库最热${COUNT === "0" && STAT === "1" ? "新书" : ""}`;
@@ -593,21 +616,39 @@ function mainLibrary() {
   const channels = CHANNEL === "all" ? ["1", "0"] : [CHANNEL];
   const failures = [];
   let written = 0;
-  for (const ch of channels) {
-    try {
-      const out = scrapeLibrary(ch);
-      fs.mkdirSync(OUTDIR, { recursive: true });
-      const filepath = path.join(OUTDIR, out.name);
-      fs.writeFileSync(filepath, out.content, "utf-8");
-      written++;
-      console.log(`  ✓ 已保存: ${filepath}`);
-    } catch (err) {
-      const reason = `书库${libraryLabel(ch).who}：${err && err.message ? err.message : err}`;
-      console.error(`[fanqie] ${reason}，跳过`);
-      failures.push(reason);
+  RUN = openRunStore({
+    resume: RESUME_RUN,
+    params: { source: "library", channel: CHANNEL, pages: PAGES, stat: STAT, count: COUNT },
+    parserRevision: PARSER_REVISION,
+  });
+  console.log(`  运行 ${RUN.runId}（检查点 ${RUN.dir}；中断后加 --resume ${RUN.runId} 续采）`);
+  SESSION = createSession({ spaceName: "writer fanqie library scan" });
+  try {
+    for (const ch of channels) {
+      try {
+        const out = scrapeLibrary(ch);
+        fs.mkdirSync(OUTDIR, { recursive: true });
+        const filepath = path.join(OUTDIR, out.name);
+        fs.writeFileSync(filepath, out.content, "utf-8");
+        written++;
+        console.log(`  ✓ 已保存: ${filepath}`);
+      } catch (err) {
+        const reason = `书库${libraryLabel(ch).who}：${err && err.message ? err.message : err}`;
+        console.error(`[fanqie] ${reason}，跳过`);
+        failures.push(reason);
+      }
     }
+  } finally {
+    finishSession();
   }
   return outcome(channels.length, written, failures);
+}
+
+/** 按安全策略结束本次运行的浏览器任务；保留现场时打印续接提示。 */
+function finishSession() {
+  if (!SESSION) return;
+  SESSION.endAndReport("fanqie");
+  SESSION = null;
 }
 
 /** 按 runCli 的结构报结果：一份没写出就整体失败，部分失败 exit 2 并列原因。 */
@@ -630,23 +671,34 @@ function main() {
   const failures = [];
   let written = 0;
 
-  for (const ch of channels) {
-    for (const ty of types) {
-      try {
-        const content = scrapeChannel(ch, ty);
+  RUN = openRunStore({
+    resume: RESUME_RUN,
+    params: { source: "rank", channel: CHANNEL, type: TYPE, top: TOP },
+    parserRevision: PARSER_REVISION,
+  });
+  console.log(`  运行 ${RUN.runId}（检查点 ${RUN.dir}；中断后加 --resume ${RUN.runId} 续采）`);
+  SESSION = createSession({ spaceName: "writer fanqie rank scan" });
+  try {
+    for (const ch of channels) {
+      for (const ty of types) {
+        try {
+          const content = scrapeChannel(ch, ty);
 
-        const filename = `番茄${channelLabel(ch)}${typeLabel(ty)}_全题材_${localDateStamp()}.md`;
-        fs.mkdirSync(OUTDIR, { recursive: true });
-        const filepath = path.join(OUTDIR, filename);
-        fs.writeFileSync(filepath, content, "utf-8");
-        written++;
-        console.log(`  ✓ 已保存: ${filepath}`);
-      } catch (chErr) {
-        const reason = `${channelLabel(ch)}${typeLabel(ty)}：${chErr && chErr.message ? chErr.message : chErr}`;
-        console.error(`[fanqie] ${reason}，跳过`);
-        failures.push(reason);
+          const filename = `番茄${channelLabel(ch)}${typeLabel(ty)}_全题材_${localDateStamp()}.md`;
+          fs.mkdirSync(OUTDIR, { recursive: true });
+          const filepath = path.join(OUTDIR, filename);
+          fs.writeFileSync(filepath, content, "utf-8");
+          written++;
+          console.log(`  ✓ 已保存: ${filepath}`);
+        } catch (chErr) {
+          const reason = `${channelLabel(ch)}${typeLabel(ty)}：${chErr && chErr.message ? chErr.message : chErr}`;
+          console.error(`[fanqie] ${reason}，跳过`);
+          failures.push(reason);
+        }
       }
     }
+  } finally {
+    finishSession();
   }
   return outcome(channels.length * types.length, written, failures);
 }
@@ -655,4 +707,4 @@ if (require.main === module) {
   runCli(main, "番茄采集");
 }
 
-module.exports = { parseDetailHtml, buildDetailJS, cleanDesc };
+module.exports = { parseDetailHtml, buildDetailJS, cleanDesc, fetchDetails };

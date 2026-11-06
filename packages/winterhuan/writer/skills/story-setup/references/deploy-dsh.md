@@ -19,7 +19,7 @@ DSH 没有 Claude Code / Codex 的 hook 运行时。本文件**禁止**写入或
 2. 没有 `.story-deployed` 时创建它；已有则只更新下面字段，保留作者另加的键。
    ```
    deployed_at: <date -u +"%Y-%m-%dT%H:%M:%SZ">
-   agents_version: 38
+   agents_version: 39
    setup_skill_version: 1.3.6
    target_cli: dsh
    resolver_strategy: dsh-skill-filesystem

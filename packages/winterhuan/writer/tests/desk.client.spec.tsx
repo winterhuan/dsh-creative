@@ -73,7 +73,7 @@ function remote(): ClientRemote {
   } as ClientRemote
 }
 
-it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () => {
+it('uses left-rail shell, collapsed roots, lazy-loads, and saves', async () => {
   const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(
     JSON.stringify({ path: 'novel/正文/第001章.md', bytes: 6, version: 'v2' }),
     { status: 200 },
@@ -98,7 +98,8 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
   expect(connection?.getAttribute('title')).toContain(zh.localWorkspace)
   expect(connection?.getAttribute('title')).toContain(zh.healthOk)
   expect(container.querySelector('.writer-status-dot')).toBeTruthy()
-  expect(screen.getByText(new RegExp(zh.healthOk))).toBeTruthy()
+  // Healthy footers carry only the local-workspace copy; the dot and titles own the health.
+  expect(container.querySelector('.writer-rail-note p')?.textContent).toBe(zh.localWorkspace)
   expect(container.querySelector('.writer-workspace')?.textContent).toBe('ws')
   expect(container.querySelector('.writer-workspace')?.getAttribute('title')).toBe('/ws')
   expect(screen.getByRole('button', { name: zh.reload })).toBeTruthy()
@@ -113,12 +114,19 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
   expect(librariesTab.classList.contains('writer-tab')).toBe(true)
   expect(container.querySelector('#writer-workspace-panel')?.getAttribute('role')).toBe('tabpanel')
 
-  // Depth-0 root opens by default and lazy-loads children (no click).
+  // Roots start collapsed; expanding one lazy-loads its children.
   const sample = await screen.findByRole('button', { name: /样本/ })
+  expect(sample.getAttribute('aria-expanded')).toBe('false')
+  expect(sample.querySelector('svg')).toBeTruthy()
+  expect(screen.queryByRole('button', { name: '笔记.md' })).toBeNull()
+  fireEvent.click(sample)
   expect(sample.getAttribute('aria-expanded')).toBe('true')
   expect(await screen.findByRole('button', { name: '笔记.md' })).toBeTruthy()
   const png = screen.getByRole('button', { name: 'cover.png' })
   expect((png as HTMLButtonElement).disabled).toBe(true)
+  // Markdown files carry no extension badge; other extensions do.
+  expect(screen.getByRole('button', { name: '笔记.md' }).querySelector('.writer-tree-ext')).toBeNull()
+  expect(png.querySelector('.writer-tree-ext')?.textContent).toBe('png')
   const filesLabel = zh.filesLoaded.replace('{n}', '2')
   const counts = container.querySelector('.writer-counts')
   expect(counts?.getAttribute('aria-label')).toBe(
@@ -130,9 +138,10 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
 
   fireEvent.click(projectsTab)
   const novel = await screen.findByRole('button', { name: /novel/ })
+  expect(novel.getAttribute('aria-expanded')).toBe('false')
+  fireEvent.click(novel)
   expect(novel.getAttribute('aria-expanded')).toBe('true')
   expect(await screen.findByRole('button', { name: 'meta.json' })).toBeTruthy()
-  expect(await screen.findByRole('button', { name: /设定/ })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: /设定/ }))
   expect(await screen.findByRole('button', { name: '世界观.md' })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: '世界观.md' }))
@@ -168,8 +177,9 @@ it('uses left-rail shell, auto-expands roots, lazy-loads, and saves', async () =
 it('asks before switching files when the draft is dirty', async () => {
   render(<WriterDesk sessionId={SessionId('session-2')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
   fireEvent.click(await screen.findByRole('tab', { name: new RegExp(zh.projects) }))
-  await screen.findByRole('button', { name: /novel/ })
-  fireEvent.click(await screen.findByRole('button', { name: /设定/ }))
+  fireEvent.click(await screen.findByRole('button', { name: /novel/ }))
+  await screen.findByRole('button', { name: /设定/ })
+  fireEvent.click(screen.getByRole('button', { name: /设定/ }))
   fireEvent.click(await screen.findByRole('button', { name: '世界观.md' }))
   const editor = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
   fireEvent.change(editor, { target: { value: '脏稿' } })
@@ -197,6 +207,10 @@ it('searches filenames, previews markdown, and saves with ⌘S', async () => {
   const search = screen.getByLabelText(zh.searchLabel)
   fireEvent.change(search, { target: { value: '世界观' } })
   expect(await screen.findByRole('button', { name: '世界观.md' })).toBeTruthy()
+  // One row per hit: the name highlights the query and the directory rides inline.
+  expect(document.querySelector('.writer-search-hits mark')?.textContent).toBe('世界观')
+  expect(document.querySelector('.writer-search-dir')?.textContent).toBe('novel/设定')
+  expect(document.querySelector('.writer-search-path')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '世界观.md' }))
   const editor = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
   expect(screen.getByText(zh.dirtySaved)).toBeTruthy()
@@ -245,6 +259,7 @@ it('shows a conflict dialog with keep and reload actions', async () => {
   vi.stubGlobal('fetch', fetchMock)
   render(<WriterDesk sessionId={SessionId('session-6')} cwd={cwd} remote={remote()} t={key => zh[key]} visible />)
   fireEvent.click(await screen.findByRole('tab', { name: new RegExp(zh.projects) }))
+  fireEvent.click(await screen.findByRole('button', { name: /novel/ }))
   fireEvent.click(await screen.findByRole('button', { name: /设定/ }))
   fireEvent.click(await screen.findByRole('button', { name: '世界观.md' }))
   const editor = await screen.findByRole('textbox', { name: 'novel/设定/世界观.md' })
@@ -274,8 +289,9 @@ it('lets empty tabs switch view and empty copy when both sides are 0', async () 
 
   const librariesTab = await screen.findByRole('tab', { name: new RegExp(zh.libraries) })
   const projectsTab = screen.getByRole('tab', { name: new RegExp(zh.projects) })
-  expect(librariesTab.textContent).toContain('0')
-  expect(projectsTab.textContent).toContain('0')
+  // Zero counts render no badge: the label cannot be cut mid-glyph by the badge.
+  expect(librariesTab.querySelector('.writer-badge')).toBeNull()
+  expect(projectsTab.querySelector('.writer-badge')).toBeNull()
   // Default when both empty: writing projects.
   expect(projectsTab.getAttribute('aria-selected')).toBe('true')
   expect(librariesTab.getAttribute('aria-selected')).toBe('false')
@@ -357,7 +373,7 @@ it('drags the rail resize handle to set width', async () => {
 
 it('caps the CSS rail width when the desk is narrower than the preferred rail', async () => {
   const Original = globalThis.ResizeObserver
-  class FakeObserver {
+  class FakeObserver implements ResizeObserver {
     callback: ResizeObserverCallback
     constructor(callback: ResizeObserverCallback) {
       this.callback = callback
@@ -366,7 +382,7 @@ it('caps the CSS rail width when the desk is narrower than the preferred rail', 
       void target
       this.callback(
         [{ contentRect: { width: 200 } } as ResizeObserverEntry],
-        this as unknown as ResizeObserver,
+        this,
       )
     }
     unobserve() {}

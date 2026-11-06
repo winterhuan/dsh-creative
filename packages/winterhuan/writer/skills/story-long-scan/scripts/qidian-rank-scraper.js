@@ -2,10 +2,10 @@
 /**
  * 起点中文网 排行榜采集脚本
  *
- * 配合 browser-cdp skill 使用。先启动 Chrome CDP 环境，再运行本脚本。
+ * 配合 browser-cdp skill 使用。先安装 Ego Lite（ego-browser 可用），再运行本脚本。
  * 采集策略：
- *   1. 默认优先读取 m.qidian.com 的 SSR pageContext JSON（不依赖 CDP，规避 PC 站风控页）。
- *   2. 移动端不可用时再回退到 Chrome CDP 采集 PC 页面。
+ *   1. 默认优先读取 m.qidian.com 的 SSR pageContext JSON（不依赖浏览器，规避 PC 站风控页）。
+ *   2. 移动端不可用时再回退到 Ego Lite 浏览器采集 PC 页面。
  * 输出的榜单 Markdown 格式见 aggregate-rank.js 文件头，聚合按它解析。
  *
  * 用法：
@@ -19,33 +19,30 @@
  *   node qidian-rank-scraper.js --type sanjiang                 # 三江推荐（/sanjiang/，非 /rank/ 路径）
  *   node qidian-rank-scraper.js --type all                     # 全部榜单
  *   node qidian-rank-scraper.js --type hotsales --mode mobile  # 仅使用移动端 SSR
- *   node qidian-rank-scraper.js --type hotsales --mode cdp     # 仅使用备用 CDP/PC 页面
- *   node qidian-rank-scraper.js --type library [--pages 3]     # 书库人气新书（只走 CDP，不进 all）
+ *   node qidian-rank-scraper.js --type hotsales --mode cdp     # 仅使用备用浏览器/PC 页面
+ *   node qidian-rank-scraper.js --type library [--pages 3]     # 书库人气新书（只走浏览器，不进 all）
+ *   node qidian-rank-scraper.js --type library --resume 7      # 续接人工验证后的 Space
  *
  * 书库人气新书：男生·连载·30万字以下·三日内更新、人气排序的「全部作品」筛选页，
  * 翻前 N 页（--pages 取 1-10，默认 3；只对 --type library 有效，其他榜单传了直接报错）。
- * PC 页直接 HTTPS 会被风控拦，只能用 CDP 打开；字数靠解码页面的反爬字体，
+ * PC 页直接 HTTPS 会被风控拦，只能用浏览器打开；字数靠解码页面的反爬字体，
  * 总推荐/签约/收费逐本取 m.qidian.com 作品页补齐。
  *
  * 前置：
- *   默认 mobile/auto 模式不需要 Chrome（--type library 除外）。
- *   cdp 模式与 --type library 需要：node {SKILL_DIR}/browser-cdp/scripts/setup-cdp-chrome.js 9222
+ *   默认 mobile/auto 模式不需要浏览器（--type library 除外）。
+ *   cdp 模式与 --type library 需要：Ego Lite 已安装（见 {SKILL_DIR}/browser-cdp/SKILL.md）
  */
 
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
-const { ab, sleep, evalJSON, scrollLoad, getArg, localDateStamp, runCli } = require("./cdp-utils");
+const { createSession, openRunStore, sleep, getArg, localDateStamp, runCli } = require("../../browser-cdp/scripts/ego-session.cjs");
 
 const PC_BASE_URL = "https://www.qidian.com/rank";
 const MOBILE_BASE_URL = "https://m.qidian.com";
 
 /** 验证码自动重试最大次数 */
 const MAX_CAPTCHA_RETRIES = 3;
-/** 等待用户手动解决验证码的最大秒数 */
-const MAX_CAPTCHA_WAIT_SEC = 120;
-/** 轮询验证码是否解除的间隔（毫秒） */
-const CAPTCHA_POLL_INTERVAL = 5000;
 
 const MOBILE_HEADERS = {
   "User-Agent":
@@ -114,7 +111,7 @@ const RANK_TYPES = [
  *   p.intro          → 简介
  *   p.update > a+span → 最新更新章节+日期
  */
-function extractBookList(port) {
+function extractBookList(session) {
   const js =
     "JSON.stringify((()=>{" +
     "var items=[];" +
@@ -173,11 +170,11 @@ function extractBookList(port) {
     "});" +
     "return items" +
     "})())";
-  return evalJSON(port, js) || [];
+  return session.evalJSON(js) || [];
 }
 
 /** 从详情页提取标签和简介 */
-function extractDetail(port) {
+function extractDetail(session) {
   const js =
     "JSON.stringify((()=>{" +
     "var tags=Array.from(document.querySelectorAll('[class*=\"tag\"] a,[class*=\"label\"] a')).map(function(a){return a.textContent.trim()});" +
@@ -193,7 +190,7 @@ function extractDetail(port) {
     "var pricing=infoText.match(/(?:^|\\s|·)(VIP|免费)(?=\\s|·|$)/i);" +
     "return {tags:tags,intro:introText,update:updateText,words:words?words[1].replace(/\\s+/g,''):'',totalRecommendations:total?total[1]:'',signing:signing?signing[1]:'',pricing:pricing?pricing[1].toUpperCase()==='VIP'?'VIP':pricing[1]:''}" +
     "})())";
-  return evalJSON(port, js);
+  return session.evalJSON(js);
 }
 
 /**
@@ -227,8 +224,8 @@ function captchaCheckJS() {
   );
 }
 
-function isCaptchaPage(port) {
-  const result = evalJSON(port, captchaCheckJS());
+function isCaptchaPage(session) {
+  const result = session.evalJSON(captchaCheckJS());
   return result && result.blocked === true ? result : null;
 }
 
@@ -237,17 +234,18 @@ function isCaptchaPage(port) {
  * 重试策略：
  *   1. 正常加载页面
  *   2. 检测到验证码 → 等待递增延时后刷新重试（最多 MAX_CAPTCHA_RETRIES 次）
- *   3. 仍被拦截 → 提示用户在 Chrome CDP 窗口手动完成验证，轮询等待直到解除或超时
+ *   3. 仍被拦截 → handOff 把浏览器交给用户完成验证，打印 --resume 指引后退出；
+ *      不再原地轮询占用会话（设计决策：人工验证走交接/续接，见 browser-cdp skill）
  *
- * @returns {boolean} true=页面已就绪，false=无法通过验证码
+ * @returns {boolean} true=页面已就绪，false=已交接给用户，本次运行应停止
  */
-function openWithCaptchaHandling(port, url) {
+function openWithCaptchaHandling(session, url) {
   for (let attempt = 1; attempt <= MAX_CAPTCHA_RETRIES; attempt++) {
-    ab(port, "open", url);
+    session.open(url);
     // 首次 3 秒，后续每次多等 2 秒
     sleep(3000 + (attempt - 1) * 2000);
 
-    const captcha = isCaptchaPage(port);
+    const captcha = isCaptchaPage(session);
     if (!captcha) {
       return true;
     }
@@ -256,25 +254,17 @@ function openWithCaptchaHandling(port, url) {
     sleep(attempt * 5000);
   }
 
-  // 自动重试全部失败 → 等待用户手动处理
-  console.log(`  ⚠ 自动重试未通过验证码，请在 Chrome CDP 窗口手动完成验证`);
-  console.log(`  ⏳ 等待手动验证（最长 ${MAX_CAPTCHA_WAIT_SEC} 秒）...`);
-
-  const startTime = Date.now();
-  while (Date.now() - startTime < MAX_CAPTCHA_WAIT_SEC * 1000) {
-    sleep(CAPTCHA_POLL_INTERVAL);
-    // 刷新页面检查验证码是否已解除
-    ab(port, "open", url);
-    sleep(3000);
-    const captcha = isCaptchaPage(port);
-    if (!captcha) {
-      console.log(`  ✓ 验证码已解除，继续采集`);
-      return true;
-    }
-    const elapsed = Math.round((Date.now() - startTime) / 1000);
-    process.stdout.write(`  等待中... (${elapsed}s)\r`);
+  // 自动重试全部失败 → 交接给用户人工验证，本进程不阻塞等待
+  console.log(`  ⚠ 自动重试未通过验证码，把 Ego Lite 窗口交接给你手动完成验证`);
+  try {
+    session.handOff();
+    console.log(`  → 请在 Ego Lite（Space ${session.spaceId}）中完成验证，看到正常榜单页后，`);
+    console.log(`    重跑本命令并追加 --space ${session.spaceId} 续接采集。`);
+  } catch (handoffErr) {
+    console.error(`  ✗ 交接失败: ${handoffErr.message}`);
+    console.log(`  → 请手动打开 Ego Lite 完成验证后重跑。`);
   }
-  console.log(`  ✗ 等待超时，验证码仍未解除`);
+  CAPTCHA_HANDOFF = true;
   return false;
 }
 
@@ -954,9 +944,9 @@ async function fetchMobileBookInfo(bookId) {
  * 翻页采集书库。返回 { content, partialReasons }；一本都没采到时抛错（不写空文件）。
  * 某页失败就停在那里：保留前面各页（partial），后面的页不再翻，免得名次错位。
  */
-async function scrapeLibrary(port, pages) {
+async function scrapeLibrary(session, pages, run) {
   const rt = RANK_TYPES.find((r) => r.library);
-  console.log(`\n→ 采集 起点${rt.label}（CDP/PC，前 ${pages} 页）...`);
+  console.log(`\n→ 采集 起点${rt.label}（浏览器/PC，前 ${pages} 页）...`);
   const books = [];
   const seen = new Set();
   const fontUrls = {};
@@ -974,11 +964,23 @@ async function scrapeLibrary(port, pages) {
     const url = libraryPageUrl(page);
     console.log(`  第 ${page} 页：${url}`);
     let snapshot;
+    const cacheKey = `library-page-${page}`;
+    const cached = run ? run.get(cacheKey) : undefined;
     try {
-      if (!openWithCaptchaHandling(port, url)) throw new Error("页面无法通过验证码拦截");
-      snapshot = evalJSON(port, buildLibraryPageJS(page));
+      if (cached) {
+        console.log(`  第 ${page} 页：复用已提交的检查点`);
+        snapshot = cached;
+      } else {
+        if (!openWithCaptchaHandling(session, url)) {
+          throw new Error(CAPTCHA_HANDOFF
+            ? `第 ${page} 页被验证码拦截，已交接给用户（--space ${SESSION && SESSION.spaceId} 续接）`
+            : `第 ${page} 页被验证码拦截`);
+        }
+        snapshot = session.evalJSON(buildLibraryPageJS(page));
+      }
       const problems = checkLibraryPage(snapshot, page);
       if (problems.length) throw new Error(`筛选状态不符（${problems.join("，")}）`);
+      if (run && !cached) run.commit(cacheKey, snapshot);
     } catch (err) {
       const reason = `第 ${page} 页没取到：${err && err.message ? err.message : err}`;
       console.error(`[qidian] 书库${reason}`);
@@ -1077,7 +1079,6 @@ async function scrapeLibrary(port, pages) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const PORT = parseInt(getArg(args, "--port") || "9222", 10);
 const OUTDIR = getArg(args, "--outdir") || ".";
 const RANKTYPE = getArg(args, "--type") || "hotsales";
 const SCRAPE_MODE = getArg(args, "--mode") || "auto"; // auto | mobile | cdp
@@ -1085,8 +1086,32 @@ const FETCH_DETAIL = (getArg(args, "--detail") || "no") === "yes";
 // --pages 只对 --type library 有效；记下「传没传」，好让别的榜单传了也能报错而不是静默忽略
 const PAGES_RAW = getArg(args, "--pages");
 const PAGES_GIVEN = args.some((arg) => arg === "--pages" || String(arg).startsWith("--pages="));
+// --space <id>：验证码交接给用户后，人工验证完成再带 Space ID 重跑续接
+const SPACE_ID = parseInt(getArg(args, "--space") || "", 10);
+// --resume <runId>：断点续采；参数与解析器版本必须与首次运行一致
+const RESUME_RUN = getArg(args, "--resume");
+// 解析器版本：改动提取逻辑时递增，使旧检查点失效而不是混入两版结果
+const PARSER_REVISION = "1";
 
-function scrapeRankCDP(port, rankTypeId) {
+// 浏览器会话惰性创建：mobile/auto 纯 SSR 路径不启动浏览器
+let SESSION = null;
+// openWithCaptchaHandling 交接给用户后置 true：main 据此跳过 finish、如实报 partial
+let CAPTCHA_HANDOFF = false;
+
+function getSession() {
+  if (SESSION) return SESSION;
+  SESSION = Number.isInteger(SPACE_ID) && SPACE_ID > 0
+    ? createSession({ spaceName: "writer qidian scan", spaceId: SPACE_ID })
+    : createSession({ spaceName: "writer qidian scan" });
+  if (SESSION.spaceId != null) {
+    // 续接模式：收回用户验证后的 Space，重新确认所有权和页面
+    const resumed = SESSION.takeOver();
+    console.log(`  ✓ 已续接 Space ${SESSION.spaceId}（页面 ${resumed.pages.map((p) => p.label).join(", ")}）`);
+  }
+  return SESSION;
+}
+
+function scrapeRankCDP(session, rankTypeId) {
   const rt = RANK_TYPES.find((r) => r.id === rankTypeId);
   if (!rt) {
     console.log(`  ⚠ 未知榜单类型: ${rankTypeId}`);
@@ -1094,19 +1119,21 @@ function scrapeRankCDP(port, rankTypeId) {
   }
 
   const url = rt.baseUrl || `${PC_BASE_URL}/${rankTypeId}/`;
-  console.log(`\n→ 采集 起点${rt.label}（CDP/PC）...`);
+  console.log(`\n→ 采集 起点${rt.label}（浏览器/PC）...`);
   console.log(`  URL: ${url}`);
 
-  const pageReady = openWithCaptchaHandling(port, url);
+  const pageReady = openWithCaptchaHandling(session, url);
   if (!pageReady) {
-    console.log("  ✗ 起点采集失败：页面无法通过验证码拦截");
+    console.log(CAPTCHA_HANDOFF
+      ? "  ⏸ 起点采集已暂停：浏览器已交接给用户完成验证，按上方 --space 指引续接"
+      : "  ✗ 起点采集失败：页面无法通过验证码拦截");
     return null;
   }
 
-  scrollLoad(port, 3);
+  session.scroll(3, 1000);
   sleep(1000);
 
-  const books = extractBookList(port);
+  const books = extractBookList(session);
   if (!books.length) {
     console.log("  ⚠ 未提取到书籍");
     return null;
@@ -1119,9 +1146,9 @@ function scrapeRankCDP(port, rankTypeId) {
     for (let i = 0; i < Math.min(books.length, 20); i++) {
       const b = books[i];
       if (!b.url) continue;
-      ab(port, "open", b.url);
+      session.open(b.url);
       sleep(1500);
-      const detail = extractDetail(port);
+      const detail = extractDetail(session);
       if (detail) {
         if (detail.tags?.length) b.tags = detail.tags;
         if (detail.intro) b.descText = detail.intro;
@@ -1133,7 +1160,7 @@ function scrapeRankCDP(port, rankTypeId) {
       console.log(`    [${i + 1}/${books.length}] ${b.title}`);
     }
     // 返回榜单页
-    ab(port, "open", url);
+    session.open(url);
     sleep(2000);
   }
 
@@ -1156,8 +1183,8 @@ async function scrapeRank(rankTypeId) {
   }
 
   if (SCRAPE_MODE !== "mobile") {
-    console.log("  → 回退到 CDP/PC 页面采集");
-    return scrapeRankCDP(PORT, rankTypeId);
+    console.log("  → 回退到 浏览器/PC 页面采集");
+    return scrapeRankCDP(getSession(), rankTypeId);
   }
 
   return null;
@@ -1181,14 +1208,21 @@ async function main() {
   let partial = false;
   const partialReasons = [];
 
+  const run = openRunStore({
+    resume: RESUME_RUN,
+    params: { type: RANKTYPE, mode: SCRAPE_MODE, pages: libraryPages, detail: FETCH_DETAIL },
+    parserRevision: PARSER_REVISION,
+  });
+  console.log(`  运行 ${run.runId}（检查点 ${run.dir}；中断后加 --resume ${run.runId} 续采）`);
+
   for (const rt of rankTypes) {
-    // per-榜单隔离：移动端 SSR 失败后的 CDP 回退会直接抛（ab() 不吞错），
+    // per-榜单隔离：移动端 SSR 失败后的浏览器回退会直接抛（传输层不吞错），
     // 一个榜单的瞬时失败不该掐掉 --type all 后面的榜单（与番茄/刺猬猫一致）
     try {
       const rtInfo = RANK_TYPES.find((r) => r.id === rt);
       let content;
       if (rtInfo.library) {
-        const library = await scrapeLibrary(PORT, libraryPages);
+        const library = await scrapeLibrary(getSession(), libraryPages, run);
         content = library.content;
         if (library.partialReasons.length) {
           partial = true;
@@ -1200,6 +1234,8 @@ async function main() {
       if (!content) {
         failed++;
         partialReasons.push(`${rtInfo ? rtInfo.label : rt}: no usable data`);
+        // 验证码已交接：Space 归用户所有，不能再发起后续榜单
+        if (CAPTCHA_HANDOFF) break;
         continue;
       }
 
@@ -1217,8 +1253,12 @@ async function main() {
       console.error(
         `[qidian] ${rtInfo ? rtInfo.label : rt} 采集失败，跳过: ${message}`
       );
+      // 验证码交接后不再尝试后续榜单：Space 已交给用户，续跑用 --space
+      if (CAPTCHA_HANDOFF) break;
     }
   }
+  // 交接、异常或结果不明时保留 Space，交给用户核对后再续接
+  if (SESSION) SESSION.endAndReport("qidian");
   return {
     planned: rankTypes.length,
     written,

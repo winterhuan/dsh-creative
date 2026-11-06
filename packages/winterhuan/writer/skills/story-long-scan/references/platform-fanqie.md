@@ -1,6 +1,6 @@
 # 番茄：采集与分析
 
-先用 `/browser-cdp` 启动 Chrome。
+需要 Ego Lite 已安装（见 `/browser-cdp`）；脚本运行时自动创建浏览器任务。
 
 ## 默认命令
 
@@ -30,7 +30,7 @@ node scripts/fanqie-rank-scraper.js --source library --channel all --outdir {out
 
 ## 采不到时
 
-文件头「数据质量」标 `[标题解析异常]`（书名多为 `（标题待解析）`）：多半是被登录或验证页拦住，或页面改版。在已登录的 Chrome 里手动打开任一 `https://fanqienovel.com/page/{bookId}`，确认页面正常、不是验证页；报 `CDP 无响应` 就按 browser-cdp 重新启动 Chrome。确认正常后重采。
+文件头「数据质量」标 `[标题解析异常]`（书名多为 `（标题待解析）`）：多半是被登录或验证页拦住，或页面改版。请作者在 Ego Lite 里手动打开任一 `https://fanqienovel.com/page/{bookId}`，确认页面正常、不是验证页；报「浏览器无响应」就按 browser-cdp 检查 Ego Lite 安装。确认正常后重采。
 
 ## 分析维度
 

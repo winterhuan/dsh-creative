@@ -3,7 +3,9 @@ import type { ClientRemote } from '@deepseek-ai/dsh-api-gateway/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-files/remote'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
-import { Modal } from '@deepseek-ai/dsh-client-ui-primitives'
+import {
+  FileTypeIcon, classifyFileType, IconFolderCloseRegular, IconFolderOpenRegular, Modal,
+} from '@deepseek-ai/dsh-client-ui-primitives'
 import { writerExtension } from '../editable.ts'
 import {
   breadcrumbSegments,
@@ -141,6 +143,36 @@ function healthCopy(health: WriterScanHealth, t: Copy): string {
   return t('healthOk')
 }
 
+/**
+ * Split a filename stem around the first case-insensitive query occurrence.
+ * @param stem - the displayed filename stem.
+ * @param query - the active search text.
+ * @returns the stem with the matched run wrapped in a mark.
+ */
+function highlightStem(stem: string, query: string): ReactNode {
+  const needle = query.trim().toLowerCase()
+  if (needle === '') return stem
+  const at = stem.toLowerCase().indexOf(needle)
+  if (at < 0) return stem
+  return (
+    <>
+      {stem.slice(0, at)}
+      <mark>{stem.slice(at, at + needle.length)}</mark>
+      {stem.slice(at + needle.length)}
+    </>
+  )
+}
+
+/**
+ * The parent directory of a hit path, for the inline location hint.
+ * @param path - the hit's workspace-relative path.
+ * @returns the directory part, or '' for root-level hits.
+ */
+function searchHitDir(path: string): string {
+  const cut = path.lastIndexOf('/')
+  return cut <= 0 ? '' : path.slice(0, cut)
+}
+
 function TreeNodes({
   nodes,
   depth,
@@ -165,8 +197,8 @@ function TreeNodes({
   readonly t: Copy
 }): ReactNode {
   return nodes.map((node) => {
-    const indent = { '--writer-indent': `${String(depth * 14)}px` } as CSSProperties
-    const childIndent = { '--writer-indent': `${String((depth + 1) * 14)}px` } as CSSProperties
+    const indent = { '--writer-indent': `${String(depth * 12)}px` } as CSSProperties
+    const childIndent = { '--writer-indent': `${String((depth + 1) * 12)}px` } as CSSProperties
     if (node.kind === 'file') {
       const { stem, ext } = fileStemAndExt(node.name)
       return <li key={node.path}>
@@ -180,15 +212,15 @@ function TreeNodes({
           disabled={!node.editable}
           onClick={() => { if (node.editable) onSelect(node.path) }}
         >
-          <span aria-hidden="true" className="writer-tree-kind">📄</span>
+          <FileTypeIcon kind={classifyFileType(node.name)} size={16} className="writer-tree-kind" />
           <span className="writer-tree-label" aria-hidden="true">{stem || node.name}</span>
-          {ext !== '' && <span className="writer-tree-ext" aria-hidden="true">{ext}</span>}
+          {ext !== '' && ext !== 'md' && <span className="writer-tree-ext" aria-hidden="true">{ext}</span>}
         </button>
       </li>
     }
 
     const key = node.path
-    const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, selected, depth)
+    const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, selected)
     const listing = listings[key]
     const total = listing === undefined ? node.children.length : visibleDirectoryEntries(listing.entries).length
     const hasMore = listing !== undefined && node.shown < total
@@ -204,8 +236,9 @@ function TreeNodes({
         aria-label={folderName}
         onClick={() => { onToggle(key, !open) }}
       >
-        <span aria-hidden="true" className="writer-tree-chevron">{open ? '▼' : '▶'}</span>
-        <span aria-hidden="true" className="writer-tree-kind">📁</span>
+        {open
+          ? <IconFolderOpenRegular className="writer-tree-kind" aria-hidden="true" />
+          : <IconFolderCloseRegular className="writer-tree-kind" aria-hidden="true" />}
         <span className="writer-tree-label">{folderName}</span>
       </button>
       {open && <ul>
@@ -239,11 +272,13 @@ function TreeNodes({
 
 function SearchHits({
   hits,
+  query,
   selected,
   onSelect,
   t,
 }: {
   readonly hits: readonly WriterSearchHit[]
+  readonly query: string
   readonly selected: string | undefined
   readonly onSelect: (path: string) => void
   readonly t: Copy
@@ -251,6 +286,7 @@ function SearchHits({
   return <ul className="writer-tree writer-search-hits">
     {hits.map((hit) => {
       const { stem, ext } = fileStemAndExt(hit.name)
+      const dir = searchHitDir(hit.path)
       return <li key={hit.path}>
         <button
           type="button"
@@ -261,11 +297,11 @@ function SearchHits({
           disabled={!hit.editable}
           onClick={() => { if (hit.editable) onSelect(hit.path) }}
         >
-          <span aria-hidden="true" className="writer-tree-kind">📄</span>
-          <span className="writer-tree-label" aria-hidden="true">{stem || hit.name}</span>
-          {ext !== '' && <span className="writer-tree-ext" aria-hidden="true">{ext}</span>}
+          <FileTypeIcon kind={classifyFileType(hit.name)} size={16} className="writer-tree-kind" />
+          <span className="writer-tree-label" aria-hidden="true">{highlightStem(stem || hit.name, query)}</span>
+          {ext !== '' && ext !== 'md' && <span className="writer-tree-ext" aria-hidden="true">{ext}</span>}
+          {dir !== '' && <span className="writer-search-dir" aria-hidden="true">{dir}</span>}
         </button>
-        <p className="writer-search-path" title={hit.path}>{hit.path}</p>
       </li>
     })}
   </ul>
@@ -393,13 +429,13 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
     })
   }
 
-  // Dashboard: first-layer roots open by default and lazy-load; respect explicit collapse.
+  // Only the chain holding the open file auto-opens and lazy-loads; respect explicit collapse.
   useEffect(() => {
     if (!visible || showSearch) return
     for (const root of roots) {
       if (root.kind !== 'directory') continue
       const key = root.path
-      const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, active, 0)
+      const open = key in expanded ? expanded[key] === true : defaultWriterTreeExpanded(key, active)
       if (!open || root.loaded || root.loading || root.loadError !== undefined) continue
       loadDirectory(key)
     }
@@ -701,7 +737,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
           onClick={() => { setViewPick('libraries') }}
         >
           <span>{t('libraries')}</span>
-          <b className="writer-badge">{libraries.length}</b>
+          {libraries.length > 0 && <b className="writer-badge">{libraries.length}</b>}
         </button>
         <button
           type="button"
@@ -713,7 +749,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
           onClick={() => { setViewPick('projects') }}
         >
           <span>{t('projects')}</span>
-          <b className="writer-badge">{projects.length}</b>
+          {projects.length > 0 && <b className="writer-badge">{projects.length}</b>}
         </button>
       </nav>
       <div className="writer-search-slot" role="search">
@@ -757,7 +793,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
               {truncationText !== '' && <p className="writer-muted" role="status">{truncationText}</p>}
             </>
               : searchResult !== undefined ? <>
-                <SearchHits hits={searchResult.results} selected={active} onSelect={selectFile} t={t} />
+                <SearchHits hits={searchResult.results} query={query} selected={active} onSelect={selectFile} t={t} />
                 {truncationText !== '' && <p className="writer-muted" role="status">{truncationText}</p>}
               </>
                 : null
@@ -779,7 +815,7 @@ export function WriterDesk({ sessionId, cwd, remote, t, visible }: DeskProps) {
       </div>
       <footer className="writer-rail-note">
         <span className="writer-rail-dot" data-health={health} aria-hidden="true" />
-        <p title={`${cwd} · ${t('localWorkspace')}`}>{shortName} · {healthText} · {t('localWorkspace')}</p>
+        <p title={`${cwd} · ${t('localWorkspace')}`}>{health === 'ok' || health === 'loading' ? t('localWorkspace') : `${healthText} · ${t('localWorkspace')}`}</p>
       </footer>
     </aside>
     <div

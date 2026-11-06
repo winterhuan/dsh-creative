@@ -61,16 +61,16 @@ dsh plugin --profile web add packages/winterhuan/writer
 
 | 技能 | 触发 | 说明 |
 |:-----|:-----|:-----|
-| `story-long-scan` | `/story-long-scan` | 长篇扫榜。实时榜单可能需要 `agent-browser` / `browser-cdp`。 |
+| `story-long-scan` | `/story-long-scan` | 长篇扫榜。实时榜单通过 Ego Lite 浏览器（`browser-cdp`）采集。 |
 | `story-short-scan` | `/story-short-scan` | 短篇扫榜。浏览器依赖同上。 |
 | `story-long-analyze` | `/story-long-analyze` | 长篇拆文。脚本需要 Python 3。 |
 | `story-short-analyze` | `/story-short-analyze` | 短篇拆文。需要 Python 3。 |
 | `story-cover` | `/story-cover` | 仅提示词不需要 Key。在 DSH 上要出图时用上面的 GPT Image 凭据。Codex 宿主仍可用 `$imagegen`。 |
-| `browser-cdp` | `/browser-cdp` | 扫榜需要实时浏览器会话时的可选助手。 |
+| `browser-cdp` | `/browser-cdp` | 浏览器入口：Ego Lite 后端、登录/验证码交接、采集脚本共享传输。 |
 
 ### 使用侧栏
 
-先打开写作模式，再从右侧栏打开写作。左栏信息架构对齐 oh-story Dashboard（等分 Tab → 文件名搜索 → 树 → 脚注），皮肤仍跟 DSH。拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页，根默认展开）、换文件脏确认、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。文件名搜索（防抖、限当前 Tab、对齐 Dashboard 结果/节点/深度上限），Esc 清空；侧栏可见且焦点不在对话输入时 ⌘/Ctrl+K 聚焦搜索，⌘/Ctrl+S 保存。编辑 ↔ Markdown 预览、脏态（待保存/已保存/保存中）、分段面包屑、可切换行号 gutter（滚动对齐与当前行）、编辑器底栏（行·列、字节、字数、扩展名、UTF-8·EOL），保存时保留原换行。舞台顶栏显示工作区短名、拆文库/写作项目/已展开文稿计数（或「按需」）、「本地工作区 · 文稿不会上传」与列举健康态（可用 / 部分失败 / 扫描失败），扫描失败时有明确提示与重试；左栏脚注同步健康态与仅本机文案。保存带上一次读取得到的版本；磁盘冲突时弹出 dialog（保留当前编辑 / 重新载入磁盘版本），保存暂停直至重载。列表、读取与搜索遍历走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件与视图态 localStorage 持久化仍未接入（P3e 补齐编辑壳抛光）。
+先打开写作模式，再从右侧栏打开写作。左栏信息架构对齐 oh-story Dashboard（等分 Tab → 文件名搜索 → 树 → 脚注），皮肤仍跟 DSH。拆文库 / 写作项目双 Tab（带数量）、懒加载真实目录树（约 200 条分页，根默认收起；打开文稿所在链路自动展开）、换文件脏确认、可编扩展名为 `.md` / `.txt` / `.json` / `.yaml` / `.yml` / `.toml`。文件名搜索（防抖、限当前 Tab、对齐 Dashboard 结果/节点/深度上限），Esc 清空；侧栏可见且焦点不在对话输入时 ⌘/Ctrl+K 聚焦搜索，⌘/Ctrl+S 保存。编辑 ↔ Markdown 预览、脏态（待保存/已保存/保存中）、分段面包屑、可切换行号 gutter（滚动对齐与当前行）、编辑器底栏（行·列、字节、字数、扩展名、UTF-8·EOL），保存时保留原换行。舞台顶栏显示工作区短名、「本地工作区 · 文稿不会上传」徽标与列举健康态（可用 / 部分失败 / 扫描失败）；拆文库/写作项目/已展开文稿计数（或「按需」）在舞台过窄时隐藏（Tab 徽标仍有数量）。扫描失败时有明确提示与重试。树行用 DSH 文件类型图标（文件夹开/合两态），markdown 不显示扩展名徽标；搜索命中单行显示并高亮关键词、随行附目录；左栏脚注只留健康点与本地工作区文案（异常时附健康态文字）。保存带上一次读取得到的版本；磁盘冲突时弹出 dialog（保留当前编辑 / 重新载入磁盘版本），保存暂停直至重载。列表、读取与搜索遍历走会话的 `workspaceFiles`，**不**启动本机 dashboard-server。删文件与视图态 localStorage 持久化仍未接入（P3e 补齐编辑壳抛光）。
 
 在 DSH 里，`story-setup` 把宿主认成 `dsh`，不部署 Claude Code 的 `.claude/hooks`，也不部署 Codex 的 `.codex/hooks.json`。作者明确要求其他宿主时，那些宿主仍走自己的部署文件。
 

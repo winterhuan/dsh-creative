@@ -2,7 +2,7 @@
 /**
  * 刺猬猫阅读排行榜采集脚本
  *
- * 配合 browser-cdp skill 使用。先启动 Chrome CDP 环境，再运行本脚本。
+ * 配合 browser-cdp skill 使用。先安装 Ego Lite（ego-browser 可用），再运行本脚本。
  * 采集策略：刺猬猫 rank-index 页面单页展示所有榜单，文本解析提取结构化数据。
  * 输出的榜单 Markdown 格式见 aggregate-rank.js 文件头，聚合按它解析。
  *
@@ -12,19 +12,18 @@
  *   node ciweimao-rank-scraper.js --type all           # 全部榜单
  *
  * 前置：
- *   node {SKILL_DIR}/browser-cdp/scripts/setup-cdp-chrome.js 9222
+ *   Ego Lite 已安装（见 {SKILL_DIR}/browser-cdp/SKILL.md）
  */
 
 const fs = require("fs");
 const path = require("path");
-const { ab, sleep, evalJSONBase64, scrollLoad, getArg, localDateStamp, runCli } = require("./cdp-utils");
+const { createSession, sleep, getArg, localDateStamp, runCli } = require("../../browser-cdp/scripts/ego-session.cjs");
 
 const RANK_URL = "https://www.ciweimao.com/rank-index";
 
 /** 连通性 + 页面就绪自检 */
-function probePage(port) {
-  return evalJSONBase64(
-    port,
+function probePage(session) {
+  return session.evalJSON(
     "JSON.stringify({host:location.host,len:(document.body&&document.body.innerText||'').length})"
   );
 }
@@ -51,7 +50,7 @@ const RANK_TYPES = [
  * NO.1 格式：标题 / 作者 / 指标值（三行）
  * #2-10 格式：N[题材]书名 / 指标值（两行）
  */
-function extractAllRanks(port) {
+function extractAllRanks(session) {
   const js =
     "JSON.stringify((()=>{" +
     "var text=document.body.innerText||'';" +
@@ -89,14 +88,14 @@ function extractAllRanks(port) {
     "if(curName&&curEntries.length)sections.push({name:curName,entries:curEntries});" +
     "return sections" +
     "})())";
-  return evalJSONBase64(port, js) || [];
+  return session.evalJSON(js) || [];
 }
 
 /**
  * 从 DOM 获取书籍链接。每本书常有封面图 anchor（textContent 为空）和书名 anchor，
  * 按 bookId 聚合后取最长的非空文本作为书名，避免空封面 anchor 覆盖书名导致回填全失败。
  */
-function extractBookUrls(port) {
+function extractBookUrls(session) {
   const js = `JSON.stringify((function(){
     function clean(t){return t.replace(/^[0-9]+\\[[^\\]]*\\]/,'').replace(/\\s+[0-9.]+(?:万|亿)?$/,'').trim();}
     var byId={};var order=[];
@@ -110,7 +109,7 @@ function extractBookUrls(port) {
     });
     return order.map(function(id){return {bookId:id,title:byId[id],url:'https://www.ciweimao.com/book/'+id};});
   })())`;
-  return evalJSONBase64(port, js) || [];
+  return session.evalJSON(js) || [];
 }
 
 // ---------------------------------------------------------------------------
@@ -161,7 +160,6 @@ function renderRankFile(rt, entries, urls, now) {
 // ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
-const PORT = parseInt(getArg(args, "--port") || "9222", 10);
 const OUTDIR = getArg(args, "--outdir") || ".";
 const RANKTYPE = getArg(args, "--type") || "all";
 
@@ -169,16 +167,17 @@ function main() {
   console.log("\n→ 采集 刺猬猫排行榜...");
   console.log(`  URL: ${RANK_URL}`);
 
+  const session = createSession({ spaceName: "writer ciweimao scan" });
   let sections, urls;
   try {
-    ab(PORT, "open", RANK_URL);
+    session.open(RANK_URL);
     sleep(4000);
 
-    // 连通性自检：CDP 未起/被重定向时给可操作报错，而非误报"结构已变"
-    const probe = probePage(PORT);
+    // 连通性自检：浏览器未响应/被重定向时给可操作报错，而非误报"结构已变"
+    const probe = probePage(session);
     if (!probe) {
       console.error(
-        `  ✗ CDP 无响应。请确认已用 browser-cdp 启动 Chrome（端口 ${PORT}），且 agent-browser 可用。`
+        `  ✗ 浏览器无响应。请确认已安装 Ego Lite 且 ego-browser 可用（见 browser-cdp skill）。`
       );
       return 0;
     }
@@ -187,25 +186,27 @@ function main() {
       return 0;
     }
 
-    scrollLoad(PORT, 3);
+    session.scroll(3, 1000);
     sleep(1000);
 
-    sections = extractAllRanks(PORT);
+    sections = extractAllRanks(session);
     if (!sections.length) {
       // 懒加载可能未触发，再滚动重试一次
-      scrollLoad(PORT, 2);
+      session.scroll(2, 1000);
       sleep(1000);
-      sections = extractAllRanks(PORT);
+      sections = extractAllRanks(session);
     }
     if (!sections.length) {
       console.error("[ciweimao] 采集失败：未解析到榜单（页面结构可能变动或未加载）。请人工打开榜单页确认。");
       return 0;
     }
 
-    urls = extractBookUrls(PORT);
+    urls = extractBookUrls(session);
   } catch (err) {
     console.error(`[ciweimao] 采集失败（页面加载或提取阶段）: ${err.message}`);
     return 0;
+  } finally {
+    session.endAndReport("ciweimao");
   }
 
   console.log(`  ✓ 提取 ${sections.length} 个榜单，${urls.length} 个书籍链接`);
