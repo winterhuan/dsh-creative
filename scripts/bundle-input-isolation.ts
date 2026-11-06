@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.2.1-alpha.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.2-rc.1; re-sync when the DSH dependency version changes.
 /** Experimental ownership of the actual filesystem and package inputs supplied to a bundler. */
 
 import { existsSync, readFileSync, realpathSync } from 'node:fs'

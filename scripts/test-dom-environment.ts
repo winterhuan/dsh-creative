@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.2-rc.1; re-sync when the DSH dependency version changes.
 /** Initial resize delivery from jsdom's modeled offsets; geometry/timing suites supply their own observers. */
 import { afterAll, beforeEach } from 'vitest'
 

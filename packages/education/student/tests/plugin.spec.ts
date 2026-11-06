@@ -7,6 +7,8 @@ import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import SkillRegistry, { renderSkillContent } from '@deepseek-ai/dsh-skill'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime, { type ToolRunContext } from '@deepseek-ai/dsh-tools'
+import { apply as applyNativeToolExecutor, inject as nativeToolExecutorInject } from '@deepseek-ai/dsh-tool-executor-native'
+import type { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import * as student from '../src/agent.ts'
 import { createStudySkillProvider } from '../src/skill-provider.ts'
@@ -22,6 +24,7 @@ async function fixture() {
   onTestFinished(() => ctx.fiber.dispose())
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
+  await ctx.plugin({ apply: applyNativeToolExecutor, inject: nativeToolExecutorInject })
   await ctx.plugin(SkillRegistry)
   await ctx.plugin(LocalFileSystem, { cwd })
   const plugin = ctx.plugin(student)
@@ -135,7 +138,14 @@ describe('independently loaded student plugin', () => {
 
   it('returns serializable results through the DSH execution pipeline', async () => {
     const { ctx, execution } = await fixture()
-    const result = await ctx.tools.execute({ ...execution(), arguments: { change: setup } })
+    const callId = 'study-call' as ToolCallId
+    const batch = await ctx.tools.execute({
+      calls: [{ type: 'tool-call', id: callId, name: 'study_update', arguments: JSON.stringify({ change: setup }) }],
+      signal: new AbortController().signal,
+      agent: execution().agent,
+    })
+    expect(batch.results).toHaveLength(1)
+    const result = batch.results[0]!.result
     expect(result.isError).toBe(false)
     expect(result.content).toEqual([expect.objectContaining({ type: 'text', text: expect.stringContaining('ready') })])
   })

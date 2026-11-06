@@ -1,8 +1,8 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-01。
+最后更新：2026-11-06。
 
-本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程、实际遇到的问题和解决方案，以及升级 DSH 时要做的事。
+本文档用于在 `/Users/winter/dsh-creative` 继续开发：说明仓库现状、与 DSH 的集成方式、构建与测试流程，以及升级 DSH 时要做的事。完整的 17 个问题记录见 [HANDOFF-problems.md](HANDOFF-problems.md)，本机环境变更流水账见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。
 
 ## 目录
 
@@ -23,6 +23,8 @@
 
 本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含写作模式、学生学习、项目默认模式、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
 
+2026-11-06 DSH 升级到 `0.2.2-rc.1`：现役 6 包与根的 `@deepseek-ai/dsh-*` 依赖、`pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`、typert 补丁同步到 `0.2.2-rc.1`，子模块移到 `dsh-v0.2.2-rc.1`（`66491b05e3`）。配套范围随上游 peer 声明调整：`@deepseek-ai/cordis` `~4.0.5` → `~4.1.0`，`cordis-plugin-{group,include,loader}` `~1.0.6` → `~1.1.0`，`@deepseek-ai/schemastery` `~3.18.5` → `~3.19.0`。上游 `AgentRegistry` 新增 `static inject = ['sessionProjections']`，skill-viewer 的两个 host 测试补挂 `SessionProjectionRegistry` 并加 devDependency；上游 `ctx.tools.execute` 改为批处理 API 且必须注册 executor，student 测试改用 `dsh-tool-executor-native` 的 `{ apply, inject }` 与 batch 调用。第 8 节复制文件同步到 rc.1 并新增 `scripts/modules/src/assets.ts`（上游客户端资源管线从 base64 内联改为 `lib/assets/` 发布 + 模块加载器解析）。install、clean、typecheck、build、48 文件 494 项测试、peer 检查通过；全局 dsh 升到 0.2.2-rc.1，dsh web 重启后页面 HTTP 200，5 个 `@winterhuan` 客户端 bundle 均返回 200。写作模式插件在 `packages/winterhuan/writer`。
+
 2026-11-01 创作四包归档收尾：2026-10-31 的归档提交已把 `packages/creative/{story,short-drama,video-recap,novel-to-game}`、`packages/client/ui-settings-story` 与根 `webnovel-writer/` 整包移入 `archive/`；本次把 `ui-settings-creative-produce` 一并移入，删除根对已归档包的全部剩余引用——tsconfig 引用、vitest 别名、`build:host`/`test` 里的 `sync-video-runtime.py`（脚本已删）、根 `tests/` 四个跨领域 spec 与 fixtures（`domain-modes` 瘦身为 student-only）、`verify-package-readme-model-experience` 两条 allowlist、pairing 与措辞门禁的 `archive/` 排除；`docs/subsystems` 五个创作域页面与 `docs/scratch` 三份 story 规划稿移入 `archive/docs/`，21 个创作时代 Agent Note 三元组按 `dsh-archive-agent-notes` 归档封存（`Archived: 2026-11-01`）。typecheck、build、test、doc-sync、hygiene 恢复全绿。
 
 2026-10-31 DSH 升级到 `0.2.1-rc.5`：现役包与根的 `@deepseek-ai/dsh-*` 依赖、`pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`、typert 补丁同步到 `0.2.1-rc.5`，子模块移到 `dsh-v0.2.1-rc.5`（`b830ec950f`）；`@deepseek-ai/cordis` 配套范围仍为 `~4.0.5`。第 8 节四个 rc.3 同步脚本与上游对照仅本地改动差异，更新复制版本标注。写作模式插件在 `packages/winterhuan/writer`。
@@ -39,7 +41,7 @@
 
 2026-10-25 学生状态读路径缓存与掌握度口径统一：读取按文件版本缓存已校验状态，作答证据单遍索引、目标改查十二图全局索引，一次请求只算一遍洞察；轮询可携带修订号，未变化时只返回时间状态（3000 作答合成态完整 dashboard 约 17ms、未变化轮询约 0.1ms）。跨年级摸底与本期洞察共用同一掌握度规则，修复此前分叉；`queryStudy` 未知 kind 显式报错。见[读路径决策](.agents/notes/implemented/simplification/2026-10-25-student-read-path.zh.md)；包内 129 项测试通过。
 
-2026-10-25 学生练习单改为网页渲染与浏览器打印：删除 Host 端 `src/worksheet.ts`（pdfkit）、`/student/worksheet.pdf` 与 `/student/print` 接口及随包 NotoSansSC 字体（约减 17 MB）；新增客户端 `src/client/worksheet-view.tsx`，复用屏上题图的 SVG 渲染整张卷，预览后经浏览器打印对话框打印或存储为 PDF（Windows 可打印）。无 `kind` 旧卷的命名启发式改由客户端按 `sources` 判定；schema 不变。双语 README、SKILL、questions、subsystem 文档、i18n 与 Agent Note 已同步，见[练习单网页化](.agents/notes/implemented/simplification/2026-10-25-student-worksheet-html.zh.md)；包内 126 项测试通过，本机验证见第 12 节。
+2026-10-25 学生练习单改为网页渲染与浏览器打印：删除 Host 端 `src/worksheet.ts`（pdfkit）、`/student/worksheet.pdf` 与 `/student/print` 接口及随包 NotoSansSC 字体（约减 17 MB）；新增客户端 `src/client/worksheet-view.tsx`，复用屏上题图的 SVG 渲染整张卷，预览后经浏览器打印对话框打印或存储为 PDF（Windows 可打印）。无 `kind` 旧卷的命名启发式改由客户端按 `sources` 判定；schema 不变。双语 README、SKILL、questions、subsystem 文档、i18n 与 Agent Note 已同步，见[练习单网页化](.agents/notes/implemented/simplification/2026-10-25-student-worksheet-html.zh.md)；包内 126 项测试通过，本机验证见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。
 
 2026-10-24 DSH 升级到 `0.2.1-rc.3`：11 个插件与根的 `@deepseek-ai/dsh-*` 依赖同步，子模块移到 `dsh-v0.2.1-rc.3`，typert 补丁重做；typecheck、build 通过，全量测试 1015 项里 1011 通过、3 跳过，唯一失败是 story 的设定符号链接用例（测试指向 macOS 不存在的 `/etc/hostname`，返回 ENOENT，与版本无关）；web 服务已重启，页面与 10 个 `@winterhuan` 客户端 bundle 经 HTTP 请求验证返回 200，未做浏览器交互验证。
 
@@ -51,8 +53,8 @@
 
 当前实现是独立的 `@winterhuan` 插件仓库：
 
-- 依赖 npm 上发布的 DSH `0.2.1-rc.5`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
-- 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
+- 依赖 npm 上发布的 DSH `0.2.2-rc.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
+- 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
 - 包都位于 `@winterhuan` scope 下。2026-10-31 起 story、short-drama、video-recap、novel-to-game、ui-settings-story 与 webnovel-writer 已整体移入 `archive/`（2026-11-01 补齐引用清理）；2026-11-01 起 `ui-settings-creative-produce` 同样归档。现役 6 包为 `packages/winterhuan/writer`、`packages/education/student`、`packages/skill/skill-viewer`、`packages/preset/project-default-mode`、`packages/client/ui-skill-viewer`、`packages/client/ui-settings-model-options`。
 - 包目录采用 `packages/<组>/<包>` 两层布局；`archive/` 是冻结快照区，不参与构建、测试与文档门禁。
 
@@ -162,7 +164,7 @@ dsh-creative/
 ├── tests/                             跨 preset 隔离验证（domain-modes，student-only）
 ├── types/client-build-environment/    客户端构建期 process.env 的环境声明（上游拷贝）
 ├── patches/                           typert 生成器补丁（pnpm patchedDependencies）
-├── upstream/                          子模块，固定在 dsh-v0.2.1-rc.5；只读
+├── upstream/                          子模块，固定在 dsh-v0.2.2-rc.1；只读
 ├── docs/、.agents/                    设计文档和决策记录
 ├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
 ├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
@@ -281,10 +283,10 @@ pnpm run clean                # 删除 packages/*/*/lib
 
 ## 5. 在 DSH 中安装、调试和移除
 
-下面的安装与启动步骤已在 DSH `0.2.1-alpha.1` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
+下面的安装与启动步骤已在 DSH `0.2.2-rc.1` 的隔离 `DSH_HOME` 中验证。安装使用链接指向本仓库已构建的包。
 
 ```sh
-# 使用已安装的 DSH 0.2.1-rc.5
+# 使用已安装的 DSH 0.2.2-rc.1
 cd ~/dsh-creative && pnpm run build
 
 # 从 web 模板创建 profile，--dump-config 使它只创建、不启动
@@ -336,13 +338,13 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 
 ## 6. 依赖策略
 
-- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.1-rc.5`。不要写 `*` 或 `latest`，原因见[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
-- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.0.5`，`cordis-plugin-loader` 写 `~1.0.6`，`cordis-plugin-include` 写 `~1.0.10`，`schemastery` 写 `~3.18.5`。根开发依赖显式提供 `cordis-plugin-group` 的 `~1.0.5`，满足 `dsh-app-boot` 的 peer 范围。
+- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.2-rc.1`。不要写 `*` 或 `latest`，原因见[问题 2](HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
+- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.1.0`，`cordis-plugin-loader`、`cordis-plugin-include`、`cordis-plugin-group` 写 `~1.1.0`，`schemastery` 写 `~3.19.0`。范围随上游 peer 声明调整，升级时按 `npm view @deepseek-ai/dsh-session@$NEW peerDependencies` 核对。
 - **分类**：沿用上游的分类，上游已用 `package-dependency-policy` 检查过。
   - 需要与宿主共享实例的 DSH 包同时放进 `peerDependencies` 和 `devDependencies`。运行时 peer 由正在运行的 dsh 安装提供，devDependencies 只给类型检查和测试用。
   - 无状态工具放 `dependencies`。这是 DSH 发布文档（`upstream/docs/user/develop/basic/publish.md`）的规则。
 - **仓库内部包**之间用 `workspace:*`。
-- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.1-rc.5` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
+- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.2-rc.1` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
 - **根 `package.json` 的 devDependencies** 分三类：
   1. 工具链：`typescript` ^6.0.3、`tsdown` ^0.22.2、`vitest` ^4.1.8、`jsdom` 29.1.1、`lightningcss`、`@types/node`、`@testing-library/dom`、`@testing-library/react`，以及 `@deepseek-ai/dsh-typert-generator`。
   2. DSH 平台模块在 Node 里要用、却没有声明的依赖（浏览器里由 web 前端打包提供）：
@@ -354,151 +356,42 @@ dsh --profile creative --host 127.0.0.1 --port 0 --no-open   # 随机端口，�
 
 ## 7. 实际遇到的问题与解决方案
 
-### 问题 1：typecheck 报几百个 upstream 包的错误
+完整的 17 个问题记录在 [HANDOFF-problems.md](HANDOFF-problems.md)，按「现象 → 原因 → 解决」组织。索引：
 
-- **现象**：`pnpm run typecheck` 报 `upstream/packages/api/*` 等上游包的错误，例如 `Cannot find module '@deepseek-ai/dsh-api-job-controller/remote'`、`Property 'job' does not exist on type 'ClientRemote'`。
-- **原因**：最初的方案把 upstream 的所有包加进 pnpm workspace，tsconfig 用 project references 和 `paths` 指向上游源码。上游的 `/remote` 模块是 typert 在构建时生成的产物，源码里没有，上游没有完整构建时这些源码就编译不过。这样也等于把上游代码当成本仓库的一部分来编译。
-- **解决**：改为依赖 npm 上发布的 DSH 0.1.7-rc.2。tsconfig 继承本仓库的 `tsconfig.base*.json`，不引用 upstream 的任何项目，`@deepseek-ai/*` 通过 `node_modules` 解析到发布包的 `lib/types/*.d.ts`，并开启 `skipLibCheck`。pnpm workspace 只包含 `packages/*/*`。
-
-### 问题 2：`pnpm install` 报 `@deepseek-ai/dsh-type-meta` 404
-
-- **现象**：`ERR_PNPM_FETCH_404 ... @deepseek-ai/dsh-type-meta`，出错位置在 `@deepseek-ai/dsh-typert-registry@0.0.1-rc.1` 或 `@deepseek-ai/dsh-api-remotes@0.0.1-rc.1` 的依赖里。
-- **原因**：依赖版本写成了 `*`。DSH 各包在 npm 上的 `latest` 标签停在很早的 `0.0.1-rc.1`，它依赖从未发布的 `dsh-type-meta`。当前版本在 `next` 标签上（查法：`npm view @deepseek-ai/dsh-session dist-tags`）。
-- **解决**：所有 DSH 包固定为精确版本 `0.1.7-rc.2`。
-
-### 问题 3：误操作 upstream 子模块
-
-- **经过**：迁移过程中曾在子模块里 `git checkout creative`，又 `rm -rf upstream` 后重新初始化，子模块一度停在 `1b9dc03e1c`（包含 creative 代码本身的提交）。
-- **解决**：恢复到 `dsh-v0.1.7-rc.2`（`477b4f4205`）并记录进提交；`.gitmodules` 指向 `git@github.com:deepseek-ai/deepseek-harness.git`。子模块的 git 目录里还有一个 clone 时带来的本地 `creative` 分支，不影响使用。
-- **规则**：不修改 `upstream/`，只读取。
-
-### 问题 4：`cp -r` 复制包时陷入 node_modules 符号链接循环
-
-- **现象**：`cp -r packages/skill/skill-viewer ...` 两分钟没结束，输出大量 `directory causes a cycle`，还在目标目录里留下了嵌套的残缺副本。
-- **原因**：目标目录已存在，所以被复制到了它的子目录里；同时 macOS 的 `cp -r` 跟随了 pnpm `node_modules` 里的符号链接，在包之间循环。
-- **解决**：删除残缺副本。以后从主仓库复制包时排除 `node_modules` 和 `lib`，例如 `rsync -a --exclude node_modules --exclude lib <源>/ <目标>/`，或者用 `git archive`。
-
-### 问题 5：typert 生成器报 `publishes Remote artifacts but has no Remote methods`
-
-- **现象**：`build:host` 里 Host 面编译通过，typert 插件报 `TypertAnalysisError: typert(host): @winterhuan/dsh-skill-viewer publishes Remote artifacts but has no Remote methods`。
-- **原因**：生成器通过 `FaceAnalyzer.isTypeMetaSymbol()` 识别 `@Remote`、`TypertRemoteService`、`bindTypertRemote`，只接受两种情况：
-  - 声明所在文件属于一个名为 `@deepseek-ai/dsh-typert-protocol` 的 workspace 包。workspace 包的登记来自根 `tsconfig.host.json` / `tsconfig.client.json` 引用的、位于 `<根>/packages` 下的项目。
-  - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
-
-  从 npm 安装时，协议包在 `node_modules` 里，两个条件都不满足，skill-viewer 的 `@Remote` 方法被忽略。这是生成器只考虑 monorepo 场景造成的缺口。
-- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.1-rc.5.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
-
-  ```diff
-           if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
-               return true;
-  +        // Repositories outside the DSH monorepo install the protocol from npm instead of a workspace package.
-  +        if (externalModuleIdentityForFile(declaration.getSourceFile().fileName)?.package === '@deepseek-ai/dsh-typert-protocol')
-  +            return true;
-  ```
-
-- **相关约束**：生成器从 bundle 目录向上查找 `tsconfig.host.json` 来确定 workspace 根，所以根目录必须有 `tsconfig.host.json`，并且它引用的项目必须在 `packages/` 下。
-- **建议**：向 DSH 提 issue 或 PR，让生成器原生支持 npm 安装的协议包，之后可以删掉这个补丁。
-
-### 问题 6：客户端类型检查：`ClientRemote` 上没有 `credentials`；找不到 `dsh-agent-preset-registry/types`
-
-- **现象**：
-  - `creative-produce-card-controller.ts`：`Property 'credentials' does not exist on type 'ClientRemote'`。
-  - `ui-skill-viewer/src/client/mount.ts`：`Cannot find module '@deepseek-ai/dsh-agent-preset-registry/types'`。
-- **原因**：发布的 `@deepseek-ai/dsh-api-remotes` 在 `client` 声明里用 `export type {} from '<包>/remote'` 转发各个 Remote 的类型合并，但只把这些包列为自己的 devDependencies。对外部使用者来说这些包根本没安装，类型合并就悄悄丢了（`skipLibCheck` 掩盖了声明文件里的解析错误）。另外 pnpm 严格模式下，未声明的依赖一律解析失败。
-- **解决**：
-  - `ui-settings-creative-produce` 增加 devDependency `@deepseek-ai/dsh-api-settings-controller`，并在 `creative-produce-card-controller.ts` 里写 `import type {} from '@deepseek-ai/dsh-api-settings-controller/remote'`。
-  - `ui-skill-viewer` 增加 devDependency `@deepseek-ai/dsh-agent-preset-registry`。
-- **通用规则**：新用到 `ctx.remote.<命名空间>` 时，把提供它的 DSH 包加进该包的 devDependencies，并显式 `import type {} from '<包>/remote'`。
-
-### 问题 7：Skill Viewer 的类型从 `dsh-api-remotes/client` 导入
-
-- **现象**：`Module '"@deepseek-ai/dsh-api-remotes/client"' has no exported member 'SkillViewerEntry'`（以及 `SkillViewerGetValue` 等）。
-- **原因**：发布版 `api-remotes` 没有导出外部 Skill Viewer 的类型。
-- **解决**：`ui-skill-viewer` 的源码和测试改为从 `@winterhuan/dsh-skill-viewer/types` 导入这些类型；`RemoteResult` 等上游确实导出的类型仍从 `api-remotes/client` 导入。运行时挂载见[第 3 节 Remote](#remote)。
-
-### 问题 8：客户端打包工具没有发布
-
-- **现象**：3 个客户端包的 `tsdown.config.ts` 导入 `upstream/packages/client/tsdown.client.ts` 里的 `clientBundle()`。它负责生成 DSH 模块加载器能加载的 bundle，但没有发布到 npm。
-- **解决**：把它和它依赖的上游内部文件复制到 `scripts/`，并做了以下适配（完整清单见[第 8 节](#8-从上游复制的文件及本地改动)）：
-  - `optionalStringArray` 在 `@deepseek-ai/dsh-client-modules` 里没有公开导出，内联到 `tsdown.client.ts` 末尾。
-  - `platform.ts` 没有任何导入，直接复制。没有改为导入 `@deepseek-ai/dsh-client-web`，因为它的入口会带进浏览器代码。
-  - 本仓库的包布局与上游相同（`packages/<组>/<包>`），包路径相关的 glob 保持上游原样。文件位置不同带来的改动：`tsdown.client.ts` 在上游位于 `packages/client/`，这里位于 `scripts/`，所以 `REPOSITORY_ROOT` 改为 `new URL('..', import.meta.url)`，三个上游内部模块改为同目录相对导入；`client-build-environment.ts` 的产物 glob 删掉 `apps/web/dist/**/*`。
-  - 浏览器 source map 的前缀 `../../../` 对应 map 的服务地址 `/plugins/<scoped-package>/client.js.map` 的深度，与仓库布局无关，保持上游原样；单层布局时期曾误改为 `../../`。
-  - `.dsh-build/` 加入 `.gitignore`。
-- **维护**：升级 DSH 时重新同步这些文件，并重新应用上述改动。
-
-### 问题 9：客户端构建期环境类型
-
-- **现象**：客户端 tsconfig 需要 `types: ["client-build-environment"]`，这个类型包只在上游的 `scripts/types/client-build-environment/` 里。
-- **解决**：复制到 `types/client-build-environment/index.d.ts`；`tsconfig.base.client.json` 设置 `typeRoots: ["./types", "./node_modules/@types"]`。
-
-### 问题 10：单元测试：DSH 发布的客户端包在 Node 里无法加载
-
-Host 测试一开始就全部通过，失败的都是客户端测试，原因有几层：
-
-| 现象 | 原因 | 解决 |
+| 问题 | 主题 | 链接 |
 |---|---|---|
-| `Cannot find package 'zustand'`（以及 `immer`、`clsx`、`simple-icons`、`@deepseek-ai/dsh-util-code-language`）imported from `dsh-client-store` / `dsh-client-ui-primitives` 的 `lib/index.js` | 这些平台模块导入第三方库却不声明依赖，浏览器里由 web 前端打包提供 | 加到根 devDependencies：Node 从 `.pnpm` 内的包向上查找时能找到根 `node_modules` |
-| `ReferenceError: window is not defined` | 客户端插件的 `./client` 导出是浏览器模块加载器 bundle，一加载就访问 `window.__ModuleLoader__` | 测试专用 Vite 插件 `scripts/vitest-upstream-client.ts`：把 `@deepseek-ai/<包>/client` 解析到 `upstream/` 的同版本源码 |
-| `Cannot find module .../dsh-client-ui-renderer/src/client/bind.ts imported from .../dsh-client-test-runtime/lib/index.js` | 发布的 `dsh-client-test-runtime`（rc.3 仍如此）导入了 3 个没有发布的 `src` 文件：`dsh-client-ui-renderer/src/client/bind.ts`、`scoped-slots.tsx`，以及 `dsh-api-session-controller/src/client/scope.ts` | 同一个插件把 `@deepseek-ai/<包>/src/*` 解析到 `upstream/`；再用 `server.deps.inline` 让 Vite 处理 test-runtime，否则 Node 直接加载时根本不经过 Vite 插件 |
-| `TypeError: Unknown file extension ".css"`（`dsh-client-ui-primitives/lib/StateDot.module.css`） | 发布包导入自己的 CSS module，Node 不认识 | `server.deps.inline: [/@deepseek-ai\/dsh-client-/]`，交给 Vite 处理 |
-| `Cannot find package '@deepseek-ai/dsh-client-ui-conversation/src/client/conversation/assembler.ts'`、`.../dsh-client-ui-sidebar-right/src/client/tab-registry.ts` | 测试直接导入上游 `src` 文件，发布包不带 `src/` | 同一个插件解析到 `upstream/` |
-| `Cannot find module '/upstream/packages/llm/token-meter/src/client/index.ts'` | 插件起初假设所有包的 `/client` 源码都在 `src/client/index.ts`，`dsh-token-meter` 不是这样 | 改为读取上游包 `exports['./client'].types`（`./lib/types/X.d.ts`），映射到 `src/X.ts` 或 `src/X.tsx` |
-| `Failed to resolve import "@lexical/plain-text"`、`Cannot find package '@tanstack/react-virtual'` 等，来源是 `upstream/packages/client/...` | 上游客户端源码用到的第三方库；上游客户端包的 `package.json` 也没有声明它们 | 加到根 devDependencies，版本取自上游 |
+| 1 | typecheck 报几百个 upstream 包的错误 | [HANDOFF-problems.md#问题-1typecheck-报几百个-upstream-包的错误](HANDOFF-problems.md#问题-1typecheck-报几百个-upstream-包的错误) |
+| 2 | `pnpm install` 报 `@deepseek-ai/dsh-type-meta` 404 | [HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404](HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404) |
+| 3 | 误操作 upstream 子模块 | [HANDOFF-problems.md#问题-3误操作-upstream-子模块](HANDOFF-problems.md#问题-3误操作-upstream-子模块) |
+| 4 | `cp -r` 复制包时陷入 node_modules 符号链接循环 | [HANDOFF-problems.md#问题-4cp--r-复制包时陷入-node_modules-符号链接循环](HANDOFF-problems.md#问题-4cp--r-复制包时陷入-node_modules-符号链接循环) |
+| 5 | typert 生成器报 `publishes Remote artifacts but has no Remote methods` | [HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods) |
+| 6 | 客户端类型检查：`ClientRemote` 上没有 `credentials` | [HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes) |
+| 7 | Skill Viewer 的类型从 `dsh-api-remotes/client` 导入 | [HANDOFF-problems.md#问题-7skill-viewer-的类型从-dsh-api-remotesclient-导入](HANDOFF-problems.md#问题-7skill-viewer-的类型从-dsh-api-remotesclient-导入) |
+| 8 | 客户端打包工具没有发布 | [HANDOFF-problems.md#问题-8客户端打包工具没有发布](HANDOFF-problems.md#问题-8客户端打包工具没有发布) |
+| 9 | 客户端构建期环境类型 | [HANDOFF-problems.md#问题-9客户端构建期环境类型](HANDOFF-problems.md#问题-9客户端构建期环境类型) |
+| 10 | 单元测试：DSH 发布的客户端包在 Node 里无法加载 | [HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载) |
+| 11 | 发布版 DSH 没有 `conversation/open-file` | [HANDOFF-problems.md#问题-11发布版-dsh-没有-conversationopen-file](HANDOFF-problems.md#问题-11发布版-dsh-没有-conversationopen-file) |
+| 12 | 包改名为 `@winterhuan/*` | [HANDOFF-problems.md#问题-12包改名为-winterhuan](HANDOFF-problems.md#问题-12包改名为-winterhuan) |
+| 13 | 不属于外部插件的 DSH 内置改动 | [HANDOFF-problems.md#问题-13不属于外部插件的-dsh-内置改动](HANDOFF-problems.md#问题-13不属于外部插件的-dsh-内置改动) |
+| 14 | 本机环境问题 | [HANDOFF-problems.md#问题-14本机环境问题](HANDOFF-problems.md#问题-14本机环境问题) |
+| 15 | 升级 0.2.2-rc.1 时 cordis 配套范围不匹配 | [HANDOFF-problems.md#问题-15升级-022-rc1-时-cordis-配套范围不匹配](HANDOFF-problems.md#问题-15升级-022-rc1-时-cordis-配套范围不匹配) |
+| 16 | skill-viewer 21 个测试报 `Cannot read properties of undefined` | [HANDOFF-problems.md#问题-16skill-viewer-21-个测试报-cannot-read-properties-of-undefined-reading-get](HANDOFF-problems.md#问题-16skill-viewer-21-个测试报-cannot-read-properties-of-undefined-reading-get) |
+| 17 | student 测试报 `ToolExecutorUnavailableError` | [HANDOFF-problems.md#问题-17student-测试报-toolexecutorunavailableerror](HANDOFF-problems.md#问题-17student-测试报-toolexecutorunavailableerror) |
 
-补充说明：
+其中 [问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)、[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)、[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载) 在升级与排障中引用最多。
 
-- `vitest-upstream-client.ts` 对来自 `upstream/` 的裸导入，以 `node_modules/.pnpm/node_modules/` 下的一个锚点文件为起点解析，也就是 pnpm 的隐藏提升目录。这样 `react`、`@deepseek-ai/cordis` 等模块和插件包用的是同一份 npm 副本。
-- 静态扫描可达的上游源码会把整个包的文件都算进去，结果会拉进 `@fortune-sheet/*`、`exceljs`、`pdfjs-dist`、`xlsx`（CDN tarball）这类重依赖，但测试实际并不需要它们。所以只在测试真正报 `Cannot find package` 时再补依赖。
-- 后果：客户端单元测试依赖子模块已检出；构建和类型检查不依赖。
-
-### 问题 11：发布版 DSH 没有 `conversation/open-file`
-
-- **现象**：`sidebar.client.spec.ts` 报 `TypeError: registered.inject is not a function`，并且测试里还在调用 `context.waterfall('conversation/open-file', ...)`。
-- **原因**：插件源码已经改用重定向标签类型（`file-redirect.tsx`，见[已归档的创作领域](#已归档的创作领域)），它会额外注册一个 `sidebar.right.pane.tab` 内容组件。于是 `entries('sidebar.right.pane.tab')[0]` 不再是工作台那一项；而 `conversation/open-file` 事件在发布版 DSH 里根本不存在。
-- **解决**：
-  - `bench()` 改为按 key 查找工作台项：`entries(...).find(entry => entry.options.key === '@winterhuan/dsh-creative')`。
-  - 打开文件相关的断言改为检查 `tabs.get('creative-file')!.canOpen(fileAddressFor(SESSION_ID, '/workspace', path))`：Creative 文件返回 true，`README.md` 和其它工作区路径返回 false。
-  - 卸载测试额外断言 `creative-file` 标签类型已移除。
-- **未覆盖**：重定向内容组件（React effect 里的 `openTab(..., { replaceTab: true })`）需要真实渲染，单元测试没有覆盖，需要在浏览器里手动验证。
-
-### 问题 12：包改名为 `@winterhuan/*`
-
-- 改名涉及：4 个 `package.json` 的 `name` 和相互依赖，两个 `cordis.patch.yml`，源码里的运行时 id（例如 `workbench.tsx` 的 `WORKBENCH_ID`、`file-redirect.tsx` 的 `REDIRECT_ID`、`skill-viewer/src/index.ts`），3 个 `tsdown.config.ts` 的 `clientBundle()` id，测试与 `tests/fixtures/headless/cordis.yml`，以及 README 和 `docs/subsystems/` 中的对应文档。
-- 替换时用精确的包名匹配，避免误伤 `@deepseek-ai/dsh-skill` 这类前缀相同的上游包。
-- 没有验证过旧会话或旧布局是否记录过旧 id（`@deepseek-ai/dsh-creative`）。
-
-### 问题 13：不属于外部插件的 DSH 内置改动
-
-下列 DSH 内置接线不属于外部插件，当前仓库不包含这些改动：
-
-| 上游改动 | 不需要的原因 |
-|---|---|
-| `apps/cli/package.json` 依赖 creative；`app-boot/src/profile.ts` 的 web 模板加入 creative bundle；`bundle/web-app` 增加 skill-viewer 和设置页的行 | 这些是做成内置功能的接线；外部插件通过 `dsh plugin add` 和自己的 `cordis.patch.yml` 完成 |
-| `api/remotes` 挂载 skillViewer 并转发其类型 | 插件在 `mount.ts` 里自己挂载（[问题 7](#问题-7skill-viewer-的类型从-dsh-api-remotesclient-导入)） |
-| `ui-chat` 的 `conversation/open-file` waterfall | 发布版 DSH 不提供该事件；插件使用重定向标签类型（见[问题 11](#问题-11发布版-dsh-没有-conversationopen-file)） |
-| `ui-tool` 的 `slots.ts` | 只加了一段 JSDoc 示例 |
-| `system-prompt` 的 `FIRST_PARTY_SECTION_ORDER` 别名 | 插件没有使用 |
-| `dsh-tools` 的 `TOOL_RUNTIME_SCHEDULER` 改为 `Symbol.for` | 只影响源码启动时混合加载源码和构建产物的宿主；插件通过 peer 共享宿主的 `dsh-tools` |
-| `tool-cordis/api-catalog.ts`、`cordis-client-runner/slot-catalog.ts` | 内置包的目录，与外部插件无关 |
-| `test-support/session-snapshot` 的 `production-jobs.ts` 与 creative 快照、web e2e | 上游测试设施，**没有迁移**，见[第 10 节](#10-已知限制与待办) |
-
-### 问题 14：本机环境问题
-
-- shell 里的 `ls` 是长格式别名，脚本里拼路径时要用 `command ls`，或直接用 glob。
-- 环境变量里有 SOCKS 形式的 `all_proxy`：dsh 启动时会打印一条不支持的警告，不影响运行；curl 访问本地服务需要 `--noproxy '*'`。
-- 全局 dsh 原来是 0.1.5-rc.3，比插件目标版本旧，已换成 0.1.7-rc.2（见[第 12 节](#12-本机环境变更记录)）。
 
 ## 8. 从上游复制的文件及本地改动
 
-下面 8 个文件已核对至 `dsh-v0.2.1-rc.5`。`scripts/tsdown.client.ts`、`scripts/client-build-environment.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts` 与上游对照仅本地改动差异，复制版本标注更新为 rc.5；`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。其余 4 个文件的上游内容未变，保留原有复制版本标注（`bundle-input-isolation.ts` 为 `dsh-v0.2.1-alpha.2`，其余三个为 `dsh-v0.1.7-rc.2`）和现有本地改动。
+下面 9 个文件已核对至 `dsh-v0.2.2-rc.1`，复制版本标注均为 rc.1。`scripts/tsdown.client.ts`、`scripts/client-build-environment.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts` 与上游对照仅本地改动差异；`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。其余 4 个文件上游内容未变，仅有首行标注更新。`scripts/modules/src/assets.ts` 是 0.2.2-rc.1 新增的拷贝：上游把客户端资源管线从 base64 内联改为 `lib/assets/` 发布 + 模块加载器 `require.asset()` 解析，该模块定义包资源媒体类型、导出名、修订号与浏览器引用路径，被 `tsdown.client.ts` 与 Host 资源路由共用。
 
 | 本仓库文件 | 上游来源 | 本地改动 |
 |---|---|---|
-| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)` |
-| `scripts/client-build-environment.ts` | `scripts/client-build-environment.ts` | `CLIENT_ARTIFACT_PATTERNS` 删掉 `apps/web/dist/**/*` |
+| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；新增 `./modules/src/assets.ts` 导入 |
+| `scripts/modules/src/assets.ts` | `packages/client/modules/src/assets.ts` | 无（模块源码，上游无首行标注） |
+| `scripts/client-build-environment.ts` | `scripts/client-build-environment.ts` | `CLIENT_ARTIFACT_PATTERNS` 删掉 `apps/web/dist/**/*`；新增 `packages/*/*/lib/assets/**/*` 模式 |
 | `scripts/bundle-input-isolation.ts` | `scripts/bundle-input-isolation.ts` | 仅首行标注 |
-| `scripts/experimental-package-policy.ts` | `scripts/experimental-package-policy.ts` | 仅首行标注 |
+| `scripts/experimental-package-policy.ts` | `scripts/experimental-package-policy.ts` | 仅首行标注（上游新增 cua-bundle、action-cards、creation-recommendations 等映射） |
 | `scripts/platform.ts` | `packages/client/web/src/platform.ts` | 仅首行标注 |
 | `scripts/vitest-shared.ts` | `vitest.shared.ts` | 仅首行标注 |
 | `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |
@@ -526,7 +419,7 @@ diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/cl
 `.agents/skills/` 下 11 个与上游同名的 skill 也是拷贝。链接指向本仓库已有的文档时保留本仓库路径；指向上游独有的文档、包或笔记时加 `upstream/` 前缀。比对方式：
 
 ```sh
-tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.5 .agents/skills | tar -x -C "$tmp" \
+tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar -x -C "$tmp" \
   && diff -r "$tmp/.agents/skills" .agents/skills
 ```
 
@@ -554,12 +447,12 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.5 .agents/skills | tar
    ```
 
 5. 按[第 8 节](#8-从上游复制的文件及本地改动)重新同步复制的文件（含 `.agents/skills` 中与上游同名的 skill），并重新应用本地改动。
-6. 检查 typert 补丁是否还需要：安装新版本后，查看 `node_modules/.pnpm/@deepseek-ai+dsh-typert-generator@$NEW*/node_modules/@deepseek-ai/dsh-typert-generator/lib/types/analyzer.js` 里的 `isTypeMetaSymbol()`。
-   - 上游已支持 npm 安装的协议包：删除 `patches/` 下的旧补丁，以及 `pnpm-workspace.yaml` 里对应的 `patchedDependencies` 项。
-   - 仍未支持：删除旧版本的补丁项，然后执行 `pnpm patch @deepseek-ai/dsh-typert-generator@$NEW --edit-dir /tmp/typert-patch`，重新加上[问题 5](#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods) 的判断，再 `pnpm patch-commit /tmp/typert-patch`。
-7. 检查发布版 `api-remotes` 是否仍只把各 Remote 包列为 devDependencies（[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)），以及 `dsh-client-test-runtime` 是否仍导入未发布的 `src` 文件（[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
+6. 检查 typert 补丁是否还需要：安装新版本后，查看 `node_modules/@deepseek-ai/dsh-typert-generator/lib/types/analyzer.js`（npm 实际安装的包，不是 `node_modules/.pnpm/*patch_hash*` 里的旧残留目录）里的 `isTypeMetaSymbol()` 是否含 `externalModuleIdentityForFile` 的协议包判断。
+- 上游 npm 包已支持 npm 安装的协议包：删除 `patches/` 下的旧补丁，以及 `pnpm-workspace.yaml` 里对应的 `patchedDependencies` 项。
+- 仍未支持（0.2.2-rc.1 即如此：monorepo 源码有该判断，npm 发布包没有）：删除旧版本的补丁项，然后执行 `pnpm patch @deepseek-ai/dsh-typert-generator@$NEW --edit-dir /tmp/typert-patch`，重新加上[问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods) 的判断，再 `pnpm patch-commit /tmp/typert-patch`，补丁文件改为 `@$NEW.patch`，`patchedDependencies` 同步更新。
+7. 检查发布版 `api-remotes` 是否仍只把各 Remote 包列为 devDependencies（[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)），以及 `dsh-client-test-runtime` 是否仍导入未发布的 `src` 文件（[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
 8. 依次运行 `pnpm install`、`pnpm run clean`、`pnpm run typecheck`、`pnpm run build`、`pnpm test`，再按[第 5 节](#5-在-dsh-中安装调试和移除)在真实 dsh 里安装验证。
-9. 阅读上游的变更，重点看插件依赖的接口：slot `sidebar.right.pane.tab`、`tool.call.toolview`，`sidebarRightTabs.register`，typert 协议（`TypertRemoteService`、`@Remote`、`ctx.remote.$mount`），settings / credentials Remote，Session controller 的客户端接口。
+9. 阅读上游的变更，重点看插件依赖的接口：slot `sidebar.right.pane.tab`、`tool.call.toolview`，`sidebarRightTabs.register`，typert 协议（`TypertRemoteService`、`@Remote`、`ctx.remote.$mount`），settings / credentials Remote，Session controller 的客户端接口，`AgentRegistry` 的 `static inject`（0.2.2-rc.1 新增 `sessionProjections`，宿主上下文需相应注册 `SessionProjectionRegistry`），`ctx.tools` 的 executor 抽象（0.2.2-rc.1 起 `execute()` 为批处理 API 且要求已注册 executor，测试用 `dsh-tool-executor-native`）。
 
 ## 10. 已知限制与待办
 
@@ -572,19 +465,19 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.5 .agents/skills | tar
   - 包 README 里的 `../../../upstream/...` 链接在子模块检出时有效，但在 GitHub 网页上不会解析到子模块里的文件；发布到 npm 后也会失效。
 - **部分文档仍需持续校准**：`docs/`、`.agents/` 中的事实必须与当前插件实现保持一致；例如不能依赖发布版 DSH 不提供的 `conversation/open-file`，或使用错误的包路径。
 - **需要向 DSH 反馈的上游问题**：
-  1. typert 生成器不识别 npm 安装的 `dsh-typert-protocol`（[问题 5](#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)）。
-  2. `api-remotes` 只把各 Remote 包列为 devDependencies，外部拿不到类型合并（[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
-  3. `dsh-client-test-runtime` 导入未发布的 `src` 文件；平台模块不声明第三方依赖（[问题 10](#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
-  4. `clientBundle()` 客户端打包预设没有发布（[问题 8](#问题-8客户端打包工具没有发布)）。
+  1. typert 生成器不识别 npm 安装的 `dsh-typert-protocol`（[问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)）。
+  2. `api-remotes` 只把各 Remote 包列为 devDependencies，外部拿不到类型合并（[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
+  3. `dsh-client-test-runtime` 导入未发布的 `src` 文件；平台模块不声明第三方依赖（[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
+  4. `clientBundle()` 客户端打包预设没有发布（[问题 8](HANDOFF-problems.md#问题-8客户端打包工具没有发布)）。
 
 ## 11. 排障速查
 
 | 现象 | 处理 |
 |---|---|
-| `pnpm install` 报某个 `@deepseek-ai/*` 404 | 检查是否写了 `*` / `latest`，改为精确版本（[问题 2](#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)） |
-| 类型检查报 `Cannot find module '@deepseek-ai/<包>/remote'` 或 `ClientRemote` 缺属性 | 把该包加进 devDependencies，并 `import type {} from '<包>/remote'`（[问题 6](#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)） |
+| `pnpm install` 报某个 `@deepseek-ai/*` 404 | 检查是否写了 `*` / `latest`，改为精确版本（[问题 2](HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)） |
+| 类型检查报 `Cannot find module '@deepseek-ai/<包>/remote'` 或 `ClientRemote` 缺属性 | 把该包加进 devDependencies，并 `import type {} from '<包>/remote'`（[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)） |
 | 类型检查报找不到 `@winterhuan/dsh-skill-viewer/remote` | 先跑 `pnpm run build:host`；`typecheck` 已经包含这一步 |
-| typert 报 `has no Remote methods` | 确认补丁已应用（`pnpm install` 会重新打补丁），以及补丁版本与安装的生成器版本一致（[问题 5](#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)） |
+| typert 报 `has no Remote methods` | 确认补丁已应用（`pnpm install` 会重新打补丁），以及补丁版本与安装的生成器版本一致（[问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)） |
 | 改了依赖或 tsconfig 后 tsc 行为异常 | `pnpm run clean`，清掉 `lib/` 里的 `*.tsbuildinfo` |
 | 客户端（jsdom）测试里 Host 模块读取包内数据文件报 ENOENT，路径缺少仓库前缀 | Vite 的 web 转换会把 `new URL('…', import.meta.url)` 改写成站点相对资源路径；先把 `import.meta.url` 读进变量再拼 URL（见 `packages/education/student/src/curriculum.ts`） |
 | 客户端测试报 `window is not defined` | 有 `@deepseek-ai/<包>/client` 导入没有被 `vitest-upstream-client.ts` 映射，检查子模块是否已检出、包名是否存在于 `upstream/packages/*/*` |
@@ -599,76 +492,4 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.1-rc.5 .agents/skills | tar
 
 ## 12. 本机环境变更记录
 
-2026-09-27：
-
-- 全局 dsh：卸载 0.1.5-rc.3，在 nvm 的 Node v22.22.2 下执行 `npm install -g @deepseek-ai/dsh@next`，装上 0.1.7-rc.2。
-- 旧的全局配置：`~/.dsh` 整体移到 `~/.dsh.backup-0.1.5-rc.3-20260927`，里面有 `.credentials.yaml`（API key）、`sessions/`、`storages/`、`settings.yaml` 和 `web` profile。新的 `~/.dsh` 是空的，需要重新配置 API key，或者把备份里的 `.credentials.yaml` 拷回来。确认不再需要后可以删除备份。
-- 验证时用的临时目录 `/tmp/dsh-0.1.7`、`/tmp/dsh-home-creative` 已删除。
-
-2026-09-29：
-
-- 读取本机全局 DSH 的 `package.json`，版本已为 `0.2.0-rc.2`；本轮未修改全局安装或用户 profile。
-- 联网后安装了仓库的目标依赖，并在临时 `DSH_HOME` 和临时项目中完成浏览器验证。临时设置与项目内容不写入用户 profile。
-
-2026-10-05：
-
-- 在 `/tmp/dsh-alpha-qa.SvMvfU` 安装 DSH `0.2.1-alpha.1`，使用独立 `DSH_HOME`、profile 与临时作品完成 Chrome 验证；结果和截图保留在该目录。
-- macOS 本地启动默认使用原生目录选择器；自动化验证在临时 profile 禁用 `directory-picker`，另挂 browse Host 与 Client 两行。
-- 隔离浏览器和服务已关闭。本轮未升级全局 DSH、未修改用户 profile 或真实小说文件。
-
-2026-10-05 四领域本地安装：
-
-- `web` profile 已卸载聚合包并分别链接小说、短剧、视频解说、游戏包；Skill Viewer、模型设置和 Inspector 保持原安装。profile 备份为 `~/.dsh/profiles/web.backup-unbundle-20261005-143518`。
-- 本地服务在 `127.0.0.1:3080` 重启；Chrome 验证四个工作台可打开，`shenji` 仅显示神机诸天录（第 11 章、修订 24），Makers 密钥可编辑，页面脚本错误为零。未写入作品文件或调用付费服务。
-- 隔离安装、压缩包与配置证据位于 `/tmp/dsh-unbundle-qa/`，本地浏览器截图为 `/tmp/dsh-unbundle-local.png`。
-- 隔离 profile 移除短剧后，视频插件与共用生产设置在 Chrome 中仍可使用，无页面脚本错误。临时服务已关闭。
-- 游戏 QA 驱动与工作台统一使用 `/novel-to-game/preview/`；临时 narrative 模板在 Chrome 完成启动、渲染、输入、核心循环、结果和重开六项检查。游戏包 7 个文件 26 项回归通过。
-
-2026-10-05 学习工作台：
-
-- `dsh-student` 的本地链接已存在；本轮构建新增客户端与工作区接口，用户正在运行的 `web` 服务未重启，重启后加载新版。
-- 隔离 profile 在 Chrome 验证家长设置、教材与进度原子保存、开始学习、提示、回答、刷新后恢复反馈、到时停止作答、结束休息、奖励、转录确认及原生图片附件提交。无效图片保留预览并显示错误，有效 PNG 提交成功。深浅色与窄窗口检查通过，无页面脚本错误。
-- 5 个文件共 39 项测试、类型检查和构建通过；题目与评分使用测试数据，未测量真实模型的教学或识图质量，也未下载教材。浏览器证据位于 `/tmp/dsh-student-qa.RjTRvl/panel-results.json`。
-
-2026-10-10 学习插件收尾：
-
-- 当前实现包含智能学习模式、学年必选与课程备注选填、按科目选择到期复习、回答与反馈同屏及状态对应的辅导入口。二年级上册默认教材提供语文 126 页、数学 118 页；默认资料不建立校内关联，边界见[默认教材决策](.agents/notes/implemented/feature/2026-10-10-student-default-textbooks.zh.md)。原学习决策保留课程确认、证据、计时和奖励规则。
-- `pnpm run typecheck`、`pnpm run build` 通过；全量 87 个文件、772 项测试通过，其中学习包 6 个文件、46 项。文档 16 项、规范 3 项检查通过。
-- 隔离 DSH `0.2.1-alpha.1` 的 Chrome 检查覆盖中英文家长设置、按科目选择复习但不自动开始、实际接口开始学习、保留回答与反馈、下一题入口、休息期间禁用复习，以及 720px 深浅色显示；英文检查另验证刷新后恢复回答与反馈，页面脚本错误为零。题目与评分使用测试数据。
-- 教材准备脚本逐字节复现全部 492 个文件，错误源文件在输出前被拒绝。仓库外解压的安装包通过原生 `read_image` 读取两本科目的课页，并拒绝纯文本模型。独立压缩包 profile 已安装、启动并在浏览器加载模式、工作台和工作区接口；pnpm 的 profile peer 检查报告未声明宿主依赖，实际 DSH 宿主加载通过。
-- 日志、压缩包、截图及浏览器结果保留在 `/tmp/dsh-student-finish.aG9PwT/`。首次默认工作区落入 Documents 时生成的测试档案已清理，后续验证使用显式临时 Documents 路径；隔离服务和浏览器均已关闭，未修改用户 profile 或重启用户服务。
-- 未调用真实模型或付费服务，识图准确率、教材教学质量和真实模型 token 用量仍未测量。
-
-2026-10-11 本地安装 alpha.2 构建：
-
-- 全局 dsh 已为 `0.2.1-alpha.2`（用户自行升级）。`web` profile 先备份到 `~/.dsh/profiles/web.backup-alpha2-20261011-223819`（不含 node_modules），再用 `dsh plugin --profile web add <绝对路径>` 重新链接小说、短剧、视频解说、游戏、学习、技能查看器、模型设置七个包并新增 `project-default-mode`；`--dump-config` 显示 8 个 `# == @winterhuan` 安装层。
-- 正在 `127.0.0.1:3080` 运行的 `dsh web` 本轮未重启，仍加载旧版本；重启后才会加载 alpha.2 构建与项目默认模式插件。未做浏览器验证。
-
-2026-10-25 练习单网页化：
-
-- 包内 8 个文件 126 项测试、文档 16 项与规范 3 项检查通过；`pnpm install` 更新锁文件（树减少 16 个包）。根 `typecheck`/`build` 与全量测试中 `ui-settings-model-options` 与 story 的失败分别为工作区另一项在途改动与本机既有问题，与本次无关。
-- `pnpm --filter @winterhuan/dsh-student build` 后 `dsh-webctl restart`；cookie 会话下页面 200，合并 bundle（4.6 MB）含新打印代码且无 `/student/print` 引用，`/student/workspace` 正常返回 JSON，`/student/worksheet.pdf` 与 `/student/print` 均为 404。浏览器打印对话框的分页与实际出纸未做人工验证；未调用真实模型。
-
-2026-10-25 学生读路径缓存：
-
-- `pnpm run typecheck`、文档 16 项、规范 3 项与包内 129 项测试通过；构建后重启 web，cookie 会话下页面与合并 bundle 正常，新条件轮询代码已在服务端 bundle 中，带 `revision` 的无会话与未知会话请求返回既有 JSON 错误。真实学习会话的端到端条件响应由 route 用例覆盖，浏览器内轮询与缓存命中行为待人工确认；未调用真实模型。
-
-2026-10-25 学习核心模块化（阶段 1）：
-
-- `src/learning.ts`（1541 行）拆为 `learning/` 六模块加 `update/` 五个处理器族，14 个引用方改显式导入；`tests/learning.spec.ts` 同边界拆为四个 spec。新增 `src/actions.ts` 以穷尽元数据声明动作的可提交面与所属族，路由白名单由它生成。129 项测试重分布到 11 个文件全过；根 typecheck、build、文档 16 项、规范 3 项通过；重启后页面、bundle 与接口正常。决策见[模块化](.agents/notes/implemented/simplification/2026-10-25-student-learning-modules.zh.md)。
-
-2026-10-25 模型指引单源化与提示阶梯（阶段 2）：
-
-- 工具描述与 queryStudy 的 `more` 收敛为纯契约与指向 study 技能的指针（`change` 描述约 1300 → 330 字符）；`objectiveElements` 新增三层 `hintLadder`（方法提示条件/画图、对照登记错法自查、出题要点作步骤），`kind=elements` 返回，技能提示段按层执行。包内 130 项测试、文档 16 项、规范 3 项与根 typecheck/build 通过；构建重启后接口正常。提示质量需一次真实学习会话抽查，验证人：用户。决策见[模型指引](.agents/notes/implemented/simplification/2026-10-25-student-model-guidance.zh.md)。HANDOFF 词数预算一次性上调至 4700（后续阶段仍需记录）。
-
-2026-10-25 前置链教学与错因感知间隔（阶段 3）：
-
-- 需要教学的目标沿同科前置边找最近的未掌握前置，建议重定向（新理由码 prerequisite-gap、携带 redirectedFrom，前置补完自动回落）；同一错题确认后再答错隔两天复习，同目标同错因两条活跃错题把巩固卷变式下限提到换情境。包内 133 项测试、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常。决策见[前置与间隔](.agents/notes/implemented/feature/2026-10-25-student-prerequisite-spacing.zh.md)。
-
-2026-10-25 掌握可视化、家长周报与按标签载荷（阶段 4）：
-
-- 三个圆点抽成共享 MasteryDots 并接入地图详情与目标行，第三天独立答对落账时答题卡祝贺一次；weeklySummary 纯派生周报（时长/天数、新掌握、错题流向、到期完成、本周错因）随家长页返回；工作区接口按 tab 取数，仅地图标签携带整册地图（lite 标记）。包内 135 项测试、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常，浏览器逐标签目检待用户确认。决策见[周报与进度](.agents/notes/implemented/feature/2026-10-25-student-weekly-progress.zh.md)。
-
-2026-10-25 批量抽查批改、派生字段出文件与学期归档（阶段 5）：
-
-- `paper-draft` 增加置信度，工作台高置信题一键批量确认、低置信与答错题逐题核对；复习派生字段（stage/independentDays/dueAt）写入前剥离、读取时重放，旧文件兼容；新命令 `archive-term` 先导出全部证据到 `.study/` 归档文件再清空档案，家长设置提供按钮。包内 138 项测试（含真实文件系统归档端到端）、文档 16 项、规范 3 项与根 typecheck 通过；构建重启后接口正常，批量确认与归档待家长真实走一遍。L4 块内交错按计划门控，待前四阶段真实使用反馈后落地。决策见[批改与归档](.agents/notes/implemented/feature/2026-10-25-student-archive-grading.zh.md)。
+按时间记录本机全局 DSH 安装、profile 与验证环境的变更，完整内容在 [HANDOFF-changelog.md](HANDOFF-changelog.md)。最近一条：2026-11-06 DSH 0.2.2-rc.1 升级（全局 dsh 升级、dsh web 重启、5 个客户端 bundle HTTP 200 验证）。

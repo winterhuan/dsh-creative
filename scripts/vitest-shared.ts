@@ -1,4 +1,4 @@
-// Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
+// Copied from deepseek-harness dsh-v0.2.2-rc.1; re-sync when the DSH dependency version changes.
 import ts from 'typescript'
 
 const decoratorSyntax = /^\s*@[A-Za-z_$][\w$]*/m
