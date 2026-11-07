@@ -27,12 +27,12 @@
       },
       "versions": [
         {
-          "version": "0.1.1",
-          "publishTimestamp": 1794047260,
+          "version": "0.1.8",
+          "publishTimestamp": 1794053229,
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "0f75c41a27af5bfc5bea26c447f0a33c5f95e0be",
+            "commit": "babf5dc849fc89d721c43901b2e6c64c00fed62f",
             "path": "packages/winterhuan/writer"
           },
           "engines": {
@@ -59,12 +59,12 @@
       },
       "versions": [
         {
-          "version": "0.1.1",
-          "publishTimestamp": 1794047248,
+          "version": "0.1.8",
+          "publishTimestamp": 1794053124,
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-student",
-            "commit": "d65b9eec560259b6efc19b7ef4bad9791dad8657",
+            "commit": "cbc8409b4d48d210a2df5b4dcfa0b24d58ef3903",
             "path": "packages/winterhuan/student"
           },
           "engines": {
@@ -91,12 +91,12 @@
       },
       "versions": [
         {
-          "version": "0.1.5-rc.3",
-          "publishTimestamp": 1794047888,
+          "version": "0.1.8",
+          "publishTimestamp": 1794053207,
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-skill-viewer",
-            "commit": "f2a01f5ed07d57530710a31c03a3c7e891b08e34",
+            "commit": "17f32acc7f639b00090e8daa60d575058d574e81",
             "path": "packages/winterhuan/skill-viewer"
           },
           "engines": {
@@ -123,12 +123,12 @@
       },
       "versions": [
         {
-          "version": "0.1.1",
-          "publishTimestamp": 1794047242,
+          "version": "0.1.8",
+          "publishTimestamp": 1794053111,
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-project-default-mode",
-            "commit": "44b6a3d3e6f8e4208fc50fc33de2e5d5b6ed9d1f",
+            "commit": "bef5b410e20c221da201fc0923dd29dbae94f015",
             "path": "packages/winterhuan/project-default-mode"
           },
           "engines": {
@@ -155,12 +155,12 @@
       },
       "versions": [
         {
-          "version": "0.1.7-rc.3",
-          "publishTimestamp": 1794047254,
+          "version": "0.1.8",
+          "publishTimestamp": 1794053218,
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-client-ui-settings-model-options",
-            "commit": "b444c69f66c0b35d795e055d2a2191d8bd7c117d",
+            "commit": "593112adc8e24bf0cdc38bc904e454c9dfaf033e",
             "path": "packages/winterhuan/ui-settings-model-options"
           },
           "engines": {
