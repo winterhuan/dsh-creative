@@ -32,7 +32,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "babf5dc849fc89d721c43901b2e6c64c00fed62f",
+            "commit": "83d78c4645fb7e601d3a7e42d7117bda9f7b7eb9",
             "path": "packages/winterhuan/writer"
           },
           "engines": {
@@ -64,7 +64,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-student",
-            "commit": "cbc8409b4d48d210a2df5b4dcfa0b24d58ef3903",
+            "commit": "87613a3ff0bbfc3bce1f0f537d65c05592220b3a",
             "path": "packages/winterhuan/student"
           },
           "engines": {
@@ -96,7 +96,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-skill-viewer",
-            "commit": "17f32acc7f639b00090e8daa60d575058d574e81",
+            "commit": "345a37549f7ef23bf05f4af943043a6bcd1cd0b3",
             "path": "packages/winterhuan/skill-viewer"
           },
           "engines": {
@@ -128,7 +128,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-project-default-mode",
-            "commit": "bef5b410e20c221da201fc0923dd29dbae94f015",
+            "commit": "9f20b4156a85d063f779d107e9a097ce57571aaf",
             "path": "packages/winterhuan/project-default-mode"
           },
           "engines": {
@@ -160,7 +160,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-client-ui-settings-model-options",
-            "commit": "593112adc8e24bf0cdc38bc904e454c9dfaf033e",
+            "commit": "8a15c75606f7b66b3613e26d53b82f2eceab32c4",
             "path": "packages/winterhuan/ui-settings-model-options"
           },
           "engines": {
