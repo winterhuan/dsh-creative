@@ -20,7 +20,7 @@ Give each registered Workspace its own default agent mode. A rule maps one Works
 <a id="ownership"></a>
 ## Package and integration
 
-The [project-default-mode bundle](../../packages/preset/project-default-mode/README.md) installs independently and adds one Host row owning a volatile `rules` namespace; no profile includes it by default. The browser half adds a session-menu row and an overlay dialog, both registered only while the Host namespace is served. Rules are edited through the shared settings form, so persistence, revision fencing, and recovery belong to DSH's settings domain, not to this plugin.
+The [project-default-mode bundle](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.md) installs independently and adds one Host row owning a volatile `rules` namespace; no profile includes it by default. The browser half adds a session-menu row and an overlay dialog, both registered only while the Host namespace is served. Rules are edited through the shared settings form, so persistence, revision fencing, and recovery belong to DSH's settings domain, not to this plugin.
 
 The Host applies a rule through the preset registry's own `select`, the same operation the new-session hero chip performs, so the switch appends the standard `agent-preset/selected` Session event and mounts the recorded preset revision. The plugin declares no preset, tool, or prompt of its own and grants no capability beyond choosing a composition DSH already offers.
 
@@ -34,7 +34,7 @@ The override is a default, not a lock: a creation request that names a preset ot
 <a id="related"></a>
 ## Related contracts
 
-The [package README](../../packages/preset/project-default-mode/README.md) owns install steps, the editing flow, and limitations. Upstream owns the [agent preset registry](../../upstream/packages/preset/agent-preset-registry/README.md) and the [workspace registry](../../upstream/packages/workspace/workspace/README.md).
+The [package README](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.md) owns install steps, the editing flow, and limitations. Upstream owns the [agent preset registry](../../upstream/packages/preset/agent-preset-registry/README.md) and the [workspace registry](../../upstream/packages/workspace/workspace/README.md).
 
 <a id="dev-note"></a>
 ## Dev Note

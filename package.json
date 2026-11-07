@@ -8,12 +8,10 @@
     "node": "^22.19.0 || >=24.0.0"
   },
   "scripts": {
-    "build": "pnpm run build:host && pnpm run build:client",
-    "build:host": "tsc -b tsconfig.host.json && tsdown --config-loader native --env.DSH_BUILD_FACE host",
-    "build:client": "tsc -b tsconfig.client.json && tsdown --config-loader native --env.DSH_BUILD_FACE client",
-    "typecheck": "pnpm run build:host && tsc -b tsconfig.client.json && tsc -p tsconfig.scripts.json",
-    "test": "vitest run",
-    "clean": "rm -rf packages/*/*/lib",
+    "build": "tsx scripts/run-plugins.ts build",
+    "typecheck": "tsc -p tsconfig.scripts.json && tsx scripts/run-plugins.ts typecheck",
+    "test": "tsx scripts/run-plugins.ts test && vitest run",
+    "clean": "tsx scripts/run-plugins.ts clean",
     "doc-sync": "tsx scripts/run-checks.ts docs",
     "test:docs": "tsx scripts/run-checks.ts docs",
     "hygiene": "tsx scripts/run-checks.ts hygiene",
@@ -36,7 +34,8 @@
     "verify-package-readme-limitations": "tsx scripts/verify-package-readme-limitations.ts",
     "verify-client-ui-i18n": "tsx scripts/verify-client-ui-i18n.ts",
     "verify-no-unknown-casts": "tsx scripts/verify-no-unknown-casts.ts",
-    "verify-export-jsdoc": "tsx scripts/verify-export-jsdoc.ts"
+    "verify-export-jsdoc": "tsx scripts/verify-export-jsdoc.ts",
+    "plugins:install": "tsx scripts/run-plugins.ts install"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.1.0",

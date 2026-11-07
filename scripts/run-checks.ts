@@ -5,6 +5,8 @@
  */
 
 import { spawnSync } from 'node:child_process'
+import { resolve } from 'node:path'
+import { pluginWorkspaces } from './plugin-workspaces.ts'
 
 /** Check groups by name; each entry names a package.json script. */
 const GROUPS: Readonly<Record<string, readonly string[]>> = {
@@ -40,6 +42,7 @@ if (group === undefined || scripts === undefined) {
   process.exit(2)
 }
 
+pluginWorkspaces(resolve(import.meta.dirname, '..'))
 const failed: string[] = []
 for (const script of scripts) {
   const result = spawnSync('pnpm', ['--silent', 'run', script], { stdio: 'inherit' })

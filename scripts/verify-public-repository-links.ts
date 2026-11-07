@@ -1,9 +1,9 @@
 // Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
 /** Reject tracked files that reference an unavailable legacy repository. */
 
-import { execFileSync } from 'node:child_process'
 import { existsSync, lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { authoredGitFiles } from './plugin-workspaces.ts'
 import { pathToFileURL } from 'node:url'
 
 const root = resolve(import.meta.dirname, '..')
@@ -67,8 +67,7 @@ export function findUnavailableRepositoryReferences(file: string, source: string
 }
 
 function trackedFiles(repoRoot: string): string[] {
-  return execFileSync('git', ['ls-files', '-z'], { cwd: repoRoot, encoding: 'utf8' })
-    .split('\0')
+  return authoredGitFiles(repoRoot)
     .filter(file => file !== '')
 }
 

@@ -20,7 +20,7 @@ Each fact has one home: the tier whose job it is; elsewhere, link there.
 |---|---|---|
 | Root `AGENTS.md` | Standing orders: rules an agent needs in context in every session, one to three lines each, linking its home | Stories, worked examples, situational procedures, anything restated from a linked home |
 | Subtree `AGENTS.md` (`docs/`, `.agents/notes/`) | Orders specific to that subtree | Repo-wide rules the root file already carries |
-| [HANDOFF.md](../HANDOFF.md) | This repository's own state: layout, build and test procedure, DSH integration, and the DSH upgrade checklist | Decision rationale (→ Agent Notes), per-package contracts (→ package READMEs), upstream behavior (→ the `upstream/` submodule's documentation) |
+| [HANDOFF.md](../HANDOFF.md) | Parent and plugin submodule layout, command dispatch, DSH integration, and the upgrade checklist | Decision rationale (→ Agent Notes), per-package contracts (→ package READMEs), upstream behavior (→ the `upstream/` submodule's documentation) |
 | [HANDOFF-problems.md](../HANDOFF-problems.md) | Worked problems: symptom, cause, fix | Current state (→ HANDOFF.md) |
 | [HANDOFF-changelog.md](../HANDOFF-changelog.md) | Dated local environment changes | Standing procedure (→ HANDOFF.md) |
 | [Agent Notes](../.agents/notes/README.md) | Active decision records: the why, what-was-given-up, and required verification; `implemented/` notes describe shipped reality in present tense | Migration plans, acceptance-task checklists, fixture walkthroughs, and spec-speak ("should…") once the decision has shipped; archived notes are frozen history, never current authority |

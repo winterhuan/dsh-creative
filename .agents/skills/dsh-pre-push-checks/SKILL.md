@@ -5,7 +5,7 @@ description: Use before committing, pushing, or claiming checks pass in the dsh-
 
 # dsh-creative pre-commit checks
 
-Select the narrowest evidence that would fail for the change you are about to commit or push. This repository has no CI and no git hooks: the commands you run are the only evidence that exists, and nothing else will catch what you skip.
+Select the narrowest evidence that would fail for the change you are about to commit or push. Run plugin-specific commands in the owning `plugins/<repository>` submodule; root commands dispatch across all five plugins. This repository has no CI and no git hooks: the commands you run are the only evidence that exists, and nothing else will catch what you skip.
 
 ## Inspect the outgoing change
 
@@ -14,7 +14,7 @@ git status --short --branch
 git diff --stat HEAD
 ```
 
-A change that moves or renames files also affects the configuration that names those paths: `pnpm-workspace.yaml`, the three root `tsconfig` aggregates, `tsdown.config.ts`, `vitest.config.ts`, the `clean` script, each package's `tsconfig` `extends` and `references`, and each `package.json` `repository.directory`.
+A plugin path change affects `.gitmodules`, parent documentation and check discovery. Source paths inside a plugin also affect that submodule's workspace, TypeScript, build, test, and package metadata. Parent commands use each plugin's own configuration.
 
 ## Select relevant evidence
 
@@ -33,12 +33,12 @@ A change that moves or renames files also affects the configuration that names t
 Pass Vitest file and name filters directly after the script name; do not insert a standalone `--`, which reaches Vitest and can disable `-t` filtering:
 
 ```sh
-pnpm test packages/winterhuan/writer/tests/sync-skills.spec.ts -t 'unsync'
+pnpm --dir plugins/dsh-writer test packages/winterhuan/writer/tests/sync-skills.spec.ts -t 'unsync'
 ```
 
 Check the reported test count before treating a filtered run as evidence.
 
-Client specs (`*.client.spec.ts(x)`) load DSH client source from the `upstream/` submodule, so they need `git submodule update --init`. Builds and type checks do not.
+Client specs (`*.client.spec.ts(x)`) load DSH client source from the `upstream/` submodule, so initialize nested references with `git submodule update --init --recursive` from the parent. Builds and type checks do not.
 
 ## Do not repeat passing checks
 
@@ -67,4 +67,4 @@ git add <your paths>
 git diff --cached --stat
 ```
 
-Read that listing before committing. This repository has no remote configured; a push requires the user to add one first.
+Read that listing before committing. Commit and push plugin changes inside the submodule first, then stage its path in the parent to record the new commit. Never publish a parent pointer that other clones cannot fetch.

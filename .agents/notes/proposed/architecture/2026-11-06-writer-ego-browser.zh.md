@@ -6,7 +6,7 @@ Status: proposed
 
 ## 问题
 
-Writer 的七个榜单采集器和四种研究员模板依赖全局 `agent-browser`，通过调试端口共享隐式当前页。[Chrome 启动器](../../../../packages/winterhuan/writer/skills/browser-cdp/scripts/setup-cdp-chrome.js)复制个人 Profile，并可在征得同意后关闭无关 Chrome 实例。并发调用可能互相导航。这套生命周期带来干扰和维护负担，却不贡献榜单分析能力。
+Writer 的七个榜单采集器和四种研究员模板依赖全局 `agent-browser`，通过调试端口共享隐式当前页。[Chrome 启动器](../../../../plugins/dsh-writer/packages/winterhuan/writer/skills/browser-cdp/scripts/setup-cdp-chrome.js)复制个人 Profile，并可在征得同意后关闭无关 Chrome 实例。并发调用可能互相导航。这套生命周期带来干扰和维护负担，却不贡献榜单分析能力。
 
 [写作模式决策](../../implemented/feature/2026-10-31-writer-preset.zh.md)仍拥有 bundled/workspace 技能互斥和项目副本保护规则。本提案保留该决策，只改变浏览器执行。原有浏览器提案在此整合，不取代或归档已实现的浏览器后端笔记。
 
@@ -77,7 +77,7 @@ Ego Lite 拥有浏览器、登录存储、TaskSpace、页面连接与用户控�
 
 分三个可评审阶段实施：共享传输模块、简单采集器及假 CLI 测试；七个采集器和四种研究员模板；验收后删除旧启动器、端口参数、重复浏览器辅助模块及活跃执行说明。开发期临时并存不成为发布回退。后端选型已确定；失败属于实现或验收缺口，不自动授权改用 Tabbit。
 
-保留 `browser-cdp` 可维持[按名称 sync/unsync](../../../../packages/winterhuan/writer/src/sync-skills.ts)，已有副本仍需刷新。默认同步不得覆盖项目修改。预览过期的自有技能/模板，经明确授权后一致刷新完整集合。自定义副本报告待协调，保护无关技能和符号链接目标，验证旧项目升级。平台参考、story 路由、宿主命令/菜单、固定部署清单、研究员生成形式、双语包说明和同步测试一起更新。不编辑冻结归档。既有 writer 预设笔记保持活跃并交叉链接。
+保留 `browser-cdp` 可维持[按名称 sync/unsync](../../../../plugins/dsh-writer/packages/winterhuan/writer/src/sync-skills.ts)，已有副本仍需刷新。默认同步不得覆盖项目修改。预览过期的自有技能/模板，经明确授权后一致刷新完整集合。自定义副本报告待协调，保护无关技能和符号链接目标，验证旧项目升级。平台参考、story 路由、宿主命令/菜单、固定部署清单、研究员生成形式、双语包说明和同步测试一起更新。不编辑冻结归档。既有 writer 预设笔记保持活跃并交叉链接。
 
 ## 考虑过的替代方案
 
@@ -101,7 +101,7 @@ Ego Lite 拥有浏览器、登录存储、TaskSpace、页面连接与用户控�
 
 ### 证据与覆盖缺口
 
-2026-11-06，macOS Ego CLI 0.6.2.8、指南 v2.2.0 执行原版[刺猬猫提取表达式和渲染器](../../../../packages/winterhuan/writer/skills/story-long-scan/scripts/ciweimao-rank-scraper.js)，得到九个各十条榜区、85 个去重链接、渲染报告头，页面内 fetch 与 `page.fetch` HTTP 200，以及正确的 GB18030 解码。同一 Space/页面跨轮次续接，finish 完成。另一次探测重建 1,000 条、138,818 字节 JSON。日志和 `process.stdout.write` 均进入 stderr，stdout 为空，受控抛错退出码为 1。渲染器仅在内存运行，未写正式榜单报告。
+2026-11-06，macOS Ego CLI 0.6.2.8、指南 v2.2.0 执行原版[刺猬猫提取表达式和渲染器](../../../../plugins/dsh-writer/packages/winterhuan/writer/skills/story-long-scan/scripts/ciweimao-rank-scraper.js)，得到九个各十条榜区、85 个去重链接、渲染报告头，页面内 fetch 与 `page.fetch` HTTP 200，以及正确的 GB18030 解码。同一 Space/页面跨轮次续接，finish 完成。另一次探测重建 1,000 条、138,818 字节 JSON。日志和 `process.stdout.write` 均进入 stderr，stdout 为空，受控抛错退出码为 1。渲染器仅在内存运行，未写正式榜单报告。
 
 早前 Tabbit 试验在不同实时点返回九个各十条榜区和 83 个链接，并完成异步 fetch 和清理，不能按条数比较准确率。原版部分刺猬猫指标含下一条文本。这些测试证明执行覆盖，不证明完整解析正确或吞吐。
 

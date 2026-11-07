@@ -1,10 +1,10 @@
 // Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
 /** Reject new assertions to unknown while retiring the recorded existing assertions. */
 
-import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { lstatSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { authoredGitFiles } from './plugin-workspaces.ts'
 import ts from 'typescript'
 
 const root = resolve(import.meta.dirname, '..')
@@ -79,17 +79,13 @@ function isSource(file: string): boolean {
  * @throws if discovery omits a required source area or an eligible path is a symlink.
  */
 export function scanUnknownCasts(repoRoot: string): UnknownCast[] {
-  const files = [...new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-  }).split('\0').map(file => file.replaceAll('\\', '/')).filter(isSource))].sort()
+  const files = [...new Set(authoredGitFiles(repoRoot, true).map(file => file.replaceAll('\\', '/')).filter(isSource))].sort()
   const present = files.filter((file) => {
     const stat = lstatSync(resolve(repoRoot, file), { throwIfNoEntry: false })
     if (stat?.isSymbolicLink()) throw new Error(`verify-no-unknown-casts: source symlink is unsupported: ${file}`)
     return stat?.isFile() === true
   })
-  for (const area of ['packages/', 'scripts/']) {
+  for (const area of ['plugins/', 'scripts/']) {
     if (!present.some(file => file.startsWith(area))) {
       throw new Error(`verify-no-unknown-casts: source discovery omitted ${area}`)
     }

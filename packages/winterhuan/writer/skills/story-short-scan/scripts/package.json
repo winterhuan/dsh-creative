@@ -1,4 +1,0 @@
-{
-  "//": "Collector scripts run as CommonJS. The enclosing package is ESM, and the nearest package.json decides a .js file's module format, so this file keeps `node scripts/<collector>.js` working in both the bundled package and a copied project skill directory.",
-  "type": "commonjs"
-}

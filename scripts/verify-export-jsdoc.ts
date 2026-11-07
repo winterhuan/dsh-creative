@@ -505,7 +505,7 @@ function restrictedPublicNames(
 ): { restrictedPackages: Set<string>; namesByFile: Map<string, Set<string>> } {
   const restrictedPackages = new Set<string>()
   const namesByFile = new Map<string, Set<string>>()
-  const packages = new Set(rels.map(rel => rel.split('/').slice(0, 3).join('/')))
+  const packages = new Set(rels.map(rel => rel.split('/src/')[0]!))
   for (const packageDir of packages) {
     const manifestPath = resolve(scanRoot, packageDir, 'package.json')
     if (!existsSync(manifestPath)) continue
@@ -567,7 +567,7 @@ function loadCompilerOptions(scanRoot: string): ts.CompilerOptions {
  */
 export function collectExportJsdocViolations(scanRoot: string = root): string[] {
   const violations: string[] = []
-  const rels = globSync('packages/*/*/src/**/*.ts', { cwd: scanRoot })
+  const rels = globSync('plugins/*/packages/*/*/src/**/*.ts', { cwd: scanRoot })
     .map(path => path.split(sep).join('/'))
     .sort()
   const program = ts.createProgram(rels.map(rel => resolve(scanRoot, rel)), loadCompilerOptions(scanRoot))
@@ -578,7 +578,7 @@ export function collectExportJsdocViolations(scanRoot: string = root): string[] 
     if (!sf) continue // program root files always resolve; guard for narrowing
     // A script-style declaration file (no imports/exports) is one big ambient
     // scope; a module-style .d.ts still honors explicit export modifiers.
-    const packageDir = rel.split('/').slice(0, 3).join('/')
+    const packageDir = rel.split('/src/')[0]!
     const allowedNames = restrictedPackages.has(packageDir) ? namesByFile.get(rel) ?? new Set<string>() : undefined
     checkScope(
       sf.statements,

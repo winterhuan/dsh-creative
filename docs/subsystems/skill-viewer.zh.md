@@ -20,7 +20,7 @@ description: "Skill Viewer 子系统：按 Session 发现技能、只读参考�
 <a id="ownership"></a>
 ## Host 与客户端
 
-[skill-viewer bundle](../../packages/skill/skill-viewer/README.zh.md)安装 `skillViewer` Remote 服务与[查看器客户端](../../packages/client/ui-skill-viewer/README.zh.md)，不要求安装创作插件。DSH 拥有分层技能注册表、Session 查找与 preset 作用域；查看器解析该位置最终生效、允许用户调用的技能。
+[skill-viewer bundle](../../plugins/dsh-skills-viewer/packages/winterhuan/skill-viewer/README.zh.md)安装 `skillViewer` Remote 服务与[查看器客户端](../../plugins/dsh-skills-viewer/packages/winterhuan/ui-skill-viewer/README.zh.md)，不要求安装创作插件。DSH 拥有分层技能注册表、Session 查找与 preset 作用域；查看器解析该位置最终生效、允许用户调用的技能。
 
 活跃 Agent 提供自身作用域中的注册表。未启动的 Session 使用已记录 preset 的常驻作用域，无法解析时回退到全局；不会构建或恢复 Agent。面向模型的目录与调用仍归 DSH 技能工具所有。查看器读取不进入 Session 日志。
 
@@ -36,7 +36,7 @@ description: "Skill Viewer 子系统：按 Session 发现技能、只读参考�
 
 客户端按 Session 缓存目录，按 Session 与技能名称缓存正文。刷新读取当前内容，重开可以复用已完成的缓存。preset 变化使对应 Session 缓存失效，连接重置清空缓存。选择参考时重新读取，晚到响应不能替换当前 Session、技能或文件。
 
-关闭或释放查看器会取消参考读取。插件释放会移除侧栏入口、词典与订阅。查看器不监听文件系统变化，刷新与展示行为归[客户端 README](../../packages/client/ui-skill-viewer/README.zh.md)所有。
+关闭或释放查看器会取消参考读取。插件释放会移除侧栏入口、词典与订阅。查看器不监听文件系统变化，刷新与展示行为归[客户端 README](../../plugins/dsh-skills-viewer/packages/winterhuan/ui-skill-viewer/README.zh.md)所有。
 
 <a id="dev-note"></a>
 ## 开发备注

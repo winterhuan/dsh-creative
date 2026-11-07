@@ -20,7 +20,7 @@ Batch-enable model thinking and image capabilities and edit provider retry choic
 <a id="ownership"></a>
 ## Package and integration
 
-The [model-options bundle](../../packages/client/ui-settings-model-options/README.md) installs independently and registers provider-card controls for `llm-pi-ai` and `llm-deepseek`; thinking metadata is exposed for the pi-ai family, and image input writes the adapter-owned field. It uses the existing settings mirror and model catalog. The Host entry adds no settings namespace, model tool or request executor.
+The [model-options bundle](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.md) installs independently and registers provider-card controls for `llm-pi-ai` and `llm-deepseek`; thinking metadata is exposed for the pi-ai family, and image input writes the adapter-owned field. It uses the existing settings mirror and model catalog. The Host entry adds no settings namespace, model tool or request executor.
 
 The adapter maps the effort selected in chat to provider request values. DSH’s retry plugin executes the configured policy and owns cancellation. Capability declarations cannot discover endpoint support or make an unsupported parameter valid; an image declaration likewise states only whether the model can receive images. Retries send requests again without repairing them.
 
@@ -34,7 +34,7 @@ Saves carry the captured settings revision and edit only selected fields, preser
 <a id="related"></a>
 ## Related contracts
 
-The [package README](../../packages/client/ui-settings-model-options/README.md) owns supported controls and recovery instructions. Upstream owns the [pi-ai adapter](../../upstream/packages/llm/llm-pi-ai/README.md) and [retry executor](../../upstream/packages/llm/llm-retry/README.md).
+The [package README](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.md) owns supported controls and recovery instructions. Upstream owns the [pi-ai adapter](../../upstream/packages/llm/llm-pi-ai/README.md) and [retry executor](../../upstream/packages/llm/llm-retry/README.md).
 
 <a id="dev-note"></a>
 ## Dev Note

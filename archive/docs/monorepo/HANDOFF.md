@@ -1,0 +1,538 @@
+# dsh-creative 开发交接
+
+最后更新：2026-11-07。
+
+本文档说明现役插件的源码归属、开发与发布规则，以及 `/Users/winter/dsh-creative` 保留的 monorepo、构建流程和历史资料。修改插件前先按[开发目录与源码归属](#开发目录与源码归属)进入对应独立仓库。完整的 17 个问题记录见 [HANDOFF-problems.md](HANDOFF-problems.md)，本机环境变更流水账见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。
+
+## 目录
+
+1. [现状速览](#1-现状速览)
+2. [仓库结构](#2-仓库结构)
+   - [开发目录与源码归属](#开发目录与源码归属)
+   - [开发与发布规则](#开发与发布规则)
+3. [与 DSH 的集成方式](#3-与-dsh-的集成方式)
+4. [开发命令与构建流程](#4-开发命令与构建流程)
+5. [在 DSH 中安装、调试和移除](#5-在-dsh-中安装调试和移除)
+6. [依赖策略](#6-依赖策略)
+7. [实际遇到的问题与解决方案](#7-实际遇到的问题与解决方案)
+8. [从上游复制的文件及本地改动](#8-从上游复制的文件及本地改动)
+9. [升级 DSH 版本清单](#9-升级-dsh-版本清单)
+10. [已知限制与待办](#10-已知限制与待办)
+11. [排障速查](#11-排障速查)
+12. [本机环境变更记录](#12-本机环境变更记录)
+
+## 1. 现状速览
+
+现役插件在 [5 个独立仓库](#开发目录与源码归属)开发和发布，6 个源码包当前发布版本统一为 `0.1.8`。技能查看器的服务端、客户端共同维护，随同一个组合包安装。按[官方插件市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)发布的[索引](https://winterhuan.github.io/dsh-creative/index.json)位于本仓库 `gh-pages` 分支，列出 5 个组合包。日常 DSH 使用远程发布包；本地源码修改不会自动生效。发布与验收记录见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。
+
+2026-11-07 提交前复查：晋江/番茄详情检查点按榜单/分类和有序书籍 ID 隔离，不确定/交接/结束后的会话拒绝普通操作；黑岩部分失败写 `.partial.md`、退出码 2 并保留现场。Agent registry 的 `turnBoundaryOf` 替代项目默认模式直接读取未公开的投影状态，修复 rc.1 类型检查与测试替身。`typecheck`、`build`、51 文件 557 项测试、16 项文档检查及 3 项 hygiene 通过（pnpm 以 `--config.verify-deps-before-run=false` 使用现有依赖，未重新安装）。运行中 GUI 可打开，但 profile 的预设菜单未暴露 writer、旧写作会话不可用，文件树改动本轮仅有单元测试和构建证据，未宣称完成交互验收。
+
+2026-11-07 写作模式菜单不暴露的根因与修复：`dsh --dump-config` 确认合成树里 `preset-writer` 行存在，设置页 Agent 预设显示「加载失败：`tool-subagent-list-agents (@deepseek-ai/dsh-tool-subagent-control/list-agents): never started`」——上游 rc.1 提交 `4df09d37d5`（register shared control tools together）把标准预设 delegation 组里的 `tool-subagent-list-agents`、`tool-subagent-list-models` 两行删掉并收回 `tool-subagent-control`/`tool-subagent`（`modelSelectionSettings` 更名 `modelSelection`、新增 `modelDiscovery`，包也不再导出 `/list-agents` 子路径），而 writer 的 `cordis.patch.yml` 还带着 rc.5 旧行，导致该行 import 失败（fiber 未创建）、整条预设标记 broken，被客户端 `presetOptions()` 从模式菜单过滤。修复：`packages/winterhuan/writer/cordis.patch.yml` 删除 `tool-subagent-list-agents` 行，`tool-subagent` 行改为 `modelSelection: true` + `modelDiscovery: true` 对齐 rc.1 标准预设。补丁是链接包运行时直读的 YAML，无需重编译；`dsh-webctl restart` 后浏览器验证：模式菜单恢复「写作模式」并可选中，设置页不再显示加载失败。旧写作会话因预设重新可用应可恢复。
+
+本仓库是 DeepSeek Harness（DSH）的外部插件仓库，包含写作模式、学生学习、项目默认模式、Skill Viewer、模型设置增强及配套客户端；[子系统索引](docs/subsystems/README.zh.md)按包列出职责与信任边界。
+
+2026-11-06 写作模式浏览器后端迁移到 Ego Lite（Stage 1+2 落地）：新增共享传输模块 `packages/winterhuan/writer/skills/browser-cdp/scripts/ego-session.cjs`（`ego-browser nodejs` 子进程、UTF-8 stdin、带标记 JSON 信封、双流扫描、结果文件交接、handOff/takeOver/finish），七个扫榜采集器（起点、番茄、七猫、晋江、刺猬猫、点众、黑岩）全部改走该模块，删除 `--port` 语义；黑岩 Admin-Token 只在页面内读取和使用，未登录/验证码走 handOff + `--space <id>` 续接（起点原 120 秒轮询等待改为交接后退出）；批次检查点写入 `.writer/browser-runs/<runId>/`，`--resume <runId>` 续采并校验参数与解析器版本。共享脚本目录加 `scripts/package.json`（`type: commonjs`），使采集器在 ESM 包内随包/复制后都能直接 `node` 运行。`browser-cdp/SKILL.md` 重写为 Ego-only 入口，7 份平台参考、长短篇扫榜 SKILL、story/story-setup 路由行、4 份 story-researcher 模板（cdp_port/CDP 探测/agent-browser 命令全部移除，改 `ego-browser --version` 探测 + TaskSpace 工作流）、antigravity 生成器替换串、宿主命令模板与 AGENTS.md.tmpl、双语 README 同步。旧 `setup-cdp-chrome.js` 与两份 `cdp-utils.js` 保留在树中但已无活跃引用，按[设计 Note](.agents/notes/proposed/architecture/2026-11-06-writer-ego-browser.zh.md) Stage 3 待线上验收后删除。评审后修复了信封校验（版本/opId/runId/outcome/非零退出）、UTF-8 字节上限与原子结果文件交接、只在状态干净时 finish 的安全收尾、起点交接停止、CJS 入口边界与批次检查点，并补齐对应测试。验证：`tests/ego-session.spec.ts` 32 项（含子进程执行生成程序、发布路径入口、生成器负向用例），writer 全量 101 项测试通过；模拟 `.agents/skills` 部署下刺猬猫（9 榜区 85 链接）、晋江（18 频道 600 本、GB18030 详情批 6/6）、点众（10/10 书名）三个采集器线上跑通并写出报告；16 项文档检查通过（pnpm 依赖检查被并行会话的 lockfile 改动挡住，用 `node_modules/.bin/tsx` 直跑）。未验证：起点/七猫/番茄/黑岩线上运行、交接→续接恢复、Windows/Linux。
+
+2026-11-06 DSH 升级到 `0.2.2-rc.1`：现役 6 包与根的 `@deepseek-ai/dsh-*` 依赖、`pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`、typert 补丁同步到 `0.2.2-rc.1`，子模块移到 `dsh-v0.2.2-rc.1`（`66491b05e3`）。配套范围随上游 peer 声明调整：`@deepseek-ai/cordis` `~4.0.5` → `~4.1.0`，`cordis-plugin-{group,include,loader}` `~1.0.6` → `~1.1.0`，`@deepseek-ai/schemastery` `~3.18.5` → `~3.19.0`。上游 `AgentRegistry` 新增 `static inject = ['sessionProjections']`，skill-viewer 的两个 host 测试补挂 `SessionProjectionRegistry` 并加 devDependency；上游 `ctx.tools.execute` 改为批处理 API 且必须注册 executor，student 测试改用 `dsh-tool-executor-native` 的 `{ apply, inject }` 与 batch 调用。第 8 节复制文件同步到 rc.1 并新增 `scripts/modules/src/assets.ts`（上游客户端资源管线从 base64 内联改为 `lib/assets/` 发布 + 模块加载器解析）。install、clean、typecheck、build、48 文件 494 项测试、peer 检查通过；全局 dsh 升到 0.2.2-rc.1，dsh web 重启后页面 HTTP 200，5 个 `@winterhuan` 客户端 bundle 均返回 200。写作模式插件在 `packages/winterhuan/writer`。
+
+2026-11-01 创作四包归档收尾：2026-10-31 的归档提交已把 `packages/creative/{story,short-drama,video-recap,novel-to-game}`、`packages/client/ui-settings-story` 与根 `webnovel-writer/` 整包移入 `archive/`；本次把 `ui-settings-creative-produce` 一并移入，删除根对已归档包的全部剩余引用——tsconfig 引用、vitest 别名、`build:host`/`test` 里的 `sync-video-runtime.py`（脚本已删）、根 `tests/` 四个跨领域 spec 与 fixtures（`domain-modes` 瘦身为 student-only）、`verify-package-readme-model-experience` 两条 allowlist、pairing 与措辞门禁的 `archive/` 排除；`docs/subsystems` 五个创作域页面与 `docs/scratch` 三份 story 规划稿移入 `archive/docs/`，21 个创作时代 Agent Note 三元组按 `dsh-archive-agent-notes` 归档封存（`Archived: 2026-11-01`）。typecheck、build、test、doc-sync、hygiene 恢复全绿。
+
+2026-10-31 DSH 升级到 `0.2.1-rc.5`：现役包与根的 `@deepseek-ai/dsh-*` 依赖、`pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude`、typert 补丁同步到 `0.2.1-rc.5`，子模块移到 `dsh-v0.2.1-rc.5`（`b830ec950f`）；`@deepseek-ai/cordis` 配套范围仍为 `~4.0.5`。第 8 节四个 rc.3 同步脚本与上游对照仅本地改动差异，更新复制版本标注。写作模式插件在 `packages/winterhuan/writer`。
+
+2026-10-30 学生插件全面改造：取消时长/休息限制与 `timeNotice`；内置语数英习题知识库与工作区真题沉淀；复习曲线改为 1/7/16/35 天；西蒙四步、费曼小老师、任务微步骤与探究疑问；知识地图逻辑树；家长档案就地更新与面板自动确认；错题本面板增删改。见[全面改造](.agents/notes/implemented/feature/2026-10-30-student-overhaul.zh.md)。
+
+2026-10-29 小说模块边界见[架构笔记](.agents/notes/archived/architecture/2026-10-29-story-architecture-structure.zh.md)。命令名、JSON 与门禁缺省未改。
+
+2026-10-28 学生学习：OpenMAIC 课记在 `.study/openmaic-lessons.json`，由助手 shell 生成，Host 不代理 `:3000`。兴趣标签 3–8 个，未保存时用示例；今日建议先走当前目标，到期错题最多清 2 条。见[互动课](.agents/notes/implemented/feature/2026-10-28-student-openmaic-lessons.zh.md)与[兴趣情境](.agents/notes/implemented/feature/2026-10-28-student-interest-context.zh.md)。
+
+2026-10-25 六个小说 Skill 与 CLI 对齐：缺键的 `rule_audit` 与 `facts_diff` 为 `required`，schema 6 只挂事实账本摘要，`project check` 报告 `facts` 缺口。见[Skill 同步](.agents/notes/archived/process/2026-10-25-story-skill-cli-sync.zh.md)。
+
+2026-10-25 小说章末收束：`facts extract` 从带标签的细纲和正文写出 `草稿/事实/第NNN章.claims.json`；`chapter finish` 在一次 JSON 里做可选审稿校验、主张 diff、提交、入账和过期检查。提交失败不写账本，入账失败不回滚正文。`project context --profile lite`、`project gates`、卷纲范围 hint、节奏卡标题别名、细纲出场名单 hint 一并落地。见[章末收束](.agents/notes/archived/feature/2026-10-25-story-chapter-finish.zh.md)。
+
+2026-10-25 学生状态读路径缓存与掌握度口径统一：读取按文件版本缓存已校验状态，作答证据单遍索引、目标改查十二图全局索引，一次请求只算一遍洞察；轮询可携带修订号，未变化时只返回时间状态（3000 作答合成态完整 dashboard 约 17ms、未变化轮询约 0.1ms）。跨年级摸底与本期洞察共用同一掌握度规则，修复此前分叉；`queryStudy` 未知 kind 显式报错。见[读路径决策](.agents/notes/implemented/simplification/2026-10-25-student-read-path.zh.md)；包内 129 项测试通过。
+
+2026-10-25 学生练习单改为网页渲染与浏览器打印：删除 Host 端 `src/worksheet.ts`（pdfkit）、`/student/worksheet.pdf` 与 `/student/print` 接口及随包 NotoSansSC 字体（约减 17 MB）；新增客户端 `src/client/worksheet-view.tsx`，复用屏上题图的 SVG 渲染整张卷，预览后经浏览器打印对话框打印或存储为 PDF（Windows 可打印）。无 `kind` 旧卷的命名启发式改由客户端按 `sources` 判定；schema 不变。双语 README、SKILL、questions、subsystem 文档、i18n 与 Agent Note 已同步，见[练习单网页化](.agents/notes/implemented/simplification/2026-10-25-student-worksheet-html.zh.md)；包内 126 项测试通过，本机验证见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。
+
+2026-10-24 DSH 升级到 `0.2.1-rc.3`：11 个插件与根的 `@deepseek-ai/dsh-*` 依赖同步，子模块移到 `dsh-v0.2.1-rc.3`，typert 补丁重做；typecheck、build 通过，全量测试 1015 项里 1011 通过、3 跳过，唯一失败是 story 的设定符号链接用例（测试指向 macOS 不存在的 `/etc/hostname`，返回 ENOENT，与版本无关）；web 服务已重启，页面与 10 个 `@winterhuan` 客户端 bundle 经 HTTP 请求验证返回 200，未做浏览器交互验证。
+
+2026-10-25 思考能力简化为批量开启：本包思考能力改为与图片输入对称的纯批量入口，下拉选择标准级别（关闭空值加低/中/高，参数值同档位名）、不支持或恢复继承，勾选同一提供方下的目标模型应用；去掉单模型选择、逐档勾选与参数映射，逐档编辑留在原生模型列表。pi-ai 之外的提供方不显示思考分组，图片批量不变。文案、README、子系统文档与 i18n 记录同步。
+
+2026-10-24 模型设置增强新增图片输入批量操作：提供方卡片新增「图片输入」批量控件，选择仅文本、文本和图片（pi-ai 提供方还可恢复继承），勾选同一提供方下的目标模型写入草稿，与思考能力、重试修改一起保存；单模型开关仍在原生模型列表。pi-ai 写 `input`（或 `modelOverrides` 覆盖项），恢复继承移除字段；deepseek 写 `inputModalities`，改仅文本时同时移除 `imagePixelBudget` 与 `imageMaxBytes`。文案、README、子系统文档与 i18n 记录同步；`typecheck`、`build`、包内 73 项测试、文档与规范检查通过；全量 1011 项通过（story 一例为本机既有失败）。本机 web profile 已重新构建，重启 DSH 并硬刷新后生效；未在真实浏览器验证，未调用真实模型。
+
+2026-10-25 小说追踪 schema 6 只挂事实账本摘要，条目仍在旁路文件。`rule_audit` 与 `facts_diff` 缺省为 required；旧书用 `project migrate-gates --legacy-off`。见[事实账本](.agents/notes/archived/feature/2026-10-19-story-fact-ledger.zh.md)。
+
+当前实现是独立的 `@winterhuan` 插件仓库：
+
+- 依赖 npm 上发布的 DSH `0.2.2-rc.1`，像普通第三方插件一样安装到 DSH 里；依赖声明、锁文件与已安装版本一致。
+- 不依赖、也不修改上游源码。`upstream/` 子模块只作代码参考，以及给客户端单元测试提供同版本源码（原因见[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
+- 包都位于 `@winterhuan` scope 下。2026-10-31 起 story、short-drama、video-recap、novel-to-game、ui-settings-story 与 webnovel-writer 已整体移入 `archive/`（2026-11-01 补齐引用清理）；2026-11-01 起 `ui-settings-creative-produce` 同样归档。现役 6 包为 `packages/winterhuan/writer`、`packages/winterhuan/student`、`packages/winterhuan/skill-viewer`、`packages/winterhuan/project-default-mode`、`packages/winterhuan/ui-skill-viewer`、`packages/winterhuan/ui-settings-model-options`。
+- 现役包目录统一采用 `packages/winterhuan/<包>` 两层布局；`archive/` 是冻结快照区，不参与构建、测试与文档门禁。
+
+2026-10-18 小说设定库检索：`project lookup` 只读 `设定/`，精确名称和别名优先，一次不超过 16 KiB。命令见[小说包说明](archive/creative/story/README.zh.md)。未在真实 DSH 浏览器验证，未调用真实模型。
+
+2026-10-17 小说伏笔与人物健康检查：`project query --kind health` 只读四类风险，默认阈值 30／20／40。命令见[小说包说明](archive/creative/story/README.zh.md)。未在真实 DSH 浏览器验证，未调用真实模型。
+
+2026-10-17 DSH 升级到 `0.2.1-rc.2`：11 个插件依赖声明同步，插件版本不变；配套与拷贝见第 6、8、9 节。install、typecheck、build 通过；全局 dsh 仍 `0.2.1-alpha.2`，未在真实 DSH 验证。
+
+2026-10-17 知识点可考事实：语文摸底只靠一句定义时，会写出课页里没有的内容（《场景歌》被写成“一片沙滩”，葡萄干被写成“阴房”，《植物妈妈有办法》漏掉石榴）。知识点新增可选 `facts`（2–8 条、每条最多 240 字）。`kind=curriculum` 与 `kind=elements` 随知识点返回，工作台在知识点下列出；出题说明要求答案能在 `facts` 里核对，没有 `facts` 的知识点只用定义和例子。二年级上册语文 39 个知识点已按随包人教课页写上事实，并改正与课页矛盾的定义和例子。其余十一份地图的每个知识点也写了可考事实：数学是算法和例子，语文是这一课可以核对的内容。英语二年级上册前四单元按朗读纸、后六单元和一年级四个单元按已读原句核对，其余英语单元仍是词义。出版社和册次可以不同，只收与该知识点同一个概念的内容。新题另写，不照抄原题。学习目标 ID 不变。决策见[知识地图事实](.agents/notes/implemented/feature/2026-10-17-student-knowledge-facts.zh.md)。学生包 7 个文件 110 项测试通过，`typecheck`、文档 16 项与规范 3 项检查通过。未调用真实模型，未在真实 DSH 浏览器打开工作台。
+
+2026-10-17 题图与课本对齐修正：核对北师大版二上 236 页课本文字层与一二年级知识地图后，修正三处与课本不一致的配图。其一，`drawSticks` 原画五根一捆，与课本“十根一捆（一捆是一个十）”及数位教学矛盾，改为十根一捆并收紧布局（9 捆 9 根不溢出）。其二，`place-value` 允许 `regroup:'yes'` 退位虚点与 `crossTens`/`crossOnes` 划线同图出现，孩子分不清划的是哪一类，退位减法课本配的是计数器+竖式；schema 加校验——`regroup:'yes'` 时划线必须为 0、`regroup:'no'` 时划线不超画点数，store.ts 加载时把旧 state 里混用图形的划线清零做向后兼容。其三，questions.md 重写题图规则：每种图形写明课本里的固定用法（计数器配退位、竖式配加减计算、小棒配数的组成、点子方阵配乘法意义等），并加硬规则——一题一图、图是全部已知条件题干不复述、`bar-model` 的 `units` 要与数量成比例。新建[题图对齐](.agents/notes/implemented/bug-fix/2026-10-17-student-figure-textbook-alignment.zh.md) Agent Note。根 `typecheck`、`build` 通过；包内 53 项测试通过（含 place-value 混用拒绝、超范围划线拒绝、sticks 渲染）；真实 state.json（24 张卷）迁移后可加载；未在真实 DSH 浏览器验证，未调用真实模型，课本图片层因当前模型不支持图像输入未逐页核对。
+
+2026-10-17 重叠圈修复与语义扩展：家长发现练习卷里"使每个圈里的两个数相加等于圈上的数"印成了集合图且带一个无意义的合计框。两处问题：`drawOverlap` 把右圈独有区的标签画进了左圈右瓣（`cx1 + radius` 而非 `cx2 + radius - gap`），`left`/`right` 标签 100pt 宽互相重叠；`overlap` 文档只写了"集合图"一种用法，schema 还强制 `left`/`right` 非空（"必须写两个集合名"），模型只好把教材的和圈题硬套成集合语义。修复：右圈独有区归位、标签收窄到 62pt 不重叠；`left`/`right` 留空印答案框（求圈上的数本身）；questions.md 写明和圈与集合图两种用法，重叠区的数同时计入两个和。两份 README、中英文 Agent Note 与 i18n 记录同步；printable-figures 测试补和圈形态。根 `typecheck`、`build` 通过；包内测试 53 项通过，全量测试除 `packages/creative/story` 一项在干净树上同样失败的既有失败外全部通过；未在真实 DSH 浏览器验证，未调用真实模型。
+
+2026-10-16 学生练习单图形补全与简笔画兜底：核对一二年级四份数学地图后，图形词汇表从十种扩到二十三种（新增数的分与合、规律条、数墙、方格表、点子方阵、平面图形、立体图形、计数器、厘米尺、方向板、天平、田字格与四线格，钟面扩到 5 分钟刻度），并新增受限的 `sketch` 简笔画兜底（画布高度 40–260，最多 24 笔，坐标范围与越界校验）；questions.md 列全清单并要求优先用专用图形，练习卷提示词与 SKILL 改为指向该清单。决策见[图形补全](.agents/notes/implemented/feature/2026-10-16-student-figure-completeness.zh.md)。
+
+2026-10-16 学生练习单新增重叠圈（集合图）图形：`figure` 词汇表加入第十种 `overlap`（`left`/`right` 是两个集合名，`leftOnly`/`both`/`rightOnly` 写三个区域的数，空标签印答案框，可选 `total` 在两圈下方画括号合计；集合名留空会被拒绝），重叠问题可以出题打印；渲染沿用 pdfkit 矢量绘制，不引入 HTML。questions.md、`worksheet` 工具描述、练习卷提示词与两份 README 同步；printable-figures 测试从实际只画六种补到十种全覆盖（数轴、钟面、小棒一并补上），分两张卷、每张不超过 8 题。决策见[重叠圈](.agents/notes/implemented/feature/2026-10-16-student-overlap-figure.zh.md)。
+
+2026-10-16 学生错题复习规则放宽：家长反馈复习规则太严格（提前做对不算数、答错一次清零），无法坚持。独立答对现在在任何一天都进入下一阶段（同一天最多一阶），下次复习日从做对那天按 1/3/7/14/30 天起算，提前于到期日做对也计入；答错、半对或依赖帮助不再清零，只把下次复习日改回第二天，复习阶段不倒退。`record` 与复习题不再要求错题已到期，可提前复习；巩固卷出题窗口（错题需在明天结束前到期）与「已巩固」判定（第 4 阶段）不变。决策见[复习放宽](.agents/notes/implemented/feature/2026-10-16-student-review-relaxation.zh.md)。根 `typecheck`、`build` 与包内 7 文件 106 项测试、文档 16 项与规范 3 项检查通过；重启 DSH 后按新规则重算历史复习进度。
+
+2026-10-16 学生学习插件增强（出题要素、错因与拍照闭环）：知识地图新增出题要素层（概念常见错法、目标错因/出题要点/变式维度、单元日常侧重，十二份全覆盖，`study_status kind=elements` 按已教范围返回）；新增分科错因词表与错题 `errorType`、`classify-mistake` 归类、变式阶梯（巩固题按复习阶段换数字→情境→说理且必须换题面）、`paperDrafts` 草稿集合与 `paper-draft`/`confirm-paper` 取代 `paper-result`（拍照先存草稿、家长在工作台核对入库）、`worksheet.kind` 与每日小卷/对话听写双入口（新参考 `daily-routine.md`）、理解提醒（派生展示，不落盘不评分）；掌握收紧为近期无依赖帮助或答错，薄弱点新增反复错因理由与按科目错因汇总，`review-sheet` 升级为 picks+薄弱目标补题并按学校进度过滤。配图联合扩到九种（数轴、钟面、小棒、百数表窗口、结构化钱币），修复图形截断并显式拒绝未知图形。路由白名单补 `school-progress`（修复家长「学校进度」表单 403）、`classify-mistake`、`confirm-paper`。工作台新增「待核对转录」、错因下拉与归类、今日学科环节卡与提醒卡。决策见[出题要素](.agents/notes/implemented/feature/2026-10-16-student-error-elements.zh.md)与[拍照闭环](.agents/notes/implemented/feature/2026-10-16-student-photo-grading.zh.md)。
+
+2026-10-16 模型设置增强重试分类扩展：真实 DSH 中一次运行以「Service temporarily unavailable」失败且未重试；该文案不含状态码，被 pi-ai 适配器归入兜底 `PI_AI_ERROR`，不在默认可重试集合，也不在原三类可选项内。`packages/winterhuan/ui-settings-model-options` 现为 pi-ai 提供方增加「重试未分类错误（PI_AI_ERROR）」开关（默认关闭），开启后加入该提供方 `retryPolicy.retryableCodes` 并沿用次数上限；deepseek 不产生该码，不显示。中英文案、双语 README、i18n 记录与测试同步更新。`typecheck`、`build`、包内 3 文件 60 项测试、文档 16 项与规范 3 项通过；未在真实 DSH 浏览器验证界面，未调用真实模型。
+
+2026-10-14 教材目录内置：语文和英语的一年级上下册、二年级上册知识地图改为按家长确认的教材目录列出单元和课名（含语文园地、英语各单元栏目和附录）。数学二年级上册的购物单元名为欢乐购物街。三科二年级下册不在这份目录里，仍用先前的学习框架。随包人教语文、北师大数学课页与地图不是同一份目录。
+
+2026-10-14 学校进度界线：家长确认教材后，可用 `school-progress` 标明学校教到的地图单元。今日建议里的到期错题、薄弱点、摸底和新课停在该单元及之前；跟上学校只在当前单元出新课，先补缺则先练已教过的缺口，复习周不开始新目标，预习最多下一单元。没有这条记录时仍按整册建议。更换教材保留已确认的单元。决策见[学校进度](.agents/notes/implemented/feature/2026-10-14-student-school-frontier.zh.md)。
+
+2026-10-13 学生学习工作台与沪教版数学目录：数学一年级上下册、二年级上册的内置单元和知识点改为对齐沪教版《义务教育教科书·数学》（五四制·2024）册次目录（一年级上册含进位加法，一年级下册为退位减法、100 以内加法、长度与身体尺、数学广场，二年级上册为 100 以内减法、欢乐购物、表内乘法、方位与分类；表内除法不在二上）。二年级下册仍用先前的学习框架。工作台改为粘性标签栏、科目分段、今日建议主卡片、单元进度条、可横向滚动的知识关系图，以及主按钮样式。未在真实 DSH 浏览器中验证本次界面。
+
+2026-10-12 学生知识地图与薄弱点：`packages/winterhuan/student` 内置一、二年级上下册语文、数学、英语十二份知识地图（`knowledge/curriculum/*.json`，154 个知识点、87 个学习目标、96 条关系），`src/curriculum.ts` 按需加载并用 schema 校验 ID 唯一、单元归属、目标引用和科目方法；内置目标 ID 可直接用于 `task`、`record`、`mistake`、`link-mistake`、`worksheet`，不经家长确认，状态文件只存引用。`learning.ts` 新增 `studyInsight` 与 `curriculumView`：按目标汇总作答、纸上结果与错题阶段，推导到期、需要加强、久未练习、已掌握、练习中、待学习六种状态，排序薄弱点并给出每日建议（先复习到期错题，再补薄弱点，再学新目标）；`study_status` 默认附带前三个薄弱点与建议，新增 `kind=curriculum`、`kind=weak`。工作区接口参数 `mistakeSubject` 改名 `subject`，新增 `mistakeStatus`（all、due、reviewing、mastered），`dashboard` 改为 options 对象并返回 `curriculum`、`weakPoints`、`recommendation`、`mistakeBook`。工作台标签改为今日学习、知识地图、错题本、成长记录、家长设置：主标签含今日建议（可直接开始复习或目标练习）、薄弱点、当前科目知识地图摘要与错题本摘要；知识地图标签展示单元、知识点、关系与掌握状态并可选目标；错题本按状态筛选，30 天间隔的错题显示已巩固；学科方法提示保留在开始表单下。知识地图内容依据 2022 年版课程标准与上海通行教学顺序编写，本机 Web 检索不可用，未逐页核对沪教版教材，`basis` 字段写明限制。加载器通过变量读取 `import.meta.url`，避免 jsdom 测试里 Vite 对 `new URL(…, import.meta.url)` 的资源路径改写（问题见[排障速查](#11-排障速查)）。同日第二轮起的选项作答、学期浏览、摸底分档和单元关系图见决策笔记。决策见[知识地图决策](.agents/notes/implemented/feature/2026-10-12-student-knowledge-map.zh.md)。
+
+2026-10-11 DSH 升级到 `0.2.1-alpha.2`：12 个包的 375 处 DSH 依赖声明统一改为 `0.2.1-alpha.2`，插件自身版本不变；配套 Cordis 范围仍为 `~4.0.5-alpha.1`、schemastery 仍为 `~3.18.5-alpha.1`（按发布包的 peer 声明核对）。子模块移到 `dsh-v0.2.1-alpha.2`。删除对上游已移除的 `dsh-subagent-in-process-driver` 的依赖，`STRUCTURED_OUTPUT_TOOL` 改从 `dsh-subagent` 导入；story 新增 `dsh-working-directory` 测试依赖——alpha.2 的 `dsh-subagent` 服务注入 `workingDirectory`，手工组合子代理的两个测试必须提供它，宿主侧由上游 `bundle/base` 提供，bundle 补丁不用加行。子代理 activation 按上游指南去掉 suffix、backgroundMode 与 enableRunInBackground。[第 8 节](#8-从上游复制的文件及本地改动)重新同步 `tsdown.client.ts`、`bundle-input-isolation.ts` 并新增 `experimental-package-policy.ts`。typert 生成器的 `isTypeMetaSymbol()` 未变，补丁按 alpha.2 重做（问题 5）；`api-remotes` 仍只把 Remote 包列为 devDependencies（问题 6）；`dsh-client-test-runtime` 仍导入 3 个未发布的 `src` 文件（问题 10）。清理构建后 install、typecheck、build 与全量 97 文件 862 项测试通过。未在真实 DSH 安装验证；上游设置页重组、新会话总是新建 Agent，以及 `dsh plugin --profile` 的参数顺序留待下次核对。
+
+2026-10-11 项目默认模式插件：新增 `packages/winterhuan/project-default-mode`（`@winterhuan/dsh-project-default-mode`，Host + Client 单包，独立 bundle）。Host 面维护 volatile `rules` 配置（`workspaceId` → `agentPreset`），在 `agent/created`（仅 `source === 'startup'` 且非 fork/subagent）中把会话 cwd 解析到 Workspace 并用 `agentPresets.select` 切换 preset，失败只记日志不否决创建；Client 面在会话「…」菜单（order 500）加「设为本项目默认模式」对话框，经 `configForms.set('rules', …)` 写入。不新增 Remote，未改上游拷贝文件。审查修正：对话框控制器等设置表单取得首个已接受区段后再暂存项目规则，表单非 `ready` 时拒绝保存（空镜像写回会丢掉其他项目的规则）；补 `@deepseek-ai/dsh-agent-preset-registry/remote` 类型导入。真实 DSH 里为 `qiqiStudy` 设置默认模式后新建会话报 `cannot create effect on inactive context`：Host 曾在 `agent/created` 串行派发中途调用 `agentPresets.select` 重组 agent，而 `select` 的契约是只作用于已发布的 agent（它重绑作用域并触发 `tools/change`，preset 作用域内的监听器此时仍按创建时 preset 运行）；现改为派发结束后（`setImmediate`）、首个回合之前切换，并新增真 registry、Agent loop、subagent 与 `tool-subagent` 行的真实组合测试。该测试未复现生产报错（生产组合更大），修法依据契约，需用户重启后确认。清理构建后 typecheck、build、包内 51 项测试、文档与规范检查通过；隔离安装的合成配置含该插件，页面脚本无错误。未做真实浏览器交互，未调用模型。全量测试里 story 脚本测试受代理警告影响，清除代理后通过，见[排障速查](#11-排障速查)。
+
+2026-10-05 移除聚合包：删除 `@winterhuan/dsh-creative` 包及旧通用生产工具、`/creative` 路由，四个领域按各自包安装。各包提供独立 `build`、`typecheck`、`test` 命令；领域测试归回所属包，跨领域组合和媒体交付验证位于根 `tests/`。四个包独立构建、独立压缩包资源与依赖检查、隔离 profile 独立安装均通过；`typecheck`、`build` 和 77 个文件 712 项测试通过。旧聚合入口的路径与别名测试随入口移除。
+
+2026-10-05 DSH 升级：10 个插件包的 247 处 DSH 依赖声明统一为 `0.2.1-alpha.1`，插件自身版本不变；对齐配套 Cordis 依赖，迁移 typert 补丁，移除 invariant 构建入口，构建显式使用 native config loader。短剧生产投影适配工具结果的 `name` 与 `PartialArguments`。清理构建后 `typecheck`、`build`、75 个文件 762 项测试通过，peer 检查无冲突。隔离新版 DSH 已验证聚合安装、小说独立安装配置、500 章概览、六个小说技能参考预览、正文保存和外部修改冲突，以及四个工作台入口；小说、创意生产设置与模型思考／重试控件可见，页面脚本错误为零。文档 16 项和规范 3 项检查通过。概览阶段写请求为零，追踪哈希不变。媒体生产和真实模型调用未验证。
+
+2026-09-30 四领域拆分验证：清理构建产物后 `typecheck`、`build` 通过；全量 59 个文件、577 项测试通过。文档 16 项、规范 3 项通过，归档完整性通过。四个领域均有独立包与侧栏；Creative 聚合页面已移除；通过聚合包安装的小说保存、短剧生产页、视频播放和游戏独立入口在临时 web profile 验证，无页面脚本异常。三个新包的压缩包安装、浏览器检查与 16 项包内资源检查通过；已有设置包尚未发布到 npm，压缩包验证用临时 profile 的 pnpm override 指向它的本地压缩包。游戏此前的独立包、压缩包、聚合与三种模板 Chrome QA 已通过。未修改用户 profile。
+
+2026-09-30 小说技能精简验证：清理构建产物后的 `typecheck`、`build` 通过；全量 59 个文件、575 项测试通过（删除旧脚本 wrapper 的重复轮次）。文档 16 项、规范 3 项及归档完整性通过。临时 web profile 的 Chrome 验证了六个小说技能、每个入口的参考文件预览和空工作台 `/story` 提示，无页面脚本错误。未调用真实模型或外部检测。
+
+2026-10-01 原生专家协作简化验证：删除专用 Role 执行器和固定评审 JSON 校验链，保留专业指令、实际字数哈希及原子追踪事务。清理构建产物后 `typecheck`、`build` 通过，全量 58 个文件、563 项测试通过，文档与规范检查通过。Loader 测试覆盖原生子 Agent 实际读取 Role/参考、Team 冷成员续接、无评审字段提交及旧记录原值保留。临时 DSH web profile 的 Chrome 检查确认原生 Team 成员面板可见，旧 Role 结果格式测试样例可通过通用工具卡查看，无页面脚本错误。使用脚本化模型，未调用真实模型或付费服务；临时服务和浏览器已关闭，未修改用户 profile。
+
+2026-10-01 模型设置增强验证：独立客户端组合包完成本地链接和压缩包安装；`typecheck`、`build`、全量 61 个文件 594 项测试通过，新包 31 项回归测试通过。隔离 DSH 的 Chrome 验证了思考级别参数映射、省略关闭参数、0/1/3 次重试对应 1/2/4 次请求、取消后停止重试、恢复默认、跨窗口冲突、刷新持久化，以及深浅色和窄窗口布局；无页面脚本错误。使用本地模拟接口，未调用付费模型或修改用户 profile。
+
+2026-10-02 模型思考设置批量编辑：模型列表增加配置摘要和待保存标记；支持搜索、勾选、全选当前搜索结果、预览完整参数映射，并将配置复制到所选模型的草稿后统一保存。`typecheck`、`build` 与全量 61 个文件 601 项测试通过，其中包内 38 项测试覆盖自定义及目录模型、筛选范围外的选择保留、独立草稿、取消、放弃修改和批量预览期间的版本冲突。文档 16 项与规范 3 项检查通过；受限环境不能创建 tsx CLI 的 IPC 管道，改用 `node --import tsx` 执行相同校验脚本。用户 `web` profile 已链接本地包，重新构建后需重启 DSH 并刷新。此次真实浏览器验证未完成：隔离 DSH 未就绪，Chrome 启动以 SIGABRT 退出，并报告进程控制 EPERM；不能沿用上一轮浏览器结果确认本次批量界面。
+
+截至 2026-09-29 的验证结果：
+
+| 检查 | 结果 |
+|---|---|
+| upstream | master 的 `639ed01539`，对应 `dsh-v0.2.0-rc.2`；子模块源码无改动 |
+| `pnpm install` | 通过；72 处 DSH 依赖声明和锁文件均为目标版本，typert 补丁已应用 |
+| `pnpm install --frozen-lockfile --offline` | 通过，锁文件可复用 |
+| `pnpm run typecheck`、`pnpm run build` | 从清理后的构建产物开始通过；游戏空状态修复后再次通过 |
+| `pnpm test` | 50 个文件、556 项全部通过，包含游戏空状态的中英文回归用例 |
+| `pnpm run doc-sync`、`pnpm run hygiene` | 文档 16 项与代码规范 3 项全部通过，含归档完整性 |
+| DSH 0.2.0-rc.2 插件安装 | 临时 profile 的合成配置包含 Creative 的 3 行与 Skill Viewer 的 2 行 |
+| 浏览器验证 | Chrome 中加载三个客户端 bundle；技能列表、生产设置保存与重载、小说编辑保存与预览、四种模式及工作区切换、游戏空状态的浅色/深色与键盘操作通过，无页面脚本异常 |
+
+仓库远程为 `git@github.com:winterhuan/dsh-creative.git`。
+
+2026-09-29 接口核对基于 `dsh-v0.1.7-rc.2..dsh-v0.2.0-rc.2`：
+
+| 插件接入点 | 上游变化与适配结论 |
+|---|---|
+| 右侧栏 | 内部改由所选会话和已登记的 store 驱动；移除了旧的 `SidebarRightBinding`。插件未使用该内部接口，仍使用 `sidebarRightTabs.register` 与标签自身的 `actions.openTab` |
+| 会话输入 | `submit` 增加可选来源参数，`fork` 增加可选回调；现有调用不需要改变 |
+| 工具卡片 | 增加限时问答面板接口，现有 `ToolCallViewProps` 保持兼容 |
+| Remote、设置与密钥 | 外部 `skillViewer` 仍需自行挂载；生成器仍不识别 npm 协议包，保留补丁；设置 Remote 仍需显式导入类型 |
+| 客户端构建工具 | 第 8 节的 7 个上游文件在该版本区间没有变化，保留现有副本和本地适配 |
+
+游戏页在没有项目时显示空状态，并保留鼠标及键盘切换其他模式的入口。
+
+上游新增功能的使用说明由上游维护：[自动化任务迁移](upstream/docs/upgrade-guide/v0.2.0-rc.2/schedule-bundle-retired/guide.zh.md)说明提醒工具的 preset 接入，[限时提问](upstream/packages/interaction/tool-ask-user/README.zh.md)需显式选择 timed 模式；本次版本适配不改变 Creative 的默认生产流程。
+
+## 2. 仓库结构
+
+### 开发目录与源码归属
+
+现役插件以各自独立 GitHub 仓库为唯一源码维护与发布入口。本机统一检出到 `~/dsh-plugins/<仓库名>`；这是本项目的本地目录约定，DSH 官方不要求使用此路径。在其他机器可选择不同检出位置，仓库身份以 Git remote 为准。`~/dsh-plugins` 只是父目录，下面各仓库独立提交、构建和发布。
+
+| 独立仓库 | 源码目录（相对仓库根目录） | 构建后的安装目录 |
+|---|---|---|
+| [dsh-writer](https://github.com/winterhuan/dsh-writer) | `packages/winterhuan/writer` | `packages/winterhuan/writer` |
+| [dsh-student](https://github.com/winterhuan/dsh-student) | `packages/winterhuan/student` | `packages/winterhuan/student` |
+| [dsh-project-default-mode](https://github.com/winterhuan/dsh-project-default-mode) | `packages/winterhuan/project-default-mode` | `packages/winterhuan/project-default-mode` |
+| [dsh-client-ui-settings-model-options](https://github.com/winterhuan/dsh-client-ui-settings-model-options) | `packages/winterhuan/ui-settings-model-options` | `packages/winterhuan/ui-settings-model-options` |
+| [dsh-skills-viewer](https://github.com/winterhuan/dsh-skills-viewer) | `packages/winterhuan/skill-viewer`、`packages/winterhuan/ui-skill-viewer` | `plugin`（包含两个包，单次安装） |
+
+其余目录的职责：
+
+- `~/dsh-creative`：保留原始 monorepo、未提交工作、交接文档与历史资料；其中 `packages/winterhuan/` 的重复源码不自动同步到独立仓库。需要了解独立仓库当前实现与构建方式时，阅读该仓库源码和 README；本文件后续的原 monorepo 结构不能替代它们。
+- `~/dsh-plugins/market-site`：`winterhuan/dsh-creative` 的 `gh-pages` 分支检出，维护 `index.json` 和 `plugins.txt`，不存放插件源码。
+- `~/dsh-plugins/dsh-skill-viewer`、`~/dsh-plugins/dsh-client-ui-skill-viewer`：已删除远程仓库的旧本地副本，仅供核对与恢复；新修改进入合并后的 `dsh-skills-viewer`。
+- `~/dsh-plugins/` 下的发布记录、备份和验收目录：保存操作证据，不作为开发或安装来源。本地协作入口为该目录的 `AGENTS.md`，完整规则由本节维护。
+
+### 开发与发布规则
+
+1. 开始任务时确认目标仓库的 Git remote、分支和未提交改动，在该仓库修改源码、测试及配套文档。跨插件修改分别在各自仓库完成；不在 `dsh-creative` 的重复副本继续新增插件功能。
+2. `dsh-creative` 或旧本地副本中已有的未发布改动，先与独立仓库逐项比较，再迁入尚未包含的改动。保留原改动与恢复材料，完成目标仓库的验证和提交后再清理对应副本；禁止用整个旧目录覆盖独立仓库或顺带丢弃其他工作。不建立双向复制流程。
+3. 按独立仓库 README 构建和测试；提交代码前完成 typecheck、build 和 test，客户端行为还需在真实 DSH 验证。技能查看器只编辑两个源码包，由构建生成 `plugin/`，不直接修改该目录。开发 profile 安装上表的构建后目录；日常 profile 更新远程发布包，详见[第 5 节](#5-在-dsh-中安装调试和移除)。
+4. 发布时保持 6 个包的版本一致（包含随包客户端），核对包清单、锁文件、安装目录中的编译产物和 Release；已发布标签与版本不覆盖，有发布内容变化时递增版本。5 个远程仓库保留 `dsh-plugin` topic。先提交并推送插件与发布产物，再更新 `market-site` 中的索引及仓库列表，使版本、固定 Git 提交、安装路径、README 和 DSH 兼容声明一致；按官方市场文档校验，并验证远程安装和详情页后更新日常 profile。
+
+### 原 monorepo 的保留结构
+
+以下是 `~/dsh-creative` 的实际布局，供历史核对与未发布改动迁移使用。
+
+```
+dsh-creative/
+├── packages/                          packages/winterhuan/<包> 两层布局
+│   └── winterhuan/
+│       ├── writer/                    @winterhuan/dsh-writer（Host + Client，写作模式与随包 oh-story 技能）
+│       ├── student/                   @winterhuan/dsh-student（Host + Client，学习工作台与状态）
+│       ├── project-default-mode/      @winterhuan/dsh-project-default-mode（Host + Client，按项目的默认 Agent 模式）
+│       ├── skill-viewer/              @winterhuan/dsh-skill-viewer（Host，skillViewer Remote）
+│       ├── ui-skill-viewer/           @winterhuan/dsh-client-ui-skill-viewer（Client）
+│       └── ui-settings-model-options/  @winterhuan/dsh-client-ui-settings-model-options（独立安装，Client）
+├── archive/                           冻结快照区：creative 四包、ui-settings-story、ui-settings-creative-produce、
+│                                      webnovel-writer、docs/subsystems 创作域页面与 docs/scratch story 规划稿
+├── scripts/
+│   ├── tsdown.client.ts               客户端 bundle 预设 clientBundle()（上游拷贝，有本地改动）
+│   ├── client-build-environment.ts    客户端构建期环境变量记录（上游拷贝，有本地改动）
+│   ├── bundle-input-isolation.ts      bundle 输入隔离检查（上游拷贝）
+│   ├── platform.ts                    宿主页面共享模块表（上游拷贝）
+│   ├── vitest-shared.ts               标准装饰器转换、vitest 进程参数（上游拷贝）
+│   ├── test-dom-environment.ts        jsdom 下默认的 ResizeObserver（上游拷贝）
+│   └── vitest-upstream-client.ts      仅测试用：从 upstream/ 读取 DSH 客户端源码（本仓库自有）
+├── tests/                             跨 preset 隔离验证（domain-modes，student-only）
+├── types/client-build-environment/    客户端构建期 process.env 的环境声明（上游拷贝）
+├── patches/                           typert 生成器补丁（pnpm patchedDependencies）
+├── upstream/                          子模块，固定在 dsh-v0.2.2-rc.1；只读
+├── docs/、.agents/                    设计文档和决策记录
+├── tsconfig.base.json                 编译选项（取自上游，去掉 paths）
+├── tsconfig.base.client.json          浏览器编译选项（DOM、React JSX、构建期环境类型）
+├── tsconfig.host.json                 Host 编译面聚合：skill-viewer、writer、student、project-default-mode
+├── tsconfig.client.json               Client 编译面聚合：ui-skill-viewer、ui-settings-model-options、writer、student、project-default-mode
+├── tsconfig.json                      编辑器入口，引用上面两个聚合
+├── tsdown.config.ts                   Host 面打包 + typert 生成；Client 面交给各包自己的 tsdown.config.ts
+├── vitest.config.ts
+├── pnpm-workspace.yaml                packages/*/*、allowBuilds、patchedDependencies
+└── package.json                       工具链与测试依赖
+```
+
+包之间的关系：
+
+- 5 个组合包分别构建、测试和安装；技能查看器组合包包含 Host 与 Client 两个相互依赖的源码包。story、short-drama、video-recap、novel-to-game 四个创作包及其设置客户端（ui-settings-story、ui-settings-creative-produce）已归档，历史边界见[四领域决策](.agents/notes/archived/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。
+- `skill-viewer` 的 `dependencies` 包含 `ui-skill-viewer`；`ui-skill-viewer` 的 `devDependencies` 包含 `skill-viewer`，用它的 `/types` 和 `/remote`。这个结构沿用上游，所以 `pnpm install` 会提示 `There are cyclic workspace dependencies`，这是预期的。
+- 各包各自构建 Host 和 Client；在本仓库根目录执行 `pnpm --filter @winterhuan/dsh-writer build` 或 `test`，可只核对保留的写作包。其余领域替换包名。跨 preset 隔离验证位于根 `tests/`。
+- 现役包路径统一为 `packages/winterhuan/<包>`，文档和构建脚本按这些路径工作；`archive/` 下的路径不参与构建、测试与文档门禁。
+
+## 3. 与 DSH 的集成方式
+
+### Bundle 与插件行
+
+写作模式与学生模式经各自 bundle 激活：Host 负责路由和全局设置，`/agent` 负责模式内技能与工具；工作台跟随会话模式。历史上四个创作领域（story、short-drama、video-recap、novel-to-game）也采用这一结构，现已归档；领域激活边界见已归档的[领域模式决策](.agents/notes/archived/feature/2026-10-06-domain-modes.zh.md)。
+
+现役业务包、`skill-viewer` 与 `project-default-mode` 的 `package.json` 声明 `dsh.bundle.patch: ./cordis.patch.yml`，安装到 profile 后，DSH 按下面的行加载插件：
+
+| bundle | 行 id | 加载的模块 | 作用 |
+|---|---|---|---|
+| writer | `writer` | `@winterhuan/dsh-writer` | 写作模式 Host：技能挂载、`/writer-sync-skills`、`/writer-unsync-skills` 与 `PUT /writer/file` |
+| writer | `preset-writer` | `@deepseek-ai/dsh-agent-preset` | 写作模式，作用域内挂载随包 oh-story 技能 |
+| student | `preset-student` | `@deepseek-ai/dsh-agent-preset` | 智能学习模式，作用域内挂载 `/agent` 技能和工具 |
+| student | `student` | `@winterhuan/dsh-student` | 学习工作区 API |
+| skill-viewer | `skill-viewer` | `@winterhuan/dsh-skill-viewer` | Host 服务 `SkillViewerCatalog`（继承 `TypertRemoteService`，Remote 命名空间 `skillViewer`） |
+| skill-viewer | `ui-skill-viewer` | `@winterhuan/dsh-client-ui-skill-viewer` | Skill Viewer 面板的 Node 入口 |
+| project-default-mode | `project-default-mode` | `@winterhuan/dsh-project-default-mode` | 按项目的默认 Agent 模式：Host 在 `agent/created` 应用规则，浏览器半边经 `dsh.client` 清单提供 |
+
+### 客户端包
+
+客户端包在 `package.json` 里声明 `dsh.client`：`platform: web`，`inject` 列出运行时由宿主提供、打包时外置的 DSH 客户端模块。
+
+`lib/client.js` 是给 DSH 前端模块加载器用的闭包工厂格式（调用 `window.__ModuleLoader__.load`），不是普通 ES 模块。web 服务器用 `plugins/??<a>/client.js,<b>/client.js` 这样的合并 URL 提供它们。
+
+### Remote
+
+DSH 内置的 `@deepseek-ai/dsh-api-remotes` 只挂载内置包的 Remote。外部插件必须自己挂：`packages/winterhuan/ui-skill-viewer/src/client/mount.ts` 调用 `ctx.remote.$mount(skillViewerRemote)`。`skillViewerRemote` 和 `ClientRemote.skillViewer` 的类型合并都来自 typert 生成的 `@winterhuan/dsh-skill-viewer/remote`。
+
+DSH 内置 `api-remotes` 只挂载内置包的 Remote，外部插件不能依赖它自动挂载自己的 Remote。
+
+2026-10-03 Skill Viewer 验证：会话列表通知只在所查看的会话身份变化时重载，普通状态更新保留技能选择。搜索、刷新、Markdown 预览与参考文件查找见[查看器说明](packages/winterhuan/ui-skill-viewer/README.zh.md)。`typecheck`、`build` 和客户端 104 项测试通过；隔离 DSH 的 Chrome 验证快速切换、另一标签页更新同一会话、重开保留选择、磁盘刷新、参考文件导航、深浅色及 720px/390px 布局，页面脚本错误为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-skill-viewer-owssq_44/`；使用本地模拟模型接口，未修改用户 profile 或技能文件。
+
+### 学生学习
+
+`@winterhuan/dsh-student` 位于 `packages/winterhuan/student`，独立构建和安装，不依赖创作包。右侧学习工作台分成学生页和家长页：学生页是今日学习；家长页包含知识地图与学习摸底、概念、练习单与错题巩固、家长设置与成长记录；`/study` 使用原生对话和图片；`study_status`、`study_update` 通过会话文件系统保存一名学生一学期的档案、教材依据、作答、错题、工作区习题与奖励。无单段/休息/每日时长限制；内置习题知识库按目标索引。题目、原始回答和提示请求与工作台共用持久化状态，面板请求通过主会话文件系统和修订检查保存；辅导消息与图片走 DSH 原生队列和附件。未提供教材的二年级上册使用随包课页，用户教材优先。使用方法及教材确认和模型能力的限制见[学生插件](packages/winterhuan/student/README.zh.md)。
+
+### 模型设置增强
+
+`ui-settings-model-options` 是独立安装的客户端组合包，通过 DSH 模型页的提供方卡片插槽编辑模型思考能力、提供方重试次数及无效请求、认证、额度错误的重试开关。它复用内置设置、模型目录和重试运行时，不随领域包安装。安装与配置见[包说明](packages/winterhuan/ui-settings-model-options/README.zh.md)。
+
+2026-10-03 重试开关验证：`typecheck`、`build`、包内 54 项及全量 65 文件 683 项测试通过。隔离 DSH 的 Chrome 与本地模拟接口确认 400 在关闭开关、开启并设置 3 次、开启并设置 0 次时分别请求 1、4、1 次，413 沿用此开关。QUOTA 关闭时请求 1 次，开启并设置 2 次时请求 3 次，设为 0 时请求 1 次；接口恢复后可成功完成。AUTH 关闭时 401 请求 1 次，开启并设置 1 次时请求 2 次。刷新持久化、深浅色及 720px 窄窗口检查通过，页面脚本错误为零。证据位于 `/var/folders/b7/m96mgydd5334jqqnhxtw0bmm0000gp/T/dsh-retry400-2mtl7t6i/` 的 `results.json` 与 `quota-results.json`；未调用付费模型或修改用户 profile。
+
+### 已归档的创作领域
+
+小说（story）、短剧（short-drama）、视频解说（video-recap）与小说转游戏（novel-to-game）四个创作包及其设置客户端（ui-settings-story、ui-settings-creative-produce）已于 2026-10-31／11-01 归档到 `archive/`：各自的技能资源、项目发现、文件跳转与生产凭据机制不再维护，完整说明随包保留在 `archive/creative/<包>/README.zh.md` 与 `archive/docs/subsystems/`。写作模式所需的 oh-story 技能已随 `@winterhuan/dsh-writer` 自带，与归档包无关。
+
+## 4. 开发命令与构建流程
+
+本节说明 `dsh-creative` 保留副本的工具链与构建细节。现役插件在[对应独立仓库](#开发目录与源码归属)根目录按其 README 执行；例如 `dsh-skills-viewer` 的构建还生成可安装的 `plugin/`，与本仓库的构建范围不同。
+
+### 前置条件
+
+- Node 24 为默认开发版本（`.nvmrc`），兼容 Node `^22.19.0 || >=24`。
+- pnpm 11.7.0（`package.json` 的 `packageManager` 字段，通过 corepack）。
+- 子模块已检出：只有客户端单元测试需要，构建和类型检查不需要。
+
+### 命令
+
+```sh
+git submodule update --init   # 跑客户端单元测试前需要
+pnpm install
+pnpm run typecheck            # = build:host，再 tsc -b tsconfig.client.json，再 tsc -p tsconfig.scripts.json
+pnpm run build                # = build:host，再 build:client
+pnpm test                     # vitest run
+pnpm run clean                # 删除 packages/*/*/lib
+```
+
+### 构建顺序
+
+1. `build:host`：
+   - `tsc -b tsconfig.host.json` 编译 skill-viewer、writer、student 与 project-default-mode 的 Host 面，输出 `lib/types/*.js` 与 `*.d.ts`。
+   - `tsdown --env.DSH_BUILD_FACE host`：根 `tsdown.config.ts` 把各包的 `lib/types/index.js` 打成 `lib/index.js`，并由 `typertPlugin({ mode: 'workspace', faces: ['host'] })` 生成 skill-viewer 的 `lib/typert.host.{js,d.ts}` 和 `lib/typert.remote-client.{js,d.ts}`。
+2. `build:client`：
+   - `tsc -b tsconfig.client.json` 编译两个领域工作台、writer 与三个独立 UI 包的客户端编译面。`ui-skill-viewer` 要用第 1 步生成的 `@winterhuan/dsh-skill-viewer/remote` 声明，所以 client 面必须排在 host 构建之后，`typecheck` 也因此先跑 `build:host`。
+   - `tsdown --env.DSH_BUILD_FACE client`：客户端包各自的 `tsdown.config.ts` 调用 `scripts/tsdown.client.ts` 的 `clientBundle()`，产出 Node 入口和浏览器 bundle。
+
+构建产物：
+
+| 包 | 产物 |
+|---|---|
+| writer | `lib/index.js`、`lib/client.js` |
+| student | `lib/index.js`、`lib/client.js` |
+| skill-viewer | `lib/index.js`、`lib/typert.host.{js,d.ts}`、`lib/typert.remote-client.{js,d.ts}` |
+| ui-skill-viewer | `lib/index.js`、`lib/client.js` |
+| ui-settings-model-options | `lib/index.js`、`lib/client.js` |
+| project-default-mode | `lib/index.js`、`lib/client.js` |
+
+`lib/`、`*.tsbuildinfo` 和 `.dsh-build/`（`client-build-environment.ts` 的构建记录）都被 git 忽略。`dsh plugin add` 是链接安装，安装和调试前必须先 build。
+
+构建时 tsdown 会提示 `Detected dependencies in bundle`（`dsh-util-values`、`dsh-util-crypto`、`dsh-util-workspace-path`、`zod`）。这是预期的：`clientBundle()` 会把无状态工具内联进 bundle。
+
+### 测试如何解析依赖
+
+- Host 测试直接使用 npm 上的 DSH 包。
+- 客户端测试（`*.client.spec.ts(x)`）通过 `@vitest-environment jsdom` 注释选择 jsdom，并依赖两项配置：
+  - `scripts/vitest-upstream-client.ts`：把 `@deepseek-ai/<包>/client` 和 `@deepseek-ai/<包>/src/*` 解析到 `upstream/` 里的同版本源码；这些源码里的裸导入通过 pnpm 的隐藏提升目录 `node_modules/.pnpm/node_modules` 解析，从而与插件包使用的 npm 副本共享同一个模块实例。
+  - `vitest.config.ts` 的 `server.deps.inline: [/@deepseek-ai\/dsh-client-/]`：让 Vite 而不是 Node 处理 DSH 客户端库，这样它们导入的 CSS 和 `src/` 子路径才能被解析。
+- 测试输出里的 `An error occurred while trying to read the map file at index.js.map` 是无害警告：发布的包没有带 source map。
+
+## 5. 在 DSH 中安装、调试和移除
+
+本机 DSH 为 `0.2.2-rc.1`。`creative`、`headless`、`student`、`web` 中已有的 `@winterhuan/*` 均从独立 GitHub 仓库安装，版本统一为 `0.1.8`，固定到市场索引中的提交。`web` 安装全部 5 个组合包，技能查看器客户端随 Host 包一起安装。更改本仓库源码不会改变日常使用的插件。
+
+日常 `web` 的「插件 → 发现」已添加[插件市场索引](https://winterhuan.github.io/dsh-creative/index.json)。安装和更新可从这里操作，或使用各独立仓库 README 中的固定 Git 安装命令。例如当前写作插件：
+
+```sh
+dsh plugin --profile web add 'git+https://github.com/winterhuan/dsh-writer.git#83d78c4645fb7e601d3a7e42d7117bda9f7b7eb9&path:/packages/winterhuan/writer'
+dsh-webctl restart
+# 浏览器若开着 dsh web：Cmd+Shift+R 硬刷新
+```
+
+升级时取新发布版本的安装地址；不要用 `dsh-webctl plugin-update` 的裸 npm 包名覆盖 Git 安装。控制脚本在 `~/.dsh/bin/dsh-webctl`（`status` / `restart` / `logs` / `plugin-add`）。外部 npm 包如 `@xmanrui/dsh-im` 仍可用 `dsh-webctl plugin-add <pkg>@版本`。
+
+开发调试使用独立仓库与独立 profile，只安装正在调试的组合包。以下以写作插件为例，链接安装与启动步骤已在隔离 `DSH_HOME` 中验证：
+
+```sh
+# 使用已安装的 DSH 0.2.2-rc.1
+cd ~/dsh-plugins/dsh-writer
+pnpm run build
+
+# 从 web 模板创建 profile，--dump-config 使它只创建、不启动
+dsh --profile creative-dev --from-default-profile web --dump-config > /dev/null
+dsh plugin --profile creative-dev add ~/dsh-plugins/dsh-writer/packages/winterhuan/writer
+
+# 确认合成配置里有独立的 @winterhuan 安装层
+dsh --profile creative-dev --dump-config | rg '^# == @winterhuan|name: .@winterhuan'
+
+dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open   # 随机端口，终端打印带 token 的地址
+```
+
+调试其他插件时，换用[目录表](#开发目录与源码归属)中对应仓库与构建后的安装目录。技能查看器先在 `~/dsh-plugins/dsh-skills-viewer` 构建，再链接其 `plugin/`；两个组件一并安装，不分别链接源码包。
+
+注意事项：
+
+- 必须先从 web 模板创建 profile。profile 不存在时，第一次 `dsh plugin add` 会建一个只有 `@deepseek-ai/dsh-base` 的 profile，没有 web 应用。
+- `dsh plugin add <路径>` 用 `link:` 安装，仅用于开发 profile。
+- 开发链接包改源码后的生效步骤：
+
+  ```sh
+  cd ~/dsh-plugins/dsh-writer
+  pnpm run build
+  # 停止并重新运行上面的 creative-dev 启动命令
+  # 浏览器：Cmd+Shift+R 硬刷新，避免旧 client bundle
+  ```
+
+  插件入口指向安装目录中的构建产物，只改源码不 build 不会生效；技能查看器需重新生成 `plugin/`。DSH 进程不会热替换已加载模块，必须重启开发进程并硬刷新。日常 `web` 则需先发布并更新远程包，本地构建或仅重启日常服务不能更新远程安装内容。
+- 想不碰 `~/.dsh` 做隔离测试，就给每条命令加上 `DSH_HOME=/tmp/<目录>`。
+- 隔离 `DSH_HOME` 不会改变首次默认工作区的 Documents 路径。在首次打开浏览器前，为临时 profile 的 `workspace-controller.config.documentsDirectory` 指定临时目录；已有工作区仍使用原路径，新一轮验证应使用没有工作区记录的临时 home。
+- 确认浏览器 bundle 已加载：页面 HTML 的 `plugins/??...` 列表里应有本次调试插件的 `client.js`。日常 `web` 安装全部组合包时，应有 `dsh-writer`、`dsh-student`、`dsh-project-default-mode`、`dsh-client-ui-skill-viewer` 和 `dsh-client-ui-settings-model-options` 的 `client.js`（共 5 个）。
+- 用 curl 检查本地服务时：本机设置了 SOCKS 形式的 `all_proxy`，curl 访问 127.0.0.1 也会走代理，需要加 `--noproxy '*'`。token 地址会先 303 跳转到 `./`，还需要 `-L` 和 cookie（`-c`/`-b`）。
+- 日常 Web 由 launchd 启动，不继承终端的代理变量。`~/.dsh/.env` 按 [DSH 代理指南](upstream/docs/user/guide/network-proxy.zh.md)设置 `HTTP_PROXY`、`HTTPS_PROXY` 为本机 HTTP 代理 `http://127.0.0.1:10808`，本机地址保持直连；该代理需运行。「发现」页详情会请求 `raw.githubusercontent.com`，仅能访问市场索引并不足以加载详情。
+- 移除：
+
+  ```sh
+  dsh plugin --profile creative-dev remove @winterhuan/dsh-writer
+  ```
+
+## 6. 依赖策略
+
+- **DSH 包**：dependencies、peerDependencies、devDependencies 里一律写精确版本 `0.2.2-rc.1`。不要写 `*` 或 `latest`，原因见[问题 2](HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)。
+- **cordis 系列**：`@deepseek-ai/cordis` 写 `~4.1.0`，`cordis-plugin-loader`、`cordis-plugin-include`、`cordis-plugin-group` 写 `~1.1.0`，`schemastery` 写 `~3.19.0`。范围随上游 peer 声明调整，升级时按 `npm view @deepseek-ai/dsh-session@$NEW peerDependencies` 核对。
+- **分类**：沿用上游的分类，上游已用 `package-dependency-policy` 检查过。
+  - 需要与宿主共享实例的 DSH 包同时放进 `peerDependencies` 和 `devDependencies`。运行时 peer 由正在运行的 dsh 安装提供，devDependencies 只给类型检查和测试用。
+  - 无状态工具放 `dependencies`。这是 DSH 发布文档（`upstream/docs/user/develop/basic/publish.md`）的规则。
+- **仓库内部包**之间用 `workspace:*`。
+- **新发布版本**：pnpm 11 为选定的 DSH 包记录精确到 `0.2.2-rc.1` 的 `minimumReleaseAgeExclude`；该列表不豁免其他版本或其他包。
+- **根 `package.json` 的 devDependencies** 分三类：
+  1. 工具链：`typescript` ^6.0.3、`tsdown` ^0.22.2、`vitest` ^4.1.8、`jsdom` 29.1.1、`lightningcss`、`@types/node`、`@testing-library/dom`、`@testing-library/react`，以及 `@deepseek-ai/dsh-typert-generator`。
+  2. DSH 平台模块在 Node 里要用、却没有声明的依赖（浏览器里由 web 前端打包提供）：
+     - `dsh-client-store` 需要 `zustand`、`immer`。
+     - `dsh-client-ui-primitives` 需要 `clsx`、`simple-icons`、`react`、`react-dom`、`katex`、`shiki`、`@shikijs/langs`、`anser`、`diff`、`mdast-util-*`、`micromark-*`，以及 `@deepseek-ai/dsh-util-code-language` 和 `@deepseek-ai/dsh-util-workspace-path`。
+  3. 客户端测试从 `upstream/` 加载 DSH 客户端源码时用到的第三方库：`lexical` 与 `@lexical/*`、`@tanstack/react-virtual`、`use-sync-external-store`、`@js-temporal/polyfill`、`picomatch`、`dompurify`、`fflate`、`mime-types`。
+
+  这些版本都取自上游对应的 `package.json`，查法：`git -C upstream grep -h '"<包名>"' HEAD -- '*package.json'`。
+
+## 7. 实际遇到的问题与解决方案
+
+完整的 17 个问题记录在 [HANDOFF-problems.md](HANDOFF-problems.md)，按「现象 → 原因 → 解决」组织。索引：
+
+| 问题 | 主题 | 链接 |
+|---|---|---|
+| 1 | typecheck 报几百个 upstream 包的错误 | [HANDOFF-problems.md#问题-1typecheck-报几百个-upstream-包的错误](HANDOFF-problems.md#问题-1typecheck-报几百个-upstream-包的错误) |
+| 2 | `pnpm install` 报 `@deepseek-ai/dsh-type-meta` 404 | [HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404](HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404) |
+| 3 | 误操作 upstream 子模块 | [HANDOFF-problems.md#问题-3误操作-upstream-子模块](HANDOFF-problems.md#问题-3误操作-upstream-子模块) |
+| 4 | `cp -r` 复制包时陷入 node_modules 符号链接循环 | [HANDOFF-problems.md#问题-4cp--r-复制包时陷入-node_modules-符号链接循环](HANDOFF-problems.md#问题-4cp--r-复制包时陷入-node_modules-符号链接循环) |
+| 5 | typert 生成器报 `publishes Remote artifacts but has no Remote methods` | [HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods) |
+| 6 | 客户端类型检查：`ClientRemote` 上没有 `credentials` | [HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes) |
+| 7 | Skill Viewer 的类型从 `dsh-api-remotes/client` 导入 | [HANDOFF-problems.md#问题-7skill-viewer-的类型从-dsh-api-remotesclient-导入](HANDOFF-problems.md#问题-7skill-viewer-的类型从-dsh-api-remotesclient-导入) |
+| 8 | 客户端打包工具没有发布 | [HANDOFF-problems.md#问题-8客户端打包工具没有发布](HANDOFF-problems.md#问题-8客户端打包工具没有发布) |
+| 9 | 客户端构建期环境类型 | [HANDOFF-problems.md#问题-9客户端构建期环境类型](HANDOFF-problems.md#问题-9客户端构建期环境类型) |
+| 10 | 单元测试：DSH 发布的客户端包在 Node 里无法加载 | [HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载) |
+| 11 | 发布版 DSH 没有 `conversation/open-file` | [HANDOFF-problems.md#问题-11发布版-dsh-没有-conversationopen-file](HANDOFF-problems.md#问题-11发布版-dsh-没有-conversationopen-file) |
+| 12 | 包改名为 `@winterhuan/*` | [HANDOFF-problems.md#问题-12包改名为-winterhuan](HANDOFF-problems.md#问题-12包改名为-winterhuan) |
+| 13 | 不属于外部插件的 DSH 内置改动 | [HANDOFF-problems.md#问题-13不属于外部插件的-dsh-内置改动](HANDOFF-problems.md#问题-13不属于外部插件的-dsh-内置改动) |
+| 14 | 本机环境问题 | [HANDOFF-problems.md#问题-14本机环境问题](HANDOFF-problems.md#问题-14本机环境问题) |
+| 15 | 升级 0.2.2-rc.1 时 cordis 配套范围不匹配 | [HANDOFF-problems.md#问题-15升级-022-rc1-时-cordis-配套范围不匹配](HANDOFF-problems.md#问题-15升级-022-rc1-时-cordis-配套范围不匹配) |
+| 16 | skill-viewer 21 个测试报 `Cannot read properties of undefined` | [HANDOFF-problems.md#问题-16skill-viewer-21-个测试报-cannot-read-properties-of-undefined-reading-get](HANDOFF-problems.md#问题-16skill-viewer-21-个测试报-cannot-read-properties-of-undefined-reading-get) |
+| 17 | student 测试报 `ToolExecutorUnavailableError` | [HANDOFF-problems.md#问题-17student-测试报-toolexecutorunavailableerror](HANDOFF-problems.md#问题-17student-测试报-toolexecutorunavailableerror) |
+
+其中 [问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)、[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)、[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载) 在升级与排障中引用最多。
+
+
+## 8. 从上游复制的文件及本地改动
+
+下面 9 个文件已核对至 `dsh-v0.2.2-rc.1`，复制版本标注均为 rc.1。`scripts/tsdown.client.ts`、`scripts/client-build-environment.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts` 与上游对照仅本地改动差异；`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。其余 4 个文件上游内容未变，仅有首行标注更新。`scripts/modules/src/assets.ts` 是 0.2.2-rc.1 新增的拷贝：上游把客户端资源管线从 base64 内联改为 `lib/assets/` 发布 + 模块加载器 `require.asset()` 解析，该模块定义包资源媒体类型、导出名、修订号与浏览器引用路径，被 `tsdown.client.ts` 与 Host 资源路由共用。
+
+| 本仓库文件 | 上游来源 | 本地改动 |
+|---|---|---|
+| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；新增 `./modules/src/assets.ts` 导入 |
+| `scripts/modules/src/assets.ts` | `packages/client/modules/src/assets.ts` | 无（模块源码，上游无首行标注） |
+| `scripts/client-build-environment.ts` | `scripts/client-build-environment.ts` | `CLIENT_ARTIFACT_PATTERNS` 删掉 `apps/web/dist/**/*`；新增 `packages/*/*/lib/assets/**/*` 模式 |
+| `scripts/bundle-input-isolation.ts` | `scripts/bundle-input-isolation.ts` | 仅首行标注 |
+| `scripts/experimental-package-policy.ts` | `scripts/experimental-package-policy.ts` | 仅首行标注（上游新增 cua-bundle、action-cards、creation-recommendations 等映射） |
+| `scripts/platform.ts` | `packages/client/web/src/platform.ts` | 仅首行标注 |
+| `scripts/vitest-shared.ts` | `vitest.shared.ts` | 仅首行标注 |
+| `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |
+| `types/client-build-environment/index.d.ts` | `scripts/types/client-build-environment/index.d.ts` | 仅首行标注 |
+
+`scripts/verify-concrete-terms.ts` 保留上游扫描逻辑，并增加 `archive/` 排除项；归档快照（原 `webnovel-writer/` 外部项目与四个创作包）不纳入本仓库的措辞门禁。
+
+`scripts/verify-package-readme-model-experience.ts` 的 Skill Viewer 允许列表路径使用 `packages/winterhuan/{skill-viewer,ui-skill-viewer}`。
+
+参照上游写的配置文件（没有首行标注）：
+
+| 本仓库文件 | 参照的上游文件 | 差异 |
+|---|---|---|
+| `tsconfig.base.json` | `tsconfig.base.json` | 去掉 `paths` |
+| `tsconfig.base.client.json` | `tsconfig.base.client.json` | `typeRoots` 指向本仓库的 `./types` |
+| `tsdown.config.ts` | `tsdown.config.ts` | `workspace` 为 `packages/*/*`；`typertPlugin` 从 npm 包 `@deepseek-ai/dsh-typert-generator/tsdown` 导入；入口为 `{index,startup}`，构建命令显式使用 `--config-loader native` |
+
+对比上游当前版本：
+
+```sh
+diff <(git -C upstream show HEAD:packages/client/tsdown.client.ts) scripts/tsdown.client.ts
+diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/client-build-environment.ts
+```
+
+### `.agents/skills`（与上游同名的 skill）
+
+`.agents/skills/` 下 11 个与上游同名的 skill 也是拷贝。链接指向本仓库已有的文档时保留本仓库路径；指向上游独有的文档、包或笔记时加 `upstream/` 前缀。比对方式：
+
+```sh
+tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar -x -C "$tmp" \
+  && diff -r "$tmp/.agents/skills" .agents/skills
+```
+
+除链接以外的本地改动：
+
+| skill | 本地改动 |
+|---|---|
+| `agent-experience`、`dsh-ci-test-reliability`、`dsh-prose-standard`、`dsh-translate-docs`、`dsh-trim-cot-leakage` | 仅链接前缀（`agent-experience` 在上游是符号链接，这里是普通文件） |
+| `dsh-archive-agent-notes`、`dsh-doc/references/review.md`、`dsh-find-simplifications` | 删掉本仓库没有的 `pnpm run lint`；`dsh-find-simplifications` 另加 invariants 补充说明 |
+| `dsh-client-ui-ux` | 去掉引用本仓库没有的 `dsh-error-handling`、`dsh-responsive-ui` 的段落 |
+| `dsh-doc` | 去掉网站发布，以及 `persistence-release`、`persistence-format`、`upgrade-guide` 三个本仓库没有的模板及其章节 |
+| `dsh-code-review`、`dsh-pre-push-checks` | 按本仓库无 CI、无 PR 栈、无 lint 的流程改写检查步骤；`dsh-code-review` 另保留「DSH 不再发布 `dsh-invariants`」一条 |
+
+## 9. 升级 DSH 版本清单
+
+1. 确认目标版本：`npm view @deepseek-ai/dsh dist-tags`，下面以 `NEW` 表示。
+2. 只更新根及 `packages/*/*/package.json` 的 dependencies、peerDependencies、devDependencies 中 `@deepseek-ai/dsh-*` 的版本，保留各插件自己的 `version`；不要对所有版本字符串作全局替换。
+3. 核对 cordis 系列范围：`npm view @deepseek-ai/dsh-session@$NEW peerDependencies`。
+4. 移动子模块：
+
+   ```sh
+   git -C upstream fetch --tags origin
+   git -C upstream checkout --detach dsh-v$NEW
+   git add upstream
+   ```
+
+5. 按[第 8 节](#8-从上游复制的文件及本地改动)重新同步复制的文件（含 `.agents/skills` 中与上游同名的 skill），并重新应用本地改动。
+6. 检查 typert 补丁是否还需要：安装新版本后，查看 `node_modules/@deepseek-ai/dsh-typert-generator/lib/types/analyzer.js`（npm 实际安装的包，不是 `node_modules/.pnpm/*patch_hash*` 里的旧残留目录）里的 `isTypeMetaSymbol()` 是否含 `externalModuleIdentityForFile` 的协议包判断。
+- 上游 npm 包已支持 npm 安装的协议包：删除 `patches/` 下的旧补丁，以及 `pnpm-workspace.yaml` 里对应的 `patchedDependencies` 项。
+- 仍未支持（0.2.2-rc.1 即如此：monorepo 源码有该判断，npm 发布包没有）：删除旧版本的补丁项，然后执行 `pnpm patch @deepseek-ai/dsh-typert-generator@$NEW --edit-dir /tmp/typert-patch`，重新加上[问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods) 的判断，再 `pnpm patch-commit /tmp/typert-patch`，补丁文件改为 `@$NEW.patch`，`patchedDependencies` 同步更新。
+7. 检查发布版 `api-remotes` 是否仍只把各 Remote 包列为 devDependencies（[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)），以及 `dsh-client-test-runtime` 是否仍导入未发布的 `src` 文件（[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
+8. 依次运行 `pnpm install`、`pnpm run clean`、`pnpm run typecheck`、`pnpm run build`、`pnpm test`，再按[第 5 节](#5-在-dsh-中安装调试和移除)在真实 dsh 里安装验证。
+9. 阅读上游的变更，重点看插件依赖的接口：slot `sidebar.right.pane.tab`、`tool.call.toolview`，`sidebarRightTabs.register`，typert 协议（`TypertRemoteService`、`@Remote`、`ctx.remote.$mount`），settings / credentials Remote，Session controller 的客户端接口，`AgentRegistry` 的 `static inject`（0.2.2-rc.1 新增 `sessionProjections`，宿主上下文需相应注册 `SessionProjectionRegistry`），`ctx.tools` 的 executor 抽象（0.2.2-rc.1 起 `execute()` 为批处理 API 且要求已注册 executor，测试用 `dsh-tool-executor-native`）。
+
+## 10. 已知限制与待办
+
+- **创作四包已归档**：story、short-drama、video-recap、novel-to-game 及其设置客户端（ui-settings-story、ui-settings-creative-produce）整体移入 `archive/`，包、子系统文档、story 规划稿与 21 个创作时代 Agent Note 三元组均冻结在归档区，不参与构建、测试与文档门禁。详细边界见[四领域决策](.agents/notes/archived/architecture/2026-09-30-creative-four-domain-plugins.zh.md)。
+- **浏览器验证范围**：新版已验证技能列表、生产设置、小说读写与模式/工作区切换。此次没有调用模型、付费生产或实际媒体生成；从 Chat 打开文件的重定向尚未单独复验，重定向内容组件也没有单元测试覆盖。
+- **录制会话快照与 web e2e 未配置**：本仓库目前没有快照或 e2e 测试设施；浏览器内交互仍需手动验证。
+- **重复源码尚未清理**：本仓库与 5 个独立发布仓库不自动同步；源码归属与旧改动迁移按[开发与发布规则](#开发与发布规则)执行。发布版本以独立仓库的 `package.json` 和市场索引固定的提交为准，市场使用 Git 来源，不要求发布到 npm。
+- **`exports` 里的 `"./src/*"`** 沿用上游写法，但 `files` 不包含 `src`，发布后这个导出无效。
+- **README 链接**：
+  - 包 README 里的 `../../../upstream/...` 链接在子模块检出时有效，但在 GitHub 网页上不会解析到子模块里的文件；发布到 npm 后也会失效。
+- **部分文档仍需持续校准**：`docs/`、`.agents/` 中的事实必须与当前插件实现保持一致；例如不能依赖发布版 DSH 不提供的 `conversation/open-file`，或使用错误的包路径。
+- **需要向 DSH 反馈的上游问题**：
+  1. typert 生成器不识别 npm 安装的 `dsh-typert-protocol`（[问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)）。
+  2. `api-remotes` 只把各 Remote 包列为 devDependencies，外部拿不到类型合并（[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)）。
+  3. `dsh-client-test-runtime` 导入未发布的 `src` 文件；平台模块不声明第三方依赖（[问题 10](HANDOFF-problems.md#问题-10单元测试dsh-发布的客户端包在-node-里无法加载)）。
+  4. `clientBundle()` 客户端打包预设没有发布（[问题 8](HANDOFF-problems.md#问题-8客户端打包工具没有发布)）。
+
+## 11. 排障速查
+
+| 现象 | 处理 |
+|---|---|
+| `pnpm install` 报某个 `@deepseek-ai/*` 404 | 检查是否写了 `*` / `latest`，改为精确版本（[问题 2](HANDOFF-problems.md#问题-2pnpm-install-报-deepseek-aidsh-type-meta-404)） |
+| 类型检查报 `Cannot find module '@deepseek-ai/<包>/remote'` 或 `ClientRemote` 缺属性 | 把该包加进 devDependencies，并 `import type {} from '<包>/remote'`（[问题 6](HANDOFF-problems.md#问题-6客户端类型检查clientremote-上没有-credentials找不到-dsh-agent-preset-registrytypes)） |
+| 类型检查报找不到 `@winterhuan/dsh-skill-viewer/remote` | 先跑 `pnpm run build:host`；`typecheck` 已经包含这一步 |
+| typert 报 `has no Remote methods` | 确认补丁已应用（`pnpm install` 会重新打补丁），以及补丁版本与安装的生成器版本一致（[问题 5](HANDOFF-problems.md#问题-5typert-生成器报-publishes-remote-artifacts-but-has-no-remote-methods)） |
+| 改了依赖或 tsconfig 后 tsc 行为异常 | `pnpm run clean`，清掉 `lib/` 里的 `*.tsbuildinfo` |
+| 客户端（jsdom）测试里 Host 模块读取包内数据文件报 ENOENT，路径缺少仓库前缀 | Vite 的 web 转换会把 `new URL('…', import.meta.url)` 改写成站点相对资源路径；先把 `import.meta.url` 读进变量再拼 URL（见 `packages/winterhuan/student/src/curriculum.ts`） |
+| 客户端测试报 `window is not defined` | 有 `@deepseek-ai/<包>/client` 导入没有被 `vitest-upstream-client.ts` 映射，检查子模块是否已检出、包名是否存在于 `upstream/packages/*/*` |
+| 客户端测试报 `Cannot find package 'X' imported from upstream/...` | 把 X 加进根 devDependencies，版本用 `git -C upstream grep -h '"X"' HEAD -- '*package.json'` 查 |
+| 测试报 `Unknown file extension ".css"` | 该包没有被 `server.deps.inline` 覆盖，把它加入内联规则 |
+| 构建报 `declares no string package name` | `clientBundle()` 要传入该包 `tsdown.config.ts` 的 `import.meta.dirname`，并且同目录 `package.json` 要有字符串 `name` |
+| `dsh plugin add` 后界面没有变化 | 确认已 `pnpm run build`，并且 profile 是从 web 模板创建的；用 `--dump-config` 查看是否有 `# == @winterhuan/...` 层 |
+| 日志出现 `skipping profile bundle ... incompatible ... requirements {...rc.2}` | web 进程在插件清单仍写旧 DSH 版本时启动。先把根和各插件的依赖升到同一版本，跑 `pnpm install` 和 `pnpm run build`，再 `dsh-webctl restart`；确认 `~/.dsh/logs/dsh-web.log` 最后一条 `dsh web:` 之后不再出现该行 |
+| 运行失败错误码 `PI_AI_ERROR` 且消息无状态码（如「Service temporarily unavailable」），没有重试 | 该文案未被 pi-ai 适配器归类，落入兜底，不在默认可重试集合；在模型设置里为对应 pi-ai 提供方开启「重试未分类错误（PI_AI_ERROR）」（见[第 1 节](#1-现状速览)） |
+| `dsh-webctl restart` 后按旧地址访问返回 401 | 重启会轮换 web token；用 `dsh-webctl status` 取当前地址 |
+| 家长设置保存「学校进度」报 403，或错题归类、草稿核对请求被拒 | 工作区接口白名单缺少 school-progress、classify-mistake 或 confirm-paper；2026-10-16 的版本已补齐，升级并重启插件后重试 |
+
+## 12. 本机环境变更记录
+
+按时间记录本机全局 DSH 安装、profile 与验证环境的变更，完整内容在 [HANDOFF-changelog.md](HANDOFF-changelog.md)。2026-11-07 的记录包括独立发布、版本统一、远程安装、详情连接修复及技能查看器仓库合并。当前为 5 个发布仓库；变更记录中的 6 个仓库描述合并前的状态。

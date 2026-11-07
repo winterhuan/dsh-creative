@@ -23,12 +23,12 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 
 | 子系统 | 包 | 组合方式 |
 |---|---|---|
-| [学生学习](student.zh.md) | [@winterhuan/dsh-student](../../packages/education/student/README.zh.md) | 独立 bundle |
-| [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-skill-viewer](../../packages/skill/skill-viewer/README.zh.md) | 独立 bundle |
-| [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-client-ui-skill-viewer](../../packages/client/ui-skill-viewer/README.zh.md) | 随技能查看器安装 |
-| [模型设置增强](model-options.zh.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../packages/client/ui-settings-model-options/README.zh.md) | 独立 bundle |
-| [项目默认模式](project-default-mode.zh.md) | [@winterhuan/dsh-project-default-mode](../../packages/preset/project-default-mode/README.zh.md) | 独立 bundle |
-| [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../packages/winterhuan/writer/README.zh.md) | 独立 bundle |
+| [学生学习](student.zh.md) | [@winterhuan/dsh-student](../../plugins/dsh-student/packages/winterhuan/student/README.zh.md) | 独立 bundle |
+| [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-skill-viewer](../../plugins/dsh-skills-viewer/packages/winterhuan/skill-viewer/README.zh.md) | 独立 bundle |
+| [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-client-ui-skill-viewer](../../plugins/dsh-skills-viewer/packages/winterhuan/ui-skill-viewer/README.zh.md) | 随技能查看器安装 |
+| [模型设置增强](model-options.zh.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.zh.md) | 独立 bundle |
+| [项目默认模式](project-default-mode.zh.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.zh.md) | 独立 bundle |
+| [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) | 独立 bundle |
 
 <a id="related"></a>
 ## 相关文档

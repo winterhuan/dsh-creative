@@ -4,6 +4,7 @@
 import { execFileSync } from 'node:child_process'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { authoredGitFiles } from './plugin-workspaces.ts'
 import { pathToFileURL } from 'node:url'
 import { canonicalReferenceText } from './verify-public-repository-links.ts'
 
@@ -56,11 +57,7 @@ export function findRepositoryReferences(
 }
 
 function readMaintainedFiles(repoRoot: string): Map<string, string> {
-  const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    maxBuffer: gitOutputLimit,
-  }).split('\0').filter(file => file !== '' && isMaintained(file))
+  const files = authoredGitFiles(repoRoot, true).filter(file => file !== '' && isMaintained(file))
   const sources = new Map<string, string>()
   for (const file of files) {
     const path = resolve(repoRoot, file)

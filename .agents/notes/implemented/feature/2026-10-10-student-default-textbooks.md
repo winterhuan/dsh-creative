@@ -10,7 +10,7 @@ A grade-two learner without uploaded materials needs concrete lesson content. Re
 
 ## Decision
 
-The student package includes the user-supplied People's Education Press Chinese and Beijing Normal University Press mathematics books for grade two, first term. The [default textbook reference](../../../../packages/education/student/knowledge/skills/study/references/default-textbooks.md) owns edition evidence and selection rules. This partially supersedes the exclusion of redistribution in the [learning decision](2026-10-05-student-learning.md); its course confirmation, evidence, timing and reward rules remain active.
+The student package includes the user-supplied People's Education Press Chinese and Beijing Normal University Press mathematics books for grade two, first term. The [default textbook reference](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/default-textbooks.md) owns edition evidence and selection rules. This partially supersedes the exclusion of redistribution in the [learning decision](2026-10-05-student-learning.md); its course confirmation, evidence, timing and reward rules remain active.
 
 User-provided pages, specified textbooks and existing courses take priority per subject. Defaults apply only when that subject has no supplied book and the learner's grade and term match. An unreadable user book does not trigger substitution. Default practice uses `foundation` without creating a school course, progress or parent confirmation. Existing mistakes retain their original source.
 

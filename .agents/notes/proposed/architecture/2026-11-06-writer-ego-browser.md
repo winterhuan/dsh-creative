@@ -6,7 +6,7 @@ English | [中文](2026-11-06-writer-ego-browser.zh.md)
 
 ## Problem
 
-Writer's seven ranking collectors and four researcher templates depend on a global `agent-browser` and an implicit current page behind a debug port. The [Chrome launcher](../../../../packages/winterhuan/writer/skills/browser-cdp/scripts/setup-cdp-chrome.js) copies personal profiles and can close unrelated Chrome instances after consent. Concurrent callers can navigate each other's page. This lifecycle adds disruption and maintenance without contributing to ranking analysis.
+Writer's seven ranking collectors and four researcher templates depend on a global `agent-browser` and an implicit current page behind a debug port. The [Chrome launcher](../../../../plugins/dsh-writer/packages/winterhuan/writer/skills/browser-cdp/scripts/setup-cdp-chrome.js) copies personal profiles and can close unrelated Chrome instances after consent. Concurrent callers can navigate each other's page. This lifecycle adds disruption and maintenance without contributing to ranking analysis.
 
 The [writing-preset decision](../../implemented/feature/2026-10-31-writer-preset.md) still owns mutually exclusive bundled/workspace skills and protection of project copies. This proposal preserves that decision and changes browser execution only. The existing browser proposal is consolidated here; no implemented browser-backend note is superseded or archived.
 
@@ -77,7 +77,7 @@ Browser fetch keeps browser cookies/CORS/CSP semantics. Node HTTP is not an inte
 
 Implement three reviewable stages: shared transport and a simple collector with fake-CLI tests; all seven collectors and four researcher variants; then remove the old launcher, port arguments, duplicated browser helpers, and active execution instructions after acceptance. Temporary development coexistence does not become a release fallback. Backend selection is settled; failures are implementation or acceptance gaps, not automatic permission to switch to Tabbit.
 
-Keeping `browser-cdp` preserves [name-based sync/unsync](../../../../packages/winterhuan/writer/src/sync-skills.ts), but existing copies still need refresh. Default sync must not overwrite project edits. Preview stale owned skills/templates and require an explicitly authorized coherent refresh of the complete set. Report custom copies for reconciliation, preserve unrelated skills and symlink targets, and test an upgrade from an old project. Update platform references, story routing, host commands/menus, fixed deployment lists, generated researcher forms, bilingual package docs, and sync tests together. Do not edit frozen archives. Keep the writer-preset note active and cross-linked.
+Keeping `browser-cdp` preserves [name-based sync/unsync](../../../../plugins/dsh-writer/packages/winterhuan/writer/src/sync-skills.ts), but existing copies still need refresh. Default sync must not overwrite project edits. Preview stale owned skills/templates and require an explicitly authorized coherent refresh of the complete set. Report custom copies for reconciliation, preserve unrelated skills and symlink targets, and test an upgrade from an old project. Update platform references, story routing, host commands/menus, fixed deployment lists, generated researcher forms, bilingual package docs, and sync tests together. Do not edit frozen archives. Keep the writer-preset note active and cross-linked.
 
 ## Alternatives considered
 
@@ -101,7 +101,7 @@ Keeping `browser-cdp` preserves [name-based sync/unsync](../../../../packages/wi
 
 ### Evidence and coverage gaps
 
-On 2026-11-06, macOS Ego CLI 0.6.2.8 with guide v2.2.0 ran the original [Ciweimao extraction expressions and renderer](../../../../packages/winterhuan/writer/skills/story-long-scan/scripts/ciweimao-rank-scraper.js): nine ten-entry sections, 85 deduplicated links, a rendered report header, in-page fetch and `page.fetch` HTTP 200, and correct GB18030 decoding. The same Space/page resumed across rounds and finish completed. A separate probe reconstructed 1,000 records from 138,818 bytes of JSON. Both logging and `process.stdout.write` arrived on stderr with empty stdout; a controlled throw exited 1. The renderer was exercised in memory; no official ranking report was written.
+On 2026-11-06, macOS Ego CLI 0.6.2.8 with guide v2.2.0 ran the original [Ciweimao extraction expressions and renderer](../../../../plugins/dsh-writer/packages/winterhuan/writer/skills/story-long-scan/scripts/ciweimao-rank-scraper.js): nine ten-entry sections, 85 deduplicated links, a rendered report header, in-page fetch and `page.fetch` HTTP 200, and correct GB18030 decoding. The same Space/page resumed across rounds and finish completed. A separate probe reconstructed 1,000 records from 138,818 bytes of JSON. Both logging and `process.stdout.write` arrived on stderr with empty stdout; a controlled throw exited 1. The renderer was exercised in memory; no official ranking report was written.
 
 The earlier Tabbit trial returned nine ten-entry sections and 83 links at a different live time, plus async fetch and successful cleanup; those counts do not compare accuracy. Some original Ciweimao metrics included the next entry's text. These tests establish execution coverage, not complete parser correctness or throughput.
 

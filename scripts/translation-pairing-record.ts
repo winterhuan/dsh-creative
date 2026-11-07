@@ -7,7 +7,8 @@
  */
 
 import { createHash } from 'node:crypto'
-import { basename } from 'node:path'
+import { existsSync } from 'node:fs'
+import { basename, resolve } from 'node:path'
 import type { Nodes } from 'mdast'
 import { normalizeTranslationMarkdownLinks, type TranslationLinkContext } from './translation-links.ts'
 import { generatedRegions, parseTranslationMarkdown } from './translation-pairing.ts'
@@ -116,6 +117,20 @@ export function computeTranslationPairingRecord(
   zh: string,
   context: TranslationPairingRecordContext,
 ): TranslationPairingRecord {
+  // A plugin owns its records independently of the parent checkout path.
+  const prefix = /^(plugins\/[^/]+)\//.exec(paths.source)?.[1]
+  if (prefix && existsSync(resolve(context.repoRoot, prefix, '.git'))) {
+    return computeTranslationPairingRecord(
+      translationPairPaths(paths.source.slice(prefix.length + 1)), en, zh,
+      {
+        repoRoot: resolve(context.repoRoot, prefix),
+        isTranslationPairSource: path => context.isTranslationPairSource(`${prefix}/${path}`),
+        ...(context.repositoryFileExists ? {
+          repositoryFileExists: (path: string) => context.repositoryFileExists!(`${prefix}/${path}`),
+        } : {}),
+      },
+    )
+  }
   const enSections = sections(normalizeTranslationMarkdownLinks(en, { ...context, sourcePath: paths.source }))
   const zhSections = sections(normalizeTranslationMarkdownLinks(zh, { ...context, sourcePath: paths.zh }))
   if (enSections.length !== zhSections.length) {
@@ -172,11 +187,12 @@ export function parseTranslationPairingRecord(content: string): TranslationPairi
  * @returns Canonical YAML text with exactly one trailing newline.
  */
 export function renderTranslationPairingRecord(paths: TranslationPairPaths, record: TranslationPairingRecord): string {
+  const sourcePath = paths.source.replace(/^plugins\/[^/]+\//, '')
   return [
     `# Bilingual-pair consistency record for ${basename(paths.source)} (docs/i18n/README.md): per heading`,
     '# section, a hash of its English and Chinese blocks outside code blocks and generated regions.',
     '# After editing either side, bring the other along and re-record with:',
-    `#   pnpm run verify-translation-pairing --write ${paths.source}`,
+    `#   pnpm run verify-translation-pairing --write ${sourcePath}`,
     ...[...record].flatMap(([key, hashes]) => [`${key}:`, `  en: ${hashes.en}`, `  zh: ${hashes.zh}`]),
     '',
   ].join('\n')

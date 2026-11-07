@@ -20,7 +20,7 @@ description: "写作子系统：写作模式预设、互斥的技能挂载，以
 <a id="ownership"></a>
 ## 包
 
-[@winterhuan/dsh-writer](../../packages/winterhuan/writer/README.zh.md) 独立安装。Host 行拥有 `skillMount`、首次拷贝到 `.agents/skills`、`/writer-sync-skills` 和 `PUT /writer/file`。预设行拥有工具列表和 persona。浏览器半边是同一个包的 client 入口：写作侧栏，以及插件页上的「写作」卡片；后者通过 `makersApiKeyEnv` 绑定朱雀凭据（Host 只存环境变量名，密钥走凭据服务）。
+[@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) 独立安装。Host 行拥有 `skillMount`、首次拷贝到 `.agents/skills`、`/writer-sync-skills` 和 `PUT /writer/file`。预设行拥有工具列表和 persona。浏览器半边是同一个包的 client 入口：写作侧栏，以及插件页上的「写作」卡片；后者通过 `makersApiKeyEnv` 绑定朱雀凭据（Host 只存环境变量名，密钥走凭据服务）。
 
 <a id="boundary"></a>
 ## 挂载与保存边界
@@ -32,7 +32,7 @@ description: "写作子系统：写作模式预设、互斥的技能挂载，以
 <a id="related"></a>
 ## 相关契约
 
-安装、切换挂载和限制见[包说明](../../packages/winterhuan/writer/README.zh.md)。技能发现归 [skill-filesystem](../../upstream/packages/skill/skill-filesystem/README.zh.md)。侧栏登记遵循[右侧栏](../../upstream/docs/subsystems/sidebar-right.zh.md)。
+安装、切换挂载和限制见[包说明](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md)。技能发现归 [skill-filesystem](../../upstream/packages/skill/skill-filesystem/README.zh.md)。侧栏登记遵循[右侧栏](../../upstream/docs/subsystems/sidebar-right.zh.md)。
 
 <a id="dev-note"></a>
 ## 开发备注

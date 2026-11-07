@@ -1,3 +1,18 @@
 [submodule "upstream"]
 	path = upstream
 	url = git@github.com:deepseek-ai/deepseek-harness.git
+[submodule "plugins/dsh-writer"]
+	path = plugins/dsh-writer
+	url = https://github.com/winterhuan/dsh-writer.git
+[submodule "plugins/dsh-student"]
+	path = plugins/dsh-student
+	url = https://github.com/winterhuan/dsh-student.git
+[submodule "plugins/dsh-project-default-mode"]
+	path = plugins/dsh-project-default-mode
+	url = https://github.com/winterhuan/dsh-project-default-mode.git
+[submodule "plugins/dsh-client-ui-settings-model-options"]
+	path = plugins/dsh-client-ui-settings-model-options
+	url = https://github.com/winterhuan/dsh-client-ui-settings-model-options.git
+[submodule "plugins/dsh-skills-viewer"]
+	path = plugins/dsh-skills-viewer
+	url = https://github.com/winterhuan/dsh-skills-viewer.git

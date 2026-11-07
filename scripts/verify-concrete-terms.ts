@@ -1,15 +1,15 @@
 // Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
 /** Reject one ambiguous origin label from maintained tracked files. */
 
-import { execFileSync } from 'node:child_process'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { authoredGitFiles } from './plugin-workspaces.ts'
 import { pathToFileURL } from 'node:url'
 import { historicalSchemaRegion } from './historical-schema-region.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const blockedTerm = 'prove' + 'nance'
-const excludedPrefixes = ['vendor/', 'archive/', 'packages/winterhuan/writer/skills/', '.agents/notes/archived/'] as const
+const excludedPrefixes = ['vendor/', 'archive/', 'plugins/dsh-writer/packages/winterhuan/writer/skills/', '.agents/notes/archived/'] as const
 
 /** One blocked term occurrence in a tracked path or text line. */
 export interface ConcreteTermViolation {
@@ -51,11 +51,10 @@ export function findConcreteTermViolations(file: string, source: string): Concre
 }
 
 function trackedFiles(repoRoot: string): string[] {
-  const files = execFileSync('git', ['ls-files', '-z'], { cwd: repoRoot, encoding: 'utf8' })
-    .split('\0')
+  const files = authoredGitFiles(repoRoot)
     .filter(file => file !== '')
   if (!files.includes('AGENTS.md')
-    || !files.some(file => file.startsWith('packages/'))
+    || !files.some(file => file.startsWith('plugins/'))
     || !files.some(file => file.startsWith('docs/'))
     || !files.some(file => file.startsWith('.agents/notes/archived/'))) {
     throw new Error('verify-concrete-terms: tracked-file discovery omitted a required repository area')

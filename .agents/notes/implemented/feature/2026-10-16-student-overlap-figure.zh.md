@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-`overlap` 是第十种 `figure`：两个相交的圈，`left`、`right` 写在各自圈的正上方，`leftOnly`、`both`、`rightOnly` 各写左圈独有、两圈重叠、右圈独有区域的一个标签（空标签印答案框，与其他图形一致），可选 `total` 画在两圈下方的括号处。它同时覆盖教材里的两种用法：和圈（`left`、`right` 是目标数，圈里两个数相加等于它，重叠区的数同时计入两个和，常见于二年级 100 以内加减；`left`、`right` 留空印答案框，用于求圈上的数本身）和集合图（`left`、`right` 是集合名，三个区域各写数量，`total` 求一共）。渲染器画两个圆心距等于 1.25 倍半径的圆、在可用宽度里居中，`figureHeight` 报 144 点（带 total 时 172 点），题目不会被分页拆开。[出题参考](../../../../packages/education/student/knowledge/skills/study/references/questions.md)、`worksheet` 工具描述、练习卷提示词和两份 README 都列出这种图形；printable-figures 测试现在画满十种——此前只列了九种里的六种，数轴、钟面、小棒随这一次一起补上。
+`overlap` 是第十种 `figure`：两个相交的圈，`left`、`right` 写在各自圈的正上方，`leftOnly`、`both`、`rightOnly` 各写左圈独有、两圈重叠、右圈独有区域的一个标签（空标签印答案框，与其他图形一致），可选 `total` 画在两圈下方的括号处。它同时覆盖教材里的两种用法：和圈（`left`、`right` 是目标数，圈里两个数相加等于它，重叠区的数同时计入两个和，常见于二年级 100 以内加减；`left`、`right` 留空印答案框，用于求圈上的数本身）和集合图（`left`、`right` 是集合名，三个区域各写数量，`total` 求一共）。渲染器画两个圆心距等于 1.25 倍半径的圆、在可用宽度里居中，`figureHeight` 报 144 点（带 total 时 172 点），题目不会被分页拆开。[出题参考](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/questions.md)、`worksheet` 工具描述、练习卷提示词和两份 README 都列出这种图形；printable-figures 测试现在画满十种——此前只列了九种里的六种，数轴、钟面、小棒随这一次一起补上。
 
 ## 考虑过的替代方案
 

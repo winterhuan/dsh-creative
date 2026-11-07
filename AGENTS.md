@@ -1,24 +1,34 @@
 # AGENTS.md
 
-`dsh-creative` 是 DeepSeek Harness（DSH）的外部插件仓库，包名都在 `@winterhuan` 下。开始工作前先读 [HANDOFF.md](HANDOFF.md)：里面有架构、构建流程、迁移时遇到的问题和解决方案，以及升级 DSH 的清单。
+`dsh-creative` 管理 DeepSeek Harness（DSH）的 5 个插件子模块。先读 [HANDOFF.md](HANDOFF.md)，按[源码映射](HANDOFF.md#开发目录与源码归属)进入目标仓库。
+
+## 工作目录
+
+- 插件源码只在 `plugins/<仓库名>` 维护。父仓库不保留 `packages/winterhuan/` 副本，也不使用 `~/dsh-plugins`。
+- 先在子模块提交并推送，再在父仓库提交对应指针；父仓库提交不会保存子模块内未提交的改动。保留其他未提交工作，按路径暂存。
+- 技能查看器统一在 `plugins/dsh-skills-viewer` 维护两个源码包，由构建生成可单次安装的 `plugin/`，不要手改产物。
+- 本机市场索引在 Git 忽略的 `.worktrees/market-site` 检出维护（同一远程的 `gh-pages` 分支）；发布材料与历史副本位置见 HANDOFF 第 12 节。
 
 ## 必须遵守
 
-- 不修改 `upstream/`。它是固定在 `dsh-v0.2.1-rc.5` 的子模块，只用作代码参考和客户端单元测试的源码。
-- 所有插件（包括新增插件）的 DSH 依赖统一写精确版本 `0.2.1-rc.5`，不要写 `*` 或 `latest`。该版本发布在 `next` 通道，`@deepseek-ai/cordis` 配套范围为 `~4.0.5`；升级时同步核对依赖版本与子模块标签。
-- 新用到 `ctx.remote.<命名空间>` 时，把提供它的 DSH 包加进该包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。
-- `scripts/` 和 `types/` 里首行标着 `Copied from deepseek-harness` 的文件是上游拷贝；修改或重新同步后，更新 HANDOFF.md 第 8 节的改动表。
-- 客户端 UI 的改动要在真实 dsh 里验证（HANDOFF.md 第 5 节）；单元测试覆盖不到浏览器里的行为。
-- 已 link 进本机 `web` profile 的插件：改源码后必须 `pnpm run build`（或 `pnpm --filter <包名> build`），再 `dsh-webctl restart` 才生效；浏览器 UI 再硬刷新。完整步骤见 [HANDOFF.md](HANDOFF.md) 第 5 节「在 DSH 中安装、调试和移除」。勿对 link 包跑会改写依赖的 npm 版 `plugin-update`。
-- 代码风格沿用 DSH 的约定（`upstream/AGENTS.md` 的 Conventions 与 Type safety 部分）；其中针对 monorepo 的门禁、快照和发布流程不适用于本仓库。
+- 不修改根目录或子模块内 `upstream/` 的源码；它们只作参考与客户端测试来源。
+- DSH 依赖使用精确版本；当前依赖与上游标签为 `0.2.2-rc.1`／`dsh-v0.2.2-rc.1`，配套范围见 [依赖策略](HANDOFF.md#6-依赖策略)。升级时同步核对所有插件的依赖、锁文件、补丁与标签。
+- 新用到 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入对应包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。
+- 修改首行标记 `Copied from deepseek-harness` 的脚本或类型副本后，更新 HANDOFF 第 8 节的改动表。
+- 客户端行为需在真实 DSH 验证。日常 profile 使用远程发布包；本地调试使用独立 profile，构建后重启开发进程并硬刷新。勿用裸 npm 包名的 `plugin-update` 覆盖 Git 安装。
+- 代码风格沿用 `upstream/AGENTS.md` 的 Conventions 与 Type safety；上游 monorepo 的发布流程不适用于这些独立插件。
 
 ## 命令
 
 ```sh
+git submodule update --init --recursive
 pnpm install
-pnpm run typecheck   # 先构建 host 面并生成 typert 产物，再检查 client 面
+pnpm run plugins:install
+pnpm run typecheck
 pnpm run build
-pnpm test            # 客户端测试需要先 git submodule update --init
+pnpm test
+pnpm run doc-sync
+pnpm run hygiene
 ```
 
-提交前至少运行 typecheck、build 和 test。
+根命令按子模块调用独立工具链；仅修改一个插件时，在该子模块执行对应检查。代码提交前至少完成 typecheck、build 和 test。

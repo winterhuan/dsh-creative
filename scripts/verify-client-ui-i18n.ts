@@ -319,7 +319,7 @@ export function clientSourceRoot(file: string): string | undefined {
 
 function sourceFiles(): string[] {
   const clientComponentRoots = new Set(
-    globSync('packages/*/*/src/client/**/*.tsx', { cwd: root })
+    globSync('plugins/*/packages/*/*/src/client/**/*.tsx', { cwd: root })
       .map(clientSourceRoot)
       .filter((clientRoot): clientRoot is string => clientRoot !== undefined),
   )

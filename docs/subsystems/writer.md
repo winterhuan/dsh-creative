@@ -20,7 +20,7 @@ English | [中文](writer.zh.md)
 <a id="ownership"></a>
 ## Package
 
-[@winterhuan/dsh-writer](../../packages/winterhuan/writer/README.md) installs on its own. The host row owns `skillMount`, the first copy into `.agents/skills`, `/writer-sync-skills`, and `PUT /writer/file`. The preset row owns the tool list and the persona. The browser half is the same package's client entry: the writing sidebar plus a Plugins-page Writing card that binds the Zhuque credential through `makersApiKeyEnv` (Host stores the env name only; secrets go through credentials).
+[@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) installs on its own. The host row owns `skillMount`, the first copy into `.agents/skills`, `/writer-sync-skills`, and `PUT /writer/file`. The preset row owns the tool list and the persona. The browser half is the same package's client entry: the writing sidebar plus a Plugins-page Writing card that binds the Zhuque credential through `makersApiKeyEnv` (Host stores the env name only; secrets go through credentials).
 
 <a id="boundary"></a>
 ## Mount and save boundary
@@ -32,7 +32,7 @@ The sidebar lists and reads through `workspaceFiles`. The host route only accept
 <a id="related"></a>
 ## Related
 
-Install, the mount switch, and limits are in the [package README](../../packages/winterhuan/writer/README.md). File discovery is owned by [skill-filesystem](../../upstream/packages/skill/skill-filesystem/README.zh.md). Sidebar registration follows [the right sidebar](../../upstream/docs/subsystems/sidebar-right.zh.md).
+Install, the mount switch, and limits are in the [package README](../../plugins/dsh-writer/packages/winterhuan/writer/README.md). File discovery is owned by [skill-filesystem](../../upstream/packages/skill/skill-filesystem/README.zh.md). Sidebar registration follows [the right sidebar](../../upstream/docs/subsystems/sidebar-right.zh.md).
 
 <a id="dev-note"></a>
 ## Dev Note

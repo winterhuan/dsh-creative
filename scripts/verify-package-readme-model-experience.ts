@@ -38,8 +38,8 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {}
  * blocks. A package moves on or off this list with its context behavior.
  */
 const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
-  'packages/client/ui-skill-viewer': { kind: 'none', reason: 'Browser-side read-only skill panel; viewer reads never enter the session log or model context.' },
-  'packages/skill/skill-viewer': { kind: 'none', reason: 'The read-only Session-addressed skill reads serve the human panel only; payloads never enter the session log or a model request.' },
+  'plugins/dsh-skills-viewer/packages/winterhuan/ui-skill-viewer': { kind: 'none', reason: 'Browser-side read-only skill panel; viewer reads never enter the session log or model context.' },
+  'plugins/dsh-skills-viewer/packages/winterhuan/skill-viewer': { kind: 'none', reason: 'The read-only Session-addressed skill reads serve the human panel only; payloads never enter the session log or a model request.' },
 }
 
 interface Failure {
@@ -126,7 +126,7 @@ if (existsSync(resolve(root, 'docs/tool-catalog.md'))) {
 }
 
 const failures: Failure[] = []
-const packageJsons = globSync('packages/*/*/package.json', { cwd: root }).map(path => path.split(sep).join('/')).sort()
+const packageJsons = globSync('plugins/*/packages/*/*/package.json', { cwd: root }).map(path => path.split(sep).join('/')).sort()
 const scannedPackages = new Set(packageJsons.map(path => path.slice(0, -'/package.json'.length)))
 let structuredCount = 0
 let modelContextEntryCount = 0

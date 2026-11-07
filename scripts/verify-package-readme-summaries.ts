@@ -12,7 +12,7 @@ export const MAX_PACKAGE_README_SUMMARY_WORDS = 100
 const PACKAGE_README_PATTERNS = [
   'packages/README.md',
   'packages/*/README.md',
-  'packages/*/*/README.md',
+  'plugins/*/packages/*/*/README.md',
 ] as const
 
 /** `wc -w` equivalent used by the documentation budget gate. */

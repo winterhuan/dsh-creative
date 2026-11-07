@@ -320,7 +320,16 @@ export function semanticTranslationLinkNodeTarget(
   markdown: string,
   context: TranslationLinkContext,
 ): string {
-  if (isExternalOrAbsoluteMarkdownUrl(node.url)) return authoredExternalTarget(markdown, node)
+  if (isExternalOrAbsoluteMarkdownUrl(node.url)) {
+    const target = authoredExternalTarget(markdown, node)
+    // Published plugin READMEs link back to the parent's paired documentation.
+    const mirror = /^(https:\/\/github\.com\/winterhuan\/dsh-creative\/blob\/[^/]+\/)((?:docs|\.agents\/notes)\/[^?#]+\.md)([?#].*)?$/.exec(target)
+    if (mirror?.[1] && mirror[2]) {
+      const pair = translationPairTarget(mirror[2], context)
+      if (pair) return `${mirror[1]}${pair.source}${mirror[3] ?? ''}`
+    }
+    return target
+  }
   const destination = markdownDestination(markdown, node)
   const resolved = resolveTranslationLink(node.url, context, destination.url)
   return resolved === undefined

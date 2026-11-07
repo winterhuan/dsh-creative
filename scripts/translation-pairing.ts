@@ -147,7 +147,9 @@ export const TRANSLATION_SCOPE_GLOB_EXCLUDES = [
   '.artifacts/**',
   'python/sdk-runtime/src/deepseek_harness_runtime/runtime/**',
   'vendor/**',
-  'upstream/**',
+  '**/upstream/**',
+  'plugins/*/plugin/**',
+  '.worktrees/**',
 ]
 
 /** Whether a repository-relative path belongs to a dependency or generated tree. */
@@ -158,7 +160,9 @@ function isTranslationSourceExcluded(file: string): boolean {
     || segment.startsWith('.node-next-types-'))
     || file.startsWith('apps/web/dist/')
     || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/')
-    || file.startsWith('upstream/')
+    || segments.includes('upstream')
+    || (file.startsWith('plugins/') && segments[2] === 'plugin')
+    || file.startsWith('.worktrees/')
 }
 
 /** Whether one discovered Markdown or sidecar path belongs to the bilingual source corpus. */

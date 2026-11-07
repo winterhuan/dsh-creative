@@ -20,7 +20,7 @@ description: "项目默认模式子系统：按 Workspace 键入的 preset 规�
 <a id="ownership"></a>
 ## 包与集成
 
-[project-default-mode bundle](../../packages/preset/project-default-mode/README.zh.md)独立安装，只增加一行 Host 记录，拥有 volatile 的 `rules` 命名空间；没有 profile 默认包含它。浏览器半边增加会话菜单行和覆盖层对话框，两者仅在 Host 命名空间被服务时注册。规则通过共享设置表单编辑，因此持久化、revision 栅栏与恢复归 DSH 的设置域所有，而不属于本插件。
+[project-default-mode bundle](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.zh.md)独立安装，只增加一行 Host 记录，拥有 volatile 的 `rules` 命名空间；没有 profile 默认包含它。浏览器半边增加会话菜单行和覆盖层对话框，两者仅在 Host 命名空间被服务时注册。规则通过共享设置表单编辑，因此持久化、revision 栅栏与恢复归 DSH 的设置域所有，而不属于本插件。
 
 Host 通过 preset 注册表自己的 `select` 应用规则，这与新建会话 hero chip 执行的操作相同，因此切换会追加标准的 `agent-preset/selected` Session 事件并挂载所记录的 preset 修订。插件不声明自己的 preset、工具或提示词，也不授予超出「选择 DSH 已提供的组合」之外的能力。
 
@@ -34,7 +34,7 @@ Host 通过 preset 注册表自己的 `select` 应用规则，这与新建会话
 <a id="related"></a>
 ## 相关契约
 
-[包 README](../../packages/preset/project-default-mode/README.zh.md)说明安装步骤、编辑流程与限制。上游拥有 [agent preset 注册表](../../upstream/packages/preset/agent-preset-registry/README.md)与 [Workspace 注册表](../../upstream/packages/workspace/workspace/README.md)。
+[包 README](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.zh.md)说明安装步骤、编辑流程与限制。上游拥有 [agent preset 注册表](../../upstream/packages/preset/agent-preset-registry/README.md)与 [Workspace 注册表](../../upstream/packages/workspace/workspace/README.md)。
 
 <a id="dev-note"></a>
 ## 开发备注

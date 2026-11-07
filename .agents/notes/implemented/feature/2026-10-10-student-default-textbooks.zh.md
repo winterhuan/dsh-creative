@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-学生插件随包提供用户给出的人教社语文、北师大版数学二年级上册。[默认教材参考](../../../../packages/education/student/knowledge/skills/study/references/default-textbooks.md)负责版次依据和选择规则。本决策部分替代[学习系统决策](2026-10-05-student-learning.zh.md)中不再分发教材的限制；其中课程确认、证据、计时和奖励规则继续有效。
+学生插件随包提供用户给出的人教社语文、北师大版数学二年级上册。[默认教材参考](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/default-textbooks.md)负责版次依据和选择规则。本决策部分替代[学习系统决策](2026-10-05-student-learning.zh.md)中不再分发教材的限制；其中课程确认、证据、计时和奖励规则继续有效。
 
 逐科优先使用用户课页、指定教材和已有课程。仅在该科没有用户教材且学生年级、学期匹配时使用默认教材。用户教材无法读取时不自动替换。默认练习使用 `foundation`，不创建校内课程、学校进度或家长确认。已有错题保留原来源。
 

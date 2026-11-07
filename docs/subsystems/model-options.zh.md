@@ -20,7 +20,7 @@ description: "模型设置子系统：思考与图片能力批量开启、提供
 <a id="ownership"></a>
 ## 包与集成
 
-[模型设置增强 bundle](../../packages/client/ui-settings-model-options/README.zh.md)独立安装，为 `llm-pi-ai` 与 `llm-deepseek` 注册提供方卡片控件；思考元数据面向 pi-ai 系列提供，图片输入按适配器字段写入。它使用现有设置镜像和模型目录，Host 入口不新增设置命名空间、模型工具或请求执行器。
+[模型设置增强 bundle](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.zh.md)独立安装，为 `llm-pi-ai` 与 `llm-deepseek` 注册提供方卡片控件；思考元数据面向 pi-ai 系列提供，图片输入按适配器字段写入。它使用现有设置镜像和模型目录，Host 入口不新增设置命名空间、模型工具或请求执行器。
 
 adapter 将对话中选择的思考级别映射为提供方请求值。DSH 重试插件执行配置的策略并负责取消。能力声明不能探测端点支持，也不能让不受支持的参数变得有效；图片声明同样只表示模型能否接收图片。重试会重新发送请求，不会修复请求。
 
@@ -34,7 +34,7 @@ adapter 将对话中选择的思考级别映射为提供方请求值。DSH 重�
 <a id="related"></a>
 ## 相关契约
 
-[包 README](../../packages/client/ui-settings-model-options/README.zh.md)说明支持的控件与恢复操作。上游拥有 [pi-ai adapter](../../upstream/packages/llm/llm-pi-ai/README.md)与[重试执行器](../../upstream/packages/llm/llm-retry/README.md)。
+[包 README](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.zh.md)说明支持的控件与恢复操作。上游拥有 [pi-ai adapter](../../upstream/packages/llm/llm-pi-ai/README.md)与[重试执行器](../../upstream/packages/llm/llm-retry/README.md)。
 
 <a id="dev-note"></a>
 ## 开发备注

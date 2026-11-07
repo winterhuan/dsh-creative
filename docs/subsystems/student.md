@@ -23,14 +23,14 @@ Guide short learning activities while keeping course identity, learner answers a
 
 The `student` Agent preset owns model capabilities through the scoped `/agent` entry. Host routes and settings remain global. Sidebar discovery follows the selected Session projection; hidden workbenches retain their existing stores. Mode selection does not migrate history or grant filesystem permissions.
 
-The independently installed [student package](../../packages/education/student/README.md) owns its Skill, references, learning tools, interactive sidebar and workspace state. It lives under `packages/education`, with no creative plugin dependency. DSH owns the conversation, model, image attachments, tool history and filesystem authorization. The plugin neither downloads textbooks nor provides a separate tutoring runtime.
+The independently installed [student package](../../plugins/dsh-student/packages/winterhuan/student/README.md) owns its Skill, references, learning tools, interactive sidebar and workspace state. It lives under `packages/winterhuan`, with no creative plugin dependency. DSH owns the conversation, model, image attachments, tool history and filesystem authorization. The plugin neither downloads textbooks nor provides a separate tutoring runtime.
 
 <a id="evidence"></a>
 ## Materials and learner evidence
 
 Parent interest tags live on the learning state. Questions and OpenMAIC requirements use them as scenes; checkable facts stay on the knowledge map. The daily recommendation teaches, then practises a weak goal, then a due check-in, then a new goal. At most two due mistakes are listed beside that goal. One workspace identifies one learner's term. Material records carry region, grade, term, school year, school system, subject and edition evidence. A confirmed school course must match the learner profile and retain an actual parent statement. Unknown books permit foundation practice, not claims of school alignment. Materials keep their identities across course changes so historical work remains attributable.
 
-For grade two, first term, the Skill uses bundled Chinese or mathematics pages when no textbook is supplied for that subject; user materials take priority. Defaults supply learning content without creating a school course or parent confirmation. The [package README](../../packages/education/student/README.md#use-default-textbooks) owns edition details and reading instructions.
+For grade two, first term, the Skill uses bundled Chinese or mathematics pages when no textbook is supplied for that subject; user materials take priority. Defaults supply learning content without creating a school course or parent confirmation. The [package README](../../plugins/dsh-student/packages/winterhuan/student/README.md#use-default-textbooks) owns edition details and reading instructions.
 
 Image transcription is model-dependent. New mistakes remain pending until the user confirms the prompt and the tutor records answer evidence; uncertain images never enter review automatically. Helped answers and independent answers remain distinct. Source classification and a stored confirmation are evidence records, not guarantees of authenticity or correctness. Model inputs still follow the configured provider's data handling.
 
