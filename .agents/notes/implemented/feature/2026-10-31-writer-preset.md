@@ -30,7 +30,7 @@ Installing the bundle does not change other presets. Switching `skillMount` need
 
 ## Related
 
-The [Ego Lite browser proposal](../../proposed/architecture/2026-11-06-writer-ego-browser.md) changes browser execution while preserving this preset's mounting and no-overwrite decisions; it is not implemented.
+The [Box and Ego browser decision](../architecture/2026-11-07-writer-box-ego.md) owns browser execution while preserving this preset's mounting and no-overwrite decisions.
 
 ## Verification
 

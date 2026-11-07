@@ -30,7 +30,7 @@ Status: implemented
 
 ## 相关记录
 
-[Ego Lite 浏览器提案](../../proposed/architecture/2026-11-06-writer-ego-browser.zh.md)改变浏览器执行方式，保留本预设的挂载与不覆盖决策；该提案尚未实现。
+[Box 与 Ego 浏览器决策](../architecture/2026-11-07-writer-box-ego.zh.md)负责浏览器执行方式，保留本预设的挂载与不覆盖决策。
 
 ## 验证
 

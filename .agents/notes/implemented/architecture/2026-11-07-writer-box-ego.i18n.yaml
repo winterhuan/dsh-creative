@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-11-07-writer-box-ego.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-11-07-writer-box-ego.md
+/agent-note-box-and-ego-for-writer-browser-tasks:
+  en: 57c5be9821b61027
+  zh: bbf2d62705eb7f1d
+/agent-note-box-and-ego-for-writer-browser-tasks/problem:
+  en: f456f7ed4597f77c
+  zh: 1ca225b4baf6b89c
+/agent-note-box-and-ego-for-writer-browser-tasks/decision:
+  en: 7fcd48b3e380d5e7
+  zh: f9d3e384c2c88e76
+/agent-note-box-and-ego-for-writer-browser-tasks/alternatives-considered:
+  en: 5add871199d79355
+  zh: f73d6d9fe74f4851
+/agent-note-box-and-ego-for-writer-browser-tasks/consequences:
+  en: ae17161884b0331a
+  zh: d5607f41b8d27913
