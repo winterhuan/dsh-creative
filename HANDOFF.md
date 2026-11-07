@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-07。
+最后更新：2026-11-08。
 
 本仓库统一管理 5 个独立插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -40,7 +40,7 @@
 ```text
 dsh-creative/
 ├── plugins/              5 个独立仓库的 Git 子模块
-├── scripts/              批量命令、文档与代码检查；保留的上游构建参考
+├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
 ├── archive/              历史快照，不参与构建与检查
@@ -88,6 +88,8 @@ pnpm run hygiene
 
 日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装全部 5 个组合包。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
+本机额外安装的 Superagent 来自独立源码仓库，安装与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
+
 开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 writer 为例：
 
 ```sh
@@ -118,9 +120,9 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 ## 8. 从上游复制的文件及本地改动
 
 
-以下构建辅助文件的根目录副本保留用于参考，插件构建使用各子模块内的副本。9 个文件已核对至 `dsh-v0.2.2-rc.1`，复制版本标注均为 rc.1。`scripts/tsdown.client.ts`、`scripts/client-build-environment.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts` 与上游对照仅本地改动差异；`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。其余 4 个文件上游内容未变，仅有首行标注更新。`scripts/modules/src/assets.ts` 是 0.2.2-rc.1 新增的拷贝：上游把客户端资源管线从 base64 内联改为 `lib/assets/` 发布 + 模块加载器 `require.asset()` 解析，该模块定义包资源媒体类型、导出名、修订号与浏览器引用路径，被 `tsdown.client.ts` 与 Host 资源路由共用。
+构建、客户端测试辅助文件与客户端环境类型仅在各插件子模块维护；下表路径相对子模块根目录，上游版本为 `dsh-v0.2.2-rc.1`。`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。`scripts/modules/src/assets.ts` 定义包资源媒体类型、导出名、修订号与浏览器引用路径，供客户端构建使用。
 
-| 本仓库文件 | 上游来源 | 本地改动 |
+| 子模块内文件 | 上游来源 | 本地改动 |
 |---|---|---|
 | `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；新增 `./modules/src/assets.ts` 导入 |
 | `scripts/modules/src/assets.ts` | `packages/client/modules/src/assets.ts` | 无（模块源码，上游无首行标注） |
@@ -138,16 +140,16 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 参照上游写的配置文件（没有首行标注）：
 
-| 本仓库文件 | 参照的上游文件 | 差异 |
+| 文件归属与路径 | 参照的上游文件 | 差异 |
 |---|---|---|
-| `tsconfig.base.json` | `tsconfig.base.json` | 去掉 `paths` |
-| `tsconfig.base.client.json` | `tsconfig.base.client.json` | `typeRoots` 指向本仓库的 `./types` |
+| 父仓库与子模块的 `tsconfig.base.json` | `tsconfig.base.json` | 去掉 `paths` |
+| 子模块的 `tsconfig.base.client.json` | `tsconfig.base.client.json` | `typeRoots` 指向子模块的 `./types` |
 
 对比上游当前版本：
 
 ```sh
-diff <(git -C upstream show HEAD:packages/client/tsdown.client.ts) scripts/tsdown.client.ts
-diff <(git -C upstream show HEAD:scripts/client-build-environment.ts) scripts/client-build-environment.ts
+diff <(git -C plugins/dsh-writer/upstream show HEAD:packages/client/tsdown.client.ts) plugins/dsh-writer/scripts/tsdown.client.ts
+diff <(git -C plugins/dsh-writer/upstream show HEAD:scripts/client-build-environment.ts) plugins/dsh-writer/scripts/client-build-environment.ts
 ```
 
 ### `.agents/skills`（与上游同名的 skill）

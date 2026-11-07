@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for superagent-installation.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/user/superagent-installation.md
+/:
+  en: d3586eb5941887e9
+  zh: b08eb635863df70a
+/superagent-installation-and-updates:
+  en: 522656f808f03134
+  zh: 52078883dd4a9ec5
+/superagent-installation-and-updates/summary:
+  en: b2a76dd17672cd83
+  zh: cd4377e1f04da0ff
+/superagent-installation-and-updates/table-of-contents:
+  en: 16be3ed9e26fec13
+  zh: b89969ce8fdc1d67
+/superagent-installation-and-updates/install-into-web:
+  en: f46e8d5fd7494b72
+  zh: 951e00c14c9f24e2
+/superagent-installation-and-updates/update-a-local-installation:
+  en: 3a4a45998dffb4ec
+  zh: 2cee6820a5441e1d
+/superagent-installation-and-updates/remote-installation:
+  en: 70729be8290ad8d8
+  zh: 7bd8cbb0c4ca6521
+/superagent-installation-and-updates/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

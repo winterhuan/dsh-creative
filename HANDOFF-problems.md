@@ -34,7 +34,7 @@
   - 声明位于 `declare module '@deepseek-ai/dsh-typert-protocol'` 块内。
 
   从 npm 安装时，协议包在 `node_modules` 里，两个条件都不满足，skill-viewer 的 `@Remote` 方法被忽略。这是生成器只考虑 monorepo 场景造成的缺口。
-- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.2-rc.1.patch`，由 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
+- **解决**：用 `pnpm patch` 加一个判断，复用生成器里已有的 `externalModuleIdentityForFile()`。各插件子模块的补丁文件为 `patches/@deepseek-ai__dsh-typert-generator@0.2.2-rc.1.patch`，由该子模块 `pnpm-workspace.yaml` 的 `patchedDependencies` 引用：
 
   ```diff
           if (registration?.name === '@deepseek-ai/dsh-typert-protocol')
@@ -67,7 +67,7 @@
 ## 问题 8：客户端打包工具没有发布
 
 - **现象**：3 个客户端包的 `tsdown.config.ts` 导入 `upstream/packages/client/tsdown.client.ts` 里的 `clientBundle()`。它负责生成 DSH 模块加载器能加载的 bundle，但没有发布到 npm。
-- **解决**：把它和它依赖的上游内部文件复制到 `scripts/`，并做了以下适配（完整清单见[第 8 节](HANDOFF.md#8-从上游复制的文件及本地改动)）：
+- **解决**：把它和它依赖的上游内部文件复制到各插件子模块的 `scripts/`，并做了以下适配（完整清单见[第 8 节](HANDOFF.md#8-从上游复制的文件及本地改动)）：
   - `optionalStringArray` 在 `@deepseek-ai/dsh-client-modules` 里没有公开导出，内联到 `tsdown.client.ts` 末尾。
   - `platform.ts` 没有任何导入，直接复制。没有改为导入 `@deepseek-ai/dsh-client-web`，因为它的入口会带进浏览器代码。
   - 本仓库的包布局与上游相同（`packages/<组>/<包>`），包路径相关的 glob 保持上游原样。文件位置不同带来的改动：`tsdown.client.ts` 在上游位于 `packages/client/`，这里位于 `scripts/`，所以 `REPOSITORY_ROOT` 改为 `new URL('..', import.meta.url)`，三个上游内部模块改为同目录相对导入；`client-build-environment.ts` 的产物 glob 删掉 `apps/web/dist/**/*`。
@@ -78,11 +78,13 @@
 ## 问题 9：客户端构建期环境类型
 
 - **现象**：客户端 tsconfig 需要 `types: ["client-build-environment"]`，这个类型包只在上游的 `scripts/types/client-build-environment/` 里。
-- **解决**：复制到 `types/client-build-environment/index.d.ts`；`tsconfig.base.client.json` 设置 `typeRoots: ["./types", "./node_modules/@types"]`。
+- **解决**：复制到各插件子模块的 `types/client-build-environment/index.d.ts`；子模块 `tsconfig.base.client.json` 设置 `typeRoots: ["./types", "./node_modules/@types"]`。
 
 ## 问题 10：单元测试：DSH 发布的客户端包在 Node 里无法加载
 
 Host 测试一开始就全部通过，失败的都是客户端测试，原因有几层：
+
+表中的根依赖、测试解析脚本和 `upstream/` 均属于各插件子模块。
 
 | 现象 | 原因 | 解决 |
 |---|---|---|

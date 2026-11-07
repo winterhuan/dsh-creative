@@ -12,7 +12,7 @@ Status: implemented
 
 按职责拆为 `src/learning/` 六个模块加 `update/` 处理器族：`shared.ts`（时间/文本工具与范围判定）、`schedule.ts`（复习排期重放）、`status.ts`（时段状态与今日摘要）、`mastery.ts`（单一掌握度规则、洞察与摸底计划）、`view.ts`（目标解析、出题要素、巩固卷计划与地图投影）、`update/{context,profile,session,mistakes,paper,index}.ts`（按动作族拆分的处理器与类型安全的调度开关）。调度由 `rawApply` 统一做克隆、分发与收尾（修订号、重放、再校验），处理器返回原状态表示无变化、返回克隆表示已变更；复合动作 configure-course 经 `rawApply` 组合两个子动作后单次递增修订号。十四个引用方改为显式新路径导入，不留桶文件。
 
-动作元数据声明化：新增 `src/actions.ts`，以 `Record<Command['action'], { panel, group }>` 穷尽声明每个动作的可提交面与所属处理器族，路由白名单由 `panel: true` 生成，与 schema 的二十六个动作保持编译期一致。新增动作现在只需 schema、处理器与元数据三处。`locales.ts` 保持单文件，按视图补了分组注释；测试按同一边界拆为 update/schedule/insight/view 四个 spec。
+面板权限声明化：`src/actions.ts` 以 `Record<Command['action'], boolean>` 穷尽声明每个动作的权限，路由白名单由允许的条目生成，与 schema 的全部动作保持编译期一致。处理器族的归属留在 update 模块中，没有消费者需要重复的分组标签。新增动作只需 schema、处理器与权限三处。`locales.ts` 保持单文件，按视图补了分组注释；测试按同一边界拆为 update/schedule/insight/view 四个 spec。
 
 ## Alternatives considered
 
