@@ -1,5 +1,5 @@
 https://github.com/winterhuan/dsh-writer
 https://github.com/winterhuan/dsh-student
-https://github.com/winterhuan/dsh-skill-viewer
+https://github.com/winterhuan/dsh-skills-viewer
 https://github.com/winterhuan/dsh-project-default-mode
 https://github.com/winterhuan/dsh-client-ui-settings-model-options

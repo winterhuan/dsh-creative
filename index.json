@@ -84,9 +84,9 @@
         "zh": "浏览可用技能、技能正文及参考资料。"
       },
       "author": "winterhuan",
-      "homepage": "https://github.com/winterhuan/dsh-skill-viewer#readme",
+      "homepage": "https://github.com/winterhuan/dsh-skills-viewer#readme",
       "repository": {
-        "url": "https://github.com/winterhuan/dsh-skill-viewer",
+        "url": "https://github.com/winterhuan/dsh-skills-viewer",
         "directory": "packages/winterhuan/skill-viewer"
       },
       "versions": [
@@ -95,9 +95,9 @@
           "publishTimestamp": 1794053207,
           "source": {
             "type": "git",
-            "url": "https://github.com/winterhuan/dsh-skill-viewer",
-            "commit": "345a37549f7ef23bf05f4af943043a6bcd1cd0b3",
-            "path": "packages/winterhuan/skill-viewer"
+            "url": "https://github.com/winterhuan/dsh-skills-viewer",
+            "commit": "95f8ff1a8164a512bdab305efeefc15c33a2e98d",
+            "path": "plugin"
           },
           "engines": {
             "dsh": "0.2.2-rc.1"
