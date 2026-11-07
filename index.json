@@ -1,0 +1,173 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Winterhuan DSH plugins",
+    "zh": "Winterhuan DSH 插件"
+  },
+  "description": {
+    "en": "Writing, learning, skills and settings plugins for DeepSeek Harness.",
+    "zh": "DeepSeek Harness 写作、学习、技能和设置插件。"
+  },
+  "plugins": [
+    {
+      "name": "@winterhuan/dsh-writer",
+      "title": {
+        "en": "Writing mode",
+        "zh": "写作模式"
+      },
+      "description": {
+        "en": "Thin DSH writing mode that mounts oh-story skills and a Dashboard-aligned workspace sidebar",
+        "zh": "使用 oh-story 写作技能，浏览和编辑写作项目。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-writer#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-writer",
+        "directory": "packages/winterhuan/writer"
+      },
+      "versions": [
+        {
+          "version": "0.1.1",
+          "publishTimestamp": 1794047260,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-writer",
+            "commit": "0f75c41a27af5bfc5bea26c447f0a33c5f95e0be",
+            "path": "packages/winterhuan/writer"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@winterhuan/dsh-student",
+      "title": {
+        "en": "Student learning",
+        "zh": "学生学习"
+      },
+      "description": {
+        "en": "Short daily learning, confirmed curricula and spaced mistake review for primary-school students",
+        "zh": "小学日常学习、知识地图、练习单和错题复习。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-student#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-student",
+        "directory": "packages/winterhuan/student"
+      },
+      "versions": [
+        {
+          "version": "0.1.1",
+          "publishTimestamp": 1794047248,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-student",
+            "commit": "d65b9eec560259b6efc19b7ef4bad9791dad8657",
+            "path": "packages/winterhuan/student"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@winterhuan/dsh-skill-viewer",
+      "title": {
+        "en": "Skill viewer",
+        "zh": "技能查看器"
+      },
+      "description": {
+        "en": "Read-only skill catalog and body Remote for the skill viewer",
+        "zh": "浏览可用技能、技能正文及参考资料。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-skill-viewer#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-skill-viewer",
+        "directory": "packages/winterhuan/skill-viewer"
+      },
+      "versions": [
+        {
+          "version": "0.1.5-rc.3",
+          "publishTimestamp": 1794047888,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-skill-viewer",
+            "commit": "f2a01f5ed07d57530710a31c03a3c7e891b08e34",
+            "path": "packages/winterhuan/skill-viewer"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@winterhuan/dsh-project-default-mode",
+      "title": {
+        "en": "Project default mode",
+        "zh": "项目默认模式"
+      },
+      "description": {
+        "en": "Per-project default agent preset for DSH sessions",
+        "zh": "为每个项目设置新会话默认使用的 Agent 模式。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-project-default-mode#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-project-default-mode",
+        "directory": "packages/winterhuan/project-default-mode"
+      },
+      "versions": [
+        {
+          "version": "0.1.1",
+          "publishTimestamp": 1794047242,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-project-default-mode",
+            "commit": "44b6a3d3e6f8e4208fc50fc33de2e5d5b6ed9d1f",
+            "path": "packages/winterhuan/project-default-mode"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@winterhuan/dsh-client-ui-settings-model-options",
+      "title": {
+        "en": "Model settings",
+        "zh": "模型设置增强"
+      },
+      "description": {
+        "en": "Model thinking, image input, and provider retry settings in the DSH Models page",
+        "zh": "批量设置模型思考能力、图片输入和提供方重试选项。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-client-ui-settings-model-options#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-client-ui-settings-model-options",
+        "directory": "packages/winterhuan/ui-settings-model-options"
+      },
+      "versions": [
+        {
+          "version": "0.1.7-rc.3",
+          "publishTimestamp": 1794047254,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-client-ui-settings-model-options",
+            "commit": "b444c69f66c0b35d795e055d2a2191d8bd7c117d",
+            "path": "packages/winterhuan/ui-settings-model-options"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
+    }
+  ]
+}
