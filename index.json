@@ -183,7 +183,7 @@
       ]
     },
     {
-      "name": "dsh-antfarm",
+      "name": "@winterhuan/dsh-antfarm",
       "title": {
         "en": "Antfarm team workflows",
         "zh": "Antfarm 团队工作流"
@@ -199,24 +199,12 @@
       },
       "versions": [
         {
-          "version": "0.3.0",
-          "publishTimestamp": 1794173639,
+          "version": "0.3.1",
+          "publishTimestamp": 1794174787,
           "source": {
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-antfarm",
-            "commit": "0d63e67c6f8ae00be6a1df2018605b9b30e53d2e"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.0",
-          "publishTimestamp": 1794137746,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-antfarm",
-            "commit": "5b3d6beb37122c6880ff77a5a91503129b2f429d"
+            "commit": "84f8934a783382623b8f0e3a620ebd3fd9c2f38e"
           },
           "engines": {
             "dsh": "0.2.2-rc.1"
