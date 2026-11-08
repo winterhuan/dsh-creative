@@ -189,8 +189,8 @@
         "zh": "Antfarm 团队工作流"
       },
       "description": {
-        "en": "Reusable specialist workflows, verified results, editable configuration and native run controls.",
-        "zh": "可复用专业工作流、成果验证、配置编辑和原生运行控件。"
+        "en": "Original specialist workflows with persona identities, SQLite progress and native DSH controls.",
+        "zh": "原版专业工作流、persona 身份、SQLite 进度与原生 DSH 运行控件。"
       },
       "author": "winterhuan",
       "homepage": "https://github.com/winterhuan/dsh-antfarm#readme",
@@ -198,6 +198,18 @@
         "url": "https://github.com/winterhuan/dsh-antfarm"
       },
       "versions": [
+        {
+          "version": "0.3.0",
+          "publishTimestamp": 1794173639,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-antfarm",
+            "commit": "0d63e67c6f8ae00be6a1df2018605b9b30e53d2e"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "0.2.0",
           "publishTimestamp": 1794137746,
