@@ -8,7 +8,7 @@ English | [中文](antfarm.zh.md)
 
 ## Summary
 
-Antfarm runs original specialist teams with stable personas and fresh native Sessions. SQLite owns their business progress, while DSH owns execution and native transcripts. Source lives in the `plugins/dsh-antfarm` submodule; release `0.3.1` is available in the market and installed from a fixed Git commit in the local `web` profile.
+Antfarm runs original specialist teams with stable personas and fresh native Sessions. SQLite owns their business progress, while DSH owns execution and native transcripts. Source lives in the `plugins/dsh-antfarm` submodule; release `0.3.2` is available in the market and installed from a fixed Git commit in the local `web` profile.
 
 ## Table of Contents
 
