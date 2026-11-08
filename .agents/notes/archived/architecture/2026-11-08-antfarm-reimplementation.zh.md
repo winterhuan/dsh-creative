@@ -1,6 +1,7 @@
 # Agent Note: 基于当前 DSH 重新实现 Antfarm
 
 Status: implemented
+Archived: 2026-11-08
 
 [English](2026-11-08-antfarm-reimplementation.md) | 中文
 

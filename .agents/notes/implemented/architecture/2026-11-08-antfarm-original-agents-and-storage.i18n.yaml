@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-11-08-antfarm-original-agents-and-storage.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.md
+/agent-note-original-antfarm-agents-and-storage-on-dsh:
+  en: d704714e7f1b7fc5
+  zh: a4bd23c91761a5cf
+/agent-note-original-antfarm-agents-and-storage-on-dsh/problem:
+  en: c741854cb1b63f4a
+  zh: 445c9007d1e65693
+/agent-note-original-antfarm-agents-and-storage-on-dsh/decision:
+  en: d877cdc82c6830b2
+  zh: b5fe76d3fecb4f67
+/agent-note-original-antfarm-agents-and-storage-on-dsh/alternatives-considered:
+  en: 361f8c7e3142de58
+  zh: f329d71168763eea
+/agent-note-original-antfarm-agents-and-storage-on-dsh/consequences:
+  en: 8a4941b6ad4b738b
+  zh: ae990dbd541ab5c7

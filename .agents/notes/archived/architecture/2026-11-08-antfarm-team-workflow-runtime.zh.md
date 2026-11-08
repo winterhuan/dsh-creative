@@ -1,6 +1,7 @@
 # Agent Note: Antfarm 团队工作流运行时
 
 Status: implemented
+Archived: 2026-11-08
 
 [English](2026-11-08-antfarm-team-workflow-runtime.md) | 中文
 

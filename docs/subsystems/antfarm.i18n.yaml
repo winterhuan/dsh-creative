@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/antfarm.md
 /:
-  en: f18dccdfd123d58e
-  zh: b35ce34cf3330e19
+  en: 6183bad6be629719
+  zh: 0a7dcab9101ba8ce
 /antfarm:
   en: fd0011d791e5dd4f
   zh: 8ac8f6520173c3bd
 /antfarm/summary:
-  en: 6dc6063553ce59c0
-  zh: 34c53a0deb4800c0
+  en: ad07f7b631fcb376
+  zh: da5f935465f047f8
 /antfarm/table-of-contents:
   en: 3156e0bd4e0f3619
   zh: 4cf531e289b5c221
 /antfarm/ownership:
-  en: ac6233d0d038e929
-  zh: 7f8af1e6c37f36a9
+  en: d1aa5274a7c5bb4e
+  zh: d940bb909ff24981
 /antfarm/trust-and-recovery:
-  en: b1c5dffcedf255c7
-  zh: 57b092300b40051d
+  en: 8dd915da95d0085e
+  zh: d1fb8d1d406c79fc
 /antfarm/development:
-  en: 09119f4c460961d7
-  zh: 2a2345008307bff2
+  en: 47ffe451d652c3c3
+  zh: e40b917620d706bc
 /antfarm/dev-note:
-  en: 1c9eb11457280508
-  zh: 8e70d9d5485abd84
+  en: bf1c314e02364d9e
+  zh: e0efbde3e4392581

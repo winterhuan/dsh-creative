@@ -1,5 +1,5 @@
 ---
-description: "Antfarm team workflow ownership, native DSH composition and accepted-result recovery."
+description: "Original Antfarm agent identities, SQL business state and native DSH execution ownership."
 ---
 
 # Antfarm
@@ -8,7 +8,7 @@ English | [中文](antfarm.zh.md)
 
 ## Summary
 
-Antfarm runs reusable specialist workflows with accepted checkpoints, owned workspaces, workflow configuration and native Run controls. Its source is the `plugins/dsh-antfarm` submodule, targeting DSH `0.2.2-rc.1`. Version `0.2.0` is available as a prebuilt fixed Git package and through the plugin market.
+Antfarm runs original specialist teams with stable personas and fresh native Sessions. SQLite owns their business progress, while DSH owns execution and native transcripts. Source lives in the `plugins/dsh-antfarm` submodule; release `0.3.0` is available in the market and installed from a fixed Git commit in the local `web` profile.
 
 ## Table of Contents
 
@@ -22,33 +22,32 @@ Antfarm runs reusable specialist workflows with accepted checkpoints, owned work
 <a id="ownership"></a>
 ## Ownership
 
-The [bundle](../../plugins/dsh-antfarm/cordis.patch.yml) supplies runtime, tools, commands, six Agent Presets, a Session sidebar and a workflow board. Configuration and user actions belong to the [package README](../../plugins/dsh-antfarm/README.md).
+The [bundle](../../plugins/dsh-antfarm/cordis.patch.yml) supplies native runtime, tools, commands, sidebar and board. It registers no role presets. The [package README](../../plugins/dsh-antfarm/README.md) owns configuration and user operations.
 
 | Owner | Responsibility |
 |---|---|
-| [Workflow resolver](../../plugins/dsh-antfarm/src/workflow/loader.ts) and [manager](../../plugins/dsh-antfarm/src/workflow/manager.ts) | Capture resolved workflow snapshots; validate imports and revision-bound writable overrides. |
-| [Runtime](../../plugins/dsh-antfarm/src/runtime/index.ts) and [driver](../../plugins/dsh-antfarm/src/runtime/orchestrator.ts) | Admit Session-owned work, schedule native DSH attempts and commit accepted progress. |
-| [Journal](../../plugins/dsh-antfarm/src/persistence/journal.ts) and [storage](../../plugins/dsh-antfarm/src/persistence/storage.ts) | Preserve authoritative checkpoints; exclude another Host and rebuild query projections. |
-| [Git workspace](../../plugins/dsh-antfarm/src/workspace/git.ts) and [file workspace](../../plugins/dsh-antfarm/src/workspace/files.ts) | Validate resource identity, retain artifacts and perform confined cleanup. |
-| [Studio Host](../../plugins/dsh-antfarm/src/studio-host/index.ts) and [Client](../../plugins/dsh-antfarm/src/client/mount.tsx) | Enforce Session resources, revision-bound controls and native navigation. |
+| [Workflow loader](../../plugins/dsh-antfarm/src/workflow/loader.ts) and [manager](../../plugins/dsh-antfarm/src/workflow/manager.ts) | Original definitions, persona resources and revision-bound writable overrides. |
+| [Agent adapter](../../plugins/dsh-antfarm/src/runtime/agents.ts) | Stable identity to native Session mapping, persona and role tools. |
+| [Runtime](../../plugins/dsh-antfarm/src/runtime/index.ts) | Root ownership, native jobs, scheduling, cancellation and recovery. |
+| [Database](../../plugins/dsh-antfarm/src/persistence/database.ts) | Original authoritative SQL transitions and native associations. |
+| [Historical reader](../../plugins/dsh-antfarm/src/persistence/legacy.ts) | Attributable read-only snapshots with no replay or writes. |
+| [Studio Host](../../plugins/dsh-antfarm/src/studio-host/index.ts) and [Client](../../plugins/dsh-antfarm/src/client/mount.tsx) | Authorized queries/controls, locale and native navigation. |
 
 <a id="trust"></a>
 ## Trust and recovery
 
-The initiating root Session owns reads and control. Antfarm tools are hidden from subagents, and runtime admission also rejects them. Native DSH owns model execution, presets, permissions and subprocesses. Antfarm owns accepted business state and resource lifecycle. Health and restart recovery use the original native owner authority; an unfinished attempt remains interrupted for inspection and explicit reconciliation.
+The original root Session authorizes Run reads and controls. Exact native claimant identities reject stale results, and each stable agent has one active attempt. Unmatched interrupted effects require human reconciliation before resumption. Historical journals remain outside the executor. Neither SQL nor role tool masks isolate shell/credential effects or guarantee exactly-once external actions.
 
-Candidate checks bind actual execution to unchanged source. GitHub and visual delivery have separate fact validation. Neither checkpoints nor worktrees supply exactly-once external effects or isolate shell/credentials. Configuration writes require confined paths and matching revisions; profile writes require the Host owner. Running work retains its snapshot. See [DESIGN](../../plugins/dsh-antfarm/DESIGN.md) for mechanisms and the [team runtime decision](../../.agents/notes/implemented/architecture/2026-11-08-antfarm-team-workflow-runtime.md) for rationale.
+Configuration writes require confined paths and matching source revisions. Native lifecycle ownership requires awaited teardown before cancellation is confirmed. Business success follows original worker replies, and events/webhooks remain observations. [DESIGN](../../plugins/dsh-antfarm/DESIGN.md) owns mechanisms; the [original agents/storage decision](../../.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.md) owns the design rationale.
 
 <a id="development"></a>
 ## Development
 
-Use [HANDOFF](../../HANDOFF.md#开发目录与源码归属) for paths, dispatch and current acceptance evidence. Root checks cover the single-package source layout and README/DESIGN/PARITY pairs. Builds do not install into daily profiles. Development uses an isolated Web profile with native Agent Preset composition; custom Headless needs its registry and parent preset supplied separately. DSH `0.2.2-rc.1` has no TUI application entry.
-
-The [original capability comparison](../../plugins/dsh-antfarm/PARITY.md) separates native equivalents from original command spelling and records platform, real-model, GitHub, browser, webhook and fixed remote installation evidence, with the limits of those representative scenarios.
+Use [HANDOFF](../../HANDOFF.md#开发目录与源码归属) for plugin paths and command dispatch. Root checks cover the single-package source and bilingual documentation. Development uses an isolated Web profile, rebuild/restart and hard refresh. Current comparison and verification limits live in [PARITY](../../plugins/dsh-antfarm/PARITY.md).
 
 -----
 
 <a id="dev-note"></a>
 ## Dev Note
 
-Market and daily profiles use fixed remote releases; source changes require rebuilding, isolated acceptance and a new publication.
+Release and remote installation evidence lives in `~/.dsh/backups/antfarm-release-20261109-0.3.0/`; historical Antfarm files match the pre-release backup byte for byte.
