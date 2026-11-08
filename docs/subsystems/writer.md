@@ -8,7 +8,7 @@ English | [中文](writer.zh.md)
 
 ## Summary
 
-写作模式 is an optional preset for fiction sessions. The host copies oh-story skills into the workspace or points skill discovery at the package directory, and the sidebar saves setting, outline, and chapter markdown. DSH keeps the session, the model, and file reads.
+写作模式 is an optional preset for fiction sessions. The host copies oh-story skills into the workspace or points skill discovery at the package directory, and the sidebar browses libraries, writing projects, and dated market scans with editable text files. DSH keeps the session, the model, and file reads.
 
 ## Table of Contents
 
@@ -27,7 +27,7 @@ English | [中文](writer.zh.md)
 
 `skillMount` is `workspace` or `bundled`. Workspace mode copies skills once and does not set `bundledSkillDir`. Bundled mode sets that directory to the package `skills` path and does not copy. Existing skill directories are not replaced until `/writer-sync-skills`.
 
-The sidebar lists and reads through `workspaceFiles`. The host route only accepts a versioned save of a setting, outline, or chapter markdown file in the session workspace. It does not serve the oh-story dashboard. `story-setup` on this host skips Claude Code and Codex hook deployment.
+The sidebar lists and reads through `workspaceFiles`. Its Scans tab discovers `扫榜/YYYYMMDD/` records, newest first, and previews the conclusion on expansion, falling back to the aggregate or a readable Markdown ranking file. Original ranking files remain in the same tree. The host route accepts versioned saves of supported text files in the session workspace, including scan reports. It does not serve the oh-story dashboard. `story-setup` on this host skips Claude Code and Codex hook deployment.
 
 <a id="related"></a>
 ## Related
