@@ -123,9 +123,11 @@
 - 构建、147 项测试、单次远程安装及浏览器验收通过。备份与证据：`/Users/winter/dsh-plugins/merge-skills-viewer-20261107-204726/`。两个旧仓库已删除，GitHub 均返回 404；合并后的仓库保留。
 
 
-2026-11-08 Writer 0.1.9 发布与远程安装：
+2026-11-08 Writer 远程更新：
 
-- Writer 独立发布 `v0.1.9`，固定提交为 `9974d970d5ef39ad6a187c70e0421a3d3bdd7565`，兼容 DSH `0.2.2-rc.1`。GitHub Release 附带由该提交生成的预构建包；公开下载的 SHA-256 与本地包一致。市场保留 `0.1.8`，推荐版本更新为 `0.1.9`，官方索引校验通过。
-- `web`、`headless` 的 Writer 更新为上述固定 Git 提交，配置合成通过；其他直接依赖和配置补丁保持一致。安装前配置、锁文件与插件记录备份在 `~/.dsh/backups/writer-release-20261108-0.1.9/profiles-before/`。
-- 重启日常 Web 后，真实浏览器确认 Writer 显示 `v0.1.9`、固定远程来源及两个运行中的组件，详情正文正常加载。发布包、校验值、安装日志和截图位于 `~/.dsh/backups/writer-release-20261108-0.1.9/`。
-- 草稿恢复、异步文稿归属、保存冲突、章节进度、版本审稿和原生子代理的实现通过类型检查、构建、测试、文档与规范检查。真实界面与确定性模型调用链验收见 `~/.dsh/backups/writer-acceptance-20261108-FJ5aWU/`；验收不评估模型的文学审稿质量。
+- [v0.1.9](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.9) 已发布并更新市场，旧版保留。`web`、`headless` 从固定 Git 提交更新；重启 Web 后两个组件运行，其他直接依赖和配置补丁未变。
+- 配置备份和发布证据：`~/.dsh/backups/writer-release-20261108-0.1.9/`。实现及确定性模型验收：`~/.dsh/backups/writer-acceptance-20261108-FJ5aWU/`。
+
+2026-11-08 Shadow Mind 远程安装：
+
+- [v0.2.0](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.0) 已发布，日常 `web` 安装该标签的固定 Git 提交并重启；配置、包检查、17 项测试与三个运行组件均已验证。未配置审查职责，不自动触发模型调用。安装前备份及证据：`~/.dsh/backups/shadow-mind-release-20261108-0.2.0/`。
