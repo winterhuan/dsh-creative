@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-5 个插件仓库包含 6 个源码包，当前发布版本统一为 `0.1.8`，兼容 DSH `0.2.2-rc.1`。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+5 个插件仓库包含 6 个源码包，Writer 当前发布版本为 `0.1.9`，其余插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -56,7 +56,7 @@ dsh-creative/
 1. 在目标子模块内修改源码、测试和配套文档。开始时核对该仓库的 remote、分支与未提交改动；新克隆的子模块可能处于 detached HEAD，开发前切换到工作分支。
 2. 各插件独立安装依赖、构建和测试；父仓库批量命令依次调用各插件脚本，任何失败都会停止。技能查看器只编辑两个源码包，由构建生成 `plugin/`，不直接修改生成目录。
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
-4. 发布时保持 6 个包版本一致，核对包清单、锁文件、预构建安装内容和 Release。已发布标签不覆盖；5 个远程仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
+4. Writer `0.1.9` 单独发布；6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。已发布标签不覆盖；5 个远程仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
 ## 3. 与 DSH 的集成方式
 

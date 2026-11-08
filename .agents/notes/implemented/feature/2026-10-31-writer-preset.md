@@ -12,9 +12,9 @@ The fiction workflow in this repository is a full novel plugin: its own skill pr
 
 `@winterhuan/dsh-writer` is a separate bundle. Preset `writer`（写作模式）uses the standard tool rows for persona, instructions, time, shell, files, search, jobs, skills, compaction, delegation, questions, todos, and web. It does not register an agent entry or a skill provider.
 
-`skillMount` is `workspace` or `bundled`, default `workspace`. Workspace mode copies packaged skills into the project `.agents/skills` on first entry and does not set `bundledSkillDir`. An existing skill directory stays until `/writer-sync-skills`. Bundled mode sets `bundledSkillDir` to the absolute package `skills` directory and disables the workspace skill-filesystem row. `story-setup` treats DSH as its own host and does not deploy Claude Code or Codex hooks unless the author asks for that host.
+`skillMount` is `workspace` or `bundled`, default `bundled`. Workspace mode copies packaged skills into the project `.agents/skills` on first entry and does not set `bundledSkillDir`. An existing skill directory stays until an explicit sync or unsync; both preserve a recoverable backup. Project copies can shadow bundled skills, and source diagnosis reports the actual winning path. Bundled mode sets `bundledSkillDir` to the absolute package `skills` directory and disables the workspace skill-filesystem row. `story-setup` treats DSH as its own host and does not deploy Claude Code or Codex hooks unless the author asks for that host.
 
-The sidebar registers a tab and body for preset `writer`. It reads and lists through `workspaceFiles` and saves with `PUT /writer/file` when the version still matches. It does not embed the oh-story dashboard.
+The sidebar registers a tab and body for preset `writer`. Browser recovery copies preserve the editor baseline; replies are scoped to the open document. Chapter and review panels read versioned book files, with script validation owning their durable records. It reads and lists through `workspaceFiles` and saves with `PUT /writer/file` when the version still matches. It does not embed the oh-story dashboard.
 
 ## Alternatives considered
 
@@ -34,4 +34,4 @@ The [Box and Ego browser decision](../architecture/2026-11-07-writer-box-ego.md)
 
 ## Verification
 
-Package tests cover the mutually exclusive mount flags, a workspace copy that discovers `story`, `story-long-write`, `story-short-write`, `story-deslop`, and `story-zhuque` without using an unused bundled directory, no-overwrite then force sync, the versioned save, and the DSH branch in `story-setup`. The bundle was not installed into a live DSH profile in this environment.
+Package tests cover the mutually exclusive mount flags, a workspace copy that discovers `story`, `story-long-write`, `story-short-write`, `story-deslop`, and `story-zhuque` without using an unused bundled directory, no-overwrite then force sync, the versioned save, and the DSH branch in `story-setup`. Chapter and review scripts also run under the installed package module boundary; browser verification is recorded with the current change.

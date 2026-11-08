@@ -12,9 +12,9 @@ Status: implemented
 
 `@winterhuan/dsh-writer` 是独立 bundle。预设 `writer`（写作模式）使用 persona、说明、时间、shell、文件、搜索、jobs、技能、压缩、委派、提问、待办和网页这些工具行。它不登记 agent 入口，也不登记 skill provider。
 
-`skillMount` 是 `workspace` 或 `bundled`，默认 `workspace`。workspace 在首次进入时把包内技能拷到项目 `.agents/skills`，并且不设置 `bundledSkillDir`。已有技能目录保留到执行 `/writer-sync-skills`。bundled 把 `bundledSkillDir` 设为包内 `skills` 的绝对路径，并禁用 workspace 那一行 skill-filesystem。`story-setup` 把 DSH 当成自己的宿主，除非作者点名，否则不部署 Claude Code 或 Codex 的 hooks。
+`skillMount` 是 `workspace` 或 `bundled`，默认 `bundled`。workspace 在首次进入时把包内技能拷到项目 `.agents/skills`，并且不设置 `bundledSkillDir`。已有技能目录保留到显式同步或撤销同步，两者都保留可恢复备份。项目同名副本仍可覆盖 bundled 技能，来源诊断显示实际生效路径。bundled 把 `bundledSkillDir` 设为包内 `skills` 的绝对路径，并禁用 workspace 那一行 skill-filesystem。`story-setup` 把 DSH 当成自己的宿主，除非作者点名，否则不部署 Claude Code 或 Codex 的 hooks。
 
-侧栏为预设 `writer` 登记标签和正文。列表和读取走 `workspaceFiles`，版本仍匹配时用 `PUT /writer/file` 保存。它不嵌入 oh-story Dashboard。
+侧栏为预设 `writer` 登记标签和正文。浏览器恢复副本保留编辑基线，回包只更新所属文稿。章节与审稿面板读取带版本的书内文件，持久记录由脚本校验。列表和读取走 `workspaceFiles`，版本仍匹配时用 `PUT /writer/file` 保存。它不嵌入 oh-story Dashboard。
 
 ## 考虑过的替代方案
 
@@ -34,4 +34,4 @@ Status: implemented
 
 ## 验证
 
-包内测试覆盖互斥挂载、workspace 拷贝后能发现 `story`、`story-long-write`、`story-short-write`、`story-deslop` 和 `story-zhuque` 且不会发现未使用的 bundled 目录、不覆盖后再强制同步、带版本的保存，以及 `story-setup` 的 DSH 分支。本环境没有把 bundle 装进正在运行的 DSH profile。
+包内测试覆盖互斥挂载、workspace 拷贝后能发现 `story`、`story-long-write`、`story-short-write`、`story-deslop` 和 `story-zhuque` 且不会发现未使用的 bundled 目录、不覆盖后再强制同步、带版本的保存，以及 `story-setup` 的 DSH 分支。章节和审稿脚本还在已安装包的模块边界下执行，浏览器验证随当前改动记录。
