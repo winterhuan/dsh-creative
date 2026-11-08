@@ -2,7 +2,7 @@
 
 最后更新：2026-11-08。
 
-本仓库统一管理 5 个独立插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
+本仓库统一管理 6 个独立 DSH 插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-5 个插件仓库包含 6 个源码包，Writer 当前发布版本为 `0.1.9`，其余插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+6 个插件仓库包含 7 个源码包。`dsh-writer` 发布版本为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`dsh-antfarm` 发布版本为 `0.2.0`，固定 DSH `0.2.2-rc.1`，包含原生团队工作流、配置管理与运行界面。其职责与恢复取舍见[团队运行时决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-team-workflow-runtime.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -36,10 +36,11 @@
 | [dsh-project-default-mode](plugins/dsh-project-default-mode/README.zh.md) | `packages/winterhuan/project-default-mode` | `packages/winterhuan/project-default-mode` |
 | [dsh-client-ui-settings-model-options](plugins/dsh-client-ui-settings-model-options/README.zh.md) | `packages/winterhuan/ui-settings-model-options` | `packages/winterhuan/ui-settings-model-options` |
 | [dsh-skills-viewer](plugins/dsh-skills-viewer/README.zh.md) | `packages/winterhuan/skill-viewer`、`packages/winterhuan/ui-skill-viewer` | `plugin`（包含两个包） |
+| [dsh-antfarm](plugins/dsh-antfarm/README.zh.md) | `src`（单包，包含 Host 与 Client 入口） | 子模块根目录（预构建固定 Git 发布包） |
 
 ```text
 dsh-creative/
-├── plugins/              5 个独立仓库的 Git 子模块
+├── plugins/              6 个独立 DSH 插件仓库的 Git 子模块
 ├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
@@ -49,14 +50,14 @@ dsh-creative/
 └── .gitmodules           子模块地址与路径
 ```
 
-每个插件子模块有自己的 `package.json`、锁文件、构建配置和只读 `upstream/`。父仓库的 pnpm workspace 不把子模块的包合并安装。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
+每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
 
 ### 开发与发布规则
 
 1. 在目标子模块内修改源码、测试和配套文档。开始时核对该仓库的 remote、分支与未提交改动；新克隆的子模块可能处于 detached HEAD，开发前切换到工作分支。
 2. 各插件独立安装依赖、构建和测试；父仓库批量命令依次调用各插件脚本，任何失败都会停止。技能查看器只编辑两个源码包，由构建生成 `plugin/`，不直接修改生成目录。
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
-4. Writer `0.1.9` 单独发布；6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。已发布标签不覆盖；5 个远程仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
+4. Writer `0.1.9` 单独发布；原有 5 个仓库的 6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
 ## 3. 与 DSH 的集成方式
 
@@ -84,9 +85,11 @@ pnpm run hygiene
 
 根 `typecheck` 检查父仓库脚本并调用每个插件的类型检查；`build` 调用每个插件的构建；`test` 运行插件测试和父仓库工具测试。文档及代码检查遍历子模块源码，排除预构建产物、依赖、归档和嵌套上游。仅修改一个插件时，在该子模块根目录执行其 README 中的命令；不需要重建其他插件。
 
+Antfarm 由 `.gitmodules` 自动加入批量命令，使用自己的冻结锁文件。根检查通过统一包发现覆盖其单包 `src`、README、导出 JSDoc 与 UI 文案；README、DESIGN 和 PARITY 均进入双语配对检查。`0.2.0` 的平台、真实模型、GitHub、浏览器、外部 webhook 与远程包验收范围见 [Antfarm 功能对照](plugins/dsh-antfarm/PARITY.zh.md)。证据保存在 `~/.dsh/backups/antfarm-0.2.0-release-acceptance-20261108`；本地模型适配器证据与真实模型证据分别记录，CLI 正常退出不代表 Run 已接受完成。
+
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装全部 5 个组合包。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。Antfarm `0.2.0` 安装到日常 `web` profile；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 本机额外安装的 Superagent 来自独立源码仓库，安装与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
 
@@ -103,13 +106,15 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 链接安装使用 `link:`；修改源码后重新构建，停止并重启该开发进程，再硬刷新浏览器。技能查看器需在 `plugins/dsh-skills-viewer` 构建并链接 `plugin/`，Host 与 Client 单次安装。移除使用 `dsh plugin --profile creative-dev remove @winterhuan/dsh-writer`。
 
-隔离验证可为每条 DSH 命令指定独立 `DSH_HOME`。首次打开浏览器前，将临时 profile 的 `workspace-controller.config.documentsDirectory` 指向临时目录，避免使用默认 Documents 工作区。UI 行为必须在真实 DSH 中验证，单元测试不能代替浏览器验收。
+隔离验证可为每条 DSH 命令指定独立 `DSH_HOME`。首次打开浏览器前，将临时 profile 的 `workspace-controller.config.documentsDirectory` 指向临时目录，避免使用默认 Documents 工作区。UI 行为必须在真实 DSH 中验证，单元测试不能代替浏览器验收。Antfarm 开发使用 Web 的 Agent Preset 组合；DSH `0.2.2-rc.1` 没有 TUI 应用入口，终端验收使用 Headless；默认 headless 缺少原生 Agent Preset 注册器与 parent preset，自定义 headless 必须先补齐两者，不能仅添加 Antfarm bundle。
 
 本机日常 Web 由 `~/.dsh/bin/dsh-webctl` 管理；重启会轮换 token。launchd 不继承终端代理，`~/.dsh/.env` 按 [DSH 代理指南](upstream/docs/user/guide/network-proxy.zh.md)设置 HTTP 代理；「发现」详情需能访问 `raw.githubusercontent.com`。不要用裸 npm 包名的 `plugin-update` 覆盖 Git 安装。
 
 ## 6. 依赖策略
 
 现役插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
+
+Antfarm `0.2.0` 源码、依赖与生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
 
 新使用 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入该插件的 `devDependencies`，并添加 `import type {} from '<包>/remote'`。外部 Remote 仍需由客户端显式挂载。
 
@@ -120,7 +125,7 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 ## 8. 从上游复制的文件及本地改动
 
 
-构建、客户端测试辅助文件与客户端环境类型仅在各插件子模块维护；下表路径相对子模块根目录，上游版本为 `dsh-v0.2.2-rc.1`。`clientBundle()` 接收包目录，各插件的 `tsdown.config.ts` 传入 `import.meta.dirname`。`scripts/modules/src/assets.ts` 定义包资源媒体类型、导出名、修订号与浏览器引用路径，供客户端构建使用。
+构建、客户端测试辅助文件与客户端环境类型仅在各插件子模块维护；下表路径相对子模块根目录，上游版本为 `dsh-v0.2.2-rc.1`。`clientBundle()` 接收包目录，各插件的 tsdown 配置传入包根目录。`scripts/modules/src/assets.ts` 定义包资源媒体类型、导出名、修订号与浏览器引用路径，供客户端构建使用。
 
 | 子模块内文件 | 上游来源 | 本地改动 |
 |---|---|---|
@@ -133,6 +138,8 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 | `scripts/vitest-shared.ts` | `vitest.shared.ts` | 仅首行标注 |
 | `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |
 | `types/client-build-environment/index.d.ts` | `scripts/types/client-build-environment/index.d.ts` | 仅首行标注 |
+
+Antfarm 仅复制上表中的 `scripts/tsdown.client.ts`、`scripts/modules/src/assets.ts`、`scripts/client-build-environment.ts`、`scripts/bundle-input-isolation.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts`，与 dsh-writer 对应文件逐字一致，沿用表内来源和本地差异。它不复制客户端测试辅助文件或环境类型目录。`scripts/generate-remote.ts` 是 Antfarm 自有的单包生成适配：临时建立生成器所需的 workspace，输出包内 Typert 产物，不修改上游源码。
 
 `scripts/verify-concrete-terms.ts` 保留上游扫描逻辑，并增加 `archive/` 排除项；归档快照（原 `webnovel-writer/` 外部项目与四个创作包）不纳入本仓库的措辞门禁。
 
@@ -176,15 +183,16 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 | 文件 | 本地改动 |
 |---|---|
 | `scripts/verify-md-wrap.ts`、`scripts/verify-md-links.ts` | 扫描子模块根 README 和 `plugins/*/packages/*/*` 下的包文档 |
-| `scripts/verify-doc-refs.ts` | 扫描子模块包源码中的父仓库文档引用 |
-| `scripts/verify-package-readme-summaries.ts`、`scripts/verify-package-readme-limitations.ts`、`scripts/verify-package-readme-model-experience.ts` | 包发现与允许列表改用子模块路径 |
-| `scripts/verify-client-ui-i18n.ts`、`scripts/verify-export-jsdoc.ts` | 客户端与导出声明检查使用子模块源码路径 |
+| `scripts/verify-doc-refs.ts` | 通过统一包发现扫描根 `src` 与嵌套包源码中的父仓库文档引用 |
+| `scripts/verify-package-readme-summaries.ts`、`scripts/verify-package-readme-limitations.ts`、`scripts/verify-package-readme-model-experience.ts` | 包发现覆盖子模块根 `src` 与嵌套包；Antfarm 采用包含模型可见内容、Token 与 KV Cache 影响的结构化模型体验 |
+| `scripts/verify-client-ui-i18n.ts`、`scripts/verify-export-jsdoc.ts` | 通过统一包发现检查子模块根 `src` 与嵌套包的客户端文案、导出声明 |
 | `scripts/verify-concrete-terms.ts`、`scripts/verify-no-unknown-casts.ts`、`scripts/verify-repository-references.ts`、`scripts/verify-public-repository-links.ts` | 使用 `plugin-workspaces.ts` 合并父仓库与插件 Git 文件清单，排除插件发布产物 |
 | `scripts/translation-pairing-record.ts` | 在子模块自身的仓库路径下计算双语记录，保持独立检出与父仓库检查一致 |
+| `scripts/translation-pairing-git.ts` | 暂存区检查读取子模块固定提交中的文档，保持父仓库链接与双语记录一致 |
 | `scripts/translation-links.ts` | 结构检查识别插件 README 指向父仓库已存在双语文档的 GitHub 链接，保留语言、分支和锚点语义 |
-| `scripts/translation-pairing.ts` | 排除嵌套 `upstream/`、生成的 `plugin/` 和本地市场检出，保留子模块源码文档的配对检查 |
+| `scripts/translation-pairing.ts` | 排除嵌套 `upstream/`、生成的 `plugin/` 和本地市场检出，纳入子模块 README、DESIGN 与 PARITY 双语对 |
 
-`plugin-workspaces.ts`、`run-plugins.ts` 和 `run-checks.ts` 为本仓库自有脚本；检查和批量命令在插件子模块未初始化时失败，不能以空扫描通过。
+`plugin-workspaces.ts`、`run-plugins.ts` 和 `run-checks.ts` 为本仓库自有脚本；统一包发现包含实际有 `src` 的子模块根清单以及嵌套包，排除 workspace 空根。检查和批量命令在插件子模块未初始化时失败，不能以空扫描通过。
 
 ## 9. 升级 DSH 版本清单
 

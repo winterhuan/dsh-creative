@@ -16,3 +16,6 @@
 [submodule "plugins/dsh-skills-viewer"]
 	path = plugins/dsh-skills-viewer
 	url = https://github.com/winterhuan/dsh-skills-viewer.git
+[submodule "plugins/dsh-antfarm"]
+	path = plugins/dsh-antfarm
+	url = https://github.com/winterhuan/dsh-antfarm.git

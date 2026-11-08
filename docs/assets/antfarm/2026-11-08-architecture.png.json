@@ -1,0 +1,15 @@
+{
+  "model": "gpt-image-2",
+  "channel": "Lupi",
+  "client_request_id": "2128ccb2-ac28-46ce-bb73-b0f0c2cc02b6",
+  "requested_size": "2304x1536",
+  "actual_size": "1536x1024",
+  "prompt_file": "2026-11-08-architecture.prompt.txt",
+  "provider_image_sha256": "63cd820a4b49ae44fdf672eb361c27181a10692915334aa21188ad5f97b3c24f",
+  "final_image_sha256": "75235cd34449bede7b2a690fb303d14718846ef71637e25598abf8b44ba1eb48",
+  "local_corrections": [
+    "Route business checkpoint arrow from Antfarm runtime to persistence",
+    "Render persistence ownership caption in Chinese",
+    "Route configuration input from effective snapshot rather than live profile defaults"
+  ]
+}

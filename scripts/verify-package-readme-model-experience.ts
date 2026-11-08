@@ -6,9 +6,10 @@
  * [Model Experience Agent Note](../upstream/.agents/notes/implemented/process/2026-07-12-package-model-experience-contract.md).
  */
 
-import { existsSync, globSync, readFileSync } from 'node:fs'
-import { relative, resolve, sep } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { relative, resolve } from 'node:path'
 import { markdownHeadingLines, markdownProseLines, type MarkdownProseLine } from './markdown.ts'
+import { pluginPackageJsons } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const HEADING = '## Model Experience'
@@ -126,7 +127,7 @@ if (existsSync(resolve(root, 'docs/tool-catalog.md'))) {
 }
 
 const failures: Failure[] = []
-const packageJsons = globSync('plugins/*/packages/*/*/package.json', { cwd: root }).map(path => path.split(sep).join('/')).sort()
+const packageJsons = pluginPackageJsons(root)
 const scannedPackages = new Set(packageJsons.map(path => path.slice(0, -'/package.json'.length)))
 let structuredCount = 0
 let modelContextEntryCount = 0

@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for antfarm.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/antfarm.md
+/:
+  en: f18dccdfd123d58e
+  zh: b35ce34cf3330e19
+/antfarm:
+  en: fd0011d791e5dd4f
+  zh: 8ac8f6520173c3bd
+/antfarm/summary:
+  en: 6dc6063553ce59c0
+  zh: 34c53a0deb4800c0
+/antfarm/table-of-contents:
+  en: 3156e0bd4e0f3619
+  zh: 4cf531e289b5c221
+/antfarm/ownership:
+  en: ac6233d0d038e929
+  zh: 7f8af1e6c37f36a9
+/antfarm/trust-and-recovery:
+  en: b1c5dffcedf255c7
+  zh: 57b092300b40051d
+/antfarm/development:
+  en: 09119f4c460961d7
+  zh: 2a2345008307bff2
+/antfarm/dev-note:
+  en: 1c9eb11457280508
+  zh: 8e70d9d5485abd84

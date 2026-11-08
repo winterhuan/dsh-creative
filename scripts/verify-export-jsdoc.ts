@@ -567,7 +567,9 @@ function loadCompilerOptions(scanRoot: string): ts.CompilerOptions {
  */
 export function collectExportJsdocViolations(scanRoot: string = root): string[] {
   const violations: string[] = []
-  const rels = globSync('plugins/*/packages/*/*/src/**/*.ts', { cwd: scanRoot })
+  const rels = globSync(['plugins/*/src/**/*.ts', 'plugins/*/packages/*/*/src/**/*.ts'], {
+    cwd: scanRoot, exclude: ['**/vendor/**', '**/node_modules/**'],
+  })
     .map(path => path.split(sep).join('/'))
     .sort()
   const program = ts.createProgram(rels.map(rel => resolve(scanRoot, rel)), loadCompilerOptions(scanRoot))

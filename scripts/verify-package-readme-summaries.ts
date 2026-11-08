@@ -1,8 +1,9 @@
 // Copied from deepseek-harness dsh-v0.1.7-rc.2; re-sync when the DSH dependency version changes.
 /** Enforce the English package README Summary entry-length limit. */
 
-import { globSync, readFileSync } from 'node:fs'
+import { existsSync, globSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { pluginPackageJsons } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -12,7 +13,6 @@ export const MAX_PACKAGE_README_SUMMARY_WORDS = 100
 const PACKAGE_README_PATTERNS = [
   'packages/README.md',
   'packages/*/README.md',
-  'plugins/*/packages/*/*/README.md',
 ] as const
 
 /** `wc -w` equivalent used by the documentation budget gate. */
@@ -54,10 +54,17 @@ export function packageReadmeSummaryErrors(file: string, source: string): string
   ]
 }
 
-/** Find every authored English package README covered by the kind templates. */
-function packageReadmes(): string[] {
-  return PACKAGE_README_PATTERNS
-    .flatMap(pattern => globSync(pattern, { cwd: root, exclude: ['**/node_modules/**'] }))
+/**
+ * Find authored English package READMEs covered by the kind templates.
+ * @param scanRoot - absolute parent repository root.
+ * @returns sorted README paths for root and nested packages.
+ */
+export function packageReadmes(scanRoot: string = root): string[] {
+  return [
+    ...PACKAGE_README_PATTERNS.flatMap(pattern => globSync(pattern, { cwd: scanRoot, exclude: ['**/node_modules/**', '**/vendor/**'] })),
+    ...pluginPackageJsons(scanRoot).map(file => file.replace(/package\.json$/, 'README.md'))
+      .filter(file => existsSync(resolve(scanRoot, file))),
+  ]
     .map(file => file.replaceAll('\\', '/'))
     .sort()
 }

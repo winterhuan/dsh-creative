@@ -5,7 +5,7 @@ description: Use before committing, pushing, or claiming checks pass in the dsh-
 
 # dsh-creative pre-commit checks
 
-Select the narrowest evidence that would fail for the change you are about to commit or push. Run plugin-specific commands in the owning `plugins/<repository>` submodule; root commands dispatch across all five plugins. This repository has no CI and no git hooks: the commands you run are the only evidence that exists, and nothing else will catch what you skip.
+Select the narrowest evidence that would fail for the change you are about to commit or push. Run plugin-specific commands in the owning `plugins/<repository>` submodule; root commands dispatch across all registered plugin submodules. This repository has no CI and no git hooks: the commands you run are the only evidence that exists, and nothing else will catch what you skip.
 
 ## Inspect the outgoing change
 

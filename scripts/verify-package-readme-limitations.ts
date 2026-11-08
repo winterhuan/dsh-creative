@@ -7,9 +7,10 @@
  * documents the original decision.
  */
 
-import { existsSync, globSync, readFileSync } from 'node:fs'
-import { resolve, sep } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { markdownHeadingLines, markdownProseLines } from './markdown.ts'
+import { pluginPackageJsons } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -30,7 +31,7 @@ function isLimitationsLike(headingText: string): boolean {
   )
 }
 
-const packageJsons = globSync('plugins/*/packages/*/*/package.json', { cwd: root }).map(path => path.split(sep).join('/')).sort()
+const packageJsons = pluginPackageJsons(root)
 const scannedPackages = new Set(packageJsons.map(path => path.slice(0, -'/package.json'.length)))
 const failures: string[] = []
 

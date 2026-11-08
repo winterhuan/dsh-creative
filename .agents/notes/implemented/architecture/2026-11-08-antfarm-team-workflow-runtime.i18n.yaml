@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-11-08-antfarm-team-workflow-runtime.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-11-08-antfarm-team-workflow-runtime.md
+/agent-note-antfarm-team-workflow-runtime:
+  en: 81889418211b8d5e
+  zh: 5f37da1a93ad868e
+/agent-note-antfarm-team-workflow-runtime/problem:
+  en: cc11ce067161dbdb
+  zh: ca5c52c9eba7f7c7
+/agent-note-antfarm-team-workflow-runtime/decision:
+  en: c9117507daebbb89
+  zh: 61f75b4e663ff134
+/agent-note-antfarm-team-workflow-runtime/alternatives-considered:
+  en: 5d2578afce106d6e
+  zh: e3045a370f516af4
+/agent-note-antfarm-team-workflow-runtime/consequences:
+  en: 0b5eed6b107ca4ea
+  zh: 55ff12795b9770c8

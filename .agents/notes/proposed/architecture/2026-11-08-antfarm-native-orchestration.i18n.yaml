@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for 2026-11-08-antfarm-native-orchestration.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-08-antfarm-native-orchestration.md
+/agent-note-antfarm-native-execution-and-collaboration-boundaries:
+  en: 26b88f7085cb170e
+  zh: 5b9c4bb6b53e29d0
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/problem:
+  en: a679f88968c5378a
+  zh: 91a028a634dc59b5
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/proposal:
+  en: 23155b613fd71809
+  zh: 7e760ca22acd05b2
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/proposal/native-capability-boundaries:
+  en: 5894375025b6900d
+  zh: f65c7424fd453734
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/proposal/composition-on-the-current-release:
+  en: 8c8db5e82075d947
+  zh: 11bae4d7e4b186a8
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/proposal/run-execution-and-authority:
+  en: a941a626a33bf5d2
+  zh: 61eb7ec819013a32
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/proposal/conditions-for-replacing-the-executor:
+  en: 9b27929b0644592c
+  zh: c94703996ed0e535
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/proposal/conditions-for-replacing-persistence-and-transport:
+  en: db9205496ca78573
+  zh: 223ff337f09e08a7
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/alternatives-considered:
+  en: 4ac1297ab0852957
+  zh: b06aa8ba8bbe7ac9
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/acceptance-criteria:
+  en: 3dab8f4f2253030b
+  zh: 2b841f281f7aa9be
+/agent-note-antfarm-native-execution-and-collaboration-boundaries/risks:
+  en: e9173655fba75e5a
+  zh: 3df1b5a68cbff17a

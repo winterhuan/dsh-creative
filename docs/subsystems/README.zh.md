@@ -8,7 +8,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 
 ## 概要
 
-按插件查找职责与信任边界的所属文档。学生学习工作台、Skill Viewer、模型设置增强、按项目的默认模式与写作模式分别说明。包映射同时覆盖可安装的 bundle 与配套客户端。四个创作领域（小说、短剧、视频解说、小说转游戏）及其设置客户端已于 2026-10-31 归档，包与参考文档现位于 `archive/` 下。
+按插件查找职责与信任边界的所属文档。学生学习工作台、Skill Viewer、模型设置增强、按项目的默认模式、写作模式与 Antfarm 分别说明。包映射同时覆盖可安装的 bundle 与配套客户端。四个创作领域（小说、短剧、视频解说、小说转游戏）及其设置客户端已于 2026-10-31 归档，包与参考文档现位于 `archive/` 下。
 
 ## 目录
 
@@ -29,6 +29,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [模型设置增强](model-options.zh.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.zh.md) | 独立 bundle |
 | [项目默认模式](project-default-mode.zh.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.zh.md) | 独立 bundle |
 | [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) | 独立 bundle |
+| [Antfarm](antfarm.zh.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 面向 DSH 0.2.2-rc.1 的独立开发 bundle；尚未发布 |
 
 <a id="related"></a>
 ## 相关文档

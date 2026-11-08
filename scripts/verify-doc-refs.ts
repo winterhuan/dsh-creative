@@ -13,31 +13,43 @@ import { findReferenceViolations, uniqueRepoFiles, type ReferenceViolation as Vi
 const root = resolve(import.meta.dirname, '..')
 
 /** Repo-authored TypeScript that may cite docs in comments. */
-const PATTERNS = ['plugins/*/packages/*/*/src/**/*.ts']
+const PATTERNS = [
+  'plugins/*/src/**/*.ts',
+  'plugins/*/src/**/*.tsx',
+  'plugins/*/packages/*/*/src/**/*.ts',
+  'plugins/*/packages/*/*/src/**/*.tsx',
+]
 
 /** Paths excluded from the scan: built output and vendored upstream source. */
 const isExcluded = (p: string): boolean =>
-  p.includes('/lib/') || p.endsWith('.d.ts') || p.startsWith('vendor/')
+  p.includes('/lib/') || p.endsWith('.d.ts') || p.split('/').includes('vendor')
 
 /** Root-relative Markdown path token, excluding trailing prose. */
 const DOC_REF = /(?:\bdocs|\.agents\/notes)\/[A-Za-z0-9._/-]+\.md/g
 
-/** Find every broken root-relative documentation reference in one TypeScript file. */
-function findViolations(absPath: string): Violation[] {
-  return findReferenceViolations(root, absPath, DOC_REF, ref => ref, ref => !existsSync(resolve(root, ref)))
+/**
+ * Find broken parent-relative documentation references in plugin sources.
+ * @param scanRoot - absolute parent repository root.
+ * @returns checked source count and every broken reference, excluding declarations and vendor source.
+ */
+export function scanDocReferences(scanRoot: string = root): { checked: number; violations: Violation[] } {
+  const files = uniqueRepoFiles(scanRoot, PATTERNS, isExcluded)
+  return {
+    checked: files.length,
+    violations: files.flatMap(file => findReferenceViolations(scanRoot, file.abs, DOC_REF, ref => ref, ref => !existsSync(resolve(scanRoot, ref)))),
+  }
 }
 
-const files = uniqueRepoFiles(root, PATTERNS, isExcluded)
-const all = files.flatMap(file => findViolations(file.abs))
-const checked = files.length
+if (import.meta.main) {
+  const { checked, violations: all } = scanDocReferences()
 
-if (all.length === 0) {
-  console.log(`verify-doc-refs: ${checked} file(s) checked, all documentation references resolve.`)
-  process.exit(0)
+  if (all.length === 0) {
+    console.log(`verify-doc-refs: ${checked} file(s) checked, all documentation references resolve.`)
+  } else {
+    console.error('verify-doc-refs: broken documentation references found in source comments (target does not exist):')
+    for (const v of all) {
+      console.error(`  ${v.file}:${v.line}  ${v.ref}`)
+    }
+    process.exitCode = 1
+  }
 }
-
-console.error('verify-doc-refs: broken documentation references found in source comments (target does not exist):')
-for (const v of all) {
-  console.error(`  ${v.file}:${v.line}  ${v.ref}`)
-}
-process.exit(1)

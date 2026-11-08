@@ -2,6 +2,7 @@
 /** Git index reads owned by the bilingual pairing gate. */
 
 import { spawnSync } from 'node:child_process'
+import { join } from 'node:path'
 
 /**
  * Run one Git subprocess and return its exact stdout bytes.
@@ -23,7 +24,7 @@ function runGit(root: string, args: string[], operation: string): Buffer {
   return result.stdout
 }
 
-/** Every stage-zero path currently present in the Git index. */
+/** Every stage-zero path, including files at each staged submodule commit. */
 export function gitIndexPaths(root: string): Set<string> {
   const paths = new Set<string>()
   const entries = runGit(root, ['ls-files', '--stage', '-z'], 'listing Git index paths')
@@ -31,15 +32,22 @@ export function gitIndexPaths(root: string): Set<string> {
     .split('\0')
     .filter(Boolean)
   for (const entry of entries) {
-    const match = /^\d+ [0-9a-f]+ ([0-3])\t([\s\S]+)$/.exec(entry)
-    if (!match?.[1] || match[2] === undefined) throw new Error('git ls-files --stage returned a malformed entry')
-    if (match[1] === '0') paths.add(match[2])
+    const match = /^(\d+) ([0-9a-f]+) ([0-3])\t([\s\S]+)$/.exec(entry)
+    if (!match?.[1] || !match[2] || !match[3] || match[4] === undefined) throw new Error('git ls-files --stage returned a malformed entry')
+    if (match[3] !== '0') continue
+    const path = match[4]
+    paths.add(path)
+    if (match[1] === '160000') {
+      const children = runGit(join(root, path), ['ls-tree', '-r', '--name-only', '-z', match[2]], `listing staged submodule ${path}`)
+        .toString('utf8').split('\0').filter(Boolean)
+      for (const child of children) paths.add(`${path}/${child}`)
+    }
   }
   return paths
 }
 
 /**
- * Read one path from the Git index without consulting working-tree bytes.
+ * Read one path from the Git index or a staged submodule commit, without consulting working-tree bytes.
  *
  * @param root - Repository root.
  * @param path - Repository-relative path.
@@ -53,7 +61,19 @@ export function readGitIndexBlob(root: string, path: string): Buffer | undefined
     `git ls-files --stage for ${path}`,
   ).toString('utf8')
   const entries = output.split('\0').filter(Boolean)
-  if (entries.length === 0) return undefined
+  if (entries.length === 0) {
+    const links = runGit(root, ['ls-files', '--stage', '-z'], 'listing staged submodules').toString('utf8').split('\0')
+    for (const entry of links) {
+      const link = /^160000 ([0-9a-f]+) 0\t([\s\S]+)$/.exec(entry)
+      if (!link?.[1] || link[2] === undefined || !path.startsWith(`${link[2]}/`)) continue
+      const subRoot = join(root, link[2])
+      const relative = path.slice(link[2].length + 1)
+      const tree = runGit(subRoot, ['ls-tree', '-z', link[1], '--', relative], `locating staged ${path}`).toString('utf8')
+      const blob = /^\d+ blob ([0-9a-f]+)\t/.exec(tree)?.[1]
+      return blob === undefined ? undefined : runGit(subRoot, ['cat-file', 'blob', blob], `reading staged ${path}`)
+    }
+    return undefined
+  }
   if (entries.length !== 1) throw new Error(`${path} does not have exactly one resolved index entry`)
   const match = /^(?:\d+) ([0-9a-f]+) 0\t[\s\S]+$/.exec(entries[0] ?? '')
   if (!match?.[1]) throw new Error(`${path} remains unmerged or has an invalid index entry`)

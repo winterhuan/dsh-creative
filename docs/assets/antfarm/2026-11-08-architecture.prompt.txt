@@ -1,0 +1,17 @@
+Generate a NEW image from this text description. Use your image-generation capability now. This is text-to-image generation, NOT editing, restoring, or inspecting an existing image. No reference image is required. Return the generated image.
+
+Draw a professional Chinese architecture diagram, landscape 2304x1536, white background, flat vector-like panels, readable Chinese labels, clean orthogonal arrows, subtle blue/green/purple/orange accents.
+Title: Antfarm × DSH 架构
+Subtitle: 原版 0.5.1 全功能覆盖 · 配置管理 · 运行界面
+
+Top panel 用户入口: Web / TUI / Headless; 工作流管理 · 多 Run 看板; 配置 · 运行详情 · 健康 · 日志.
+Left column 配置与工作流: 包内只读模板 + 用户/项目覆盖 + DSH Profile / Presets → 有效配置快照. Green dashed arrow into the central runtime. Caption 修改只影响新 Run.
+Center large panel Antfarm Run 运行时, subtitle 唯一执行器 · 业务状态权威. Six tiles: 准入与调度; 角色步骤与循环; 版本化验收; PR / Review; 检查点与恢复; 资源生命周期. Small captions: Owner·单写入者; 全新会话·结构化交接; 候选版本·实际证据; 修复→重测→更新; 失败恢复·效果核对; 安装更新·工作区处置.
+Below center panel DSH 原生执行层: Agent Presets · 模型 · Skills; 权限 · Sessions · 子会话; Jobs · 工具 · 子进程. Blue downward arrow from runtime 启动角色/执行工具, orange upward arrow 结果与执行证据.
+Right upper panel 健康与可观测性: Medic 巡检与诊断; 事件时间线·日志; Owner 告警·Webhook. Purple dashed arrow from runtime 已记录事件, dashed return arrow into runtime 核对后恢复.
+Right lower panel 外部交付: GitHub PR · 已发表 Review; 研究报告 · 写作文件. Runtime-owned orange arrow 声明并授权的交付. Caption PR Head 与验收版本一致.
+Bottom persistence strip 持久化与成果: 权威 Run Journal; Git Worktree/Commit · 不可变文件; 验收证据 · 截图 · 恢复历史. Only the Antfarm runtime writes accepted business checkpoints here.
+Small detached dotted extension box 可选 Agent Team / 持续讨论·原生能力, connected to DSH execution only. It is optional and is not a second scheduler.
+Footer: 单 Run 单写入者 · 验收绑定候选版本 · 不确定效果先核对 · 角色会话保持全新
+Small badge: 规划方案.
+Ensure accurate ownership, arrow directions, readable Chinese text, balanced spacing. No duplicate controllers, no cron-agent supervisor, no watermark.

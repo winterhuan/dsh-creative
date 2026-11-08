@@ -8,7 +8,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Find the subsystem that owns a plugin’s responsibilities and trust boundaries. The student learning workbench, Skill Viewer, model options, the per-project default mode, and writing mode have separate references. The package map includes both installable bundles and supporting clients. The four creative domains (story, short drama, video recap, novel to game) and their settings clients were archived on 2026-10-31; their packages and references now live under `archive/`.
+Find the subsystem that owns a plugin’s responsibilities and trust boundaries. The student learning workbench, Skill Viewer, model options, the per-project default mode, writing mode, and Antfarm have separate references. The package map includes both installable bundles and supporting clients. The four creative domains (story, short drama, video recap, novel to game) and their settings clients were archived on 2026-10-31; their packages and references now live under `archive/`.
 
 ## Table of Contents
 
@@ -29,6 +29,7 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Model options](model-options.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.md) | Independent bundle |
 | [Project default mode](project-default-mode.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.md) | Independent bundle |
 | [Writing](writer.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) | Independent bundle |
+| [Antfarm](antfarm.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Independent development bundle for DSH 0.2.2-rc.1; unreleased |
 
 <a id="related"></a>
 ## Related documentation

@@ -108,6 +108,7 @@ export interface TranslationPairingManifest {
   excluded: string[]
 }
 
+const PACKAGE_REFERENCE_ARTIFACT = /^plugins\/[^/]+\/(?:DESIGN|PARITY)(?:\.zh)?\.md$|^plugins\/[^/]+\/(?:DESIGN|PARITY)\.i18n\.yaml$/
 const README_ARTIFACT = /(?:^|\/)readme(?:\.md|\.zh\.md|\.i18n\.yaml)$/i
 const ROOT_PAIRED_DOCUMENT_ARTIFACT = /^(?:brand_guidelines|contributing|safety)(?:\.md|\.zh\.md|\.i18n\.yaml)$/i
 const NON_SOURCE_DIRECTORIES = new Set([
@@ -168,7 +169,7 @@ function isTranslationSourceExcluded(file: string): boolean {
 /** Whether one discovered Markdown or sidecar path belongs to the bilingual source corpus. */
 export function isTranslationScopeFile(file: string): boolean {
   return !file.startsWith('.agents/notes/archived/')
-    && !isTranslationSourceExcluded(file) && (README_ARTIFACT.test(file)
+    && !isTranslationSourceExcluded(file) && (README_ARTIFACT.test(file) || PACKAGE_REFERENCE_ARTIFACT.test(file)
     || ROOT_PAIRED_DOCUMENT_ARTIFACT.test(file)
     || file.startsWith('.agents/notes/')
     || file.startsWith('docs/')

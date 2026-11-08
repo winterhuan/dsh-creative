@@ -1,0 +1,25 @@
+{
+  "status": "completed",
+  "client_request_id": "778a4aa6-15ee-42da-9afe-372d8e498faa",
+  "base_url": "https://lupi.mlgb7.com/v1",
+  "model": "gpt-image-2",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt_file": "/Users/winter/dsh-creative/docs/assets/antfarm/2026-11-08-architecture-revised.prompt.txt",
+  "prompt_sha256": "ff69721fb398be74e77f40311e2c9be0341e26daa23f780491aa34bffa626b93",
+  "output": "/Users/winter/dsh-creative/docs/assets/antfarm/2026-11-08-architecture-revised.png",
+  "bytes": 1335358,
+  "format": "png",
+  "width": 1536,
+  "height": 1024,
+  "provider_image_sha256": "115b8674add76593043857705c6ee222b656708e73c9811d2c35df13c0a48c0f",
+  "final_image_sha256": "c7e025ffbb231cd08b86c3915698677b773b5b62de71033c37178af116bdda2d",
+  "local_corrections": [
+    "Route accepted checkpoint to ready queue and rejected verification to bounded repair",
+    "Route recorded events to health and final delivery to the authorized delivery panel",
+    "Route Medic requests and journal recovery reads to the same runtime recovery strip",
+    "Make journal writes one-way from runtime; derive the index directly from journal",
+    "Connect authorized UI queries to the rebuildable index rather than the journal",
+    "Correct generated workflow label in the user entry bar"
+  ]
+}

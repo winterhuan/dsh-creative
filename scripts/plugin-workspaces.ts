@@ -1,7 +1,21 @@
 /** Discover initialized plugin repositories registered by the parent Git repository. */
 import { execFileSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, globSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+
+/**
+ * Find plugin package manifests, excluding workspace-only root manifests.
+ * @param root - absolute parent repository root.
+ * @returns sorted repository-relative manifests for root src and nested packages.
+ */
+export function pluginPackageJsons(root: string): string[] {
+  return globSync(['plugins/*/package.json', 'plugins/*/packages/*/*/package.json'], {
+    cwd: root, exclude: ['**/vendor/**', '**/node_modules/**'],
+  })
+    .map(file => file.replaceAll('\\', '/'))
+    .filter(file => file.includes('/packages/') || existsSync(resolve(root, dirname(file), 'src')))
+    .sort()
+}
 
 /** Return plugin submodule paths; fail before a command can silently skip an uninitialized repository. */
 export function pluginWorkspaces(root: string): string[] {
