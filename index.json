@@ -199,6 +199,18 @@
       },
       "versions": [
         {
+          "version": "0.3.2",
+          "publishTimestamp": 1794175985,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-antfarm",
+            "commit": "d8fbf27ba2a17200b59f773fbb0a3990e54f4842"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.3.1",
           "publishTimestamp": 1794174787,
           "source": {
