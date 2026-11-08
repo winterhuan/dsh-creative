@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-6 个插件仓库包含 7 个源码包。`dsh-writer` 发布版本为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`dsh-antfarm` 发布版本为 `0.3.0`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+6 个插件仓库包含 7 个源码包。`dsh-writer` 发布版本为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.1`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -85,11 +85,11 @@ pnpm run hygiene
 
 根 `typecheck` 检查父仓库脚本并调用每个插件的类型检查；`build` 调用每个插件的构建；`test` 运行插件测试和父仓库工具测试。文档及代码检查遍历子模块源码，排除预构建产物、依赖、归档和嵌套上游。仅修改一个插件时，在该子模块根目录执行其 README 中的命令；不需要重建其他插件。
 
-Antfarm 由 `.gitmodules` 自动加入批量命令，使用自己的冻结锁文件。根检查通过统一包发现覆盖其单包 `src`、README、导出 JSDoc 与 UI 文案；README、DESIGN 和 PARITY 均进入双语配对检查。`0.3.0` 的验证范围见 [Antfarm 功能对照](plugins/dsh-antfarm/PARITY.zh.md)。隔离 Web 的确定性验收完成三个工作流、20 个独立原生子会话与 20 次 Bash 调用；固定 Git 远程安装另完成 feature-dev、7 个独立子会话与 7 次 Bash 调用，并核对发布包、配置和浏览器。证据保存在 `~/.dsh/backups/antfarm-release-20261109-0.3.0/evidence/`。真实模型、在线 GitHub 交付与 Linux／Windows 尚未验证；CLI 正常退出不代表 Run 已接受完成。
+Antfarm 由 `.gitmodules` 自动加入批量命令，使用自己的冻结锁文件。根检查通过统一包发现覆盖其单包 `src`、README、导出 JSDoc 与 UI 文案；README、DESIGN 和 PARITY 均进入双语配对检查。`0.3.0` 的验证范围见 [Antfarm 功能对照](plugins/dsh-antfarm/PARITY.zh.md)。隔离 Web 的确定性验收完成三个工作流、20 个独立原生子会话与 20 次 Bash 调用；固定 Git 远程安装另完成 feature-dev、7 个独立子会话与 7 次 Bash 调用，并核对发布包、配置和浏览器。工作流证据保存在 `~/.dsh/backups/antfarm-release-20261109-0.3.0/evidence/`；scoped 包名、远程安装与组件加载验证保存在 `~/.dsh/backups/scoped-plugins-release-20261109/`。真实模型、在线 GitHub 交付与 Linux／Windows 尚未验证；CLI 正常退出不代表 Run 已接受完成。
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。Antfarm `0.3.0` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.1` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 本机额外安装的 Superagent 来自独立源码仓库，安装与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
 
@@ -114,7 +114,7 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 现役插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
 
-Antfarm `0.3.0` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
+Antfarm `0.3.1` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
 
 新使用 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入该插件的 `devDependencies`，并添加 `import type {} from '<包>/remote'`。外部 Remote 仍需由客户端显式挂载。
 

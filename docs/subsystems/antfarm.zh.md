@@ -8,7 +8,7 @@ description: "原版 Antfarm agent 身份、SQL 业务状态与原生 DSH 执行
 
 ## 概述
 
-Antfarm 运行原版专家团队，保留稳定人设并创建全新原生 Session。SQLite 管理业务进度，DSH 管理执行与原生会话记录。源码位于 `plugins/dsh-antfarm` 子模块；`0.3.0` 已在市场发布，并从固定 Git 提交安装到本地 `web` profile。
+Antfarm 运行原版专家团队，保留稳定人设并创建全新原生 Session。SQLite 管理业务进度，DSH 管理执行与原生会话记录。源码位于 `plugins/dsh-antfarm` 子模块；`0.3.1` 已在市场发布，并从固定 Git 提交安装到本地 `web` profile。
 
 ## 目录
 
@@ -50,4 +50,4 @@ Antfarm 运行原版专家团队，保留稳定人设并创建全新原生 Sessi
 <a id="dev-note"></a>
 ## 开发备注
 
-发布与远程安装证据位于 `~/.dsh/backups/antfarm-release-20261109-0.3.0/`；Antfarm 历史文件与发布前备份逐字节一致。
+发布与远程安装证据位于 `~/.dsh/backups/scoped-plugins-release-20261109/`；Antfarm 历史文件与发布前备份逐字节一致。

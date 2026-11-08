@@ -132,6 +132,6 @@
 
 - [v0.2.0](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.0) 已发布，日常 `web` 安装该标签的固定 Git 提交并重启；配置、包检查、17 项测试与三个运行组件均已验证。未配置审查职责，不自动触发模型调用。安装前备份及证据：`~/.dsh/backups/shadow-mind-release-20261108-0.2.0/`。
 
-2026-11-09 Antfarm 发布与远程安装：
+2026-11-09 插件包名修正：
 
-- [v0.3.0](https://github.com/winterhuan/dsh-antfarm/releases/tag/v0.3.0) 已发布并更新市场，日常 `web` 固定远程安装、重启与浏览器验证完成；历史文件和其他依赖保留，证据见 `~/.dsh/backups/antfarm-release-20261109-0.3.0/`。
+- [Antfarm](https://github.com/winterhuan/dsh-antfarm/releases/tag/v0.3.1)与[Shadow Mind](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.1) 补全 `@winterhuan` 包名；日常 `web` 远程迁移、重启验证完成，历史数据保留。证据：`~/.dsh/backups/scoped-plugins-release-20261109/`。
