@@ -123,10 +123,10 @@
 - 构建、147 项测试、单次远程安装及浏览器验收通过。备份与证据：`/Users/winter/dsh-plugins/merge-skills-viewer-20261107-204726/`。两个旧仓库已删除，GitHub 均返回 404；合并后的仓库保留。
 
 
-2026-11-08 Writer 远程更新：
+2026-11-08／09 Writer 远程更新：
 
-- [v0.1.9](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.9) 已发布并更新市场，旧版保留。`web`、`headless` 从固定 Git 提交更新；重启 Web 后两个组件运行，其他直接依赖和配置补丁未变。
-- 配置备份和发布证据：`~/.dsh/backups/writer-release-20261108-0.1.9/`。实现及确定性模型验收：`~/.dsh/backups/writer-acceptance-20261108-FJ5aWU/`。
+- [v0.1.9](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.9)、[v0.1.10](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.10) 已发布并更新市场；`web`、`headless` 从固定远程提交安装，Web 重启验证通过。
+- 配置备份及验收：`~/.dsh/backups/writer-release-20261108-0.1.9/`、`~/.dsh/backups/writer-acceptance-20261108-FJ5aWU/`、`~/.dsh/backups/writer-release-20261109-0.1.10-yda2g0r4/`。
 
 2026-11-08 Shadow Mind 远程安装：
 

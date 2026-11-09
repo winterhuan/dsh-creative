@@ -31,6 +31,8 @@ The sidebar lists and reads through `workspaceFiles`. Its Scans tab discovers `æ
 
 The sidebar stores browser recovery drafts by workspace and path; read and save replies update only their owning document. The chapter panel reads book tracking, mechanical checks, and semantic review records on demand. Changed manuscript or outline fingerprints expire the corresponding reports. Skill scripts validate review quotations and versions; the sidebar does not replace author decisions or impose a chapter-commit gate.
 
+`writer_agent` owns role discovery and prompt composition using the effective `story-setup`, and delegates through the native tool pipeline. DSH owns child session identity, model-selection policy, continuation, and interruption. Roles share the Writer Preset; role names do not create independent permission configurations.
+
 <a id="related"></a>
 ## Related
 
