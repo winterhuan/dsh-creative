@@ -1,8 +1,8 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-09。
+最后更新：2026-11-10。
 
-本仓库统一管理 6 个独立 DSH 插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
+本仓库统一管理 7 个独立 DSH 插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-6 个插件仓库包含 7 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+7 个插件仓库包含 8 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -37,10 +37,11 @@
 | [dsh-client-ui-settings-model-options](plugins/dsh-client-ui-settings-model-options/README.zh.md) | `packages/winterhuan/ui-settings-model-options` | `packages/winterhuan/ui-settings-model-options` |
 | [dsh-skills-viewer](plugins/dsh-skills-viewer/README.zh.md) | `packages/winterhuan/skill-viewer`、`packages/winterhuan/ui-skill-viewer` | `plugin`（包含两个包） |
 | [dsh-antfarm](plugins/dsh-antfarm/README.zh.md) | `src`（单包，包含 Host 与 Client 入口） | 子模块根目录（预构建固定 Git 发布包） |
+| [dsh-media-desk](plugins/dsh-media-desk/README.zh.md) | `src`、`client` | 子模块根目录（含预构建 `dist/client.js`） |
 
 ```text
 dsh-creative/
-├── plugins/              6 个独立 DSH 插件仓库的 Git 子模块
+├── plugins/              7 个独立 DSH 插件仓库的 Git 子模块
 ├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
@@ -58,6 +59,8 @@ dsh-creative/
 2. 各插件独立安装依赖、构建和测试；父仓库批量命令依次调用各插件脚本，任何失败都会停止。技能查看器只编辑两个源码包，由构建生成 `plugin/`，不直接修改生成目录。
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
 4. Writer `0.1.10` 与项目默认模式 `0.1.9` 单独发布；原有 5 个仓库的 6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
+
+Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.6.2-winter.1`。上游使用指南随包保留；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
 ## 3. 与 DSH 的集成方式
 
@@ -96,6 +99,8 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.3` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 本机额外安装的 Superagent 来自独立源码仓库，安装与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
+
+日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.6.2-winter.1`，来源为 `github:winterhuan/dsh-media-desk#v2.6.2-winter.1`。服务重启后，「自媒体工作台」与示例内容已在真实浏览器加载，既有插件依赖声明保持不变；插件语法检查、构建和 87 项测试通过，未调用真实模型或图片服务。备份与验收证据位于 `~/.dsh/backups/media-desk-release-20261110-2.6.2-winter.1/`。
 
 开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 writer 为例：
 

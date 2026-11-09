@@ -37,7 +37,7 @@ export function authoredGitFiles(root: string, includeUntracked = false): string
   return [...new Set([
     ...list(root),
     ...pluginWorkspaces(root).flatMap(path => list(resolve(root, path))
-      .filter(file => !file.split('/').some(part => ['lib', 'node_modules', 'plugin', '.artifacts'].includes(part)))
+      .filter(file => !file.split('/').some(part => ['lib', 'dist', 'node_modules', 'plugin', '.artifacts'].includes(part)))
       .map(file => `${path}/${file}`)),
   ])]
 }

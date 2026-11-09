@@ -19,3 +19,6 @@
 [submodule "plugins/dsh-antfarm"]
 	path = plugins/dsh-antfarm
 	url = https://github.com/winterhuan/dsh-antfarm.git
+[submodule "plugins/dsh-media-desk"]
+	path = plugins/dsh-media-desk
+	url = https://github.com/winterhuan/dsh-media-desk.git

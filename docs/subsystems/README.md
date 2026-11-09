@@ -30,6 +30,7 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Project default mode](project-default-mode.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.md) | Independent bundle |
 | [Writing](writer.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) | Independent bundle |
 | [Antfarm](antfarm.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Independent development bundle for DSH 0.2.2-rc.1; unreleased |
+| [Media Desk](../../plugins/dsh-media-desk/README.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Independent bundle; maintained fork of the community plugin |
 
 <a id="related"></a>
 ## Related documentation

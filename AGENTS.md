@@ -1,6 +1,6 @@
 # AGENTS.md
 
-`dsh-creative` 管理 DeepSeek Harness（DSH）的 6 个插件子模块。先读 [HANDOFF.md](HANDOFF.md)，按[源码映射](HANDOFF.md#开发目录与源码归属)进入目标仓库。
+`dsh-creative` 管理 DeepSeek Harness（DSH）的 7 个插件子模块。先读 [HANDOFF.md](HANDOFF.md)，按[源码映射](HANDOFF.md#开发目录与源码归属)进入目标仓库。
 
 ## 工作目录
 

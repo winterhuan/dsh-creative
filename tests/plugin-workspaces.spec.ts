@@ -29,12 +29,15 @@ it('finds authored plugin files without treating release output as source', () =
   writeFileSync(join(plugin, 'src/index.ts'), 'export {}\n')
   mkdirSync(join(plugin, 'lib'))
   writeFileSync(join(plugin, 'lib/index.js'), 'export {}\n')
-  execFileSync('git', ['add', 'package.json', 'src', 'lib'], { cwd: plugin })
+  mkdirSync(join(plugin, 'dist'))
+  writeFileSync(join(plugin, 'dist/client.js'), 'export {}\n')
+  execFileSync('git', ['add', 'package.json', 'src', 'lib', 'dist'], { cwd: plugin })
   expect(pluginWorkspaces(root)).toEqual(['plugins/example'])
   const files = authoredGitFiles(root, true)
   expect(files).toContain('AGENTS.md')
   expect(files).toContain('plugins/example/src/index.ts')
   expect(files).not.toContain('plugins/example/lib/index.js')
+  expect(files).not.toContain('plugins/example/dist/client.js')
 })
 
 it('preserves plugin translation hashes when the repository is checked as a submodule', () => {
