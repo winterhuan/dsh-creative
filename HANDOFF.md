@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-6 个插件仓库包含 7 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.2`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+6 个插件仓库包含 7 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -89,9 +89,11 @@ Antfarm 由 `.gitmodules` 自动加入批量命令，使用自己的冻结锁文
 
 Antfarm `0.3.2` 在全局看板提供项目会话选择、团队配置和任务启动；Agent 名称、模型、超时与人设可直接编辑，高级入口保留完整 YAML。隔离 Web 完成浅色／深色、配置保存与重启重载，以及确定性 feature-dev 的 7 次原生 Session／Bash；74 项测试通过。验收材料保存在 `~/.dsh/backups/antfarm-usability-release-20261109-0.3.2/evidence/`。
 
+Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复指导并保留工作区学习。固定 Git 远程安装的确定性 Headless 验收完成 11 个独立原生 Session 与 11 次 Bash 调用；81 项测试通过，本地 Web 重启和浏览器加载通过，16 个历史文件与 SQL 业务记录保持不变。证据保存在 `~/.dsh/backups/antfarm-release-20261109-0.3.3/evidence/`。
+
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.2` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.3` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 本机额外安装的 Superagent 来自独立源码仓库，安装与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
 
@@ -116,7 +118,7 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 现役插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
 
-Antfarm `0.3.2` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
+Antfarm `0.3.3` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
 
 新使用 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入该插件的 `devDependencies`，并添加 `import type {} from '<包>/remote'`。外部 Remote 仍需由客户端显式挂载。
 
@@ -206,7 +208,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 - Git 初始化只检出代码，依赖安装需分别执行；父仓库检查在插件未初始化时失败。
 - `archive/` 和旧本地备份不作为开发来源，也不自动同步。迁移备份中保留先前的未提交工作；恢复时逐项核对，不能整体覆盖子模块。
 - 客户端构建的 CSS 类名哈希与注释可能随绝对检出路径变化；搬迁后的纯路径产物差异需单独核对，不能据此判断业务源码变化。
-- 当前没有 CI 或浏览器 e2e 测试设施，相关本地检查与真实 DSH 验证需由提交者完成。
+- 父仓库没有 CI；Antfarm 子模块配置 Node 22／24 的 GitHub Actions 检查。浏览器验证仍由提交者在真实 DSH 中完成。
 
 ## 11. 排障速查
 
