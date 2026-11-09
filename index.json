@@ -149,6 +149,19 @@
       },
       "versions": [
         {
+          "version": "0.1.9",
+          "publishTimestamp": 1794191586,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-project-default-mode",
+            "commit": "14cfebddf4ff6ea7d79f5c97c234c5be00c7709e",
+            "path": "packages/winterhuan/project-default-mode"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.1.8",
           "publishTimestamp": 1794053111,
           "source": {
