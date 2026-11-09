@@ -261,6 +261,36 @@
           }
         }
       ]
+    },
+    {
+      "name": "@winterhuan/dsh-media-desk",
+      "title": {
+        "en": "Media desk",
+        "zh": "自媒体工作台"
+      },
+      "description": {
+        "en": "Collect ideas, generate scripts and images, schedule content, and reuse writing rules.",
+        "zh": "收集灵感、生成脚本和图片、安排排期并复用写作规则。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-media-desk#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-media-desk"
+      },
+      "versions": [
+        {
+          "version": "2.6.2-winter.1",
+          "publishTimestamp": 1794264211,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-media-desk",
+            "commit": "3d6624a489571d755f0458883030d2cc8320155c"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
     }
   ]
 }
