@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for 2026-11-08-short-drama-canvas-workbench.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-08-short-drama-canvas-workbench.md
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat:
+  en: 0800715e1dbc2215
+  zh: d145e9e83976169c
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/problem:
+  en: 73d15f1744d9dc52
+  zh: 5c8a6972a24be64f
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/proposal:
+  en: b8b033c922644a90
+  zh: 2ffa96b5cbd2976b
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/responsibilities-and-interface:
+  en: 7e396c17c1cfd607
+  zh: bef06b67bfcce1da
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/script-to-video-workflow:
+  en: 5c20f7a02ae9c009
+  zh: 886ca2bfe382336f
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/content-revisions-and-generated-files:
+  en: 415c363d48f6245c
+  zh: 9b1ebf05c6d2d54b
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/execution-recovery-and-cost:
+  en: 6a5f15aa2f263a23
+  zh: 77f4f362c37775ea
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/ai-interaction:
+  en: 712ccc56d1b95b96
+  zh: fa249d85283c1f54
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/reference-choices-and-verified-gaps:
+  en: 576e04a3db78a101
+  zh: 5a85e5dd1d0cade5
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/alternatives-considered:
+  en: f5616ce5a09a9d76
+  zh: d4878dbf40b2b23a
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/acceptance-criteria:
+  en: e2c55363cd296ffb
+  zh: 3e0ee14a4249d90e
+/agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/risks:
+  en: bc5fcf3b24218091
+  zh: 6ae9809e57aa81c2

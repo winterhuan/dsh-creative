@@ -2,7 +2,7 @@
 
 最后更新：2026-11-10。
 
-本仓库统一管理 7 个独立 DSH 插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
+本仓库统一管理 8 个独立 DSH 插件仓库、开发检查和交接文档。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-7 个插件仓库包含 8 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+8 个插件仓库包含 9 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -38,10 +38,11 @@
 | [dsh-skills-viewer](plugins/dsh-skills-viewer/README.zh.md) | `packages/winterhuan/skill-viewer`、`packages/winterhuan/ui-skill-viewer` | `plugin`（包含两个包） |
 | [dsh-antfarm](plugins/dsh-antfarm/README.zh.md) | `src`（单包，包含 Host 与 Client 入口） | 子模块根目录（预构建固定 Git 发布包） |
 | [dsh-media-desk](plugins/dsh-media-desk/README.zh.md) | `src`、`client` | 子模块根目录（含预构建 `dist/client.js`） |
+| [dsh-shadow-mind](plugins/dsh-shadow-mind/README.zh.md) | `src`（单包，包含审查运行时、命令与预设入口） | 子模块根目录（预构建固定 Git 发布包） |
 
 ```text
 dsh-creative/
-├── plugins/              7 个独立 DSH 插件仓库的 Git 子模块
+├── plugins/              8 个独立 DSH 插件仓库的 Git 子模块
 ├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
@@ -94,6 +95,8 @@ Antfarm `0.3.2` 在全局看板提供项目会话选择、团队配置和任务�
 
 Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复指导并保留工作区学习。固定 Git 远程安装的确定性 Headless 验收完成 11 个独立原生 Session 与 11 次 Bash 调用；81 项测试通过，本地 Web 重启和浏览器加载通过，16 个历史文件与 SQL 业务记录保持不变。证据保存在 `~/.dsh/backups/antfarm-release-20261109-0.3.3/evidence/`。
 
+跨平台检查与真实预览按 [Linux 验收流程](docs/developer/linux-acceptance.zh.md)执行；每次记录待验收提交、阶段退出码和浏览器证据。
+
 ## 5. 在 DSH 中安装、调试和移除
 
 日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.3` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
@@ -116,6 +119,8 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 链接安装使用 `link:`；修改源码后重新构建，停止并重启该开发进程，再硬刷新浏览器。技能查看器需在 `plugins/dsh-skills-viewer` 构建并链接 `plugin/`，Host 与 Client 单次安装。移除使用 `dsh plugin --profile creative-dev remove @winterhuan/dsh-writer`。
 
 隔离验证可为每条 DSH 命令指定独立 `DSH_HOME`。首次打开浏览器前，将临时 profile 的 `workspace-controller.config.documentsDirectory` 指向临时目录，避免使用默认 Documents 工作区。UI 行为必须在真实 DSH 中验证，单元测试不能代替浏览器验收。Antfarm 开发使用 Web 的 Agent Preset 组合；DSH `0.2.2-rc.1` 没有 TUI 应用入口，终端验收使用 Headless；默认 headless 缺少原生 Agent Preset 注册器与 parent preset，自定义 headless 必须先补齐两者，不能仅添加 Antfarm bundle。
+
+现有 Instabox 使用独立 `cloud-preview` profile；环境、登录入口、服务操作及 HTTPS 代理配置见[云端 DSH 预览参考](docs/user/cloud-dsh-preview.zh.md)。
 
 本机日常 Web 由 `~/.dsh/bin/dsh-webctl` 管理；重启会轮换 token。launchd 不继承终端代理，`~/.dsh/.env` 按 [DSH 代理指南](upstream/docs/user/guide/network-proxy.zh.md)设置 HTTP 代理；「发现」详情需能访问 `raw.githubusercontent.com`。不要用裸 npm 包名的 `plugin-update` 覆盖 Git 安装。
 

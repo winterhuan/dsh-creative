@@ -1,0 +1,34 @@
+# Bilingual-pair consistency record for cloud-dsh-preview.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/user/cloud-dsh-preview.md
+/:
+  en: c68f78a00592e06e
+  zh: 7df3fab0b75b5834
+/cloud-dsh-preview-reference:
+  en: 7268fb02e610619a
+  zh: 5774721307c29c75
+/cloud-dsh-preview-reference/summary:
+  en: c5042b9032221f30
+  zh: 381f1999e76c3a31
+/cloud-dsh-preview-reference/table-of-contents:
+  en: ec42d26d4c15740c
+  zh: de11ebc7689c11ae
+/cloud-dsh-preview-reference/environment:
+  en: f86a1ec6ca239ab1
+  zh: aa8bf3cd4e12f0d4
+/cloud-dsh-preview-reference/operations-and-authenticated-entry:
+  en: 8a76fd0b824b5e81
+  zh: 924a9114ede23262
+/cloud-dsh-preview-reference/https-proxy-and-trusted-hosts:
+  en: a587ca157f4a6746
+  zh: 1059584212916ae1
+/cloud-dsh-preview-reference/evidence-locations:
+  en: 4d887dd3f19b4351
+  zh: ff9554ba8e397cb8
+/cloud-dsh-preview-reference/model-and-browser-limits:
+  en: 1c861b16db9fc1d2
+  zh: 02eac062ad2259e8
+/cloud-dsh-preview-reference/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269

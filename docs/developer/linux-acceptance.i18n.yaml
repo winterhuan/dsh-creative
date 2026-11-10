@@ -1,0 +1,31 @@
+# Bilingual-pair consistency record for linux-acceptance.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/developer/linux-acceptance.md
+/:
+  en: 9c47bbf284128fa0
+  zh: eac169214bad2f71
+/linux-acceptance:
+  en: 5178ffed2ef99328
+  zh: d72f172025ace7b7
+/linux-acceptance/summary:
+  en: 274e9b59073eb17c
+  zh: 100780d4923b033b
+/linux-acceptance/table-of-contents:
+  en: 2c6b3d8d44e397e5
+  zh: 9f5a20a792b5ab27
+/linux-acceptance/prepare-the-checkout:
+  en: 503f561e8983cd41
+  zh: e99f17bea00c599b
+/linux-acceptance/run-linux-checks:
+  en: 18b184af6ff8e7cb
+  zh: b1033e530413217c
+/linux-acceptance/verify-the-real-preview:
+  en: 95a6e1f50fef57ec
+  zh: 7ea3eb0ea2cb23e0
+/linux-acceptance/record-the-result:
+  en: a57da95f7c1dd085
+  zh: 290d7451c1c0256d
+/linux-acceptance/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269
