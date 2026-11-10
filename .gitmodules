@@ -22,3 +22,6 @@
 [submodule "plugins/dsh-media-desk"]
 	path = plugins/dsh-media-desk
 	url = https://github.com/winterhuan/dsh-media-desk.git
+[submodule "plugins/dsh-shadow-mind"]
+	path = plugins/dsh-shadow-mind
+	url = https://github.com/winterhuan/dsh-shadow-mind.git
