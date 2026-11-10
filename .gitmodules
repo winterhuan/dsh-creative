@@ -25,3 +25,6 @@
 [submodule "plugins/dsh-shadow-mind"]
 	path = plugins/dsh-shadow-mind
 	url = https://github.com/winterhuan/dsh-shadow-mind.git
+[submodule "plugins/dsh-short-drama"]
+	path = plugins/dsh-short-drama
+	url = https://github.com/winterhuan/dsh-short-drama.git

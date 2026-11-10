@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for 2026-11-11-media-desk-native-agents.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-11-media-desk-native-agents.md
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation:
+  en: bfa691583af2ecb7
+  zh: e1b5e3a7d4c0445c
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/problem:
+  en: e98a5159e0068b4a
+  zh: 50e70a089531d54a
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal:
+  en: 552ea837eb57734d
+  zh: 80fc7192ced60ef4
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/review-state-and-decision-tree:
+  en: 375974383f3722bd
+  zh: 4efb82e4b55c021f
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/current-call-paths-and-migration-coverage:
+  en: 42d926479d151f43
+  zh: 2b1855dce599bb61
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/responsibility-and-execution-flow:
+  en: 076ae7a003d53deb
+  zh: 3168fd0864d92cc5
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/agent-creation-composition-and-recovery:
+  en: 6e7b0634e4773f4c
+  zh: c3fc0fc258e9a40c
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/skill-discovery-and-wiki-usage:
+  en: 5958f9703cde3e6c
+  zh: 2400175a4f59a3a5
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/tasks-content-operations-and-completion:
+  en: 67612de0b7770e73
+  zh: 053ea91ddaf42c18
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/cancellation-conflicts-and-persistence:
+  en: f8f55f2e1c6774d8
+  zh: 04def57cc305991f
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/native-conversation-and-workbench-ui:
+  en: af379d38c19ab407
+  zh: b879f316e3746cdb
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/existing-images-and-historical-data:
+  en: 18d788ffd751104a
+  zh: ee5afabd029b82db
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/proposal/implementation-order:
+  en: 486d896ecedbfc34
+  zh: 61d8d30f47da73a6
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/alternatives-considered:
+  en: 2bad2d79afdc6704
+  zh: 855292aa4ad85681
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/acceptance-criteria:
+  en: 8cf169b1515d61b1
+  zh: 4418c264fc51791e
+/agent-note-media-desk-native-agents-and-wiki-assisted-creation/risks:
+  en: 53a160be39c2da9a
+  zh: c0c1b61652e07166

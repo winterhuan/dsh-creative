@@ -1,6 +1,6 @@
 # AGENTS.md
 
-`dsh-creative` 管理 DeepSeek Harness（DSH）的 8 个插件子模块。先读 [HANDOFF.md](HANDOFF.md)，按[源码映射](HANDOFF.md#开发目录与源码归属)进入目标仓库。
+`dsh-creative` 管理 DeepSeek Harness（DSH）的 9 个插件子模块。先读 [HANDOFF.md](HANDOFF.md)，按[源码映射](HANDOFF.md#开发目录与源码归属)进入目标仓库。
 
 ## 工作目录
 
@@ -32,3 +32,17 @@ pnpm run hygiene
 ```
 
 根命令按子模块调用独立工具链；仅修改一个插件时，在该子模块执行对应检查。代码提交前至少完成 typecheck、build 和 test。
+
+## Agent skills
+
+### Issue tracker
+
+父仓库任务使用 GitHub Issues；读写任务前查看 [issue tracker 约定](docs/agents/issue-tracker.md)。
+
+### Triage labels
+
+分类任务时采用五个标准标签，映射见 [triage labels](docs/agents/triage-labels.md)。
+
+### Domain docs
+
+父仓库采用 single-context，决策沿用 Agent Notes；探索领域或记录决策前查看 [domain docs](docs/agents/domain.md)。
