@@ -10,9 +10,9 @@ English | [中文](2026-10-25-student-learning-modules.zh.md)
 
 ## Decision
 
-The file split into six `src/learning/` modules plus an `update/` handler family: `shared.ts` (time/text helpers and scope predicates), `schedule.ts` (review replay), `status.ts` (time status and today's summary), `mastery.ts` (the single mastery rule, insight and check-in plans), `view.ts` (objective resolution, question elements, review-sheet planning and map projection) and `update/{context,profile,session,mistakes,paper,index}.ts` (action handlers by family with a type-safe dispatch switch). `rawApply` owns clone, dispatch and the post-amble (revision bump, replay, revalidation); a handler returns the previous state for a no-op and the clone for a mutation, and the composite configure-course action composes its two sub-actions through `rawApply` under one revision bump. Fourteen importers now import explicit new paths with no barrel file.
+`src/learning/` separates shared time/text/scope helpers, review replay, status, mastery, views, normalized evidence and read-only queries. The `update/{context,profile,session,mistakes,paper,index}.ts` family retains type-safe exhaustive dispatch for shared domain transformations. `rawApply` owns cloning, dispatch, revision changes and revalidation; no-op handlers return the previous state. Official-file schemas, consistent reading, validation, guarded manual saves and recovery descriptions live in `src/files/`. Tools and panels consume the same evidence and query rules rather than rebuilding them.
 
-Panel permissions are declarative: `src/actions.ts` declares `Record<Command['action'], boolean>` exhaustively, and the route allowlist is generated from the permitted entries, kept compile-time consistent with every schema action. Handler-family ownership stays in the update modules; no consumer needs a repeated group label. A new action touches three places: schema, handler and permissions. `locales.ts` stays one file with section comments, and the spec split along the same boundaries into update/schedule/insight/view files.
+Manual-save permissions belong to the closed typed intent union in `src/files/manual.ts`; the Remote checks registered main-Session access before executing it. The compatibility HTTP route accepts no mutation, so it needs no generated action allowlist. Handler-family ownership remains in the update modules without a second handler registry or consumer group labels. The Client locale dictionary stays one file, and tests follow the domain owners.
 
 ## Alternatives considered
 
@@ -24,4 +24,4 @@ Panel permissions are declarative: `src/actions.ts` declares `Record<Command['ac
 
 ## Consequences
 
-A pure refactor: 129 tests pass unchanged, redistributed across 11 files, and the client bundle stays effectively the same size (4.61 MB). The cached read path and one mastery rule are recorded in the [read-path note](2026-10-25-student-read-path.md) and the HTML worksheet in the [worksheet note](2026-10-25-student-worksheet-html.md); repository and real-DSH verification belong to [HANDOFF.md](../../../../HANDOFF.md).
+The original module split preserved 129 tests across 11 files and a 4.61 MB client bundle; these measurements do not describe the later official-file and transport additions. The cached read path and one mastery rule are recorded in the [read-path note](2026-10-25-student-read-path.md) and the HTML worksheet in the [worksheet note](2026-10-25-student-worksheet-html.md); repository and real-DSH verification belong to [HANDOFF.md](../../../../HANDOFF.md).

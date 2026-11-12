@@ -12,7 +12,7 @@ Teaching suggestions ignored dependencies: `curriculumView` already computed a t
 
 Teaching drills down the prerequisite chain: `studyInsight` walks each needs-teaching goal's same-subject prerequisite edges (concept-level relations mapped to goals through concept membership) breadth-first and returns the nearest goal that is neither mastered nor due; a hit earns that prerequisite a `prerequisite-gap` reason and a priority lift, the recommendation redirects to it carrying `redirectedFrom` (the original goal), and the workbench card says to return to the original goal afterwards. Once the prerequisite is mastered, the suggestion falls back automatically.
 
-Review spacing senses recurrence: the first wrong or partial after confirmation resets to the next day, a repeated wrong waits two days; `reviewPlan` raises the variant floor from "numeric" to "context" when a goal carries two or more active mistakes sharing one error cause. Both verdicts derive from existing answer and mistake evidence with no state-file change.
+Review spacing senses recurrence: the first wrong or partial after confirmation resets to the next day, while repeated difficulty can wait two days; `reviewPlan` raises the variant floor from "numeric" to "context" when a goal carries two or more active mistakes sharing one error cause. Both derive from the shared response-and-assessment evidence index. Unknown dates do not enter dated review metrics, and unknown assistance never becomes independent correctness. Same-day evidence with unknown order retains difficulty conservatively without erasing genuinely earned days or stages.
 
 ## Alternatives considered
 

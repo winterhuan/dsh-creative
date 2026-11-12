@@ -10,7 +10,7 @@ A learner who is in school and also practising at home can be walked through the
 
 ## Decision
 
-After a subject has a confirmed textbook, `school-progress` stores the shipped map unit the class has reached, the time of that confirmation, a posture (`keep-up` or `catch-up`), whether preview of the next unit is on, and a pace (`teaching` or `review`). The host writes `confirmedAt`. The unit id must exist on the profile's grade and term. Replacing the textbook with `course` or `configure-course` keeps this record.
+Confirmed term settings own each subject's textbook and school progress together: the reached map unit, parent statement, confirmation time, posture (`keep-up` or `catch-up`), preview choice and pace (`teaching` or `review`). The unit must belong to the confirmed course's grade and term. Supplemental manual `configure-course` saves course and progress in one guarded settings write; its confirmation time comes from the Host. Native file authoring records the explicit parent statement and date before independent validation. Profile edits preserve existing blocks' saved course context, while future school blocks require a course compatible with the current profile.
 
 Until a subject has this record, recommendations for that subject stay on the whole map. With the record:
 
