@@ -2,7 +2,7 @@
 
 最后更新：2026-11-12。
 
-本仓库统一管理 10 个独立 DSH 插件仓库、开发检查和交接文档，其中 8 个已有发布包，短剧工作台处于界面试验阶段，New API 管理台为私有开发插件。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
+本仓库统一管理 10 个独立 DSH 插件仓库、开发检查和交接文档，其中 9 个已有发布包，短剧工作台处于界面试验阶段。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-10 个插件仓库包含 11 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+10 个插件仓库包含 11 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -54,7 +54,7 @@ dsh-creative/
 └── .gitmodules           子模块地址与路径
 ```
 
-每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。短剧界面试验和 New API 管理台仓库为私有，递归克隆需要其读取权限；它们不加入市场或日常 profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
+每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。短剧界面试验仓库为私有，递归克隆需要其读取权限；它不加入市场或日常 profile。New API 管理台从公开 Git 固定标签安装，并已加入市场和日常 `web` profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
 
 ### 开发与发布规则
 
@@ -106,6 +106,8 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 本机额外安装的 Superagent 来自独立源码仓库，安装与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
 
 日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.6.2-winter.1`，来源为 `github:winterhuan/dsh-media-desk#v2.6.2-winter.1`。服务重启后，「自媒体工作台」与示例内容已在真实浏览器加载，既有插件依赖声明保持不变；插件语法检查、构建和 87 项测试通过，未调用真实模型或图片服务。备份与验收证据位于 `~/.dsh/backups/media-desk-release-20261110-2.6.2-winter.1/`。
+
+日常 `web` 安装了 `@winterhuan/dsh-new-api@1.0.0-winter.1`，来源为 `github:winterhuan/dsh-new-api#v1.0.0-winter.1`。服务重启后，真实浏览器已加载「设置 → New API 管理台」，已安装详情显示一个组件运行中，市场详情正文加载正常。发布、验证与备份记录见 [New API 发布记录](HANDOFF-changelog.md#new-api-release)。
 
 开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 writer 为例：
 

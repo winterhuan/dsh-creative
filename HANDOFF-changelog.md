@@ -137,3 +137,10 @@
 - [Antfarm](https://github.com/winterhuan/dsh-antfarm/releases/tag/v0.3.1)与[Shadow Mind](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.1) 补全 `@winterhuan` 包名；日常 `web` 远程迁移、重启验证完成，历史数据保留。证据：`~/.dsh/backups/scoped-plugins-release-20261109/`。
 
 2026-11-09：Antfarm `0.3.3` 已发布并远程安装到本地，验证与备份见 [HANDOFF](HANDOFF.md#4-开发命令与构建流程)。
+
+<a id="new-api-release"></a>
+
+2026-11-12 New API 管理台发布与远程安装：
+
+- [v1.0.0-winter.1](https://github.com/winterhuan/dsh-new-api/releases/tag/v1.0.0-winter.1) 已公开发布并加入[插件市场](https://winterhuan.github.io/dsh-creative/index.json)；日常 `web` 从该远程标签安装，原有依赖及配置保留。重启与硬刷新后，设置页、运行组件、固定标签来源和市场详情均通过真实浏览器验证。
+- 插件语法检查、构建和 13 项测试通过；隔离 DSH 验证鉴权、代理与全局余额刷新，证据见 `.artifacts/dsh-new-api-fix-verification/`。安装前备份及本机验收材料位于 `~/.dsh/backups/dsh-new-api-release-20261112-210815/`。真实站点认证与每日定时签到尚未验证。
