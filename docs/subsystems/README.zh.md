@@ -31,6 +31,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) | 独立 bundle |
 | [Antfarm](antfarm.zh.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 面向 DSH 0.2.2-rc.1 的独立开发 bundle；尚未发布 |
 | [自媒体工作台](../../plugins/dsh-media-desk/README.zh.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.zh.md) | 独立 bundle；原作者插件的维护 fork |
+| [New API 管理台](../../plugins/dsh-new-api/README.zh.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.zh.md) | 私有开发组合包；公益站余额与签到 |
 
 <a id="related"></a>
 ## 相关文档

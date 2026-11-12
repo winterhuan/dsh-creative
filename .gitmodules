@@ -28,3 +28,6 @@
 [submodule "plugins/dsh-short-drama"]
 	path = plugins/dsh-short-drama
 	url = https://github.com/winterhuan/dsh-short-drama.git
+[submodule "plugins/dsh-new-api"]
+	path = plugins/dsh-new-api
+	url = https://github.com/winterhuan/dsh-new-api.git

@@ -31,6 +31,7 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Writing](writer.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) | Independent bundle |
 | [Antfarm](antfarm.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Independent development bundle for DSH 0.2.2-rc.1; unreleased |
 | [Media Desk](../../plugins/dsh-media-desk/README.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Independent bundle; maintained fork of the community plugin |
+| [New API console](../../plugins/dsh-new-api/README.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.md) | Private development bundle; relay-site balances and check-ins |
 
 <a id="related"></a>
 ## Related documentation

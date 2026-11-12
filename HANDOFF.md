@@ -1,8 +1,8 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-11。
+最后更新：2026-11-12。
 
-本仓库统一管理 9 个独立 DSH 插件仓库、开发检查和交接文档，其中 8 个已有发布包，短剧工作台处于界面试验阶段。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
+本仓库统一管理 10 个独立 DSH 插件仓库、开发检查和交接文档，其中 8 个已有发布包，短剧工作台处于界面试验阶段，New API 管理台为私有开发插件。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-9 个插件仓库包含 10 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+10 个插件仓库包含 11 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -40,10 +40,11 @@
 | [dsh-media-desk](plugins/dsh-media-desk/README.zh.md) | `src`、`client` | 子模块根目录（含预构建 `dist/client.js`） |
 | [dsh-shadow-mind](plugins/dsh-shadow-mind/README.zh.md) | `src`（单包，包含审查运行时、命令与预设入口） | 子模块根目录（预构建固定 Git 发布包） |
 | [dsh-short-drama](plugins/dsh-short-drama/README.zh.md) | `src`（界面试验，Host 入口与 Client） | 子模块根目录（需先本地构建） |
+| [dsh-new-api](plugins/dsh-new-api/README.zh.md) | `src`（JavaScript Host 与 Client） | 子模块根目录（含预构建 `dist/client.js`） |
 
 ```text
 dsh-creative/
-├── plugins/              9 个独立 DSH 插件仓库的 Git 子模块
+├── plugins/              10 个独立 DSH 插件仓库的 Git 子模块
 ├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
@@ -53,7 +54,7 @@ dsh-creative/
 └── .gitmodules           子模块地址与路径
 ```
 
-每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。短剧界面试验仓库为私有，递归克隆需要其读取权限；它不加入市场或日常 profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
+每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。短剧界面试验和 New API 管理台仓库为私有，递归克隆需要其读取权限；它们不加入市场或日常 profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
 
 ### 开发与发布规则
 
