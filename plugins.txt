@@ -5,3 +5,4 @@ https://github.com/winterhuan/dsh-project-default-mode
 https://github.com/winterhuan/dsh-client-ui-settings-model-options
 https://github.com/winterhuan/dsh-antfarm
 https://github.com/winterhuan/dsh-media-desk
+https://github.com/winterhuan/dsh-new-api

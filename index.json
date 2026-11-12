@@ -291,6 +291,36 @@
           }
         }
       ]
+    },
+    {
+      "name": "@winterhuan/dsh-new-api",
+      "title": {
+        "en": "New API console",
+        "zh": "New API 管理台"
+      },
+      "description": {
+        "en": "Manage relay-site balances, check-in wallets and daily check-ins from DSH Web.",
+        "zh": "在 DSH Web 中管理公益站余额、签到钱包与每日签到。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-new-api#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-new-api"
+      },
+      "versions": [
+        {
+          "version": "1.0.0-winter.1",
+          "publishTimestamp": 1794488758,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-new-api",
+            "commit": "9755e6e1d865868873a59ab5afcc6cad97a8dd96"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
     }
   ]
 }
