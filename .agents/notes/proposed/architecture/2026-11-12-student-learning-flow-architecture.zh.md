@@ -49,7 +49,7 @@ flowchart LR
 | 先修 | 有转录草稿的练习单可以沿用同一组 ID 替换题面和答案，却保留旧草稿。 | [paper.ts:30–44](../../../../plugins/dsh-student/packages/winterhuan/student/src/learning/update/paper.ts) |
 | 先修 | 转录置信度高的未判读题进入批量确认，并被转换为正确；手动批改还默认独立作答，没有保留已知帮助程度。 | [practice-view.tsx:228–233](../../../../plugins/dsh-student/packages/winterhuan/student/src/client/practice-view.tsx)；[paper.ts:83,108](../../../../plugins/dsh-student/packages/winterhuan/student/src/learning/update/paper.ts) |
 | 先修 | 没有预建练习单的练习册照片确认后删除草稿；独立正确只清教学队列，没有把回答和结果保留为证据。 | [paper.ts:153–180](../../../../plugins/dsh-student/packages/winterhuan/student/src/learning/update/paper.ts) |
-| 先修 | 修订号未变时，次日到期数可以从 0 变 1，条件轮询却只更新时间。 | [route.ts:86–89](../../../../plugins/dsh-student/packages/winterhuan/student/src/route.ts)；[workspace.ts:39–40](../../../../plugins/dsh-student/packages/winterhuan/student/src/client/workspace.ts) |
+| 先修 | 修订号未变时，次日到期数可以从 0 变 1，条件轮询却只更新时间。 | [workspace.ts:39–40](../../../../plugins/dsh-student/packages/winterhuan/student/src/client/workspace.ts) |
 | 先修 | 保存兴趣成功后，再保存服务地址报冲突，因为该表单仍使用首次修订号；课程与进度还分两次写入。 | [forms.tsx:20,29,85–95](../../../../plugins/dsh-student/packages/winterhuan/student/src/client/forms.tsx) |
 | 随后 | 周报时长使用七个上海日历日，证据却使用过去 168 小时；复习重新排期后从完成分母消失；累计三个独立日期且近期答对的目标，即使当前仍薄弱或练习中，也可能计为新掌握。 | [status.ts:100–139](../../../../plugins/dsh-student/packages/winterhuan/student/src/learning/status.ts) |
 | 随后 | 状态缓存以解析后的目标对象身份为键；LocalFS 每次解析都返回新对象，即使目标键相同，也无法复用跨请求的已校验状态。 | [store.ts:68,98,109](../../../../plugins/dsh-student/packages/winterhuan/student/src/store.ts) |

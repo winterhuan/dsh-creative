@@ -12,7 +12,7 @@ English | [中文](2026-10-25-student-learning-modules.zh.md)
 
 `src/learning/` separates shared time/text/scope helpers, review replay, status, mastery, views, normalized evidence and read-only queries. The `update/{context,profile,session,mistakes,paper,index}.ts` family retains type-safe exhaustive dispatch for shared domain transformations. `rawApply` owns cloning, dispatch, revision changes and revalidation; no-op handlers return the previous state. Official-file schemas, consistent reading, validation, guarded manual saves and recovery descriptions live in `src/files/`. Tools and panels consume the same evidence and query rules rather than rebuilding them.
 
-Manual-save permissions belong to the closed typed intent union in `src/files/manual.ts`; the Remote checks registered main-Session access before executing it. The compatibility HTTP route accepts no mutation, so it needs no generated action allowlist. Handler-family ownership remains in the update modules without a second handler registry or consumer group labels. The Client locale dictionary stays one file, and tests follow the domain owners.
+Manual-save permissions belong to the closed typed intent union in `src/files/manual.ts`; the Remote checks registered main-Session access before executing it. Handler-family ownership remains in the update modules without a second handler registry or consumer group labels. The Client locale dictionary stays one file, and tests follow the domain owners.
 
 ## Alternatives considered
 
