@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { expect, it, onTestFinished } from 'vitest'
-import { pluginPackageJsons } from '../scripts/plugin-workspaces.ts'
+import { isReferencePluginPath, pluginPackageJsons } from '../scripts/plugin-workspaces.ts'
 import { packageReadmes, packageReadmeSummaryErrors } from '../scripts/verify-package-readme-summaries.ts'
 import { clientUiSourceFiles, findUiI18nViolations } from '../scripts/verify-client-ui-i18n.ts'
 import { collectExportJsdocViolations } from '../scripts/verify-export-jsdoc.ts'
@@ -124,4 +124,31 @@ it('reports broken root TS and TSX documentation references with nested sources 
   ])
   for (const name of ['missing-root', 'missing-panel', 'missing-nested']) write(`docs/${name}.md`, '# Guide\n')
   expect(scanDocReferences(root)).toEqual({ checked: 3, violations: [] })
+})
+
+it('retains reference package discovery and README checks while using its own source-style checks', () => {
+  const { root, write } = fixture()
+  const plugin = 'plugins/dsh-superagent-prototype'
+  write(`${plugin}/package.json`, '{}')
+  write(`${plugin}/src/index.ts`, 'export function action(): void {}')
+  write(`${plugin}/src/client/Panel.tsx`, 'export function Panel() { return <p>Reference copy</p> }')
+  write(`${plugin}/README.md`, '# Reference\n')
+  expect(pluginPackageJsons(root)).toEqual([`${plugin}/package.json`])
+  expect(packageReadmes(root)).toEqual([`${plugin}/README.md`])
+  expect(packageReadmeSummaryErrors(`${plugin}/README.md`, '# Reference\n')).not.toEqual([])
+  expect(clientUiSourceFiles(root)).toEqual([])
+  expect(collectExportJsdocViolations(root)).toEqual([])
+  expect(isReferencePluginPath('plugins\\dsh-superagent-prototype\\src\\index.ts')).toBe(true)
+  expect(isReferencePluginPath('plugins/dsh-superagent-prototype-other/src/index.ts')).toBe(false)
+})
+
+it('resolves submodule-owned documentation without accepting missing references', () => {
+  const { root, write } = fixture()
+  write('plugins/root/docs/deployment.md', '# Deployment\n')
+  write('plugins/root/src/index.ts', '// See docs/deployment.md and docs/missing.md\n')
+  write('plugins/other/src/index.ts', '// See docs/deployment.md\n')
+  expect(scanDocReferences(root).violations.map(v => [v.file, v.ref])).toEqual([
+    ['plugins/other/src/index.ts', 'docs/deployment.md'],
+    ['plugins/root/src/index.ts', 'docs/missing.md'],
+  ])
 })

@@ -11,6 +11,7 @@
 import { existsSync, globSync, readFileSync } from 'node:fs'
 import { relative, resolve, sep } from 'node:path'
 import ts from 'typescript'
+import { isReferencePluginPath } from './plugin-workspaces.ts'
 import { checkParams, checkReturns, parseJsDoc, parseTags, pointer, rawJsDoc } from './jsdoc.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -571,6 +572,7 @@ export function collectExportJsdocViolations(scanRoot: string = root): string[] 
     cwd: scanRoot, exclude: ['**/vendor/**', '**/node_modules/**'],
   })
     .map(path => path.split(sep).join('/'))
+    .filter(path => !isReferencePluginPath(path))
     .sort()
   const program = ts.createProgram(rels.map(rel => resolve(scanRoot, rel)), loadCompilerOptions(scanRoot))
   const checker = program.getTypeChecker()

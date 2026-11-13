@@ -4,6 +4,16 @@ import { existsSync, globSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 /**
+ * Identify imported research code checked by its own toolchain rather than Creative source-style rules.
+ * README checks and workspace install/typecheck/build/test still include this repository.
+ * @param file - parent-repository-relative path, using native or POSIX separators.
+ * @returns whether the path is inside the Superagent reference checkout.
+ */
+export function isReferencePluginPath(file: string): boolean {
+  return file.replaceAll('\\', '/').startsWith('plugins/dsh-superagent-prototype/')
+}
+
+/**
  * Find plugin package manifests, excluding workspace-only root manifests.
  * @param root - absolute parent repository root.
  * @returns sorted repository-relative manifests for root src and nested packages.

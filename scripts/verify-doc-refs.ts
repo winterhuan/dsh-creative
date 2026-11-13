@@ -7,7 +7,7 @@
  */
 
 import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { relative, resolve, sep } from 'node:path'
 import { findReferenceViolations, uniqueRepoFiles, type ReferenceViolation as Violation } from './repo-files.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -28,7 +28,7 @@ const isExcluded = (p: string): boolean =>
 const DOC_REF = /(?:\bdocs|\.agents\/notes)\/[A-Za-z0-9._/-]+\.md/g
 
 /**
- * Find broken parent-relative documentation references in plugin sources.
+ * Find broken documentation references in plugin sources, checking the owning submodule and parent.
  * @param scanRoot - absolute parent repository root.
  * @returns checked source count and every broken reference, excluding declarations and vendor source.
  */
@@ -36,7 +36,11 @@ export function scanDocReferences(scanRoot: string = root): { checked: number; v
   const files = uniqueRepoFiles(scanRoot, PATTERNS, isExcluded)
   return {
     checked: files.length,
-    violations: files.flatMap(file => findReferenceViolations(scanRoot, file.abs, DOC_REF, ref => ref, ref => !existsSync(resolve(scanRoot, ref)))),
+    violations: files.flatMap(file => {
+      const pluginRoot = resolve(scanRoot, ...relative(scanRoot, file.abs).split(sep).slice(0, 2))
+      return findReferenceViolations(scanRoot, file.abs, DOC_REF, ref => ref,
+        ref => !existsSync(resolve(pluginRoot, ref)) && !existsSync(resolve(scanRoot, ref)))
+    }),
   }
 }
 
