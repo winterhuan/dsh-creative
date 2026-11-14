@@ -382,6 +382,36 @@
           }
         }
       ]
+    },
+    {
+      "name": "dsh-superagent",
+      "title": {
+        "en": "Superagent",
+        "zh": "Superagent"
+      },
+      "description": {
+        "en": "Research prototype: handle authorized GitHub and Feishu requests in independent DSH sessions.",
+        "zh": "研究原型：在独立 DSH 会话中处理已授权的 GitHub 与飞书请求。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-superagent-prototype#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-superagent-prototype"
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1794659435,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-superagent-prototype",
+            "commit": "ba463be4e917b1495bcc612a57d9bc16160284a1"
+          },
+          "engines": {
+            "dsh": "^0.2.1-alpha.2"
+          }
+        }
+      ]
     }
   ]
 }

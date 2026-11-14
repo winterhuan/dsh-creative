@@ -6,3 +6,4 @@ https://github.com/winterhuan/dsh-client-ui-settings-model-options
 https://github.com/winterhuan/dsh-antfarm
 https://github.com/winterhuan/dsh-media-desk
 https://github.com/winterhuan/dsh-new-api
+https://github.com/winterhuan/dsh-superagent-prototype
