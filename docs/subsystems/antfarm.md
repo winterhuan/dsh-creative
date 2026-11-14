@@ -8,7 +8,7 @@ English | [中文](antfarm.zh.md)
 
 ## Summary
 
-Antfarm runs original specialist teams with stable personas and fresh native Sessions. SQLite owns their business progress, while DSH owns execution and native transcripts. Source lives in the `plugins/dsh-antfarm` submodule; release `0.3.3` is available in the market and installed from a fixed Git commit in the local `web` profile.
+Antfarm runs original specialist teams with stable personas and fresh native Sessions. SQLite owns their business progress, while DSH owns execution and native transcripts. Source lives in the `plugins/dsh-antfarm` submodule; release `0.3.3` is available in the market and installed from a fixed Git commit in the local dedicated `antfarm` profile. [HANDOFF](../../HANDOFF.md#5-在-dsh-中安装调试和移除) owns local service control and data paths.
 
 ## Table of Contents
 

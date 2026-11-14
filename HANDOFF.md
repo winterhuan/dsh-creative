@@ -104,7 +104,9 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.3` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+
+Antfarm `0.3.3` 从固定 Git 发布包安装到独立 `antfarm` profile（3083），日常 `web` 不加载它。使用 `~/.dsh/bin/dsh-antfarm` 的 `start`、`stop`、`restart` 和 `status` 管理服务；登录启动尊重手动停止。运行库、人设工作区、原生会话和存储位于 `~/.dsh/profiles/antfarm/data/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 
 Superagent `0.1.0` 从 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包安装到独立 `superagent` profile，并加入插件市场；日常 `web` 不加载它。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
