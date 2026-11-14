@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-从档案、学习段、作答和状态中移除全部时长与休息字段。迁移旧 `.study/state.json` 时剥离 `profile.limits`、`breakUntil`、`sessions[*].deadline` 与 `attempts[*].late`。阶段只有 `ready` 与 `studying`；状态只保留安静的已学时长（`blockElapsed`、`todayElapsed`）与周报。`start` 自动收束未结束学习段；`task` 可替换未作答题目；学习段内仍可切科。
+档案、学习块、作答与状态不含时长和休息字段；读取保留旧版字节，投影省略旧限制。状态报告安静的已用时长和每周总结。原生结束／切换意图保留待办及原题迟到评分。验证拒绝多个未结束学习块，不悄悄关闭 agent 编写的文件。[原生学习架构](../architecture/2026-11-12-student-learning-flow-architecture.zh.md)拥有这些操作、正式文件及学生主线／三个家长入口。
 
 内置经校验的习题知识库 `knowledge/curriculum/exercises/{chinese,math,english}.json`，由 `curriculum.ts` 加载；`kind=elements`、`kind=diagnose`、`kind=review-sheet` 附带匹配母题，新增 `kind=exercises`；工作区 `exercises` 集合配合 `save-exercise` / `delete-exercise`。间隔复习为 1 / 7 / 16 / 35 天；已掌握复测为 35 天。任务可带微步骤；今日页展示西蒙四阶段、目标动作、费曼「当小老师」与探究疑问输入。知识地图渲染单元 → 知识点 → 关系逻辑树并着色掌握状态。家长设置可就地更新档案；面板确认语默认填充；课程、进度、兴趣与错题确认在学习段进行中也可提交；错题本可直接增删改已确认错题。二年级下册语数英地图补齐更密的 facts、examples 与 questionPoints。
 

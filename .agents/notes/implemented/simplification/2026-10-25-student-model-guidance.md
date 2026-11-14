@@ -6,7 +6,7 @@ English | [中文](2026-10-25-student-model-guidance.zh.md)
 
 ## Problem
 
-One set of teaching rules lived in three places: the `study_update` `change` parameter description (~1300 characters) and the `study_status` kind description (~700 characters) sat in every learning session's context; the five `more` strings returned by `queryStudy` restated question-writing and grading rules; the study skill was the third copy. Keeping them in sync was manual, and the README's claim that "tool descriptions keep the call contract" was not true. Hints were meanwhile improvised by the model: `hintLevel` was only a counter, the skill rule was one sentence about the first hint, and the misconceptions registered per goal in the knowledge maps fed question writing but never hints.
+One set of teaching rules lived in three places: the large write-tool parameter description (~1300 characters) and the `study_status` kind description (~700 characters) sat in every learning session's context; the five `more` strings returned by `queryStudy` restated question-writing and grading rules; the study skill was the third copy. Keeping them in sync was manual, and the README's claim that "tool descriptions keep the call contract" was not true. Hints were meanwhile improvised by the model: `hintLevel` was only a counter, the skill rule was one sentence about the first hint, and the misconceptions registered per goal in the knowledge maps fed question writing but never hints.
 
 ## Decision
 

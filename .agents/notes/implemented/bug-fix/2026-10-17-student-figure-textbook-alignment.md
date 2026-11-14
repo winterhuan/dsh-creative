@@ -16,9 +16,9 @@ Printed worksheet figures did not match the textbooks, so children could not rea
 ## Decision
 
 1. **Sticks become ten-per-bundle.** `drawSticks` draws ten sticks per bundle, sized so nine bundles plus nine singles (99) fits the page width. questions.md now says "ten sticks per bundle (one bundle is one ten)".
-2. **Place-value forbids the mix.** Schema validation requires `crossTens`/`crossOnes` to be zero when `regroup: 'yes'`; the borrowing procedure pairs `counter` with `vertical` instead. When `regroup: 'no'`, crosses may not exceed the drawn dots. On load, store.ts zeroes crosses on legacy mixed figures (prompt and answer are unchanged, so the item still works), for backward compatibility.
+2. **Place-value forbids the mix.** Schema validation requires `crossTens`/`crossOnes` to be zero when `regroup: 'yes'`; the borrowing procedure pairs `counter` with `vertical` instead. When `regroup: 'no'`, crosses may not exceed the drawn dots. Legacy read projections normalize mixed crosses without changing source bytes; explicit migration preserves original sources.
 3. **questions.md gains a figure-to-topic map.** Each figure states its fixed textbook use (counter for borrowing, vertical for arithmetic, sticks for place-value composition, dot-array for multiplication meaning, number-line for counting and multiplication jumps), and hard rules: one figure per item, the figure is the only given information so the prompt must not restate it, and `units` must be proportional to the quantity.
-4. Saved sheets such as `ws-20261017-review-test` migrate on next load and do not block the plugin.
+4. Legacy sheets remain readable without implicit file migration; the [native learning architecture](../architecture/2026-11-12-student-learning-flow-architecture.md) owns explicit conversion and pending evidence.
 
 ## Alternatives considered
 
@@ -32,4 +32,4 @@ The student package's 53 tests pass (including new place-value mix-rejection, cr
 
 ## Consequences
 
-Worksheet figures now match the textbooks: sticks express place value in tens, borrowing subtraction uses a counter plus vertical, and each figure returns to its intended topic. Newly saved place-value figures that mix borrowing with crossing are rejected by the schema at the source. Legacy sheets migrate on load and do not block the plugin.
+Worksheet figures now match the textbooks: sticks express place value in tens, borrowing subtraction uses a counter plus vertical, and each figure returns to its intended topic. Newly saved place-value figures that mix borrowing with crossing are rejected by the schema at the source. Legacy read projections preserve original file bytes.

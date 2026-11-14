@@ -6,15 +6,15 @@ Status: implemented
 
 ## 问题
 
-重叠问题（两个圈相交，圈上各有一个数或集合名，圈里三个区域各填一个数）没有可打印的图形：封闭的 `figure` 词汇表有九种，没有一种能表达“两边都有”，带这种题的练习单存不下、印不出。真正的限制是这份词汇表，不是 PDF 管线——渲染走 pdfkit 矢量绘制，词汇表里有的形状都画得出；自由 HTML 卷也在[出题要素](2026-10-16-student-error-elements.zh.md)那一批被否决，因为那样的卷不进打印、批改和复习回路。
+两个相交圆需要分别标明集合、共享区域和并集。封闭题图词汇若缺少此形状，会迫使文字替代或脱离已保存批改与复习的自由卷。[出题要素决策](2026-10-16-student-error-elements.zh.md)要求有记录且可核对的题图。
 
 ## 决策
 
-`overlap` 是第十种 `figure`：两个相交的圈，`left`、`right` 写在各自圈的正上方，`leftOnly`、`both`、`rightOnly` 各写左圈独有、两圈重叠、右圈独有区域的一个标签（空标签印答案框，与其他图形一致），可选 `total` 画在两圈下方的括号处。它同时覆盖教材里的两种用法：和圈（`left`、`right` 是目标数，圈里两个数相加等于它，重叠区的数同时计入两个和，常见于二年级 100 以内加减；`left`、`right` 留空印答案框，用于求圈上的数本身）和集合图（`left`、`right` 是集合名，三个区域各写数量，`total` 求一共）。渲染器画两个圆心距等于 1.25 倍半径的圆、在可用宽度里居中，`figureHeight` 报 144 点（带 total 时 172 点），题目不会被分页拆开。[出题参考](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/questions.md)、`worksheet` 工具描述、练习卷提示词和两份 README 都列出这种图形；printable-figures 测试现在画满十种——此前只列了九种里的六种，数轴、钟面、小棒随这一次一起补上。
+`overlap` 题图使用两个圆，含 `left`／`right` 标签及 `leftOnly`、`both`、`rightOnly` 区域；空标签显示作答框，可选 `total` 在下方标记并集。和圈与集合图共享几何，但上方标签含义不同。[题目参考](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/questions.md)拥有这些语义。严格 schema 保留练习卷记录；共享 SVG 绘制和打印布局归 [HTML 练习卷决策](../simplification/2026-10-25-student-worksheet-html.zh.md)所有。
 
 ## 考虑过的替代方案
 
-**自由 HTML 或 SVG 图形。** 作为可打印卷的载体已被否决——没有保存的练习单记录，也没有批改路径——而且两个相交圆并不需要它：同样的几何就是几个 pdfkit 调用。
+**自由 HTML 或 SVG 图形。** 作为可打印卷的载体已被否决——没有保存的练习单记录，也没有批改路径——而且两个相交圆并不需要它：专用共享 SVG 几何已能表达该问题。
 
 **一个带 N 个圆的通用集合图 kind。** 教材里的图就是两个圆；固定形状让校验、布局和高度计算都最简单，真需要三圈时按同样方式加一种即可。
 
@@ -24,7 +24,7 @@ Status: implemented
 
 ## 验证
 
-宿主测试把全部十种（含 overlap 的和圈与集合图两种形态）经 `renderWorksheet` 渲染进 PDF（两张卷、每张最多 8 题）；和圈、求圈上数、带 total 的集合图三种形态与教材版式做了目视核对。根 `typecheck`、`build`、学生包测试、`doc-sync` 与 `hygiene` 通过；未在真实 DSH 浏览器验证，未调用真实模型。
+Schema、CLI 资源和客户端练习卷测试覆盖和圈与集合形态、空目标和可选总数。最初目视检查将这三种形态与教材布局比较。当前真实模型选图和物理打印仍需单独验收。
 
 ## 后果
 

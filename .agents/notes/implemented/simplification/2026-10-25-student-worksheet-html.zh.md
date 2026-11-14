@@ -24,6 +24,6 @@ Host 删除 `/student/worksheet.pdf` 预览、`/student/print` 确认打印、`s
 
 ## Consequences
 
-客户端现在拥有卷面渲染，真实浏览器里的打印分页与对话框行为以 HANDOFF 记录的验证为准。打印不再有队列回执，纸张输出由家长在浏览器打印状态里核对；Windows 与 macOS 打印路径一致。测试从「渲染 PDF 字节」改为客户端渲染断言：`tests/worksheet-view.client.spec.tsx` 覆盖全部题图、作答空间、卷名与对话框关闭；`learning.spec.ts` 保留全部图形 schema 校验；route 用例改为断言旧端点 404。
+客户端以一份 SVG 几何拥有练习卷渲染；浏览器拥有预览／打印，家长核对实际输出。客户端回归覆盖全部题图、作答空间、命名与对话框关闭，schema／CLI 测试覆盖同一封闭题图 union。没有 Host PDF 或系统打印队列。真实浏览器分页和物理输出需单独发布验收。
 
-练习单决策与巩固回路仍归[知识地图决策](../feature/2026-10-16-student-error-elements.zh.md)；仓库与真实 DSH 验证归 [HANDOFF.md](../../../../HANDOFF.md) 所有。
+[出题要素笔记](../feature/2026-10-16-student-error-elements.zh.md)保留变式与错因规则；[原生学习架构](../architecture/2026-11-12-student-learning-flow-architecture.zh.md)拥有已保存内容和作答关联。发布验证归 [HANDOFF](../../../../HANDOFF.md)所有。

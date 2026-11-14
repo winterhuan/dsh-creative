@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for 2026-11-12-student-learning-flow-architecture.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-11-12-student-learning-flow-architecture.md
+/agent-note-student-learning-flow-and-evidence-architecture:
+  en: 2e5ed45cb4564669
+  zh: a11a2aba1386af76
+/agent-note-student-learning-flow-and-evidence-architecture/problem:
+  en: 3e46dc13c5113418
+  zh: e9f549abc8857670
+/agent-note-student-learning-flow-and-evidence-architecture/decision:
+  en: 4df1949e642b6751
+  zh: 50ce4889bc1c3931
+/agent-note-student-learning-flow-and-evidence-architecture/decision/official-files-and-validation:
+  en: bbd918e594c5d42c
+  zh: e88ce9330cd3815b
+/agent-note-student-learning-flow-and-evidence-architecture/decision/dates-and-derived-evidence:
+  en: 1b95a94e33054b3d
+  zh: a83c259dfbb3f13d
+/agent-note-student-learning-flow-and-evidence-architecture/decision/failure-manual-saves-and-recovery:
+  en: 4042c2c2c14dc824
+  zh: 3f3524b198dcc0c5
+/agent-note-student-learning-flow-and-evidence-architecture/decision/transport-tools-and-lessons:
+  en: 8656cccda09d3d9f
+  zh: d2199b35c1b1a45f
+/agent-note-student-learning-flow-and-evidence-architecture/decision/existing-decision-ownership:
+  en: 07c3c52abedaf02c
+  zh: 2bcc942ad82fda59
+/agent-note-student-learning-flow-and-evidence-architecture/alternatives-considered:
+  en: 4ba5d320523ab58a
+  zh: ffc8c0bf9c15991f
+/agent-note-student-learning-flow-and-evidence-architecture/verification:
+  en: e1f99b008047642a
+  zh: 54528f1de962bbe0
+/agent-note-student-learning-flow-and-evidence-architecture/consequences:
+  en: ecb6197b7f568cc2
+  zh: 8cada91c6e70c954

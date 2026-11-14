@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决策
 
-词汇表扩到二十三种：`split`、`sequence`、`wall`、`grid`、`dot-array`、`plane`、`solid`、`counter`、`measure`、`compass`、`balance`、`writing` 与原来十种并列，`clock` 的分钟扩到 5 的倍数（0–55，带校验，分针不会落在刻度之间）。每一种仍是「schema 分支 + 手写绘制函数 + 声明高度」，分页、打印队列和练习单记录都不变。最后一种是 `sketch`：有限画布（高度 40–260）里最多 24 笔（`line`、`arrow`、`polyline`、`rect`、`circle`、`text`），坐标 x 用 0–480，校验笔画不越出画布。出题参考列全清单并要求优先用专用图形；练习卷提示词和技能文档改成指向这份清单，不再各自维护图形列表。
+词汇表扩到二十三种：`split`、`sequence`、`wall`、`grid`、`dot-array`、`plane`、`solid`、`counter`、`measure`、`compass`、`balance`、`writing` 与原来十种并列，`clock` 的分钟扩到 5 的倍数（0–55，带校验，分针不会落在刻度之间）。每种都有严格 schema 和已保存题目／浏览器练习卷共享 SVG 渲染；[HTML 练习卷决策](../simplification/2026-10-25-student-worksheet-html.zh.md)拥有预览和打印。最后一种是 `sketch`：有限画布（高度 40–260）里最多 24 笔（`line`、`arrow`、`polyline`、`rect`、`circle`、`text`），坐标 x 用 0–480，校验笔画不越出画布。出题参考列全清单并要求优先用专用图形；练习卷提示词和技能文档改成指向这份清单，不再各自维护图形列表。
 
 ## 考虑过的替代方案
 
@@ -22,7 +22,7 @@ Status: implemented
 
 ## 验证
 
-宿主测试把二十三种全部渲染进 PDF（分四张卷），并覆盖各条校验的拒绝用例：空集合名、7 分钟的钟面、错位的数墙、越出画布的简笔画。每种新图形都渲染成 PDF、转成图片与教材版式核对过；天平标签、五分钟分针和四线格范字是按目视结果调整的。根 `typecheck`、`build`、学生包测试、`doc-sync` 与 `hygiene` 通过；未在真实 DSH 浏览器验证，未调用真实模型。
+Schema 和 CLI 资源测试验证全部 23 种，拒绝无效钟面、数墙和越界简笔画。客户端练习卷测试通过共享 SVG 渲染完整题图集。最初教材目视检查指导天平标签、五分钟指针和写字示例；这些不能证明当前真实模型绘图质量或物理打印。
 
 ## 后果
 

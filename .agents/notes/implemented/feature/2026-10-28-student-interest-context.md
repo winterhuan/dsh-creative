@@ -10,11 +10,13 @@ A long overdue list was the only daily recommendation, so a child never reached 
 
 ## Decision
 
-Parent setup stores 3 to 8 interest tags on the learning state. When the field is absent, status reads the six example tags: 购物超市钱, 运动球类, 动物宠物, 故事角色动画, 积木拼搭手工 and 美食做饭. `study_status` returns those tags and `interestFocus`, the tag chosen from the Shanghai calendar day. Questions, context variants, the daily routine and the OpenMAIC requirement wrap the scene in one of those tags and may rotate. Facts stay the knowledge-map facts. The primary recommendation teaches a goal that needs teaching, then practises a goal that is weak for a reason other than a single due mistake, then a due check-in, then a new goal. `dueToday` lists at most two due mistakes and `dueBacklog` is the full count. The learning desk runs this cascade inside the selected subject, so Chinese and English do not keep a math goal, math lesson, or math due mistake on screen. `study_status` still returns one cross-subject recommendation. Today offers interest practice and an interactive lesson beside the open subject's step. A ready lesson pins Go to class. Generation still uses the tutor shell from [OpenMAIC lessons](2026-10-28-student-openmaic-lessons.md). Soft time limits stay suggestions. [The knowledge map](2026-10-12-student-knowledge-map.md) states this same order.
+Term settings retain parent interest tags. Absent tags use the existing six examples; `study_status` supplies them and the Shanghai-day `interestFocus`. Questions, variants, daily routines and OpenMAIC requirements can use those scenes while checkable facts remain the knowledge-map facts.
+
+Within the selected subject, recommendations teach a goal that needs teaching, then strengthen a weak point, then offer a due check-in, then a new goal. At most two due mistakes accompany that recommendation. Unfinished work remains the primary continuation: browsing another subject or book does not replace the active question, and an explicitly selected goal wins over another recommendation. The [native learning architecture](../architecture/2026-11-12-student-learning-flow-architecture.md) owns scope, native intentions and saved evidence. Relevant ready lessons can accompany the active goal; generation stays in the shell under [OpenMAIC ownership](2026-10-28-student-openmaic-lessons.md). There are no time limits.
 
 ## Alternatives considered
 
-**A separate `.study/interests.json`.** The tutor writes the lesson log that way because generation must not bump the learning revision. Tags are a parent setting, like time limits, so they belong on the state and in `study_status`.
+**A separate `.study/interests.json`.** The tutor writes the lesson log that way because generation must not bump the learning revision. Tags are parent settings and belong in term settings and `study_status`.
 
 **Keep reviewing every due mistake before any new goal.** That was the previous order. Dozens of overdue items then block the school unit for good.
 

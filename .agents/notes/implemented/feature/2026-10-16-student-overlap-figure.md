@@ -6,15 +6,15 @@ English | [中文](2026-10-16-student-overlap-figure.zh.md)
 
 ## Problem
 
-Overlap problems (two intersecting circles, each with a target number or set name above it and one value per region) had no printable shape: the closed `figure` vocabulary held nine kinds and none expressed shared membership, so a worksheet item asking one could not be saved for printing. The true limit is that vocabulary, not the PDF pipeline — the renderer draws vector primitives through pdfkit and can draw any shape once a kind exists — and free-form HTML sheets were already rejected in the [error elements](2026-10-16-student-error-elements.md) work because they leave the print, grading and review loop.
+Two intersecting circles need distinct labels for each set, shared membership and the union. A closed figure vocabulary without that shape forces a prose workaround or a free-form sheet outside saved marking and review. The [question-elements decision](2026-10-16-student-error-elements.md) requires recorded, checkable figures.
 
 ## Decision
 
-`overlap` is the tenth `figure` kind: two intersecting circles with `left` and `right` printed above each circle, `leftOnly`, `both` and `rightOnly` carry one label per region (an empty label prints an answer box, as in the other kinds), and the optional `total` prints under a bracket below both circles. It covers both textbook uses: sum circles (`left`/`right` are target sums, the two numbers inside each circle add up to it, and the shared number counts toward both — common for two-digit addition and subtraction; an empty `left`/`right` prints an answer box so the sum itself can be the unknown) and set diagrams (`left`/`right` name the sets, the three regions carry counts, and `total` asks the union). The renderer strokes two circles at 1.25 radii of centre distance, centres the pair in the available width, and `figureHeight` reports 144 pt — 172 pt with a total — so a question never splits across pages. The [questions reference](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/questions.md), the `worksheet` tool description, the practice-sheet prompt and both READMEs list the new kind, and the printable-figures test now draws all ten kinds — it had listed six of the nine, so `number-line`, `clock` and `sticks` join it.
+The `overlap` figure uses two circles with `left`/`right` labels and `leftOnly`, `both`, `rightOnly` regions; blank labels show answer boxes, and optional `total` labels the union below. Sum circles and set diagrams share geometry but assign different meaning to the upper labels. The [questions reference](../../../../plugins/dsh-student/packages/winterhuan/student/knowledge/skills/study/references/questions.md) owns those semantics. Strict schemas preserve the saved worksheet record; shared SVG drawing and print layout belong to the [HTML worksheet decision](../simplification/2026-10-25-student-worksheet-html.md).
 
 ## Alternatives considered
 
-**Free-form HTML or SVG figures.** Rejected as the vehicle for printable sheets already — no saved worksheet record and no grading path — and unnecessary here: the same geometry is a few pdfkit calls.
+**Free-form HTML or SVG figures.** Rejected as the vehicle for printable sheets already — no saved worksheet record and no grading path — and unnecessary here: the dedicated shared SVG geometry already expresses the problem.
 
 **One generic set-diagram kind taking N circles.** The taught figure is exactly two circles; a fixed shape keeps validation, layout and the height arithmetic simple, and a three-circle figure can become its own kind the same way.
 
@@ -24,7 +24,7 @@ Overlap problems (two intersecting circles, each with a target number or set nam
 
 ## Verification
 
-Host tests render every kind, including both overlap forms, through `renderWorksheet` into a PDF (two sheets, at most eight items each), and the three overlap forms — sum circle, sum circle with an unknown target, set diagram with a bracket total — were checked visually against the textbook layout. Root `typecheck`, `build`, the student package suite, `doc-sync` and `hygiene` pass. Not exercised in a real DSH browser or with a real model.
+Schema, CLI resource and client worksheet tests cover sum and set forms, blank targets and optional totals. The original visual check compared these three forms with textbook layouts. Current real-model figure choice and physical printing remain separate acceptance concerns.
 
 ## Consequences
 

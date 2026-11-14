@@ -10,11 +10,11 @@ Free-text topics cannot reliably connect concepts, learning goals, mistakes and 
 
 ## Decision
 
-The [learning decision](2026-10-05-student-learning.md) continues to own curriculum evidence, interactive timers and reward limits. This decision keeps concepts, goals, relations, mistakes, worksheets and paper results in one workspace record. Old collections read as empty, while legacy mistake `topic` values stay intact until someone checks and links a goal. The tutor proposes concepts; a parent can correct the definition, example and source before confirming. Goals reference confirmed concepts in the same subject and use methods allowed for that subject. Relations stay within one subject, and causal relations record their direction and source.
+The [learning decision](2026-10-05-student-learning.md) owns course evidence and rewards. Concepts, goals, relations, mistakes, worksheets and paper results retain explicit identities in one workspace term. Legacy topics remain unchanged until someone checks and links them. The tutor proposes concepts; a parent can correct definition, example and source before confirmation. Goals and relations stay within one subject, with subject-appropriate methods and explicit causal direction/evidence.
 
-Worksheets reference confirmed mistakes linked to one goal and retain each answer and its evidence. The student PDF contains only questions and writing space. PDF preview precedes a confirmed request to the host's default printer queue. The Host owns that queue call; a model shell cannot replace preview and user confirmation. A queue receipt proves acceptance, not paper output. Printing does not earn learning rewards.
+Worksheets freeze questions, sources and goals and retain original answers and assessments. The student sheet contains questions and writing space; the [HTML worksheet decision](../simplification/2026-10-25-student-worksheet-html.md) owns shared browser rendering, preview and the print dialog. A saved file or print dialog does not prove physical output. Printing earns no learning rewards.
 
-Each paper result identifies a saved worksheet item and is stored by the learning tool after photo transcription and user review. Paper results need no active block and do not earn stars upon upload. Early practice retains evidence; only due mistakes whose classification remains unchanged can advance the review interval through an independent answer. The optional SenseVoice bundle inserts transcripts into the conversation draft; the learner reviews the text and submits through the native answer flow. A transcript does not prove pronunciation.
+The agent saves confirmed paper answers in official worksheet files after transcription and explicit parent review. Paper work needs no active block and earns no upload stars. Parent-confirmed actual dates and known assistance govern independent review, including early advancement under [review relaxation](2026-10-16-student-review-relaxation.md). The [native learning architecture](../architecture/2026-11-12-student-learning-flow-architecture.md) owns stable bindings and unknown legacy facts. Optional SenseVoice inserts text into the native draft for review before submission; transcription does not establish pronunciation.
 
 ## Alternatives considered
 
@@ -28,8 +28,8 @@ Each paper result identifies a saved worksheet item and is stored by the learnin
 
 ## Verification
 
-State tests cover old records, confirmed same-subject concepts, goal and mistake links, worksheet sources, paper results and review intervals. Route tests render a real PDF and prove the queue is not called before confirmation; the queue call is replaced in tests, so no physical print job is sent. Visual PDF review covers Chinese questions and writing lines. Real-model concept quality, photo transcription and teaching outcomes remain for human evaluation.
+Learning and official-file tests cover subject links, frozen worksheet sources, retained paper responses and independent-day review. Client worksheet tests cover the shared figures, writing spaces and preview; deterministic rendering is not physical printer evidence. Real-model concept quality, transcription and teaching outcomes remain unmeasured.
 
 ## Consequences
 
-Concepts and worksheets increase state size and model tool schema size; the package carries the Noto Sans SC font and its license. Direct printing needs `lp` and a default queue on the Host, while Windows has PDF preview only. The current UI shows a queue receipt without retaining print history. The workbench and Skill expose subject methods, but parents still need to check model-proposed definitions, relations and answer evidence.
+Structured records let paper and screen work share evidence without treating upload time as answer time. The browser owns printing with no Host PDF, system queue or bundled PDF font. Parents still check proposed definitions, relations, transcriptions and answer evidence; unknown facts remain outside verified dated metrics.

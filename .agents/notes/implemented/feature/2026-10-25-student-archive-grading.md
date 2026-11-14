@@ -10,11 +10,11 @@ The parent friction of the paper loop was enough to abandon the main channel: ev
 
 ## Decision
 
-Grading moved to sampled batches (the parent's choice): `paper-draft` gained an optional `confidence` (high/low, absent treated as low); the skill requires high for unambiguous transcriptions with clear verdicts and low with uncertainties otherwise. The workbench offers one-click batch confirmation for high-confidence items (still one parent action, equivalent to an existing multi-item `confirm-paper` submission), while low-confidence and wrong answers stay item by item. The entry boundary changed from "confirm each item" to "confirm high-confidence in one batch plus per-item checks for the rest" — the parent remains the single gate.
+The parent may confirm a sampled batch of high-confidence correct transcriptions with known assistance and no uncertainty; low-confidence, wrong, partial, unassessed or unknown-assistance items remain individual checks. Confidence cannot supply correctness or independence. Native chat carries the default confirmation intent, and the supplemental manual form uses the same validators.
 
-Derived fields left the file: `stage`/`independentDays` became schema defaults (optional in, always present out, zero consumer churn) and `dueAt` optional; writes strip the three fields per mistake and reads refill them through the cached replay. Old files carrying the fields keep loading. The state file is smaller with one source of truth.
+Derived review stage, independent days and due dates remain outside durable collection facts. Shared evidence replay supplies them on reading, leaving one source of truth. Legacy derived fields remain readable without byte mutation.
 
-Term archiving: the new `archive-term` command (parent-confirmed, refused during an active block) has the store export all evidence to `.study/archive-<school-year>-<term>.json` first (an existing file refuses, preventing accidental overwrites) and then clear the profile to a minimal state carrying `archivedAt`; the read layer treats an `archivedAt` file as absent, so the same workspace can `setup` a fresh term directly. Parent setup gained an archive button with a confirmation dialog, and the action metadata declares it panel-submittable.
+A parent-confirmed archive preserves the original term's official entities before replacing active settings. The agent inspects and resumes existing valid output under the same identities; archive/export and active replacement are separate writes with explicit partial outcomes. A new setup creates a new term identity. The [native learning architecture](../architecture/2026-11-12-student-learning-flow-architecture.md) owns byte-verified migration, restoration, old-term refusal and concurrency limits.
 
 ## Alternatives considered
 
@@ -24,4 +24,4 @@ Term archiving: the new `archive-term` command (parent-confirmed, refused during
 
 ## Consequences
 
-Parent review drops from item-by-item to one batch plus a few spot checks; the state file no longer carries derived fields and the read-path replay is the single truth; term switches close inside one workspace with durable evidence exports. Real-family walkthroughs of the batch confirm and the archive flow remain to be verified (ownership recorded in HANDOFF). The grading and archive boundaries live here; the worksheet and read path are recorded in the [worksheet note](../simplification/2026-10-25-student-worksheet-html.md) and the [read-path note](../simplification/2026-10-25-student-read-path.md); repository and real-DSH verification belong to [HANDOFF.md](../../../../HANDOFF.md).
+Parent review uses one eligible batch plus individual checks; derived evidence has one owner. Durable term exports retain original identities, while interrupted operations remain inspectable and resumable. Real-family batch/archive walkthroughs are separate from deterministic regression evidence. The [worksheet note](../simplification/2026-10-25-student-worksheet-html.md) and [read-path note](../simplification/2026-10-25-student-read-path.md) retain rendering and replay rationale; release checks belong to [HANDOFF](../../../../HANDOFF.md).

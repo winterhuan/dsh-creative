@@ -12,7 +12,7 @@ Status: implemented
 
 十二份内置地图新增要素层：概念带 `misconceptions` 与 `examples`，目标带 `errorTypes`（分科受控词表）、`questionPoints` 与 `variationAxes`，单元带每日侧重 `focus`；`study_status kind=elements` 按已教范围返回一科各目标的要素，可带 `unit` 或 `id` 缩小。加载器校验词表归属与科目匹配，工作区自定义概念与目标接受同样的可选字段。`src/vocabulary.ts` 存放三科词表，不依赖 schema，客户端可直接引用。
 
-每道已确认错题可带一个本科目词表内的 `errorType`；`mistake`、`paper-draft` 和批改条目可附建议，`classify-mistake` 设置或清除，家长可在面板改。目标汇总错因为 `errorTypes`，同一错因出现两条以上加一条 recurring-error 理由并提高优先级，`errorProfile` 按科目汇总供工作台与薄弱点查询使用。巩固题沿 `variant` 阶梯升级：阶段 0–1 换数字、2 换情境、3 以上说理；题干与原错题相同的题面会被拒绝，确保巩固卷绝不照抄原题。`reviewPlan` v2 同类错因至多两条、留两个位置给薄弱目标的 `objectiveFills`，输出 `errorCoverage` 与 `remaining`，并按家长确认的学校进度过滤候选。掌握收紧为三个独立日、没有未完成错题、且近期没有依赖帮助或答错。`understandingReminders`（第一次说思路、订正后复述、进入新课）只派生不落盘：不持久、不评分、不参与掌握。图形联合扩到九种（数轴、钟面、小棒、百数表九格窗口、结构化钱币），未知图形显式报错而不是渲染出 NaN 布局，并修复图形截断与宽度传递缺陷。练习单 `kind`（daily、practice、review）决定打印标题；每日小卷与对话听写移入新的 `references/daily-routine.md`。
+每道已确认错题可带一个本科目词表内的 `errorType`；`mistake`、`paper-draft` 和批改条目可附建议，`classify-mistake` 设置或清除，家长可在面板改。目标汇总错因为 `errorTypes`，同一错因出现两条以上加一条 recurring-error 理由并提高优先级，`errorProfile` 按科目汇总供工作台与薄弱点查询使用。巩固题沿 `variant` 阶梯升级：阶段 0–1 换数字、2 换情境、3 以上说理；题干与原错题相同的题面会被拒绝，确保巩固卷绝不照抄原题。`reviewPlan` v2 同类错因至多两条、留两个位置给薄弱目标的 `objectiveFills`，输出 `errorCoverage` 与 `remaining`，并按家长确认的学校进度过滤候选。掌握收紧为三个独立日、没有未完成错题、且近期没有依赖帮助或答错。`understandingReminders`（第一次说思路、订正后复述、进入新课）只派生不落盘：不持久、不评分、不参与掌握。封闭图形联合在[完整题图决策](2026-10-16-student-figure-completeness.zh.md)下包含全部 23 种，未知图形显式报错而不是渲染出 NaN 布局，并修复图形截断与宽度传递缺陷。练习单 `kind`（daily、practice、review）决定打印标题；每日小卷与对话听写移入新的 `references/daily-routine.md`。
 
 ## 考虑过的替代方案
 
@@ -28,7 +28,7 @@ Status: implemented
 
 ## 验证
 
-数据测试断言每个单元有 focus、每个目标至少一个科目内合法的错因和两条出题要点、至少 80% 知识点带常见错法（十二份地图实测 100%）。宿主测试覆盖错因归类（跨科被拒、空字符串清除）、反复错因及优先级、只提醒不落盘不改掌握的 first-explain、草稿核对流程、按阶段的变式阶梯、薄弱目标补题位、要素查询与「题面必须不同」的拒绝。路由测试让 paper-draft 留在 UI 白名单之外，同时放行 school-progress、classify-mistake 与 confirm-paper。插件测试拒绝未知错因并提供 elements 查询。客户端测试覆盖草稿核对区、错题本归类表单、学科环节卡（含错因行与今日小卷提示词）和提醒卡。PDF 绘制全部九种图形。界面未在真实 DSH 浏览器验证，未调用真实模型；题目质量仍取决于模型。
+课程、学习和正式文件测试检查科目合法错因、出题要点、重复错因优先级、不评分提醒、变式阶梯、冻结来源关联和要素查询。客户端回归覆盖对应提示及手动更正。[HTML 练习卷决策](../simplification/2026-10-25-student-worksheet-html.zh.md)拥有共享题图渲染；真实模型题目质量仍未测量。
 
 ## 影响
 

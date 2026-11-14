@@ -10,7 +10,7 @@ The tenth figure kind ([overlap circles](2026-10-16-student-overlap-figure.md)) 
 
 ## Decision
 
-The vocabulary grows to twenty-three kinds: `split`, `sequence`, `wall`, `grid`, `dot-array`, `plane`, `solid`, `counter`, `measure`, `compass`, `balance` and `writing` join the ten, and `clock` accepts any five-minute reading (0–55, guarded so the minute hand never lands between ticks). Every kind is still a schema case with a handwritten draw function and a declared height, so pagination, the print queue and the saved worksheet record work unchanged. `sketch` is the last kind: a bounded canvas (height 40–260) holding up to 24 primitives (`line`, `arrow`, `polyline`, `rect`, `circle`, `text`) on an x grid of 0–480, validated so no stroke leaves the canvas. The questions reference carries the full list and tells the model to prefer the dedicated kinds; the practice-sheet prompt and the study skill point at that reference instead of repeating kind lists.
+The vocabulary grows to twenty-three kinds: `split`, `sequence`, `wall`, `grid`, `dot-array`, `plane`, `solid`, `counter`, `measure`, `compass`, `balance` and `writing` join the ten, and `clock` accepts any five-minute reading (0–55, guarded so the minute hand never lands between ticks). Every kind has a strict schema and shared SVG rendering for saved tasks and browser worksheets; the [HTML worksheet decision](../simplification/2026-10-25-student-worksheet-html.md) owns preview and printing. `sketch` is the last kind: a bounded canvas (height 40–260) holding up to 24 primitives (`line`, `arrow`, `polyline`, `rect`, `circle`, `text`) on an x grid of 0–480, validated so no stroke leaves the canvas. The questions reference carries the full list and tells the model to prefer the dedicated kinds; the practice-sheet prompt and the study skill point at that reference instead of repeating kind lists.
 
 ## Alternatives considered
 
@@ -22,7 +22,7 @@ The vocabulary grows to twenty-three kinds: `split`, `sequence`, `wall`, `grid`,
 
 ## Verification
 
-Host tests render all twenty-three kinds, split across four worksheets, into PDFs, and reject the guarded shapes: an empty set name, a seven-minute clock reading, a ragged number wall and a sketch stroke past its canvas. Every new kind was rendered to PDF, converted to an image and checked against the textbook layout; the balance pan label, the five-minute hand and the four-line example were adjusted from that review. Root `typecheck`, `build`, the student package suite, `doc-sync` and `hygiene` pass. Not exercised in a real DSH browser or with a real model.
+Schema and CLI resource tests validate all 23 kinds and reject invalid clocks, walls and out-of-canvas sketches. Client worksheet tests render the complete figure set through shared SVG. The original textbook visual checks informed balance labels, five-minute hands and writing examples; they do not establish current real-model drawing quality or physical printing.
 
 ## Consequences
 

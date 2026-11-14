@@ -16,13 +16,13 @@ A grade-two session on 2026-10-18 stopped because suggested durations were refus
 
 ## Decision
 
-The [learning decision](../feature/2026-10-05-student-learning.md) still owns course evidence, rewards and review. Duration and rest fields were later removed by the [overhaul decision](../feature/2026-10-30-student-overhaul.md); this note keeps ownership of record matching, choice normalisation and diagnose intensity.
+The [learning decision](../feature/2026-10-05-student-learning.md) owns course evidence and rewards; the [overhaul decision](../feature/2026-10-30-student-overhaul.md) owns the absence of duration/rest fields. This note retains choice normalization and diagnostic intensity. Stable response/assessment association now belongs to the [native learning architecture](../architecture/2026-11-12-student-learning-flow-architecture.md).
 
-A record for the current task requires a saved answer. `id` must match. `topic` and `prompt` match after NFKC, width, trim and collapsed space. `response` matches the saved response, the raw input, that fold, or a choice letter. Omitted `mistakeId`, `objectiveId`, `variant` and `figure` are copied from the task. A provided value that differs names the field and the expected value.
+Assessment references a saved response in its owning block and question. Repeating every question field is unnecessary; official-file validation rejects mismatched identities, missing answers and contradictory assistance before facts count as evidence.
 
-Choice answers accept case, surrounding space, fullwidth and halfwidth forms, and letter indexes A–D, including 选A, 选择A and 答案是A. The stored `response` is the published choice. `rawResponse` keeps the trimmed input.
+Choice answers accept case, surrounding space, width variants and A–D letter forms including 选A, 选择A and 答案是A. The normalized response may store the published choice while `rawResponse` preserves the original learner wording.
 
-`intensity` is stored only for `diagnose`. Other modes ignore it, and `study_update` adds a notice.
+`intensity` applies only to `diagnose`; official-file validation rejects it on other modes. No write-tool notice substitutes for validation.
 
 ## Alternatives considered
 
@@ -34,8 +34,8 @@ Choice answers accept case, surrounding space, fullwidth and halfwidth forms, an
 
 ## Verification
 
-Learning tests cover a record error that names the field, choice letters, and ignored intensity. Duration and late-save cases moved to the overhaul tests. A real DSH browser session was not run.
+Learning and official-file regressions cover choice letters, response identity, missing answers, assistance conflicts and diagnostic-only intensity. Duration removal is covered by the overhaul tests; real-tool and release checks belong to the native learning architecture.
 
 ## Consequences
 
-Record matching, choice normalisation and diagnose intensity remain as decided here. Duration suggestions, `timeNotice`, `late` and rest clocks are owned by the [overhaul decision](../feature/2026-10-30-student-overhaul.md). School mode still requires a confirmed course. A record that names a different prompt or figure still fails, and the error quotes the expected value.
+Answers no longer need byte-for-byte repetition to receive feedback. Original wording remains available, assessment identity stays explicit, and school mode still needs a confirmed course. Time limits are absent; invalid official evidence remains pending repair.

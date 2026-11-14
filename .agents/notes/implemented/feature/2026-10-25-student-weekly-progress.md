@@ -10,11 +10,11 @@ Mastery progress was nearly invisible: `independentDays` existed all along, but 
 
 ## Decision
 
-Progress on display: the task card's three dots became a shared `MasteryDots` component, reused in the map's concept details and unit goal rows (hidden while browsing another book, which carries no mastery); when the third independent day lands on the current task, the task card celebrates once — no new reward channel, only existing evidence as progress motivation.
+Task and map views reuse `MasteryDots` to show genuine independent-day progress without another reward channel. Browsing another book carries no borrowed current-term mastery. The parent summary remains derived from effective answers and review evidence rather than a saved weekly ledger.
 
-The parent weekly summary: `status.ts` gained a purely derived `weeklySummary` — minutes per day and active days over the last seven days, practised and newly mastered goals, new and consolidated mistakes, due-review completion, and the week's top error causes — carried by the dashboard as one compact object on the parent page. Everything recomputes from stored evidence; nothing is stored per week.
+Seven-day metrics use Shanghai today and the preceding six calendar days. First mastery, recovery through new answers and repeated work remain distinct. Review opportunities include overdue work at window start and genuinely due work in the window; completion requires independent correctness after becoming due, survives rescheduling and remains separate from current difficulty. Unknown dates/assistance cannot supply dated completion. The [native learning architecture](../architecture/2026-11-12-student-learning-flow-architecture.md) owns identity, source verification and historical replay rules.
 
-Per-tab payloads: the workspace API takes a `tab` parameter (today/map/mistakes/parent) folded into the client's poll signature; only the map tab returns the full knowledge map, every other tab empties its concepts, relations, ideas and order and marks the view `lite`, keeping objectives, units and the summary for progress dots and goal lists. Tool queries are unaffected.
+Shared queries select page-specific projections, loading full knowledge maps and history only when needed. Stable file versions and time thresholds govern refresh rather than revision alone; the typed resource owns consumption. The [read-path decision](../simplification/2026-10-25-student-read-path.md) owns those cache and lifecycle rules.
 
 ## Alternatives considered
 
@@ -24,4 +24,4 @@ Per-tab payloads: the workspace API takes a `tab` parameter (today/map/mistakes/
 
 ## Consequences
 
-Goal rows and map details show n-of-3 progress and the parent page gains a weekly card; non-map payloads no longer carry the whole map, so full fetches on tab switches are much lighter. Weekly numbers describe evidence and never judge ability, matching the standing boundary. Visibility and payload decisions live here; the cached read path is recorded in the [read-path note](../simplification/2026-10-25-student-read-path.md); repository and real-DSH verification belong to [HANDOFF.md](../../../../HANDOFF.md).
+Goal rows show n-of-3 progress, and parents see a compact summary without fetching every map. Numbers describe observed evidence rather than ability; corrections recompute effective facts without adding answers. Display/payload rationale remains here; release browser checks belong to [HANDOFF](../../../../HANDOFF.md).
