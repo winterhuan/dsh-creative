@@ -162,3 +162,7 @@
 - 停服务备份后，history 移入 `notes/.media-desk/history/`，105 个文件减至 19 个；保留最近 5 个版本与撤销及仍引用的快照。两份正文、18 张图、其他 Notes 文件与依赖保持原值；浏览器验证标题路径、9 张图加载和原生会话恢复。
 - 语法检查、构建、195 项测试（并发数 2）、整理幂等与回滚验证通过。Wiki 检查排除内部快照，8 项回归及全库结构检查通过。证据：`~/.dsh/backups/media-desk-readable-files-20261114-172220/`。
 - 规范检查通过；文档 14／16 项通过，两个失败均为未修改的 Superagent README 配对记录与限制章节格式。
+
+<a id="media-desk-single-journal"></a>
+
+2026-11-14：Media Desk [v2.7.0-winter.4](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.4)已远程更新，保存双日志合并为一份，无引用的过期撤销文件自动清理，保留五条近期历史与重启撤销；197项测试、备份副本整理及日常正文／18张图片校验通过。备份：`~/.dsh/backups/media-desk-single-journal-20261114-182829/`。
