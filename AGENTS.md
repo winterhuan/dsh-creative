@@ -17,6 +17,7 @@
 - 修改首行标记 `Copied from deepseek-harness` 的脚本或类型副本后，更新 HANDOFF 第 8 节的改动表。
 - 客户端行为需在真实 DSH 验证。日常 profile 使用远程发布包；本地调试使用独立 profile，构建后重启开发进程并硬刷新。勿用裸 npm 包名的 `plugin-update` 覆盖 Git 安装。
 - 代码风格沿用 `upstream/AGENTS.md` 的 Conventions 与 Type safety；上游 monorepo 的发布流程不适用于这些独立插件。
+- Superagent 研究原型保留自身依赖与源码检查；父仓库仍运行它的安装、类型检查、构建、测试和 README 检查，范围见 [HANDOFF](HANDOFF.md#6-依赖策略)。
 
 ## 命令
 

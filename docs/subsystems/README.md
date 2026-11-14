@@ -32,6 +32,7 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Antfarm](antfarm.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Independent development bundle for DSH 0.2.2-rc.1; unreleased |
 | [Media Desk](media-desk.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Native creative Sessions, Notes content, independent media and export; maintained fork |
 | [New API console](../../plugins/dsh-new-api/README.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.md) | Independent bundle; relay-site balances and check-ins |
+| [Superagent](../../plugins/dsh-superagent-prototype/README.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.md) | Research prototype bundle; maintained fork for local reference and development |
 
 <a id="related"></a>
 ## Related documentation

@@ -31,3 +31,6 @@
 [submodule "plugins/dsh-new-api"]
 	path = plugins/dsh-new-api
 	url = https://github.com/winterhuan/dsh-new-api.git
+[submodule "plugins/dsh-superagent-prototype"]
+	path = plugins/dsh-superagent-prototype
+	url = https://github.com/winterhuan/dsh-superagent-prototype.git
