@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/user/superagent-installation.md
 /:
-  en: d3586eb5941887e9
-  zh: b08eb635863df70a
+  en: 01b844348402af12
+  zh: 7d8b157535d3163e
 /superagent-installation-and-updates:
   en: 522656f808f03134
   zh: 52078883dd4a9ec5
 /superagent-installation-and-updates/summary:
-  en: e2aca37455102a83
-  zh: 894743e4b8e5f405
+  en: 0a1e647df4fba864
+  zh: 3dc47eb07958c3b3
 /superagent-installation-and-updates/table-of-contents:
   en: a6abf02df603e28e
   zh: 543f5a4eefced9e1
 /superagent-installation-and-updates/install-into-a-separate-profile:
-  en: afb45e2378a642a7
-  zh: 0981cf46ab45aa54
+  en: 8d85b96026ffd25f
+  zh: 26a7429f06628b1a
 /superagent-installation-and-updates/update-a-local-installation:
   en: acf98ca7cf880deb
   zh: e6b51bf710a0fdb8
 /superagent-installation-and-updates/remote-installation:
-  en: 481623a8326af7f2
-  zh: c1c2e4a87a294174
+  en: 8674a4fa0ec51759
+  zh: 98eaf40b3c869aa9
 /superagent-installation-and-updates/dev-note:
   en: b75c8458928b72b9
   zh: 003ba4e17b4b5269

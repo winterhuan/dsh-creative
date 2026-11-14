@@ -166,3 +166,10 @@
 <a id="media-desk-single-journal"></a>
 
 2026-11-14：Media Desk [v2.7.0-winter.4](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.4)已远程更新，保存双日志合并为一份，无引用的过期撤销文件自动清理，保留五条近期历史与重启撤销；197项测试、备份副本整理及日常正文／18张图片校验通过。备份：`~/.dsh/backups/media-desk-single-journal-20261114-182829/`。
+
+<a id="superagent-git-market-release"></a>
+2026-11-14 Superagent Git 发布：
+
+- [v0.1.0](https://github.com/winterhuan/dsh-superagent-prototype/releases/tag/v0.1.0) 包含预构建入口，补齐公开包元数据并加入[市场](https://winterhuan.github.io/dsh-creative/index.json)。本机独立 `superagent` profile 来源为 `github:winterhuan/dsh-superagent-prototype#v0.1.0`；浏览器显示仓库来源与五个运行组件，全部健康检查通过。
+- `web` 的十个相关会话及工作区登记已迁出；业务库与工作目录保留，原始会话字节、账号、策略和提示词保持完整。独立登录启动和服务管理已配置。
+- 类型检查、构建、1197 项测试和文档检查通过；未触发真实模型工作。迁移备份在 `~/.dsh/backups/superagent-profile-migration-20261114-191943/`，远程切换备份与验收证据在 `~/.dsh/backups/superagent-git-release-20261114-202739/`。

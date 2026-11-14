@@ -2,7 +2,7 @@
 
 最后更新：2026-11-14。
 
-本仓库统一管理 10 个独立 DSH 插件仓库、开发检查和交接文档，其中 9 个已有发布包，短剧工作台处于界面试验阶段，Superagent 作为研究原型与参考子模块维护。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
+本仓库统一管理 11 个独立 DSH 插件仓库、开发检查和交接文档，其中 10 个已有发布包，短剧工作台处于界面试验阶段，Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-10 个插件仓库包含 11 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型保留上游 `0.1.0` 包和 `0.2.1-alpha.2` 依赖，供本地构建与插件设计参考，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+11 个插件仓库包含 12 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型保留上游 `0.1.0` 包和 `0.2.1-alpha.2` 依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -41,11 +41,11 @@
 | [dsh-shadow-mind](plugins/dsh-shadow-mind/README.zh.md) | `src`（单包，包含审查运行时、命令与预设入口） | 子模块根目录（预构建固定 Git 发布包） |
 | [dsh-short-drama](plugins/dsh-short-drama/README.zh.md) | `src`（界面试验，Host 入口与 Client） | 子模块根目录（需先本地构建） |
 | [dsh-new-api](plugins/dsh-new-api/README.zh.md) | `src`（JavaScript Host 与 Client） | 子模块根目录（含预构建 `dist/client.js`） |
-| [dsh-superagent-prototype](plugins/dsh-superagent-prototype/README.md) | `src`、`prompts`、`docs` | 子模块根目录（研究原型，需先本地构建） |
+| [dsh-superagent-prototype](plugins/dsh-superagent-prototype/README.md) | `src`、`prompts`、`docs` | 子模块根目录（研究原型，预构建固定 Git 发布包） |
 
 ```text
 dsh-creative/
-├── plugins/              10 个独立 DSH 插件仓库的 Git 子模块
+├── plugins/              11 个独立 DSH 插件仓库的 Git 子模块
 ├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
@@ -55,7 +55,7 @@ dsh-creative/
 └── .gitmodules           子模块地址与路径
 ```
 
-每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。Superagent fork 来自 `winterhuan/dsh-superagent-prototype`，保留原型的完整文档、提示词、Host／Client 源码与测试，便于对照其他插件的组合和开发方式；它仍是研究原型，不加入市场或日常 profile。短剧界面试验仓库为私有，递归克隆需要其读取权限；它不加入市场或日常 profile。New API 管理台从公开 Git 固定标签安装，并已加入市场和日常 `web` profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
+每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。Superagent fork 来自 `winterhuan/dsh-superagent-prototype`，保留原型的完整文档、提示词、Host／Client 源码与测试，便于对照其他插件的组合和开发方式；它仍是研究原型，通过市场发布并安装到独立 `superagent` profile。短剧界面试验仓库为私有，递归克隆需要其读取权限；它不加入市场或日常 profile。New API 管理台从公开 Git 固定标签安装，并已加入市场和日常 `web` profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
 
 ### 开发与发布规则
 
@@ -106,7 +106,7 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-antfarm@0.3.3` 与 `@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
-Superagent 原型已作为 `plugins/dsh-superagent-prototype` 子模块纳入父仓库；本地构建、链接安装和更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
+Superagent `0.1.0` 从 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包安装到独立 `superagent` profile，并加入插件市场；日常 `web` 不加载它。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
 日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.4`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.4`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)。
 
@@ -135,7 +135,7 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 现役插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
 
-`dsh-superagent-prototype` 是研究参考例外，保留原型包版本 `0.1.0`、精确的 DSH 开发依赖 `0.2.1-alpha.2` 及原有对等依赖范围，不加入现役插件的版本统一或市场发布。使用独立 profile 本地构建和链接；与 DSH `0.2.2-rc.1` 的运行兼容性需单独验证。
+`dsh-superagent-prototype` 是研究参考例外，保留原型包版本 `0.1.0`、精确的 DSH 开发依赖 `0.2.1-alpha.2` 及原有对等依赖范围，不加入现役插件的版本统一。预构建发布包安装到独立 profile，本地开发仍可构建和链接；Host 与面板已在 DSH `0.2.2-rc.1` 验证，真实模型执行需单独验证。
 
 Antfarm `0.3.3` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
 
