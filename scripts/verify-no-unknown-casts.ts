@@ -4,7 +4,7 @@
 import { createHash } from 'node:crypto'
 import { lstatSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { authoredGitFiles } from './plugin-workspaces.ts'
+import { authoredGitFiles, isReferencePluginPath } from './plugin-workspaces.ts'
 import ts from 'typescript'
 
 const root = resolve(import.meta.dirname, '..')
@@ -68,6 +68,7 @@ export function findUnknownCasts(file: string, text: string): UnknownCast[] {
 
 function isSource(file: string): boolean {
   return /\.(?:[cm]?[jt]s|[jt]sx)$/u.test(file)
+    && !isReferencePluginPath(file)
     && !file.startsWith('vendor/')
     && !file.startsWith('.agents/notes/archived/')
 }

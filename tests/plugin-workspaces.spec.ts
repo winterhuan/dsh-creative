@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it, onTestFinished } from 'vitest'
 import { authoredGitFiles, pluginWorkspaces } from '../scripts/plugin-workspaces.ts'
+import { scanUnknownCasts } from '../scripts/verify-no-unknown-casts.ts'
 import { computeTranslationPairingRecord, renderTranslationPairingRecord, translationPairPaths } from '../scripts/translation-pairing-record.ts'
 import { parseTranslationMarkdown, translationStructureSignature } from '../scripts/translation-pairing.ts'
 
@@ -57,6 +58,25 @@ it('preserves plugin translation hashes when the repository is checked as a subm
   expect(nested).toEqual(standalone)
   expect(renderTranslationPairingRecord(translationPairPaths('plugins/example/README.md'), nested))
     .toEqual(renderTranslationPairingRecord(translationPairPaths('README.md'), standalone))
+})
+
+it('checks Creative assertions while retaining the reference checkout in workspace and file discovery', () => {
+  const root = fixture()
+  const pluginPaths = ['plugins/example', 'plugins/dsh-superagent-prototype']
+  writeFileSync(join(root, '.gitmodules'), pluginPaths.map(path => `[submodule "${path}"]\npath = ${path}\n`).join(''))
+  execFileSync('git', ['init', '--quiet'], { cwd: root })
+  mkdirSync(join(root, 'scripts'))
+  writeFileSync(join(root, 'scripts/check.ts'), 'export {}\n')
+  for (const path of pluginPaths) {
+    const plugin = join(root, path)
+    mkdirSync(join(plugin, 'src'), { recursive: true })
+    execFileSync('git', ['init', '--quiet'], { cwd: plugin })
+    writeFileSync(join(plugin, 'package.json'), '{}\n')
+    writeFileSync(join(plugin, 'src/index.ts'), 'export const value = {} as unknown\n')
+  }
+  expect(pluginWorkspaces(root)).toEqual(pluginPaths)
+  expect(authoredGitFiles(root, true)).toContain('plugins/dsh-superagent-prototype/src/index.ts')
+  expect(scanUnknownCasts(root).map(cast => cast.file)).toEqual(['plugins/example/src/index.ts'])
 })
 
 it('matches parent documentation locales without ignoring a different repository or anchor', () => {

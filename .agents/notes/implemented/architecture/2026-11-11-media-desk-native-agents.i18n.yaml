@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-11-11-media-desk-native-agents.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-11-11-media-desk-native-agents.md
+/agent-note-media-desk-native-creative-agents:
+  en: 2ba67e67636e14fa
+  zh: 69064514b1196b3a
+/agent-note-media-desk-native-creative-agents/problem:
+  en: 33f770496eea5311
+  zh: ab0c51ccaa246e0d
+/agent-note-media-desk-native-creative-agents/decision:
+  en: f3d74751cd7758cf
+  zh: f9e596fbbcf2dc0d
+/agent-note-media-desk-native-creative-agents/alternatives-considered:
+  en: 206c28736ca850e8
+  zh: 3c06db02917defb1
+/agent-note-media-desk-native-creative-agents/consequences:
+  en: 0219be299cdfe25f
+  zh: 10fd1544aa6f8a21

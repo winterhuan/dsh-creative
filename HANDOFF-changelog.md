@@ -137,3 +137,32 @@
 - [Antfarm](https://github.com/winterhuan/dsh-antfarm/releases/tag/v0.3.1)与[Shadow Mind](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.1) 补全 `@winterhuan` 包名；日常 `web` 远程迁移、重启验证完成，历史数据保留。证据：`~/.dsh/backups/scoped-plugins-release-20261109/`。
 
 2026-11-09：Antfarm `0.3.3` 已发布并远程安装到本地，验证与备份见 [HANDOFF](HANDOFF.md#4-开发命令与构建流程)。
+
+<a id="new-api-release"></a>
+
+2026-11-12 New API 管理台发布与远程安装：
+
+- [v1.0.0-winter.1](https://github.com/winterhuan/dsh-new-api/releases/tag/v1.0.0-winter.1) 已公开发布并加入[插件市场](https://winterhuan.github.io/dsh-creative/index.json)；日常 `web` 从该远程标签安装，原有依赖及配置保留。重启与硬刷新后，设置页、运行组件、固定标签来源和市场详情均通过真实浏览器验证。
+- 插件语法检查、构建和 13 项测试通过；隔离 DSH 验证鉴权、代理与全局余额刷新，证据见 `.artifacts/dsh-new-api-fix-verification/`。安装前备份及本机验收材料位于 `~/.dsh/backups/dsh-new-api-release-20261112-210815/`。真实站点认证与每日定时签到尚未验证。
+
+<a id="media-desk-native-release"></a>
+
+2026-11-14 Media Desk 原生创作与 Notes 发布：
+
+- [v2.7.0-winter.2](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.2) 已发布并加入[插件市场](https://winterhuan.github.io/dsh-creative/index.json)；日常 `web` 从固定 Git 标签升级，原有其他依赖保留。浏览器已验证新版本、两个运行组件、原生输入和历史作品加载。该补丁修复媒体保存列表被素材路径校验拦截的问题；`v2.7.0-winter.1` 保留为历史版本。
+- 本机迁移前备份 profile、Media Desk 和历史文件。两个旧作品的正文、成稿、固定 AI 原稿与九张已接受图片已迁入 `~/wiki/notes`，文字及图片字节核对通过；旧 Notes 文件保持原内容，索引仅追加本数据目录的导航。备份及验收材料位于 `~/.dsh/backups/media-desk-release-20261113-2.7.0-winter.1/`。
+- 插件语法检查、构建、191 项完整并发测试、文档 16 项和规范 3 项检查通过。隔离固定 Git 包验证配置、加载及浏览器产物哈希；真实浏览器覆盖问答与批准、成稿接受、Notes 当前稿复制和导出、选段改稿回执、语言与主题、附件及重启后旧会话恢复。未发送附件硬刷新后需重新添加；保存文字草稿和已发送附件历史保留。
+- 有界真实模型验收使用 `magpieme/group/qwen-max`，验证 llm-wiki 加载、来源读取、两轮研究与策划／脚本持久接受。Token 和缓存数据包含原生上下文、工具及来源读取，不单独衡量技能开销；测试 Wiki 不证明事实或写作质量。付费 HTTP 生图、真实订阅登录及 Linux／Windows 未验证。
+
+<a id="media-desk-readable-files"></a>
+
+2026-11-14 Media Desk 文件整理与远程更新：
+
+- [v2.7.0-winter.3](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.3) 已发布、更新市场并安装到日常 Web。作品以标题命名，重名加短编号，图片按作品归档。
+- 停服务备份后，history 移入 `notes/.media-desk/history/`，105 个文件减至 19 个；保留最近 5 个版本与撤销及仍引用的快照。两份正文、18 张图、其他 Notes 文件与依赖保持原值；浏览器验证标题路径、9 张图加载和原生会话恢复。
+- 语法检查、构建、195 项测试（并发数 2）、整理幂等与回滚验证通过。Wiki 检查排除内部快照，8 项回归及全库结构检查通过。证据：`~/.dsh/backups/media-desk-readable-files-20261114-172220/`。
+- 规范检查通过；文档 14／16 项通过，两个失败均为未修改的 Superagent README 配对记录与限制章节格式。
+
+<a id="media-desk-single-journal"></a>
+
+2026-11-14：Media Desk [v2.7.0-winter.4](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.4)已远程更新，保存双日志合并为一份，无引用的过期撤销文件自动清理，保留五条近期历史与重启撤销；197项测试、备份副本整理及日常正文／18张图片校验通过。备份：`~/.dsh/backups/media-desk-single-journal-20261114-182829/`。

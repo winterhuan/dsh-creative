@@ -11,6 +11,7 @@
 import { globSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import ts from 'typescript'
+import { isReferencePluginPath } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const MINIMUM_CLIENT_UI_SOURCES = 40
@@ -340,7 +341,7 @@ export function clientUiSourceFiles(scanRoot: string = root): string[] {
     ...globSync('apps/desktop/renderer/*.js', { cwd: scanRoot }),
   ])]
     .map(file => file.replaceAll('\\', '/'))
-    .filter(file => !file.endsWith('.d.ts'))
+    .filter(file => !file.endsWith('.d.ts') && !isReferencePluginPath(file))
     .sort()
 }
 

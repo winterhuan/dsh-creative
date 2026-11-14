@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for media-desk.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/subsystems/media-desk.md
+/:
+  en: 57f1b16bc97aebdc
+  zh: 560ab1117b938918
+/media-desk:
+  en: 25ad7f726e897917
+  zh: 6c1fa7ed52e87c55
+/media-desk/summary:
+  en: f56124b5b67df409
+  zh: 7be026db46f4b48b
+/media-desk/table-of-contents:
+  en: d869de7e769b0f67
+  zh: ca7a90b2ad95f41a
+/media-desk/package-and-execution:
+  en: 2d70a6df22310fce
+  zh: bf727a7e704c693a
+/media-desk/content-and-acceptance:
+  en: d68f32ebafc9b3ba
+  zh: 7f6887a81c028f0c
+/media-desk/related:
+  en: 8d4a0308310253e0
+  zh: c6649d61827f82d9
+/media-desk/dev-note:
+  en: b75c8458928b72b9
+  zh: 003ba4e17b4b5269
