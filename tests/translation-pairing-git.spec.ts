@@ -4,6 +4,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it, onTestFinished } from 'vitest'
 import { gitIndexPaths, readGitIndexBlob } from '../scripts/translation-pairing-git.ts'
+import { isTranslationScopeFile } from '../scripts/translation-pairing.ts'
+
+it('includes plugin user-guide pairs while excluding copied upstream guides', () => {
+  expect(isTranslationScopeFile('plugins/dsh-media-desk/GUIDE.md')).toBe(true)
+  expect(isTranslationScopeFile('plugins/dsh-media-desk/GUIDE.zh.md')).toBe(true)
+  expect(isTranslationScopeFile('plugins/dsh-media-desk/GUIDE.i18n.yaml')).toBe(true)
+  expect(isTranslationScopeFile('plugins/dsh-media-desk/upstream/GUIDE.md')).toBe(false)
+})
 
 it('reads linked documentation from the staged submodule commit', () => {
   const root = mkdtempSync(join(tmpdir(), 'dsh-pairing-index-'))

@@ -108,7 +108,7 @@ export interface TranslationPairingManifest {
   excluded: string[]
 }
 
-const PACKAGE_REFERENCE_ARTIFACT = /^plugins\/[^/]+\/(?:DESIGN|PARITY)(?:\.zh)?\.md$|^plugins\/[^/]+\/(?:DESIGN|PARITY)\.i18n\.yaml$/
+const PACKAGE_REFERENCE_ARTIFACT = /^plugins\/[^/]+\/(?:DESIGN|PARITY|GUIDE)(?:\.zh)?\.md$|^plugins\/[^/]+\/(?:DESIGN|PARITY|GUIDE)\.i18n\.yaml$/
 const README_ARTIFACT = /(?:^|\/)readme(?:\.md|\.zh\.md|\.i18n\.yaml)$/i
 const ROOT_PAIRED_DOCUMENT_ARTIFACT = /^(?:brand_guidelines|contributing|safety)(?:\.md|\.zh\.md|\.i18n\.yaml)$/i
 const NON_SOURCE_DIRECTORIES = new Set([

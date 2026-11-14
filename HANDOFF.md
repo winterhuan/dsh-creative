@@ -210,7 +210,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 | `scripts/translation-pairing-record.ts` | 在子模块自身的仓库路径下计算双语记录，保持独立检出与父仓库检查一致 |
 | `scripts/translation-pairing-git.ts` | 暂存区检查读取子模块固定提交中的文档，保持父仓库链接与双语记录一致 |
 | `scripts/translation-links.ts` | 结构检查识别插件 README 指向父仓库已存在双语文档的 GitHub 链接，保留语言、分支和锚点语义 |
-| `scripts/translation-pairing.ts` | 排除嵌套 `upstream/`、生成的 `plugin/` 和本地市场检出，纳入子模块 README、DESIGN 与 PARITY 双语对 |
+| `scripts/translation-pairing.ts` | 排除嵌套 `upstream/`、生成的 `plugin/` 和本地市场检出，纳入子模块 README、DESIGN、PARITY 与 GUIDE 双语对 |
 
 `plugin-workspaces.ts`、`run-plugins.ts` 和 `run-checks.ts` 为本仓库自有脚本；统一包发现包含实际有 `src` 的子模块根清单以及嵌套包，排除 workspace 空根。检查和批量命令在插件子模块未初始化时失败，不能以空扫描通过。
 
