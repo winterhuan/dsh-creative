@@ -166,3 +166,12 @@
 <a id="media-desk-single-journal"></a>
 
 2026-11-14：Media Desk [v2.7.0-winter.4](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.4)已远程更新，保存双日志合并为一份，无引用的过期撤销文件自动清理，保留五条近期历史与重启撤销；197项测试、备份副本整理及日常正文／18张图片校验通过。备份：`~/.dsh/backups/media-desk-single-journal-20261114-182829/`。
+
+<a id="student-native-release"></a>
+
+2026-11-14 Student 原生学习发布与隔离云端验收：
+
+- `@winterhuan/dsh-student@0.2.0` 使用 DSH `0.2.2-rc.1`；原生文件工具写入业务记录，随包只读 CLI 与独立读取校验。[v0.2.0](https://github.com/winterhuan/dsh-student/releases/tag/v0.2.0) 已附固定标签编译包与 SHA256SUMS，[插件市场](https://winterhuan.github.io/dsh-creative/index.json)已更新。
+- 隔离云端已验证草稿迁移、连续保存、重载、文案、窄屏和浏览器 PDF。扩展原生14条流程包含226次持久原生工具调用（240次分派）及34次 CLI 字节／版本检查，包含一次无效文件修复；恢复14条流程包含54次原生工具调用及6次只读 CLI 观察。
+- Mac／Linux 各 262 项测试、受影响 24 对双语文档及 3 项规范检查通过；父完整 doc-sync 为 14／16，两个继承失败均为未修改的 Superagent README 配对记录与限制章节格式。
+- 证据：`~/.dsh/backups/student-native-chat-20261114/`。确定性验收不衡量真实辅导、OCR、外部课堂或实物打印质量。

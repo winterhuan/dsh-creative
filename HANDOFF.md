@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-10 个插件仓库包含 11 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型保留上游 `0.1.0` 包和 `0.2.1-alpha.2` 依赖，供本地构建与插件设计参考，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+10 个插件仓库包含 11 个源码包。`dsh-writer` 发布版本为 `0.1.10`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-student` 为 `0.2.0`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型保留上游 `0.1.0` 包和 `0.2.1-alpha.2` 依赖，供本地构建与插件设计参考，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
