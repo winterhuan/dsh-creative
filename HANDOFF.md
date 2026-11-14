@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-12。
+最后更新：2026-11-14。
 
 本仓库统一管理 10 个独立 DSH 插件仓库、开发检查和交接文档，其中 9 个已有发布包，短剧工作台处于界面试验阶段，Superagent 作为研究原型与参考子模块维护。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -64,7 +64,7 @@ dsh-creative/
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
 4. Writer `0.1.10` 与项目默认模式 `0.1.9` 单独发布；原有 5 个仓库的 6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
-Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.6.2-winter.1`。上游使用指南随包保留；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
+Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.2`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
 ## 3. 与 DSH 的集成方式
 
@@ -108,7 +108,7 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 Superagent 原型已作为 `plugins/dsh-superagent-prototype` 子模块纳入父仓库；本地构建、链接安装和更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。
 
-日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.6.2-winter.1`，来源为 `github:winterhuan/dsh-media-desk#v2.6.2-winter.1`。服务重启后，「自媒体工作台」与示例内容已在真实浏览器加载，既有插件依赖声明保持不变；插件语法检查、构建和 87 项测试通过，未调用真实模型或图片服务。备份与验收证据位于 `~/.dsh/backups/media-desk-release-20261110-2.6.2-winter.1/`。
+日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.2`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.2`。原生创作与 Notes 存储的发布、本机迁移及实际验收范围见 [Media Desk 发布记录](HANDOFF-changelog.md#media-desk-native-release)。
 
 日常 `web` 安装了 `@winterhuan/dsh-new-api@1.0.0-winter.1`，来源为 `github:winterhuan/dsh-new-api#v1.0.0-winter.1`。服务重启后，真实浏览器已加载「设置 → New API 管理台」，已安装详情显示一个组件运行中，市场详情正文加载正常。发布、验证与备份记录见 [New API 发布记录](HANDOFF-changelog.md#new-api-release)。
 
