@@ -29,10 +29,10 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [模型设置增强](model-options.zh.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.zh.md) | 独立 bundle |
 | [项目默认模式](project-default-mode.zh.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.zh.md) | 独立 bundle |
 | [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) | 独立 bundle |
-| [Antfarm](antfarm.zh.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 面向 DSH 0.2.2-rc.1 的独立开发 bundle；尚未发布 |
+| [Antfarm](antfarm.zh.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 已发布组合包；日常服务使用独立 `antfarm` profile |
 | [自媒体工作台](media-desk.zh.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.zh.md) | 原生创作 Session、Notes 内容、独立媒体与导出；维护 fork |
 | [New API 管理台](../../plugins/dsh-new-api/README.zh.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.zh.md) | 独立组合包；公益站余额与签到 |
-| [Superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | 研究原型 bundle；维护 fork 用于本地参考和开发 |
+| [Superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | 研究原型组合包；远程发布包使用独立 `superagent` profile |
 
 <a id="related"></a>
 ## 相关文档

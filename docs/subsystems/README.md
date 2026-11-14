@@ -29,10 +29,10 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Model options](model-options.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.md) | Independent bundle |
 | [Project default mode](project-default-mode.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.md) | Independent bundle |
 | [Writing](writer.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) | Independent bundle |
-| [Antfarm](antfarm.md) | [dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Independent development bundle for DSH 0.2.2-rc.1; unreleased |
+| [Antfarm](antfarm.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Released bundle; daily service uses the dedicated `antfarm` profile |
 | [Media Desk](media-desk.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Native creative Sessions, Notes content, independent media and export; maintained fork |
 | [New API console](../../plugins/dsh-new-api/README.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.md) | Independent bundle; relay-site balances and check-ins |
-| [Superagent](../../plugins/dsh-superagent-prototype/README.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.md) | Research prototype bundle; maintained fork for local reference and development |
+| [Superagent](../../plugins/dsh-superagent-prototype/README.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.md) | Research prototype bundle; remote release uses the dedicated `superagent` profile |
 
 <a id="related"></a>
 ## Related documentation

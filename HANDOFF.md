@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-14。
+最后更新：2026-11-15。
 
 本仓库统一管理 11 个独立 DSH 插件仓库、开发检查和交接文档，其中 10 个已有发布包，短剧工作台处于界面试验阶段，Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -106,9 +106,20 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
-Antfarm `0.3.3` 从固定 Git 发布包安装到独立 `antfarm` profile（3083），日常 `web` 不加载它。使用 `~/.dsh/bin/dsh-antfarm` 的 `start`、`stop`、`restart` 和 `status` 管理服务；登录启动尊重手动停止。运行库、人设工作区、原生会话和存储位于 `~/.dsh/profiles/antfarm/data/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
+<a id="independent-service-profiles"></a>
 
-Superagent `0.1.0` 从 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包安装到独立 `superagent` profile，并加入插件市场；日常 `web` 不加载它。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
+Superagent 与 Antfarm 分别使用以下独立 profile，安装、更新和启停均针对所属 profile；日常 `web` 不加载两者。
+
+| 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
+|---|---|---|---|---|
+| Superagent | `superagent` | `3082` | `~/.dsh/bin/dsh-superagent` | `~/.dsh/profiles/superagent/data/` |
+| Antfarm | `antfarm` | `3083` | `~/.dsh/bin/dsh-antfarm` | `~/.dsh/profiles/antfarm/data/` |
+
+两个服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
+
+Antfarm `0.3.3` 使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
+
+Superagent `0.1.0` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
 日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.6`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.6`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘作品读取指引见 [复盘修复记录](HANDOFF-changelog.md#media-desk-global-review)。
 
