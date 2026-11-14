@@ -177,3 +177,7 @@
 <a id="antfarm-profile-migration"></a>
 
 2026-11-14：Antfarm `0.3.3` 拆分至独立 `antfarm` profile（3083），以 `~/.dsh/bin/dsh-antfarm` 管理，登录启动尊重手动停止。运行库、四个原生会话、人设工作区与历史字节校验通过；日常 `web` 移除插件，保留原项目会话。备份：`~/.dsh/backups/antfarm-profile-migration-20261114-210138/`。
+
+<a id="media-desk-chat-simplification"></a>
+
+2026-11-14：Media Desk [v2.7.0-winter.5](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.5) 移除聊天底部的已接受作品卡片，更新市场及日常 Web。语法、构建、40 项相关测试、文档与规范检查通过；浏览器确认保存回执仍保留，正文及原生聊天正常。备份：`~/.dsh/backups/media-desk-hide-work-receipts-20261114-221943/`。

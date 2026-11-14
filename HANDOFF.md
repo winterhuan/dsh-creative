@@ -64,7 +64,7 @@ dsh-creative/
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
 4. Writer `0.1.10` 与项目默认模式 `0.1.9` 单独发布；原有 5 个仓库的 6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
-Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.4`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
+Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.5`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
 ## 3. 与 DSH 的集成方式
 
@@ -110,7 +110,7 @@ Antfarm `0.3.3` 从固定 Git 发布包安装到独立 `antfarm` profile（3083�
 
 Superagent `0.1.0` 从 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包安装到独立 `superagent` profile，并加入插件市场；日常 `web` 不加载它。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
-日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.4`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.4`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)。
+日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.5`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.5`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)。
 
 日常 `web` 安装了 `@winterhuan/dsh-new-api@1.0.0-winter.1`，来源为 `github:winterhuan/dsh-new-api#v1.0.0-winter.1`。服务重启后，真实浏览器已加载「设置 → New API 管理台」，已安装详情显示一个组件运行中，市场详情正文加载正常。发布、验证与备份记录见 [New API 发布记录](HANDOFF-changelog.md#new-api-release)。
 
