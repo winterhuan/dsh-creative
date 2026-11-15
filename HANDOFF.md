@@ -121,7 +121,7 @@ Antfarm `0.3.3` 使用固定 Git 发布包；运行库、人设工作区和工�
 
 Superagent `0.1.0` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
-日常 `web`、`student`、`creative` 从 `v0.2.2` 远程标签安装 `@winterhuan/dsh-student`，Web 已重启。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。发布、验证与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)。
+日常 `web`、`student`、`creative` 从 `v0.2.2` 远程标签安装 `@winterhuan/dsh-student`，Web 已重启。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)。
 
 日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.7`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.7`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)。
 

@@ -210,3 +210,7 @@
 - 市场加入固定提交的 0.2.2；`web`、`student`、`creative` 从远程标签更新，Web 重启后，`qiqiStudy` 的学生资料、29 条数学错题、练习单和原生学习对话恢复显示。三个 profile 的其他直接依赖、用户补丁和 8 个学习文件保持不变，没有执行业务数据迁移。
 - 类型检查、构建、274 项测试及最终 60 项客户端回归通过；真实隔离 DSH 验证科目切换、错题浏览、旧练习单预览与保存禁用，日常远程安装验证原档案显示。规范检查通过；文档检查仍仅受保留草案的 `route.ts` 断链影响，排除该草案后 174 份 Markdown 链接通过。
 - 发布包含预构建 Host／Client、知识材料与双语说明，公开下载 SHA256 校验通过。原学习数据、profile 与验收证据备份于 `~/.dsh/backups/student-legacy-display-20261115-31sw_fbq/`。
+
+<a id="student-full-migration"></a>
+
+2026-11-15：经家长确认，`qiqiStudy` 全部学习记录已迁入格式 2，原数据、profile 配置和原生对话保留；CLI 校验及日常 Web 的编辑、保存、翻页、图形预览和互动课显示验证通过。缺失的历史日期、帮助、目标及答案依据仍待核实，不影响新记录保存。迁移脚本、原始目录与完整性证据：`~/.dsh/backups/student-full-migration-20261115-12fo9mjy/`，最终结果见 `evidence/final-integrity.json`。
