@@ -85,6 +85,19 @@
       },
       "versions": [
         {
+          "version": "0.2.2",
+          "publishTimestamp": 1794710701,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-student",
+            "commit": "20458e33017be1eeac301d2602988c3727f3ff97",
+            "path": "packages/winterhuan/student"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.2.1",
           "publishTimestamp": 1794709336,
           "source": {
