@@ -1,0 +1,55 @@
+# Bilingual-pair consistency record for 2026-11-15-writer-workbench.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-15-writer-workbench.md
+/agent-note-writer-novel-workbench:
+  en: 15c70a36bc0dc2a4
+  zh: b61e51cbb7667521
+/agent-note-writer-novel-workbench/problem:
+  en: 5ee8ad62806c2075
+  zh: ce779c2da0137319
+/agent-note-writer-novel-workbench/proposal:
+  en: a38e8fde51512c99
+  zh: a7a13bd24e1306b6
+/agent-note-writer-novel-workbench/proposal/navigation-and-first-entry:
+  en: 4e6c1781853acfc1
+  zh: 5f1d5539d41be9e0
+/agent-note-writer-novel-workbench/proposal/writing-layout:
+  en: e68bb7c91649386b
+  zh: 8797f3faa7d4ea25
+/agent-note-writer-novel-workbench/proposal/visual-design:
+  en: 891f1e523bccf235
+  zh: 63abea3b585930f0
+/agent-note-writer-novel-workbench/proposal/planning-writing-and-review:
+  en: d3281372e91d2bb9
+  zh: f58e2c66c2d80f41
+/agent-note-writer-novel-workbench/proposal/conversations-and-context-recovery:
+  en: 294da72bbfe7a1d3
+  zh: b4650c9b85af46a2
+/agent-note-writer-novel-workbench/proposal/files-drafts-and-persistence:
+  en: 0666555cc495af78
+  zh: ba8e0002b85c263c
+/agent-note-writer-novel-workbench/proposal/loading-failure-and-empty-states:
+  en: ac5b0c66ff0e81a5
+  zh: 121b82e85f92ba48
+/agent-note-writer-novel-workbench/proposal/implementation-responsibilities:
+  en: 449f00b329fe0b9e
+  zh: a54b46359169395d
+/agent-note-writer-novel-workbench/proposal/workspace-identity-and-document-lifetime:
+  en: 1ae95694de8f7cf7
+  zh: 1a9f4548e4ed3c5f
+/agent-note-writer-novel-workbench/proposal/native-binding-and-operation-states:
+  en: 45c6d06eeb44f894
+  zh: d88a42a64cd9a16c
+/agent-note-writer-novel-workbench/proposal/implementation-order:
+  en: 15b288e9ab77d480
+  zh: 9a4954499b0bbdf4
+/agent-note-writer-novel-workbench/alternatives-considered:
+  en: c4979eff6b86d526
+  zh: 3c47c20fc576fd4b
+/agent-note-writer-novel-workbench/acceptance-criteria:
+  en: a194b9912d124501
+  zh: f9efdc73e813d47a
+/agent-note-writer-novel-workbench/risks:
+  en: a2e26c83e40ac5b7
+  zh: 0b6d89d20cf0bbfd
