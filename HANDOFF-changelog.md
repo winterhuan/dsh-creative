@@ -185,3 +185,11 @@
 <a id="media-desk-global-review"></a>
 
 2026-11-14：Media Desk [v2.7.0-winter.6](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.6) 补清全局复盘先列举作品、再读取 Notes 与固定 AI 原稿的路径，误用任务编号时返回纠正提示；证据不足仍可提交空规则，提案须用户审阅。已更新市场及日常 Web；语法、构建、51 项相关测试、文档与规范检查通过，121 个 Notes 内容文件及 18 张图片字节不变。备份：`~/.dsh/backups/media-desk-global-review-20261114-230714/`。
+
+<a id="media-desk-review-empty-id"></a>
+
+2026-11-15：Media Desk [v2.7.0-winter.7](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.7) 修复复盘空 ID 读取，明确指标的 `itemId` 关联；已更新市场及日常 `web`，固定 Git 安装、重启、硬刷新及产物字节核对通过。
+
+- 语法、构建、198 项测试、16 项文档与 3 项规范检查通过。真实 GPT-6 Luna 复盘读取两篇 Notes 正文、固定 AI 原稿及对应指标，阶段已接受；三条建议仍为 `proposed`。没有 `Work not found` 错误；普通 `read` 的 `offset: 0` 在改为 `1` 后恢复成功。
+- 99 个既有 Markdown 文件与 28 个实体图片文件字节不变，既有作品、原稿、指标和其他插件依赖保持原值。索引新增建议，重启更新所有权锁；现有清理策略删除三份旧索引快照和一份无引用撤销文件，撤销文件已备份。
+- 备份：`~/.dsh/backups/media-desk-read-empty-id-20261115-071916/`；复盘与完整性证据分别为其中的 `evidence/daily-review-result.json`、`evidence/integrity.json`。
