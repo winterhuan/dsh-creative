@@ -221,4 +221,4 @@
 
 2026-11-15：自媒体工作台[v2.7.0-winter.8](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.8)统一原生状态查询，已发布、更新市场；200项全量及6项定向测试通过。发布备份：`~/.dsh/backups/media-desk-native-state-20261115-64wegg9x/`。
 
-2026-11-15：MediaDesk拆分至独立`media`profile（3085），日常`web`移除插件；5个原生会话、164个内容文件及其他依赖与补丁保留。启停、重复启动保护和登录启动尊重手动停止验证通过。迁移备份：`~/.dsh/backups/media-profile-migration-20261115-eemd1snw/`。
+2026-11-15：MediaDesk拆分至独立`media`profile（3085），日常`web`移除插件；5个原生会话、164个内容文件及其他依赖与补丁保留。启停、重复启动保护和登录启动尊重手动停止验证通过。迁移备份：`~/.dsh/backups/media-profile-migration-20261115-eemd1snw/`。同日，自媒体工作台[winter.9](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.9)改进作品编号、读取上限和策划纠错提示；17项定向测试、语法、构建与规范检查通过，未重跑真实模型。市场及独立`media`远程更新，浏览器确认两个组件运行；Notes正文不变，启动恢复更新回执、完成时间及会话缓存。备份与完整性证据：`~/.dsh/backups/media-desk-tool-feedback-20261115-jfabe1v1/`。
