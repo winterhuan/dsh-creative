@@ -64,7 +64,7 @@ dsh-creative/
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
 4. Student `0.2.4`、Writer `0.1.10` 与项目默认模式 `0.1.9` 单独发布；原有 5 个仓库的 6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
-Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.7`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
+Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.8`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
 ## 3. 与 DSH 的集成方式
 
@@ -124,7 +124,7 @@ Superagent `0.1.0` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固�
 
 日常 `student` 从 `v0.2.4` 远程标签安装 `@winterhuan/dsh-student`，以 Web 界面独立启动，默认使用 Student 学习模式。琪琪的原生对话与工作区登记位于该 profile 的 `data/`；学习档案继续使用 `/Users/winter/workspace/qiqiStudy/.study/`。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。工作台提供四个直接入口，窄窗口可切换学习内容和助手；家长档案底部的「作答记录资料（可选）」默认收起，可集中整理或按题核对，缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)，服务拆分见 [Student 独立 profile](HANDOFF-changelog.md#student-profile-migration)。
 
-日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.7`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.7`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)。
+日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.8`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.8`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)；原生状态简化与更新验收见 [发布记录](HANDOFF-changelog.md)。
 
 日常 `web` 安装了 `@winterhuan/dsh-new-api@1.0.0-winter.1`，来源为 `github:winterhuan/dsh-new-api#v1.0.0-winter.1`。服务重启后，真实浏览器已加载「设置 → New API 管理台」，已安装详情显示一个组件运行中，市场详情正文加载正常。发布、验证与备份记录见 [New API 发布记录](HANDOFF-changelog.md#new-api-release)。
 

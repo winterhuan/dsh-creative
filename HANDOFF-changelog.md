@@ -218,3 +218,5 @@
 <a id="student-profile-migration"></a>
 
 2026-11-15：Student 改由独立`student`profile（3084）启动；20份历史会话完整保留，学习档案及账号字节不变，日常Web与creative移除Student。服务管理、登录启动及浏览器验收通过；备份：`~/.dsh/backups/student-profile-migration-20261115-me2r3aej/`。
+
+2026-11-15：自媒体工作台[v2.7.0-winter.8](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.8)统一查询原生输入、等待与正式回执；已更新市场并远程安装到日常`web`，重启及硬刷新通过。200项全量、6项定向测试及语法、构建、规范检查通过；文档检查仅受既有Student草案断链影响。164个内容文件、其他直接依赖与补丁不变；运行中的成稿随停止中断，未重放模型。备份及证据：`~/.dsh/backups/media-desk-native-state-20261115-64wegg9x/`。
