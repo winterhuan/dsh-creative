@@ -104,24 +104,25 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 `creative`、`headless`、`student`、`web` profile 使用 GitHub 远程发布包，`web` 安装原有 5 个组合包。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包；Student、Superagent 与 Antfarm 使用下表中的独立服务。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
-Superagent 与 Antfarm 分别使用以下独立 profile，安装、更新和启停均针对所属 profile；日常 `web` 不加载两者。
+Student、Superagent 与 Antfarm 分别使用以下独立 profile，安装、更新和启停均针对所属 profile；日常 `web` 不加载三者，`creative` 也不加载 Student。
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
+| Student | `student` | `3084` | `~/.dsh/bin/dsh-student` | `~/.dsh/profiles/student/data/` |
 | Superagent | `superagent` | `3082` | `~/.dsh/bin/dsh-superagent` | `~/.dsh/profiles/superagent/data/` |
 | Antfarm | `antfarm` | `3083` | `~/.dsh/bin/dsh-antfarm` | `~/.dsh/profiles/antfarm/data/` |
 
-两个服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
+三个服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
 
 Antfarm `0.3.3` 使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 
 Superagent `0.1.0` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
-日常 `web`、`student`、`creative` 从 `v0.2.3` 远程标签安装 `@winterhuan/dsh-student`，Web 已重启。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。家长页的「作答信息待核对」默认收起，按科目和题目提供原生助手核对入口；缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)。
+日常 `student` 从 `v0.2.3` 远程标签安装 `@winterhuan/dsh-student`，以 Web 界面独立启动，默认使用 Student 学习模式。琪琪的原生对话与工作区登记位于该 profile 的 `data/`；学习档案继续使用 `/Users/winter/workspace/qiqiStudy/.study/`。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。家长页的「作答信息待核对」默认收起，按科目和题目提供原生助手核对入口；缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)，服务拆分见 [Student 独立 profile](HANDOFF-changelog.md#student-profile-migration)。
 
 日常 `web` 还安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.7`，来源为 `github:winterhuan/dsh-media-desk#v2.7.0-winter.7`。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)。
 

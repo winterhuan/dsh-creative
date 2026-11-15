@@ -214,3 +214,7 @@
 <a id="student-full-migration"></a>
 
 2026-11-15：经家长确认，`qiqiStudy` 全部学习记录已迁入格式 2，原数据、profile 配置和原生对话保留；CLI 校验及日常 Web 的编辑、保存、翻页、图形预览和互动课显示验证通过。缺失的历史日期、帮助、目标及答案依据仍待核实，不影响新记录保存。迁移脚本、原始目录与完整性证据：`~/.dsh/backups/student-full-migration-20261115-12fo9mjy/`，最终结果见 `evidence/final-integrity.json`。
+
+<a id="student-profile-migration"></a>
+
+2026-11-15：Student 改由独立`student`profile（3084）启动；20份历史会话完整保留，学习档案及账号字节不变，日常Web与creative移除Student。服务管理、登录启动及浏览器验收通过；备份：`~/.dsh/backups/student-profile-migration-20261115-me2r3aej/`。
