@@ -193,3 +193,11 @@
 - 语法、构建、198 项测试、16 项文档与 3 项规范检查通过。真实 GPT-6 Luna 复盘读取两篇 Notes 正文、固定 AI 原稿及对应指标，阶段已接受；三条建议仍为 `proposed`。没有 `Work not found` 错误；普通 `read` 的 `offset: 0` 在改为 `1` 后恢复成功。
 - 99 个既有 Markdown 文件与 28 个实体图片文件字节不变，既有作品、原稿、指标和其他插件依赖保持原值。索引新增建议，重启更新所有权锁；现有清理策略删除三份旧索引快照和一份无引用撤销文件，撤销文件已备份。
 - 备份：`~/.dsh/backups/media-desk-read-empty-id-20261115-071916/`；复盘与完整性证据分别为其中的 `evidence/daily-review-result.json`、`evidence/integrity.json`。
+
+<a id="student-workbench-release"></a>
+
+2026-11-15：Student [v0.2.1](https://github.com/winterhuan/dsh-student/releases/tag/v0.2.1) 发布独立学习工作台，保留 0.2.0 的原生文件、手动保存和恢复功能。工作台选择学生工作区与学习主会话，嵌入原生辅导对话，并为旧档案和空工作区提供明确入口。
+
+- 市场已更新；`web`、`student`、`creative` 从远程标签安装 0.2.1，其他直接依赖与用户补丁保持不变。日常 Web 重启后确认工作台、旧档案提示与历史辅导对话可用，8 个学习数据文件字节不变。
+- 类型检查、构建、271 项测试、双语配对与 3 项规范检查通过。文档检查的 15 项通过，链接检查仅受保留的未提交 Student 架构草案引用已移除 `route.ts` 影响；排除该草案后，174 份 Markdown 链接通过。
+- 预构建发布包包含 Host、Client、知识材料和双语说明，公开下载校验通过。profile、学习数据、源码和验收证据保存在 `~/.dsh/backups/student-workbench-release-20261115-ETWTNu/`。本次保留日常旧档案，未执行迁移。

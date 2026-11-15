@@ -21,7 +21,7 @@ Guide short learning activities while keeping course identity, learner answers a
 <a id="ownership"></a>
 ## Ownership
 
-The `student` Agent preset owns model capabilities through the scoped `/agent` entry. Host routes and settings remain global. Sidebar discovery follows the selected Session projection; hidden workbenches retain their existing stores. Mode selection does not migrate history or grant filesystem permissions.
+The `student` Agent preset owns model capabilities through the scoped `/agent` entry. Host reads and settings remain global. The left-sidebar workbench selects an unarchived main Student Session within the learner workspace and retains its native conversation while mounted; switching or closing releases that reference. The right-sidebar entry follows the selected Session projection. Mode selection does not migrate history or grant filesystem permissions.
 
 The independently installed [student package](../../plugins/dsh-student/packages/winterhuan/student/README.md) owns its Skill, references, learning tools, interactive sidebar and workspace state. It lives under `packages/winterhuan`, with no creative plugin dependency. DSH owns the conversation, model, image attachments, tool history and filesystem authorization. The plugin neither downloads textbooks nor provides a separate tutoring runtime.
 
@@ -49,7 +49,7 @@ There is no block, break or daily minute limit. Status quietly reports elapsed b
 
 Stars depend on recorded participation and reflection, with a daily cap. Repeated requests cannot mint extra stars, and stopping early incurs no penalty. Spaced reviews use independent answers on separate days along a 1 / 7 / 16 / 35-day curve; progress is reported as observed evidence rather than a permanent ability label.
 
-Paper answers need no active learning block and do not earn stars upon upload. Their receipt time is the observed review date. An independent correct answer advances the interval on any day, including paper practice before the due date; a wrong or helped answer only makes the mistake due again the next day without lowering its stage.
+Paper answers need no active learning block and do not earn stars upon upload. Their actual answer date remains pending until confirmed; receipt and assessment times do not establish that date. An independent correct answer advances the interval on any day, including paper practice before the due date; a wrong or helped answer only makes the mistake due again the next day without lowering its stage.
 
 <a id="related"></a>
 ## Related contracts
