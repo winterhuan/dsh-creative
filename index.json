@@ -12,12 +12,12 @@
     {
       "name": "@winterhuan/dsh-writer",
       "title": {
-        "en": "Writing mode",
-        "zh": "写作模式"
+        "en": "Novel-writing workbench",
+        "zh": "小说创作工作台"
       },
       "description": {
-        "en": "Thin DSH writing mode that mounts oh-story skills and a Dashboard-aligned workspace sidebar",
-        "zh": "使用 oh-story 写作技能，浏览和编辑写作项目。"
+        "en": "Novel-writing workbench for DSH with native Writer conversations and oh-story skills",
+        "zh": "提供作品管理、原生 Writer 会话与 oh-story 技能的小说创作工作台。"
       },
       "author": "winterhuan",
       "homepage": "https://github.com/winterhuan/dsh-writer#readme",
@@ -26,6 +26,19 @@
         "directory": "packages/winterhuan/writer"
       },
       "versions": [
+        {
+          "version": "0.2.0",
+          "publishTimestamp": 1794749054,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-writer",
+            "commit": "97958677a4aca0b7afbd4bd269e795539180cf74",
+            "path": "packages/winterhuan/writer"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "0.1.10",
           "publishTimestamp": 1794189767,
