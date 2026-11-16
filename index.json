@@ -538,6 +538,18 @@
       },
       "versions": [
         {
+          "version": "0.1.1",
+          "publishTimestamp": 1794833131,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-superagent-prototype",
+            "commit": "3a674024fecc02b87175a29256ce98d2f87deea5"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.1.0",
           "publishTimestamp": 1794659435,
           "source": {
