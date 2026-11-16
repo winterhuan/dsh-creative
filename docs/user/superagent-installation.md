@@ -20,7 +20,7 @@ Install the prebuilt [winterhuan fork](https://github.com/winterhuan/dsh-superag
 <a id="install"></a>
 ## Install into a separate profile
 
-Use Node.js 24, pnpm 11.7.0 and a DSH host compatible with the prototype. The Host and panel run on Creative's DSH `0.2.2-rc.1`; real-model execution requires separate verification. Superagent has its own lockfile and remains a research prototype with `0.2.1-alpha.2` DSH dependencies. The source directory is `plugins/dsh-superagent-prototype` in this repository.
+Use Node.js 24, pnpm 11.7.0 and DSH `0.2.2-rc.1`. Superagent pins its development and peer dependencies to the same DSH version as the host and maintains its own lockfile. It remains a research prototype; real-model execution requires separate verification. The source directory is `plugins/dsh-superagent-prototype` in this repository.
 
 For local development, initialize the submodule from the parent repository root if needed. Build before linking because the package loads `lib/index.js` and `lib/client.js`. Run the profile-creation line only when `superagent` does not yet exist; it replaces an existing profile patch. The dedicated profile keeps the plugin's process-wide environment changes and restarts separate from your working profile.
 
@@ -64,10 +64,10 @@ Hard-refresh the browser, then check Superagent's source and component status in
 <a id="remote"></a>
 ## Remote installation
 
-The fork's `v0.1.0` Git release includes the Host and Client builds. Installation fetches that package directly from GitHub and requires no local checkout build. The market entry uses its fixed commit. On an existing `superagent` profile, run:
+The fork's `v0.1.1` Git release includes the Host and Client builds. Installation fetches that package directly from GitHub and requires no local checkout build. The market entry uses its fixed commit. On an existing `superagent` profile, run:
 
 ```sh
-dsh plugin --profile superagent add "github:winterhuan/dsh-superagent-prototype#v0.1.0"
+dsh plugin --profile superagent add "github:winterhuan/dsh-superagent-prototype#v0.1.1"
 dsh --profile superagent --dump-config | rg '^# == dsh-superagent'
 ```
 

@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-11 个插件仓库包含 12 个源码包。`dsh-student` 发布版本为 `0.2.4`，`dsh-writer` 为 `0.2.1`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型保留上游 `0.1.0` 包和 `0.2.1-alpha.2` 依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+11 个插件仓库包含 12 个源码包。`dsh-student` 发布版本为 `0.2.4`，`dsh-writer` 为 `0.2.1`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -121,7 +121,7 @@ Student、Superagent、Antfarm 与 Media Desk 分别使用以下独立 profile�
 
 Antfarm `0.3.3` 使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 
-Superagent `0.1.0` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
+Superagent `0.1.1` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
 日常 `student` 从 `v0.2.4` 远程标签安装 `@winterhuan/dsh-student`，以 Web 界面独立启动，默认使用 Student 学习模式。琪琪的原生对话与工作区登记位于该 profile 的 `data/`；学习档案继续使用 `/Users/winter/workspace/qiqiStudy/.study/`。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。工作台提供四个直接入口，窄窗口可切换学习内容和助手；家长档案底部的「作答记录资料（可选）」默认收起，可集中整理或按题核对，缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)，服务拆分见 [Student 独立 profile](HANDOFF-changelog.md#student-profile-migration)。
 
@@ -152,7 +152,7 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 现役插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
 
-`dsh-superagent-prototype` 是研究参考例外，保留原型包版本 `0.1.0`、精确的 DSH 开发依赖 `0.2.1-alpha.2` 及原有对等依赖范围，不加入现役插件的版本统一。预构建发布包安装到独立 profile，本地开发仍可构建和链接；Host 与面板已在 DSH `0.2.2-rc.1` 验证，真实模型执行需单独验证。
+`dsh-superagent-prototype` 是研究参考例外，保留原型的独立工具链，包版本为 `0.1.1`，DSH 开发依赖、对等依赖及宿主版本均固定为 `0.2.2-rc.1`，不加入现役插件的版本统一。预构建发布包安装到独立 profile，本地开发仍可构建和链接；Host、面板与原有执行器的 Bash、文件读取及 transcript 已在 DSH `0.2.2-rc.1` 验证；真实模型执行需单独验证。本机兼容性修复备份与证据在 `~/.dsh/backups/superagent-host-compatibility-20261116-204446/`。
 
 Antfarm `0.3.3` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
 

@@ -20,7 +20,7 @@ description: "在独立 profile 中从 GitHub 安装和更新预构建 dsh-super
 <a id="install"></a>
 ## 安装到独立 profile
 
-使用 Node.js 24、pnpm 11.7.0 和与原型兼容的 DSH 宿主。Host 与面板可在 Creative 的 DSH `0.2.2-rc.1` 运行；真实模型执行需单独验证。Superagent 有自己的锁文件，仍是使用 `0.2.1-alpha.2` DSH 依赖的研究原型。本仓库中的源码目录为 `plugins/dsh-superagent-prototype`。
+使用 Node.js 24、pnpm 11.7.0 和 DSH `0.2.2-rc.1`。Superagent 的开发依赖和对等依赖固定为与宿主一致的 DSH 版本，并维护自己的锁文件。它仍是研究原型；真实模型执行需单独验证。本仓库中的源码目录为 `plugins/dsh-superagent-prototype`。
 
 本地开发时，在父仓库根目录初始化子模块（如有需要）。链接安装前先构建，因为包会加载 `lib/index.js` 和 `lib/client.js`。仅在 `superagent` 尚不存在时运行创建 profile 的那行命令；它会替换现有 profile 补丁。独立 profile 将插件对进程环境的修改及重启与日常工作 profile 分开。
 
@@ -64,10 +64,10 @@ scripts/dsh-superagent --profile superagent restart
 <a id="remote"></a>
 ## 远程安装
 
-fork 的 `v0.1.0` Git 发布包包含 Host 与 Client 构建。安装时直接从 GitHub 获取该包，无需构建本地检出目录。市场条目使用其固定提交。已有 `superagent` profile 时，运行：
+fork 的 `v0.1.1` Git 发布包包含 Host 与 Client 构建。安装时直接从 GitHub 获取该包，无需构建本地检出目录。市场条目使用其固定提交。已有 `superagent` profile 时，运行：
 
 ```sh
-dsh plugin --profile superagent add "github:winterhuan/dsh-superagent-prototype#v0.1.0"
+dsh plugin --profile superagent add "github:winterhuan/dsh-superagent-prototype#v0.1.1"
 dsh --profile superagent --dump-config | rg '^# == dsh-superagent'
 ```
 
