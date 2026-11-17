@@ -1,0 +1,123 @@
+#!/usr/local/bin/python3
+"""Inspect local DSH profiles and control their installed daily services."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+
+HOME = Path.home()
+DSH_HOME = HOME / '.dsh'
+SERVICES = {
+    'web': ('dsh-webctl', 3080),
+    'student': ('dsh-student', 3084),
+    'superagent': ('dsh-superagent', 3082),
+    'antfarm': ('dsh-antfarm', 3083),
+    'media': ('dsh-media', 3085),
+}
+os.environ['PATH'] = ':'.join([
+    str(HOME / '.local/bin'),
+    str(HOME / '.nvm/versions/node/v24.22.2/bin'),
+    '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin',
+])
+
+
+def run(*args):
+    return subprocess.run(args, capture_output=True, text=True)
+
+
+def profile_names():
+    directory = DSH_HOME / 'profiles'
+    return sorted(set(SERVICES) | {p.name for p in directory.iterdir() if p.is_dir()})
+
+
+def show_status(profile):
+    print(f'[{profile}]', flush=True)
+    print(f'  profile: {DSH_HOME / "profiles" / profile}')
+    if profile not in SERVICES:
+        print('  status: unmanaged (no service controller)')
+        return 0
+    script, port = SERVICES[profile]
+    controller = DSH_HOME / 'bin' / script
+    print(f'  controller: {controller}')
+    if not controller.is_file():
+        print('  status: controller missing')
+        return 1
+    result = run(str(controller), 'status')
+    try:
+        details = json.loads(result.stdout)
+        pids = details['pids']
+    except (ValueError, KeyError):
+        details = {}
+        pids = [int(pid) for pid in re.findall(r'^running pid=(\d+)', result.stdout, re.M)]
+    state = 'running' if pids and result.returncode == 0 else ('unhealthy' if pids else 'stopped')
+    print(f'  status: {state}')
+    print(f'  pids: {", ".join(map(str, pids)) or "-"}')
+    base_url = f'http://127.0.0.1:{port}'
+    url = None
+    # Read the live process stdout file so a previous launch cannot supply a stale token.
+    for pid in pids:
+        files = run('lsof', '-a', '-p', str(pid), '-d', '1', '-Fn')
+        for filename in re.findall(r'^n(.+)$', files.stdout, re.M):
+            log = Path(filename)
+            if not log.is_file():
+                continue
+            print(f'  log: {log}')
+            with log.open('rb') as stream:
+                stream.seek(0, 2)
+                stream.seek(max(0, stream.tell() - 1024 * 1024))
+                content = stream.read().decode(errors='replace')
+            urls = re.findall(re.escape(base_url) + r'/\?token=[A-Za-z0-9_-]+', content)
+            if urls:
+                url = urls[-1]
+    print(f'  url: {url or base_url}')
+    if not url:
+        print('  token: unavailable (service stopped or live log has no login URL)')
+    if details.get('errors'):
+        print(f'  errors: {json.dumps(details["errors"], ensure_ascii=False)}')
+    if result.stderr.strip():
+        print(f'  controller error: {result.stderr.strip()}')
+    return result.returncode
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', nargs='?', default='status', choices=['list', 'status', 'start', 'stop', 'restart'])
+    parser.add_argument('profile', nargs='?', help='Profile name or all; status defaults to all')
+    args = parser.parse_args()
+    names = profile_names()
+    if args.action == 'list':
+        for name in names:
+            print(f'{name}\t{"managed" if name in SERVICES else "unmanaged"}\t{DSH_HOME / "profiles" / name}')
+        return 0
+    if args.profile is None and args.action != 'status':
+        parser.error('start, stop and restart require a profile name or all')
+    target = args.profile or 'all'
+    if target != 'all' and target not in names:
+        parser.error(f'unknown profile: {target}')
+    if args.action != 'status' and target != 'all' and target not in SERVICES:
+        parser.error(f'{target} has no service controller')
+    targets = (names if args.action == 'status' else list(SERVICES)) if target == 'all' else [target]
+    failed = False
+    for name in targets:
+        if args.action != 'status':
+            controller = DSH_HOME / 'bin' / SERVICES[name][0]
+            print(f'[{name}] {args.action}', flush=True)
+            result = subprocess.run([str(controller), args.action])
+            failed |= result.returncode != 0
+        status_code = show_status(name)
+        if args.action != 'stop':
+            failed |= status_code != 0
+        print()
+    return int(failed)
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except (OSError, KeyboardInterrupt) as error:
+        print(str(error), file=sys.stderr)
+        sys.exit(1)

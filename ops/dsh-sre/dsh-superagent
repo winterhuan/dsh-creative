@@ -1,0 +1,3 @@
+#!/bin/sh
+export PATH="/Users/winter/.local/bin:/Users/winter/.nvm/versions/node/v24.22.2/bin:/usr/local/bin:/usr/bin:/bin"
+exec /usr/local/bin/python3 /Users/winter/.dsh/installations/dsh-superagent-b685383/scripts/dsh-superagent "$@"

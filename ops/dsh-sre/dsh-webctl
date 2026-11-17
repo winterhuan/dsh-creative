@@ -1,0 +1,157 @@
+#!/bin/bash
+set -euo pipefail
+export PATH="/Users/winter/.nvm/versions/node/v24.22.2/bin:/usr/local/bin:/usr/bin:/bin"
+
+LABEL="com.winter.dsh-web"
+PLIST="$HOME/Library/LaunchAgents/${LABEL}.plist"
+LOG="$HOME/.dsh/logs/dsh-web.log"
+DSH_BIN="/Users/winter/.nvm/versions/node/v24.22.2/bin/dsh"
+PROFILE="web"
+PORT="3080"
+
+pid_of() {
+  # Prefer --profile web (LaunchAgent); fall back to legacy `dsh web --no-open`.
+  pgrep -f "$DSH_BIN --profile web --no-open" 2>/dev/null | head -1 \
+    || pgrep -f "$DSH_BIN web --no-open" 2>/dev/null | head -1 \
+    || true
+}
+
+url_of() {
+  if [[ -f "$LOG" ]]; then
+    grep -Eo "http://127\\.0\\.0\\.1:${PORT}/\\?token=[A-Za-z0-9_-]+" "$LOG" | tail -1 || true
+  fi
+}
+
+status() {
+  local pid; pid="$(pid_of)"
+  if [[ -n "$pid" ]]; then
+    echo "running pid=$pid"
+    local url; url="$(url_of)"
+    [[ -n "$url" ]] && echo "url=$url"
+  else
+    echo "stopped"
+  fi
+  if launchctl print "gui/$(id -u)/$LABEL" &>/dev/null; then
+    echo "launchd: loaded ($LABEL)"
+  else
+    echo "launchd: not loaded"
+  fi
+}
+
+stop_orphan() {
+  # kill any leftover nohup/bash wrappers and dsh web not managed cleanly
+  local pids
+  pids="$(pgrep -f "$DSH_BIN --profile web --no-open" 2>/dev/null || true)"
+  pids2="$(pgrep -f "$DSH_BIN web --no-open" 2>/dev/null || true)"
+  pids="$(echo "$pids $pids2" | xargs)"
+  if [[ -n "$pids" ]]; then
+    kill $pids 2>/dev/null || true
+    sleep 2
+    pids="$(pgrep -f "$DSH_BIN --profile web --no-open" 2>/dev/null || true)"
+    pids2="$(pgrep -f "$DSH_BIN web --no-open" 2>/dev/null || true)"
+    pids="$(echo "$pids $pids2" | xargs)"
+    [[ -n "$pids" ]] && kill -9 $pids 2>/dev/null || true
+  fi
+}
+
+start() {
+  if [[ ! -f "$PLIST" ]]; then
+    echo "missing $PLIST — reinstall LaunchAgent first" >&2
+    exit 1
+  fi
+  mkdir -p "$(dirname "$LOG")"
+  if launchctl print "gui/$(id -u)/$LABEL" &>/dev/null; then
+    launchctl kickstart -k "gui/$(id -u)/$LABEL"
+  else
+    launchctl bootstrap "gui/$(id -u)" "$PLIST"
+  fi
+  sleep 2
+  status
+}
+
+stop() {
+  if launchctl print "gui/$(id -u)/$LABEL" &>/dev/null; then
+    launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+  fi
+  stop_orphan
+  echo "stopped"
+}
+
+restart() {
+  if launchctl print "gui/$(id -u)/$LABEL" &>/dev/null; then
+    launchctl kickstart -k "gui/$(id -u)/$LABEL"
+  else
+    start
+  fi
+  sleep 2
+  status
+}
+
+logs() {
+  local n="${1:-80}"
+  tail -n "$n" "$LOG"
+}
+
+plugin_add() {
+  local pkg="${1:?usage: dsh-webctl plugin-add <pkg>}"
+  "$DSH_BIN" plugin --profile "$PROFILE" add "$pkg"
+  restart
+}
+
+plugin_update() {
+  # reinstall listed packages or all @winterhuan / @xmanrui deps
+  cd "$HOME/.dsh/profiles/$PROFILE"
+  if [[ $# -gt 0 ]]; then
+    "$DSH_BIN" plugin --profile "$PROFILE" add "$@"
+  else
+    # bump link-installed / ranged deps by re-adding pinned latest for known plugins
+    local pkgs
+    pkgs=$(python3 - <<'PY'
+import json
+d=json.load(open("/Users/winter/.dsh/profiles/web/package.json"))
+for k in (d.get("dependencies") or {}):
+  if k.startswith("@winterhuan/") or k.startswith("@xmanrui/"):
+    print(k)
+PY
+)
+    if [[ -z "$pkgs" ]]; then
+      echo "no matching plugins" >&2
+      exit 1
+    fi
+    # shellcheck disable=SC2086
+    "$DSH_BIN" plugin --profile "$PROFILE" add $pkgs
+  fi
+  restart
+}
+
+usage() {
+  cat <<USAGE
+用法: dsh-webctl <command>
+
+  status              查看进程与启动 URL
+  start               启动（经 launchd）
+  stop                停止
+  restart             重启（插件改完后用这个）
+  logs [N]            看最近 N 行日志（默认 80）
+  plugin-add <pkg>    安装/升级一个插件并重启
+  plugin-update [..]  更新全部或指定插件并重启
+  url                 只打印当前带 token 的地址
+
+当前：profile=$PROFILE  port=$PORT
+USAGE
+}
+
+cmd="${1:-status}"
+shift || true
+case "$cmd" in
+  status) status ;;
+  start) start ;;
+  stop) stop ;;
+  restart) restart ;;
+  logs) logs "${1:-80}" ;;
+  url) url_of ;;
+  plugin-add) plugin_add "$@" ;;
+  plugin-update) plugin_update "$@" ;;
+  -h|--help|help) usage ;;
+  *) usage; exit 1 ;;
+esac
