@@ -8,7 +8,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 
 ## 概要
 
-按插件查找职责与信任边界的所属文档。学生学习工作台、Skill Viewer、模型设置增强、按项目的默认模式、写作模式与 Antfarm 分别说明。包映射同时覆盖可安装的 bundle 与配套客户端。四个创作领域（小说、短剧、视频解说、小说转游戏）及其设置客户端已于 2026-10-31 归档，包与参考文档现位于 `archive/` 下。
+按插件查找职责与信任边界的所属文档。包映射覆盖维护中的组合包、配套客户端和短剧界面试验。已归档的创作领域包与参考文档位于 `archive/`；当前短剧试验在 `plugins/` 下使用独立仓库。
 
 ## 目录
 
@@ -31,6 +31,8 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) | 独立 bundle |
 | [Antfarm](antfarm.zh.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 已发布组合包；日常服务使用独立 `antfarm` profile |
 | [自媒体工作台](media-desk.zh.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.zh.md) | 原生创作 Session、Notes 内容、独立媒体与导出；维护 fork |
+| [Shadow Mind](../../plugins/dsh-shadow-mind/README.zh.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.zh.md) | 独立组合包，包含审查运行时、命令与只读审查预设 |
+| [短剧工作台](../../plugins/dsh-short-drama/README.zh.md) | [@winterhuan/dsh-short-drama](../../plugins/dsh-short-drama/README.zh.md) | 私有界面试验；包含画布与原生对话的本地组合包 |
 | [New API 管理台](../../plugins/dsh-new-api/README.zh.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.zh.md) | 独立组合包；公益站余额与签到 |
 | [Superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | 研究原型组合包；远程发布包使用独立 `superagent` profile |
 
