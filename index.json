@@ -27,6 +27,19 @@
       },
       "versions": [
         {
+          "version": "0.2.3",
+          "publishTimestamp": 1794923943,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-writer",
+            "commit": "1a6f14b5b34c79da09cb43c1b03693899e847cd2",
+            "path": "packages/winterhuan/writer"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.2.2",
           "publishTimestamp": 1794899610,
           "source": {
