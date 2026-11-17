@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ "$(uname -s)" = "Linux" ]; then
+    exec python3 "$HOME/.dsh/bin/dsh-service" web "$@"
+fi
 set -euo pipefail
 export PATH="/Users/winter/.nvm/versions/node/v24.22.2/bin:/usr/local/bin:/usr/bin:/bin"
 

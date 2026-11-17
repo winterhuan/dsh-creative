@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""Control the local DSH profiles through per-profile systemd user services."""
+import os
+import http.cookiejar
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+
+ROOT = Path.home() / '.dsh'
+PORTS = {'web': 3080, 'superagent': 3082, 'antfarm': 3083, 'student': 3084, 'media': 3085}
+HTTP = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+
+
+def systemctl(*args, check=True):
+    return subprocess.run(['systemctl', '--user', *args], text=True, capture_output=True, check=check)
+
+
+def properties(unit):
+    result = systemctl('show', unit, '--property=ActiveState,SubState,MainPID', check=False)
+    return dict(line.split('=', 1) for line in result.stdout.splitlines() if '=' in line)
+
+
+def login_url(profile):
+    log = ROOT / 'logs' / (profile + '.log')
+    text = log.read_text(errors='replace') if log.exists() else ''
+    urls = re.findall(r'http://127\.0\.0\.1:' + str(PORTS[profile]) + r'/\?token=[A-Za-z0-9_-]+', text)
+    return urls[-1] if urls else None
+
+
+def reachable(profile):
+    url = login_url(profile)
+    if url is None:
+        return False
+    try:
+        with HTTP.open(url, timeout=2) as response:
+            return response.status == 200
+    except (OSError, urllib.error.URLError):
+        return False
+
+
+def health(profile):
+    state = properties('dsh@' + profile + '.service')
+    url = f'http://127.0.0.1:{PORTS[profile]}'
+    pid = int(state.get('MainPID', '0'))
+    ready = state.get('ActiveState') == 'active' and reachable(profile)
+    details = {
+        'pids': [pid] if pid else [],
+        'state': 'running' if ready else ('unhealthy' if pid else 'stopped'),
+        'httpReady': ready,
+        'errors': [],
+    }
+    if not ready:
+        return details, 1
+    if profile == 'media':
+        try:
+            with HTTP.open(url + '/media-desk/settings', timeout=5) as response:
+                settings = json.load(response)
+            if not isinstance(settings, dict) or 'error' in settings:
+                raise ValueError('unexpected settings response')
+        except (OSError, ValueError) as error:
+            details.update(state='unhealthy', errors=[f'Media Desk runtime unavailable: {error}'])
+            return details, 2
+    if profile == 'superagent':
+        request = urllib.request.Request(url + '/orchestrator/api/state', headers={'x-orchestrator-request': '1'})
+        try:
+            with HTTP.open(request, timeout=5) as response:
+                runtime = json.load(response)
+        except (OSError, ValueError) as error:
+            details.update(state='unhealthy', errors=[f'Superagent runtime unavailable: {error}'])
+            return details, 2
+        errors = [f'{name}: {entry.get("detail")}' for name, entry in runtime.get('health', {}).items() if entry.get('state') == 'error']
+        if errors:
+            details.update(state='unhealthy', errors=errors)
+            return details, 2
+        problem = (runtime.get('setup') or {}).get('problem')
+        if problem:
+            details.update(state='setup-pending', errors=[str(problem.get('detail', problem.get('code', 'unknown')))])
+            return details, 3
+    return details, 0
+
+
+def status(profile):
+    details, code = health(profile)
+    print(json.dumps(details, ensure_ascii=False))
+    return code
+
+
+def run(profile, action):
+    unit = 'dsh@' + profile + '.service'
+    marker = ROOT / 'services' / (profile + '.stopped')
+    log = ROOT / 'logs' / (profile + '.log')
+    if action == 'status':
+        return status(profile)
+    if action == 'url':
+        if properties(unit).get('ActiveState') != 'active':
+            print(f'{profile} is stopped; run dsh-{profile} start.', file=sys.stderr)
+            return 1
+        url = login_url(profile)
+        if url is None:
+            print('The current login URL is not available yet; inspect the service log.', file=sys.stderr)
+            return 1
+        print(url)
+        return 0
+    if action == 'stop':
+        marker.touch(mode=0o600)
+        systemctl('stop', unit)
+        print(f'{profile}: stopped; automatic startup remains paused until start/restart.')
+        return 0
+    marker.unlink(missing_ok=True)
+    systemctl('reset-failed', unit, check=False)
+    systemctl('restart' if action == 'restart' else 'start', unit)
+    deadline = time.monotonic() + 45
+    while time.monotonic() < deadline:
+        state = properties(unit)
+        if state.get('ActiveState') == 'active' and reachable(profile):
+            return status(profile)
+        if state.get('ActiveState') in {'failed', 'inactive'}:
+            break
+        time.sleep(0.5)
+    status(profile)
+    print(f'Inspect {log} or run dsh-{profile} logs.', file=sys.stderr)
+    return 1
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('profile', choices=PORTS)
+    parser.add_argument('action', nargs='?', default='status', choices=['start', 'stop', 'restart', 'status', 'url', 'logs'])
+    args = parser.parse_args()
+    if args.action == 'logs':
+        os.execvp('tail', ['tail', '-n', '80', '-F', str(ROOT / 'logs' / (args.profile + '.log'))])
+    return run(args.profile, args.action)
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except (subprocess.CalledProcessError, OSError, KeyboardInterrupt) as error:
+        detail = error.stderr if isinstance(error, subprocess.CalledProcessError) else str(error)
+        print((detail or str(error)).strip(), file=sys.stderr)
+        sys.exit(1)

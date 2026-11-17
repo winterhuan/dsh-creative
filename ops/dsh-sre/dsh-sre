@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 """Inspect local DSH profiles and control their installed daily services."""
 import argparse
 import json
@@ -20,7 +20,9 @@ SERVICES = {
 }
 os.environ['PATH'] = ':'.join([
     str(HOME / '.local/bin'),
+    str(DSH_HOME / 'bin'),
     str(HOME / '.nvm/versions/node/v24.22.2/bin'),
+    os.environ.get('PATH', ''),
     '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin',
 ])
 
@@ -31,7 +33,8 @@ def run(*args):
 
 def profile_names():
     directory = DSH_HOME / 'profiles'
-    return sorted(set(SERVICES) | {p.name for p in directory.iterdir() if p.is_dir()})
+    installed = {p.name for p in directory.iterdir() if p.is_dir() and (p / 'cordis.yml').is_file()} if directory.is_dir() else set()
+    return sorted(set(SERVICES) | installed)
 
 
 def show_status(profile):
@@ -54,7 +57,7 @@ def show_status(profile):
         details = {}
         pids = [int(pid) for pid in re.findall(r'^running pid=(\d+)', result.stdout, re.M)]
     state = 'running' if pids and result.returncode == 0 else ('unhealthy' if pids else 'stopped')
-    print(f'  status: {state}')
+    print(f'  status: {details.get("state", state)}')
     print(f'  pids: {", ".join(map(str, pids)) or "-"}')
     base_url = f'http://127.0.0.1:{port}'
     url = None
