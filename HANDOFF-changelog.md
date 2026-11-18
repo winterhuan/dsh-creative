@@ -163,3 +163,7 @@
 <a id="writer-0.2.4"></a>
 
 2026-11-18：Writer [v0.2.4](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.4) 已发布并更新公开市场，独立 `writer` profile 从远程标签安装，3086 服务重启后浏览器显示两个组件运行中。写作入口使用原生对话与右侧写作栏，独立小说创作工作台已移除。现有会话、文件树与文稿预览验收通过。类型检查、构建、233 项测试、16 项文档检查和 3 项规范检查通过。隔离 DSH 另验证模型完成后自动刷新、脏稿保留、保存与窄屏明暗主题。3,586 个历史与书稿文件中，3,585 个逐字节一致，当前会话保留原始字节并追加一条 `session/end-seed`。用户配置与其他直接依赖保留。Release 包 SHA-256 为 `d2b295c64149fb5c4682098a6ffa48014d89ffebffd7385e6162c5b8ba04ea06`，公开下载校验一致。备份与证据位于 `~/.dsh/backups/writer-release-0.2.4-20261118-e16l6qtv/`。
+
+<a id="writer-0.2.5"></a>
+
+2026-11-19：Writer [v0.2.5](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.5) 修复写作栏 Markdown 表格预览，已发布并更新公开市场。独立 `writer` profile 从远程标签升级，3086 服务重启；浏览器确认扫榜文稿中的两张表格渲染为表格，列对齐和横向滚动正常。类型检查、构建、234 项测试、16 项文档检查和 3 项规范检查通过。3,586 个会话、文稿和书稿文件升级前后逐字节一致，其他直接依赖与用户配置保持不变。Release 包 SHA-256 为 `646ec5f532e408e8f9addfc3863beb79d4fe4948d3600a790061bada42753c05`。备份与验收证据位于 `~/.dsh/backups/writer-release-0.2.5-20261119/`。
