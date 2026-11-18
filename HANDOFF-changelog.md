@@ -158,4 +158,4 @@
 
 <a id="writer-0.2.3"></a>
 
-2026-11-17：Writer [v0.2.3](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.3) 已合并 `main`、打标签发布并加入市场；日常 `web` 从 `v0.2.1` 升级到该远程标签，`headless` 仍为 `0.2.1`。扫描写作项目时跳过不可读或缺少长/短篇标记的候选目录，不再把这类目录列为作品或追加扫描错误。类型检查、构建、242 项测试与 16 项文档检查通过；`--dump-config` 合成保留用户的 `gptImageBaseUrl` 补丁，其他直接依赖与用户补丁不变。Release 包 SHA-256：`30d76416423413c77a2640b5f2adf3c3e58e685c396f5b23cd758e00f50aff41`。备份：`~/.dsh/backups/writer-release-0.2.3-20261117-220544/`。
+2026-11-17：Writer [v0.2.3](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.3) 已合并 `main`、打标签发布并加入市场；日常 `web` 从 `v0.2.1` 升级到该远程标签，`headless` 仍为 `0.2.1`。扫描写作项目时跳过不可读或缺少长/短篇标记的候选目录，不再把这类目录列为作品或追加扫描错误。类型检查、构建、242 项测试与 16 项文档检查通过；`--dump-config` 合成保留用户的 `gptImageBaseUrl` 补丁，其他直接依赖与用户补丁不变。Release 包 SHA-256：`30d76416423413c77a2640b5f2adf3c3e58e685c396f5b23cd758e00f50aff41`。备份：`~/.dsh/backups/writer-release-0.2.3-20261117-220544/`。Web 重启后浏览器验收通过：工作台正常打开，`novels` 工作区 12 个项目、5 个拆文库与 3 个扫榜照常列出，未出现扫描错误提示。
