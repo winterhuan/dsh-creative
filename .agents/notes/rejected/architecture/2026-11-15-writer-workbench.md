@@ -1,6 +1,6 @@
 # Agent Note: Writer novel workbench
 
-Status: proposed
+Status: rejected — The native Writer conversation and writing sidebar cover the workflow, while a separate workbench duplicates navigation, session management and book registration.
 
 English | [中文](2026-11-15-writer-workbench.zh.md)
 

@@ -159,3 +159,7 @@
 <a id="writer-0.2.3"></a>
 
 2026-11-17：Writer [v0.2.3](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.3) 已合并 `main`、打标签发布并加入市场；日常 `web` 从 `v0.2.1` 升级到该远程标签，`headless` 仍为 `0.2.1`。扫描写作项目时跳过不可读或缺少长/短篇标记的候选目录，不再把这类目录列为作品或追加扫描错误。类型检查、构建、242 项测试与 16 项文档检查通过；`--dump-config` 合成保留用户的 `gptImageBaseUrl` 补丁，其他直接依赖与用户补丁不变。Release 包 SHA-256：`30d76416423413c77a2640b5f2adf3c3e58e685c396f5b23cd758e00f50aff41`。备份：`~/.dsh/backups/writer-release-0.2.3-20261117-220544/`。Web 重启后浏览器验收通过：工作台正常打开，`novels` 工作区 12 个项目、5 个拆文库与 3 个扫榜照常列出，未出现扫描错误提示。
+
+<a id="writer-0.2.4"></a>
+
+2026-11-18：Writer [v0.2.4](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.4) 已发布并更新公开市场，独立 `writer` profile 从远程标签安装，3086 服务重启后浏览器显示两个组件运行中。写作入口使用原生对话与右侧写作栏，独立小说创作工作台已移除。现有会话、文件树与文稿预览验收通过。类型检查、构建、233 项测试、16 项文档检查和 3 项规范检查通过。隔离 DSH 另验证模型完成后自动刷新、脏稿保留、保存与窄屏明暗主题。3,586 个历史与书稿文件中，3,585 个逐字节一致，当前会话保留原始字节并追加一条 `session/end-seed`。用户配置与其他直接依赖保留。Release 包 SHA-256 为 `d2b295c64149fb5c4682098a6ffa48014d89ffebffd7385e6162c5b8ba04ea06`，公开下载校验一致。备份与证据位于 `~/.dsh/backups/writer-release-0.2.4-20261118-e16l6qtv/`。

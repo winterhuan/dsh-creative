@@ -1,10 +1,10 @@
 # Bilingual-pair consistency record for 2026-11-15-writer-workbench.md (docs/i18n/README.md): per heading
 # section, a hash of its English and Chinese blocks outside code blocks and generated regions.
 # After editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-15-writer-workbench.md
+#   pnpm run verify-translation-pairing --write .agents/notes/rejected/architecture/2026-11-15-writer-workbench.md
 /agent-note-writer-novel-workbench:
-  en: 15c70a36bc0dc2a4
-  zh: b61e51cbb7667521
+  en: 15e820c073b9789a
+  zh: 1f5c31aa74b8ca98
 /agent-note-writer-novel-workbench/problem:
   en: 5ee8ad62806c2075
   zh: ce779c2da0137319
