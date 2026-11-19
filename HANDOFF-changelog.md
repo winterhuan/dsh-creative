@@ -167,3 +167,7 @@
 <a id="writer-0.2.5"></a>
 
 2026-11-19：Writer [v0.2.5](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.5) 修复写作栏 Markdown 表格预览，已发布并更新公开市场。独立 `writer` profile 从远程标签升级，3086 服务重启；浏览器确认扫榜文稿中的两张表格渲染为表格，列对齐和横向滚动正常。类型检查、构建、234 项测试、16 项文档检查和 3 项规范检查通过。3,586 个会话、文稿和书稿文件升级前后逐字节一致，其他直接依赖与用户配置保持不变。Release 包 SHA-256 为 `646ec5f532e408e8f9addfc3863beb79d4fe4948d3600a790061bada42753c05`。备份与验收证据位于 `~/.dsh/backups/writer-release-0.2.5-20261119/`。
+
+<a id="media-desk-winter10"></a>
+
+2026-11-19 发布 Media Desk [v2.7.0-winter.10](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.10)，公开市场和本机独立 `media` profile 均已更新。复盘只反映已提交的编辑。在 100 篇稳定作品的回归测试中，单篇进度读取只打开目标正文。207 项插件测试、语法检查、客户端构建和 3 项规范检查通过。3085 服务重启后，浏览器硬刷新加载了五个视图入口，并打开了复盘页。升级前后的 25 篇作品记录、102 个 Notes 文件和 3 个 profile 数据文件逐字节一致。启动恢复清理了一条已有回执的停机日志，该日志不含作品修改。配置、数据备份及验收证据位于 `~/.dsh/backups/media-desk-winter10-20261119-123716-8YzfTJ/`。
