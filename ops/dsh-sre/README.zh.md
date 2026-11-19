@@ -6,6 +6,7 @@
 
 - `dsh-sre` 安装在 `~/.local/bin/dsh-sre`，用于查看各 profile 状态并统一启停。
 - `dsh-webctl`、`dsh-antfarm`、`dsh-media`、`dsh-student`、`dsh-superagent` 安装在 `~/.dsh/bin/`，Linux 分支调用同目录的 `dsh-service`（服务与端口见 [HANDOFF 独立服务 profile](../../HANDOFF.md#independent-service-profiles)）。`dsh-web` 是 `dsh-webctl` 的别名。
+- Linux 另安装 `dsh-writer`，管理端口 3086 的独立 Writer 服务。macOS 安装时保留已有的 Writer 控制器，`dsh-sre` 调用该控制器。
 
 在仓库根目录安装，需 Python 3、`lsof`，Linux 还需可用的 systemd 用户服务：
 

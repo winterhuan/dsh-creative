@@ -104,11 +104,11 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 profile 使用 GitHub 远程发布包。Writer 最新发布为 `0.2.6`，使用原生写作对话和右侧写作栏；macOS 的独立 `writer` profile 保持 `0.2.5`，当前 WSL 主机已将已有 `web` profile 更新到远程标签 `v0.2.6`。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包。Writer 最新发布为 `0.2.6`，使用原生写作对话和右侧写作栏；当前 WSL 主机的独立 `writer` profile 从远程标签 `v0.2.6` 安装，macOS 的独立 `writer` profile 上次记录为 `0.2.5`。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
-下表记录 macOS 的独立服务：Writer、Student、Superagent、Antfarm 与 Media Desk 分别使用所属 profile，日常 `web` 不加载这五个插件，`creative` 也不加载 Student。WSL 的 Student、Superagent、Antfarm 与 Media Desk 沿用对应独立 profile；Writer 则保留在 `web`（端口 `3080`），通过 `~/.dsh/bin/dsh-webctl` 启停，未建立 `writer` 服务。安装、更新和启停前按所在主机核对实际 profile。
+Writer、Student、Superagent、Antfarm 与 Media Desk 在 macOS 和 WSL 均分别使用下表中的独立 profile；日常 `web` 不加载这五个插件，`creative` 也不加载 Student。安装、更新和启停均针对所属 profile。WSL 的统一入口为 `dsh-sre`，脚本在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 五个服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
 
-macOS Writer 的会话与工作区登记位于独立 profile 的 `data/`，书稿沿用 `~/workspace/novels/`；记录见 [Writer 0.2.5](HANDOFF-changelog.md#writer-0.2.5)。WSL 的 `web` 使用 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`；本次升级、验收及备份见 [Writer 0.2.6](HANDOFF-changelog.md#writer-0.2.6)。
+Writer 的会话、附件与工作区登记位于独立 profile 的 `data/`；macOS 书稿沿用 `~/workspace/novels/`，WSL 保留原会话的工作区路径。发布记录见 [Writer 0.2.5](HANDOFF-changelog.md#writer-0.2.5) 和 [Writer 0.2.6](HANDOFF-changelog.md#writer-0.2.6)；WSL 服务拆分与数据迁移见 [Writer 独立 profile](HANDOFF-changelog.md#writer-profile-wsl)。WSL 的日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
 
 Antfarm `0.3.3` 使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 

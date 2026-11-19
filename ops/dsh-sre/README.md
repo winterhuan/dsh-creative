@@ -6,6 +6,7 @@ This directory maintains the local DSH service commands. Linux and WSL use exist
 
 - `dsh-sre` installs to `~/.local/bin/dsh-sre` and lists, inspects, starts, stops, and restarts profiles.
 - `dsh-webctl`, `dsh-antfarm`, `dsh-media`, `dsh-student`, and `dsh-superagent` install to `~/.dsh/bin/`. Their Linux branches call `dsh-service` in the same directory (see [HANDOFF independent service profiles](../../HANDOFF.md#independent-service-profiles) for services and ports). `dsh-web` aliases `dsh-webctl`.
+- Linux also installs `dsh-writer` for the independent Writer service on port 3086. On macOS the installer preserves the existing Writer controller; `dsh-sre` uses that controller.
 
 Install from the repository root with Python 3 and `lsof` available. Linux also requires working systemd user services:
 

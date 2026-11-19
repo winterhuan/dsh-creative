@@ -3,5 +3,5 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write ops/dsh-sre/README.md
 /dsh-sre-local-service-commands:
-  en: 962109606e7d80ea
-  zh: ea11e3bf08fbb3f6
+  en: dbd4c9da946275d5
+  zh: a6ec08cbed67cd4b

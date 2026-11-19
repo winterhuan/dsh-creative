@@ -17,6 +17,7 @@ SERVICES = {
     'superagent': ('dsh-superagent', 3082),
     'antfarm': ('dsh-antfarm', 3083),
     'media': ('dsh-media', 3085),
+    'writer': ('dsh-writer', 3086),
 }
 os.environ['PATH'] = ':'.join([
     str(HOME / '.local/bin'),

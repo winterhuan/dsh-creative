@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python3 "$HOME/.dsh/bin/dsh-service" writer "$@"
