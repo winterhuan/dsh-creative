@@ -3,7 +3,7 @@
 
 import { existsSync, globSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { pluginPackageJsons } from './plugin-workspaces.ts'
+import { isUpstreamManagedPluginPath, pluginPackageJsons } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -66,6 +66,7 @@ export function packageReadmes(scanRoot: string = root): string[] {
       .filter(file => existsSync(resolve(scanRoot, file))),
   ]
     .map(file => file.replaceAll('\\', '/'))
+    .filter(file => !isUpstreamManagedPluginPath(file))
     .sort()
 }
 

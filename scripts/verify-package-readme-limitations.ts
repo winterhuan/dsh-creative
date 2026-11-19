@@ -10,7 +10,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { markdownHeadingLines, markdownProseLines } from './markdown.ts'
-import { pluginPackageJsons } from './plugin-workspaces.ts'
+import { isUpstreamManagedPluginPath, pluginPackageJsons } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -31,7 +31,7 @@ function isLimitationsLike(headingText: string): boolean {
   )
 }
 
-const packageJsons = pluginPackageJsons(root)
+const packageJsons = pluginPackageJsons(root).filter(file => !isUpstreamManagedPluginPath(file))
 const scannedPackages = new Set(packageJsons.map(path => path.slice(0, -'/package.json'.length)))
 const failures: string[] = []
 

@@ -1,6 +1,7 @@
 # Agent Note: Box and Ego for Writer browser tasks
 
 Status: implemented
+Archived: 2026-11-19
 
 English | [中文](2026-11-07-writer-box-ego.zh.md)
 

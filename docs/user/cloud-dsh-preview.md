@@ -148,7 +148,7 @@ The installed runner and initial evidence are kept outside the repository. Archi
 
 The recorded acceptance covers synthetic files and real browser operations. Model calls and live ranking collection were not performed. Add a provider API key through Settings → Models when verifying model behavior, following the [provider guide](../../upstream/docs/user/guide/providers.md). The [account UI reference](../../upstream/packages/client/ui-settings-account/README.md#known-limitations-and-deferred-work) documents the loopback-only OAuth callback limitation; this remote HTTPS preview uses API keys.
 
-Configured model requests and file/tool operations originate in the cloud DSH process; model inference remains on the provider's servers. An installed Chromium browser does not supply ranking-site logins or wire a browser backend into Writer. Follow Writer's [browser-cdp skill](../../plugins/dsh-writer/packages/winterhuan/writer/skills/browser-cdp/SKILL.md) before live collection.
+Configured model requests and file/tool operations originate in the cloud DSH process; model inference remains on the provider's servers. An installed Chromium browser does not supply ranking-site logins. See the [security notes](../../plugins/oh-story-dsh/SECURITY.md) for oh-story-dsh data sources and collection limits. Browser tasks use the official [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser) directly and load its installed-version guide with `ego-browser skill`; authors complete site login when required.
 
 -----
 

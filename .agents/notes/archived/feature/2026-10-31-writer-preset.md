@@ -1,6 +1,7 @@
 # Agent Note: Writing preset
 
 Status: implemented
+Archived: 2026-11-19
 
 English | [中文](2026-10-31-writer-preset.zh.md)
 

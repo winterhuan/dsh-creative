@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-11 个插件仓库包含 12 个源码包。`dsh-student` 发布版本为 `0.2.4`，`dsh-writer` 为 `0.2.8`，`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+11 个插件仓库包含 12 个源码包。`dsh-student` 发布版本为 `0.2.4`，`oh-story-dsh` fork 为 `0.1.28`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，`dsh-new-api` 为 `1.0.0-winter.1`，其余原有插件为 `0.1.8`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.3`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -31,7 +31,7 @@
 
 | 子模块 | 源码目录（相对子模块根目录） | 构建后的安装目录 |
 |---|---|---|
-| [dsh-writer](plugins/dsh-writer/README.zh.md) | `packages/winterhuan/writer` | `packages/winterhuan/writer` |
+| [oh-story-dsh](plugins/oh-story-dsh/README.md) | `packages/dsh-plugin`；固定技能在 `packages/knowledge` | `packages/dsh-plugin`（需先构建） |
 | [dsh-student](plugins/dsh-student/README.zh.md) | `packages/winterhuan/student` | `packages/winterhuan/student` |
 | [dsh-project-default-mode](plugins/dsh-project-default-mode/README.zh.md) | `packages/winterhuan/project-default-mode` | `packages/winterhuan/project-default-mode` |
 | [dsh-client-ui-settings-model-options](plugins/dsh-client-ui-settings-model-options/README.zh.md) | `packages/winterhuan/ui-settings-model-options` | `packages/winterhuan/ui-settings-model-options` |
@@ -55,14 +55,14 @@ dsh-creative/
 └── .gitmodules           子模块地址与路径
 ```
 
-每个插件子模块有自己的 `package.json`、锁文件和构建配置；原有 5 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。Superagent fork 来自 `winterhuan/dsh-superagent-prototype`，保留原型的完整文档、提示词、Host／Client 源码与测试，便于对照其他插件的组合和开发方式；它仍是研究原型，通过市场发布并安装到独立 `superagent` profile。短剧界面试验仓库为私有，递归克隆需要其读取权限；它不加入市场或日常 profile。New API 管理台从公开 Git 固定标签安装，并已加入市场和日常 `web` profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
+每个插件子模块有自己的 `package.json`、锁文件和构建配置；其余原有 4 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。Superagent fork 来自 `winterhuan/dsh-superagent-prototype`，保留原型的完整文档、提示词、Host／Client 源码与测试，便于对照其他插件的组合和开发方式；它仍是研究原型，通过市场发布并安装到独立 `superagent` profile。短剧界面试验仓库为私有，递归克隆需要其读取权限；它不加入市场或日常 profile。New API 管理台从公开 Git 固定标签安装，并已加入市场和日常 `web` profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
 
 ### 开发与发布规则
 
 1. 在目标子模块内修改源码、测试和配套文档。开始时核对该仓库的 remote、分支与未提交改动；新克隆的子模块可能处于 detached HEAD，开发前切换到工作分支。
 2. 各插件独立安装依赖、构建和测试；父仓库批量命令依次调用各插件脚本，任何失败都会停止。技能查看器只编辑两个源码包，由构建生成 `plugin/`，不直接修改生成目录。
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
-4. Student `0.2.4`、Writer `0.2.8` 与项目默认模式 `0.1.9` 单独发布；原有 5 个仓库的 6 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
+4. Student `0.2.4` 与项目默认模式 `0.1.9` 单独发布；Oh Story fork 保留自身发布流程和版本；其余原有 4 个仓库的 5 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
 Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.10`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
@@ -91,6 +91,8 @@ pnpm run hygiene
 ```
 
 根 `typecheck` 检查父仓库脚本并调用每个插件的类型检查；`build` 调用每个插件的构建；`test` 运行插件测试和父仓库工具测试。文档及代码检查遍历子模块源码，排除预构建产物、依赖、归档和嵌套上游。仅修改一个插件时，在该子模块根目录执行其 README 中的命令；不需要重建其他插件。
+
+Oh Story 在 `plugins/oh-story-dsh` 跟踪 `winterhuan/oh-story-dsh`，上游为 `zenstory-ai/oh-story-dsh`；包为 `@winterhuan/oh-story-dsh`，源码在 `packages/dsh-plugin`，四套固定技能在 `packages/knowledge`。父仓库发现该两层包目录并调用它的安装、类型检查、构建和测试；`clean` 仅执行插件声明的同名命令。开发与验收按其 `AGENTS.md` 运行 `pnpm verify`，保留自身文档与知识资产规则；本仓库的集成说明见[创作子系统](docs/subsystems/writer.zh.md)。
 
 Superagent 使用独立 `pnpm-workspace.yaml` 和冻结锁文件，父仓库批量命令运行它的安装、类型检查、构建与测试。它的 README 按父仓库标准维护双语；作为导入的研究参考，源码保留自身检查，不参与父仓库 UI 文案、unknown 类型断言和导出 JSDoc 检查。源码中的文档引用先核对所属子模块，再核对父仓库。
 
@@ -132,18 +134,18 @@ Superagent `0.1.1` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固�
 
 日常 `web` 安装了 `@winterhuan/dsh-new-api@1.0.0-winter.1`，来源为 `github:winterhuan/dsh-new-api#v1.0.0-winter.1`。服务重启后，真实浏览器已加载「设置 → New API 管理台」，已安装详情显示一个组件运行中，市场详情正文加载正常。发布、验证与备份记录见 [New API 发布记录](HANDOFF-changelog.md#new-api-release)。
 
-开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 writer 为例：
+开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 Oh Story fork 为例：
 
 ```sh
-cd ~/dsh-creative/plugins/dsh-writer
+cd ~/dsh-creative/plugins/oh-story-dsh
 pnpm run build
 dsh --profile creative-dev --from-default-profile web --dump-config > /dev/null
-dsh plugin --profile creative-dev add ~/dsh-creative/plugins/dsh-writer/packages/winterhuan/writer
-dsh --profile creative-dev --dump-config | rg '^# == @winterhuan|name: .@winterhuan'
+dsh plugin --profile creative-dev add ~/dsh-creative/plugins/oh-story-dsh/packages/dsh-plugin
+dsh --profile creative-dev --dump-config | rg '^# == @winterhuan/oh-story-dsh|name: .@winterhuan/oh-story-dsh'
 dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 ```
 
-链接安装使用 `link:`；修改源码后重新构建，停止并重启该开发进程，再硬刷新浏览器。技能查看器需在 `plugins/dsh-skills-viewer` 构建并链接 `plugin/`，Host 与 Client 单次安装。移除使用 `dsh plugin --profile creative-dev remove @winterhuan/dsh-writer`。
+链接安装使用 `link:`；修改源码后重新构建，停止并重启该开发进程，再硬刷新浏览器。技能查看器需在 `plugins/dsh-skills-viewer` 构建并链接 `plugin/`，Host 与 Client 单次安装。移除使用 `dsh plugin --profile creative-dev remove @winterhuan/oh-story-dsh`。
 
 隔离验证可为每条 DSH 命令指定独立 `DSH_HOME`。首次打开浏览器前，将临时 profile 的 `workspace-controller.config.documentsDirectory` 指向临时目录，避免使用默认 Documents 工作区。UI 行为必须在真实 DSH 中验证，单元测试不能代替浏览器验收。Antfarm 开发使用 Web 的 Agent Preset 组合；DSH `0.2.2-rc.1` 没有 TUI 应用入口，终端验收使用 Headless；默认 headless 缺少原生 Agent Preset 注册器与 parent preset，自定义 headless 必须先补齐两者，不能仅添加 Antfarm bundle。
 
@@ -153,11 +155,13 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 ## 6. 依赖策略
 
-现役插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
+本地维护插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
 
 `dsh-superagent-prototype` 是研究参考例外，保留原型的独立工具链，包版本为 `0.1.1`，DSH 开发依赖、对等依赖及宿主版本均固定为 `0.2.2-rc.1`，不加入现役插件的版本统一。预构建发布包安装到独立 profile，本地开发仍可构建和链接；Host、面板与原有执行器的 Bash、文件读取及 transcript 已在 DSH `0.2.2-rc.1` 验证；真实模型执行需单独验证。本机兼容性修复备份与证据在 `~/.dsh/backups/superagent-host-compatibility-20261116-204446/`。
 
 Antfarm `0.3.3` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
+
+`oh-story-dsh` fork 保留上游的兼容范围和冻结锁文件，开发 DSH 依赖固定为 `0.2.2-rc.1`；不为匹配其他插件改写其 peerDependencies。
 
 新使用 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入该插件的 `devDependencies`，并添加 `import type {} from '<包>/remote'`。外部 Remote 仍需由客户端显式挂载。
 
@@ -182,11 +186,11 @@ Antfarm `0.3.3` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版
 | `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |
 | `types/client-build-environment/index.d.ts` | `scripts/types/client-build-environment/index.d.ts` | 仅首行标注 |
 
-Antfarm 仅复制上表中的 `scripts/tsdown.client.ts`、`scripts/modules/src/assets.ts`、`scripts/client-build-environment.ts`、`scripts/bundle-input-isolation.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts`，与 dsh-writer 对应文件逐字一致，沿用表内来源和本地差异。它不复制客户端测试辅助文件或环境类型目录。`scripts/generate-remote.ts` 是 Antfarm 自有的单包生成适配：临时建立生成器所需的 workspace，输出包内 Typert 产物，不修改上游源码。
+Antfarm 仅复制上表中的 `scripts/tsdown.client.ts`、`scripts/modules/src/assets.ts`、`scripts/client-build-environment.ts`、`scripts/bundle-input-isolation.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts`，与 dsh-student 对应文件逐字一致，沿用表内来源和本地差异。它不复制客户端测试辅助文件或环境类型目录。`scripts/generate-remote.ts` 是 Antfarm 自有的单包生成适配：临时建立生成器所需的 workspace，输出包内 Typert 产物，不修改上游源码。
 
 短剧界面试验复制相同的六个客户端构建文件，与 Antfarm 对应文件逐字一致，沿用上表来源和本地差异；它不复制 Remote 生成器或客户端测试辅助文件。
 
-`scripts/verify-concrete-terms.ts` 保留上游扫描逻辑，并增加 `archive/` 排除项；归档快照（原 `webnovel-writer/` 外部项目与四个创作包）不纳入本仓库的措辞门禁。
+父仓库保留 `oh-story-dsh` 的上游源码、文档格式和固定知识资产，以其 `pnpm verify` 执行自身检查；本地源码风格、README 模板、双语配对及措辞检查不覆盖该 fork，父仓库的集成说明与指向它的链接照常检查。`scripts/verify-concrete-terms.ts` 排除 `archive/` 与此 fork；`verify-md-wrap.ts`、`verify-md-links.ts` 和三个 README 检查使用同一 fork 范围。
 
 `scripts/verify-package-readme-model-experience.ts` 的 Skill Viewer 允许列表路径使用 `plugins/dsh-skills-viewer/packages/winterhuan/{skill-viewer,ui-skill-viewer}`。
 
@@ -200,8 +204,8 @@ Antfarm 仅复制上表中的 `scripts/tsdown.client.ts`、`scripts/modules/src/
 对比上游当前版本：
 
 ```sh
-diff <(git -C plugins/dsh-writer/upstream show HEAD:packages/client/tsdown.client.ts) plugins/dsh-writer/scripts/tsdown.client.ts
-diff <(git -C plugins/dsh-writer/upstream show HEAD:scripts/client-build-environment.ts) plugins/dsh-writer/scripts/client-build-environment.ts
+diff <(git -C plugins/dsh-student/upstream show HEAD:packages/client/tsdown.client.ts) plugins/dsh-student/scripts/tsdown.client.ts
+diff <(git -C plugins/dsh-student/upstream show HEAD:scripts/client-build-environment.ts) plugins/dsh-student/scripts/client-build-environment.ts
 ```
 
 ### `.agents/skills`（与上游同名的 skill）
@@ -227,11 +231,11 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 
 | 文件 | 本地改动 |
 |---|---|
-| `scripts/verify-md-wrap.ts`、`scripts/verify-md-links.ts` | 扫描子模块根 README 和 `plugins/*/packages/*/*` 下的包文档 |
+| `scripts/verify-md-wrap.ts`、`scripts/verify-md-links.ts` | 扫描子模块根 README 和嵌套包文档；Oh Story 保留自身文档检查，父仓库指向它的链接照常检查 |
 | `scripts/verify-doc-refs.ts` | 通过统一包发现扫描根 `src` 与嵌套包源码中的父仓库文档引用 |
-| `scripts/verify-package-readme-summaries.ts`、`scripts/verify-package-readme-limitations.ts`、`scripts/verify-package-readme-model-experience.ts` | 包发现覆盖子模块根 `src` 与嵌套包；Antfarm 采用包含模型可见内容、Token 与 KV Cache 影响的结构化模型体验 |
+| `scripts/verify-package-readme-summaries.ts`、`scripts/verify-package-readme-limitations.ts`、`scripts/verify-package-readme-model-experience.ts` | 包发现覆盖子模块根 `src` 与两层、三层包目录；Oh Story 保留自身 README 检查；Antfarm 采用包含模型可见内容、Token 与 KV Cache 影响的结构化模型体验 |
 | `scripts/verify-client-ui-i18n.ts`、`scripts/verify-export-jsdoc.ts` | 通过统一包发现检查子模块根 `src` 与嵌套包的客户端文案、导出声明 |
-| `scripts/verify-client-ui-i18n.ts`、`scripts/verify-no-unknown-casts.ts`、`scripts/verify-export-jsdoc.ts` | 通过 `plugin-workspaces.ts` 的明确路径约定排除 Superagent 研究参考源码；不影响其 README 或包脚本检查 |
+| `scripts/verify-client-ui-i18n.ts`、`scripts/verify-no-unknown-casts.ts`、`scripts/verify-export-jsdoc.ts` | 通过 `plugin-workspaces.ts` 的明确路径约定排除 Superagent 与 Oh Story 的参考源码；README 规则独立管理，包脚本照常检查 |
 | `scripts/verify-concrete-terms.ts`、`scripts/verify-no-unknown-casts.ts`、`scripts/verify-repository-references.ts`、`scripts/verify-public-repository-links.ts` | 使用 `plugin-workspaces.ts` 合并父仓库与插件 Git 文件清单，排除插件发布产物 |
 | `scripts/translation-pairing-record.ts` | 在子模块自身的仓库路径下计算双语记录，保持独立检出与父仓库检查一致 |
 | `scripts/translation-pairing-git.ts` | 暂存区检查读取子模块固定提交中的文档，保持父仓库链接与双语记录一致 |

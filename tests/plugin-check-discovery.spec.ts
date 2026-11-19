@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { expect, it, onTestFinished } from 'vitest'
-import { isReferencePluginPath, pluginPackageJsons } from '../scripts/plugin-workspaces.ts'
+import { isReferencePluginPath, isUpstreamManagedPluginPath, pluginPackageJsons } from '../scripts/plugin-workspaces.ts'
 import { packageReadmes, packageReadmeSummaryErrors } from '../scripts/verify-package-readme-summaries.ts'
 import { clientUiSourceFiles, findUiI18nViolations } from '../scripts/verify-client-ui-i18n.ts'
 import { collectExportJsdocViolations } from '../scripts/verify-export-jsdoc.ts'
@@ -26,13 +26,33 @@ it('discovers root and nested packages without counting workspace or bundled man
   write('plugins/nested/package.json', '{}')
   write('plugins/nested/packages/owner/feature/package.json', '{}')
   write('plugins/nested/packages/owner/feature/src/index.ts', 'export {}')
+  write('plugins/two-level/packages/feature/package.json', '{}')
+  write('plugins/two-level/packages/feature/src/index.ts', 'export {}')
   write('plugins/nested/plugin/package.json', '{}')
   write('plugins/nested/plugin/node_modules/dependency/package.json', '{}')
   write('plugins/root/src/vendor/dependency/package.json', '{}')
   expect(pluginPackageJsons(root)).toEqual([
     'plugins/nested/packages/owner/feature/package.json',
     'plugins/root/package.json',
+    'plugins/two-level/packages/feature/package.json',
   ])
+})
+
+it('discovers the imported fork package while leaving its README format to upstream checks', () => {
+  const { root, write } = fixture()
+  write('plugins/oh-story-dsh/package.json', '{}')
+  write('plugins/oh-story-dsh/packages/dsh-plugin/package.json', '{}')
+  write('plugins/oh-story-dsh/packages/dsh-plugin/src/index.ts', 'export {}')
+  write('plugins/oh-story-dsh/packages/dsh-plugin/README.md', '# Upstream package\n')
+  write('plugins/local/src/index.ts', 'export {}')
+  write('plugins/local/package.json', '{}')
+  write('plugins/local/README.md', '## Summary\n\nLocal package.\n')
+  expect(pluginPackageJsons(root)).toContain('plugins/oh-story-dsh/packages/dsh-plugin/package.json')
+  expect(packageReadmes(root)).toEqual(['plugins/local/README.md'])
+  expect(isReferencePluginPath('plugins/oh-story-dsh/packages/dsh-plugin/src/index.ts')).toBe(true)
+  expect(isUpstreamManagedPluginPath('plugins\\oh-story-dsh\\README.md')).toBe(true)
+  expect(isUpstreamManagedPluginPath('plugins/oh-story-dsh-other/README.md')).toBe(false)
+  expect(isUpstreamManagedPluginPath('docs/subsystems/writer.md')).toBe(false)
 })
 
 it('reports an oversized root package Summary while retaining nested README discovery', () => {

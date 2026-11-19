@@ -9,7 +9,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { markdownHeadingLines, markdownProseLines, type MarkdownProseLine } from './markdown.ts'
-import { pluginPackageJsons } from './plugin-workspaces.ts'
+import { isUpstreamManagedPluginPath, pluginPackageJsons } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const HEADING = '## Model Experience'
@@ -127,7 +127,7 @@ if (existsSync(resolve(root, 'docs/tool-catalog.md'))) {
 }
 
 const failures: Failure[] = []
-const packageJsons = pluginPackageJsons(root)
+const packageJsons = pluginPackageJsons(root).filter(file => !isUpstreamManagedPluginPath(file))
 const scannedPackages = new Set(packageJsons.map(path => path.slice(0, -'/package.json'.length)))
 let structuredCount = 0
 let modelContextEntryCount = 0

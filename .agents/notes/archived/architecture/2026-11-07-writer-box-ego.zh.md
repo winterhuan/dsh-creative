@@ -1,6 +1,7 @@
 # Agent Note: Writer 浏览任务使用 Box 与 Ego
 
 Status: implemented
+Archived: 2026-11-19
 
 [English](2026-11-07-writer-box-ego.md) | 中文
 

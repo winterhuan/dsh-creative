@@ -28,7 +28,7 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Skill Viewer](skill-viewer.md) | [@winterhuan/dsh-client-ui-skill-viewer](../../plugins/dsh-skills-viewer/packages/winterhuan/ui-skill-viewer/README.md) | Included by Skill Viewer |
 | [Model options](model-options.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.md) | Independent bundle |
 | [Project default mode](project-default-mode.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.md) | Independent bundle |
-| [Writing](writer.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) | Independent bundle |
+| [Creation](writer.md) | [@winterhuan/oh-story-dsh](../../plugins/oh-story-dsh/packages/dsh-plugin/README.md) | Upstream fork with four creative workbenches |
 | [Antfarm](antfarm.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Released bundle; daily service uses the dedicated `antfarm` profile |
 | [Media Desk](media-desk.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Native creative Sessions, Notes content, independent media and export; maintained fork |
 | [Shadow Mind](../../plugins/dsh-shadow-mind/README.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.md) | Independent bundle with a review runtime, commands, and a read-only review preset |

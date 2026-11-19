@@ -1,6 +1,7 @@
 # Agent Note: 写作模式
 
 Status: implemented
+Archived: 2026-11-19
 
 [English](2026-10-31-writer-preset.md) | 中文
 

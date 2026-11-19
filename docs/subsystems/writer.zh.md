@@ -1,44 +1,44 @@
 ---
-description: "写作子系统：写作模式预设、互斥的技能挂载，以及侧栏保存的边界。"
+description: "Oh Story fork 集成：创作工作台、上游归属和本地开发检查。"
 ---
 
-# 写作
+# 创作
 
 [English](writer.md) | 中文
 
 ## 概要
 
-写作模式是可选的小说会话预设。Host 把 oh-story 技能拷进工作区，或让技能发现直接读插件目录；侧栏浏览拆文库、写作项目和按日期保存的扫榜记录，并编辑允许的文本文件。会话、模型和文件读取仍由 DSH 负责。
+Oh Story fork 为 DSH 提供小说、短剧、互动游戏和视频解说工作台。Agent、会话、模型与权限由 DSH 管理；技能、角色和创作文档由插件提供。
 
 ## 目录
 
-- [包](#ownership)
-- [挂载与保存边界](#boundary)
-- [相关契约](#related)
+- [源码](#source)
+- [运行与资产](#runtime)
+- [开发](#development)
 - [开发备注](#dev-note)
 
-<a id="ownership"></a>
-## 包
+<a id="source"></a>
+## 源码
 
-[@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) 独立安装。Host 行拥有技能挂载、来源诊断、带备份的同步与恢复命令，以及带版本的文件保存。预设行拥有工具列表和 persona。浏览器半边是同一个包的 client 入口：写作侧栏，以及插件页上的「写作」卡片；后者通过 `makersApiKeyEnv` 绑定朱雀凭据（Host 只存环境变量名，密钥走凭据服务）。
+[plugins/oh-story-dsh](../../plugins/oh-story-dsh/README.md) 跟踪 [winterhuan/oh-story-dsh](https://github.com/winterhuan/oh-story-dsh)，它是 [zenstory-ai/oh-story-dsh](https://github.com/zenstory-ai/oh-story-dsh) 的 fork。包名为 `@winterhuan/oh-story-dsh`，源码与构建产物位于 `packages/dsh-plugin`。
 
-<a id="boundary"></a>
-## 挂载与保存边界
+原 `plugins/dsh-writer` 源码已移除。其[预设](../../.agents/notes/archived/feature/2026-10-31-writer-preset.md)和 [Box/Ego 接入](../../.agents/notes/archived/architecture/2026-11-07-writer-box-ego.md)保留为历史决策。新 fork 沿用上游工作台，不复制旧侧栏、`writer_agent` 和凭据设置。浏览器任务直接使用官方 [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser)，执行 `ego-browser skill` 按需读取当前安装版本的指南。
 
-`skillMount` 是 `workspace` 或 `bundled`。workspace 拷贝技能且不设置 `bundledSkillDir`。bundled 把该目录指到包内 `skills`，且不拷贝。默认是 bundled，已有项目同名副本仍优先。显式同步或撤销同步先保留备份；恢复命令同样保留被替换的当前副本。
+<a id="runtime"></a>
+## 运行与资产
 
-侧栏的列表和读取走 `workspaceFiles`。「扫榜」Tab 按日期倒序发现 `扫榜/YYYYMMDD/` 记录，展开时预览结论，缺少结论则打开聚合表或可读取的 Markdown 榜单；原始榜单仍在同一目录树中。Host 路由接受会话工作区内允许的文本文件的带版本保存，包括扫榜报告。它不提供 oh-story Dashboard。在这个宿主上，`story-setup` 跳过 Claude Code 和 Codex 的 hook 部署。
+bundle 在所属 DSH profile 中登记 `oh-story`，提供四个工作台、技能 provider 和 `oh_story_role` 工具；对话与权限继续由 DSH 管理。安装和运行行为见[上游包说明](../../plugins/oh-story-dsh/packages/dsh-plugin/README.md)与[架构文档](../../plugins/oh-story-dsh/docs/ARCHITECTURE.md)。
 
-侧栏按工作区和路径保存浏览器恢复草稿；读取与保存回包只更新所属文稿。章节面板按需读取书内追踪、机械检查与语义审稿记录，正文或细纲指纹变化使相应报告过期。审稿记录由技能脚本校验原文引用与版本；侧栏不以审稿意见代替作者决策，也不增加章节提交门禁。
+四套固定资产位于 `packages/knowledge/{oh-story,drama,novel-to-game,video-recap}`，manifest 记录版本与逐文件哈希。遵循 fork 的 [AGENTS.md](../../plugins/oh-story-dsh/AGENTS.md) 及同步命令，不手改知识副本。角色和参考资料的加载沿用 fork 自身适配。
 
-`writer_agent` 拥有角色发现与提示词装配，复用当前生效的 `story-setup`，并通过原生工具执行链派发。DSH 拥有子会话身份、模型选择策略、续接与中断；角色共享 Writer Preset，角色名称不产生独立权限配置。
+替换开发子模块不会迁移已安装 profile、已有会话或书稿。独立 `writer` 服务在另行迁移运行环境前，仍使用已安装的旧 Writer 包。当前服务位置见 [HANDOFF.md](../../HANDOFF.md#independent-service-profiles)。
 
-包内角色由共享角色源文生成 DSH 版本。项目技能保留既有模板覆盖；项目读取失败时不会静默替换成包内角色。源文维护与兼容路径见 [Writer 包说明](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md#maintain-skill-sources)。
+<a id="development"></a>
+## 开发
 
-<a id="related"></a>
-## 相关契约
+父仓库命令发现该 fork 的 workspace 和 `packages/dsh-plugin/package.json`，安装、类型检查、构建与测试调用其自身工具链；仅对声明了清理命令的插件执行可选清理。在 fork 内运行 `pnpm verify`，覆盖 lint、类型、资产一致性、DSH 归属检查、脚本测试、单元测试与构建。显式 Vitest 配置避免外层仓库改变测试发现范围。
 
-安装、切换挂载和限制见[包说明](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md)。技能发现归 [skill-filesystem](../../upstream/packages/skill/skill-filesystem/README.zh.md)。侧栏登记遵循[右侧栏](../../upstream/docs/subsystems/sidebar-right.zh.md)。
+fork 保留上游源码与文档约定。父仓库风格和双语模板检查覆盖集成说明；fork 自身检查覆盖实现与固定资产。父仓库指向 fork 的链接照常检查。真实 DSH 验证与发布遵循其[贡献指南](../../plugins/oh-story-dsh/CONTRIBUTING.md)和[发布指南](../../plugins/oh-story-dsh/docs/RELEASING.md)。
 
 <a id="dev-note"></a>
 ## 开发备注

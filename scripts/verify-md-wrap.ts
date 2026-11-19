@@ -12,6 +12,7 @@ import { relative, resolve } from 'node:path'
 import type { Nodes } from 'mdast'
 import { parseMarkdown, visitMarkdown } from './markdown.ts'
 import { isArchivedAgentNotePath, uniqueRepoFiles } from './repo-files.ts'
+import { isUpstreamManagedPluginPath } from './plugin-workspaces.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -72,7 +73,7 @@ function findViolations(absPath: string): Violation[] {
   return out
 }
 
-const files = uniqueRepoFiles(root, PATTERNS, isArchivedAgentNotePath)
+const files = uniqueRepoFiles(root, PATTERNS, file => isArchivedAgentNotePath(file) || isUpstreamManagedPluginPath(file))
 const all = files.flatMap(file => findViolations(file.abs))
 const checked = files.length
 

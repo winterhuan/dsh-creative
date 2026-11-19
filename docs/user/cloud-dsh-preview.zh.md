@@ -148,7 +148,7 @@ sudo nginx -t
 
 已记录验收覆盖合成文件和真实浏览器操作，未执行模型调用或真实榜单采集。验证模型行为时，按[提供商指南](../../upstream/docs/user/guide/providers.md)在「设置 → 模型」添加 API key。[账号界面参考](../../upstream/packages/client/ui-settings-account/README.md#known-limitations-and-deferred-work)说明仅支持回环地址的 OAuth 回调限制；此远程 HTTPS 预览使用 API key。
 
-配置后，模型请求及文件、工具操作由云端 DSH 进程发起；模型推理仍在提供商服务器执行。安装 Chromium 不会提供榜单网站登录态，也不会自动为 Writer 接入浏览器后端。真实采集前按 Writer 的 [browser-cdp skill（技能）](../../plugins/dsh-writer/packages/winterhuan/writer/skills/browser-cdp/SKILL.md)准备。
+配置后，模型请求及文件、工具操作由云端 DSH 进程发起；模型推理仍在提供商服务器执行。安装 Chromium 不会提供榜单网站登录态。`oh-story-dsh` 的数据源与采集限制见[安全说明](../../plugins/oh-story-dsh/SECURITY.md)。浏览器任务直接使用官方 [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser)，执行 `ego-browser skill` 按需读取当前安装版本的指南；目标站点要求登录时由作者完成。
 
 -----
 

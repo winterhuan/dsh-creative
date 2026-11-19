@@ -28,7 +28,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [技能查看器](skill-viewer.zh.md) | [@winterhuan/dsh-client-ui-skill-viewer](../../plugins/dsh-skills-viewer/packages/winterhuan/ui-skill-viewer/README.zh.md) | 随技能查看器安装 |
 | [模型设置增强](model-options.zh.md) | [@winterhuan/dsh-client-ui-settings-model-options](../../plugins/dsh-client-ui-settings-model-options/packages/winterhuan/ui-settings-model-options/README.zh.md) | 独立 bundle |
 | [项目默认模式](project-default-mode.zh.md) | [@winterhuan/dsh-project-default-mode](../../plugins/dsh-project-default-mode/packages/winterhuan/project-default-mode/README.zh.md) | 独立 bundle |
-| [写作](writer.zh.md) | [@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md) | 独立 bundle |
+| [创作](writer.zh.md) | [@winterhuan/oh-story-dsh](../../plugins/oh-story-dsh/packages/dsh-plugin/README.md) | 上游 fork，四个创作工作台 |
 | [Antfarm](antfarm.zh.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 已发布组合包；日常服务使用独立 `antfarm` profile |
 | [自媒体工作台](media-desk.zh.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.zh.md) | 原生创作 Session、Notes 内容、独立媒体与导出；维护 fork |
 | [Shadow Mind](../../plugins/dsh-shadow-mind/README.zh.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.zh.md) | 独立组合包，包含审查运行时、命令与只读审查预设 |

@@ -1,9 +1,6 @@
 [submodule "upstream"]
 	path = upstream
 	url = git@github.com:deepseek-ai/deepseek-harness.git
-[submodule "plugins/dsh-writer"]
-	path = plugins/dsh-writer
-	url = https://github.com/winterhuan/dsh-writer.git
 [submodule "plugins/dsh-student"]
 	path = plugins/dsh-student
 	url = https://github.com/winterhuan/dsh-student.git
@@ -34,3 +31,6 @@
 [submodule "plugins/dsh-superagent-prototype"]
 	path = plugins/dsh-superagent-prototype
 	url = https://github.com/winterhuan/dsh-superagent-prototype.git
+[submodule "plugins/oh-story-dsh"]
+	path = plugins/oh-story-dsh
+	url = git@github.com:winterhuan/oh-story-dsh.git

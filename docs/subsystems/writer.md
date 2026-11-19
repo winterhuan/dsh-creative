@@ -1,44 +1,44 @@
 ---
-description: "Writing subsystem: the writer preset, mutually exclusive skill mounts, and the sidebar save boundary."
+description: "Oh Story fork integration: creative workbenches, upstream ownership, and local development checks."
 ---
 
-# Writing
+# Creation
 
 English | [中文](writer.zh.md)
 
 ## Summary
 
-写作模式 is an optional preset for fiction sessions. The host copies oh-story skills into the workspace or points skill discovery at the package directory, and the sidebar browses libraries, writing projects, and dated market scans with editable text files. DSH keeps the session, the model, and file reads.
+The Oh Story fork provides novel, short-drama, interactive-game and video-recap workbenches in DSH. DSH owns agents, sessions, models and permissions. Skills, roles and creative documents come from the plugin.
 
 ## Table of Contents
 
-- [Package](#ownership)
-- [Mount and save boundary](#boundary)
-- [Related](#related)
+- [Source](#source)
+- [Runtime and assets](#runtime)
+- [Development](#development)
 - [Dev Note](#dev-note)
 
-<a id="ownership"></a>
-## Package
+<a id="source"></a>
+## Source
 
-[@winterhuan/dsh-writer](../../plugins/dsh-writer/packages/winterhuan/writer/README.md) installs on its own. The host row owns skill mounting, source diagnosis, backed-up sync and restore commands, and versioned file saves. The preset row owns the tool list and the persona. The browser half is the same package's client entry: the writing sidebar plus a Plugins-page Writing card that binds the Zhuque credential through `makersApiKeyEnv` (Host stores the env name only; secrets go through credentials).
+[plugins/oh-story-dsh](../../plugins/oh-story-dsh/README.md) tracks [winterhuan/oh-story-dsh](https://github.com/winterhuan/oh-story-dsh), a fork of [zenstory-ai/oh-story-dsh](https://github.com/zenstory-ai/oh-story-dsh). The package is `@winterhuan/oh-story-dsh`; its source and build output live under `packages/dsh-plugin`.
 
-<a id="boundary"></a>
-## Mount and save boundary
+The former `plugins/dsh-writer` source is removed. Its [preset](../../.agents/notes/archived/feature/2026-10-31-writer-preset.md) and [Box/Ego integration](../../.agents/notes/archived/architecture/2026-11-07-writer-box-ego.md) are historical decisions. The new fork retains its upstream workbenches; the old sidebar, `writer_agent` and credential settings are not copied into it. Browser tasks use the official [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser) directly, loading its installed-version guide with `ego-browser skill`.
 
-`skillMount` is `workspace` or `bundled`, defaulting to bundled. Workspace mode copies skills; bundled mode reads the package. Existing project copies still take precedence. Explicit sync and unsync preserve backups, and restore also preserves displaced current copies.
+<a id="runtime"></a>
+## Runtime and assets
 
-The sidebar lists and reads through `workspaceFiles`. Its Scans tab discovers `扫榜/YYYYMMDD/` records, newest first, and previews the conclusion on expansion, falling back to the aggregate or a readable Markdown ranking file. Original ranking files remain in the same tree. The host route accepts versioned saves of supported text files in the session workspace, including scan reports. It does not serve the oh-story dashboard. `story-setup` on this host skips Claude Code and Codex hook deployment.
+The bundle registers `oh-story` in its DSH profile. It supplies four workbenches, skill providers and the `oh_story_role` tool; DSH retains conversation and permission ownership. Installation and runtime behavior are documented in the [upstream package README](../../plugins/oh-story-dsh/packages/dsh-plugin/README.md) and [architecture guide](../../plugins/oh-story-dsh/docs/ARCHITECTURE.md).
 
-The sidebar stores browser recovery drafts by workspace and path; read and save replies update only their owning document. The chapter panel reads book tracking, mechanical checks, and semantic review records on demand. Changed manuscript or outline fingerprints expire the corresponding reports. Skill scripts validate review quotations and versions; the sidebar does not replace author decisions or impose a chapter-commit gate.
+The four fixed asset sets live in `packages/knowledge/{oh-story,drama,novel-to-game,video-recap}`. Their manifests record versions and file hashes. Follow the fork's [AGENTS.md](../../plugins/oh-story-dsh/AGENTS.md) and synchronization commands; do not edit vendored knowledge by hand. Role and reference loading follows the fork's own adapters.
 
-`writer_agent` owns role discovery and prompt composition using the effective `story-setup`, and delegates through the native tool pipeline. DSH owns child session identity, model-selection policy, continuation, and interruption. Roles share the Writer Preset; role names do not create independent permission configurations.
+Replacing the development submodule does not migrate installed profiles, existing sessions or manuscripts. The independent `writer` service still uses its installed legacy Writer package until a separate runtime migration is performed. Current service locations remain in [HANDOFF.md](../../HANDOFF.md#independent-service-profiles).
 
-Bundled roles are generated for DSH from the shared role sources. Project skills retain their existing template overrides; source selection never silently substitutes a bundled role for a failed project read. Source maintenance and compatibility paths are documented in the [Writer package](../../plugins/dsh-writer/packages/winterhuan/writer/README.md#maintain-skill-sources).
+<a id="development"></a>
+## Development
 
-<a id="related"></a>
-## Related
+Parent commands discover the fork's workspace and `packages/dsh-plugin/package.json`. Installation, type checking, build and tests use its own toolchain; optional cleanup runs only where declared. Run `pnpm verify` inside the fork for lint, type checks, asset parity, DSH ownership checks, script tests, unit tests and build. Its explicit Vitest config prevents an enclosing repository from changing test discovery.
 
-Install, the mount switch, and limits are in the [package README](../../plugins/dsh-writer/packages/winterhuan/writer/README.md). File discovery is owned by [skill-filesystem](../../upstream/packages/skill/skill-filesystem/README.zh.md). Sidebar registration follows [the right sidebar](../../upstream/docs/subsystems/sidebar-right.zh.md).
+The fork keeps its upstream source and documentation conventions. Parent style and bilingual-template checks cover the integration docs, while the fork's own checks cover its implementation and fixed assets. Parent links into the fork remain checked. Real DSH validation and releases follow its [contribution](../../plugins/oh-story-dsh/CONTRIBUTING.md) and [release](../../plugins/oh-story-dsh/docs/RELEASING.md) guides.
 
 <a id="dev-note"></a>
 ## Dev Note

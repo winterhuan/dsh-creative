@@ -3,26 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/writer.md
 /:
-  en: 14917979f533893c
-  zh: 6fb2b245c6f22094
-/writing:
-  en: 91938fc64cabb17c
-  zh: d237c813ccbaa078
-/writing/summary:
-  en: fad2f3ca01e9bdb1
-  zh: 84858992091c3181
-/writing/table-of-contents:
-  en: 2607495979efcbae
-  zh: ea75205ddd7277a1
-/writing/package:
-  en: a3258130e0357a73
-  zh: ea3b79291f2ec676
-/writing/mount-and-save-boundary:
-  en: da0d87071cc076df
-  zh: ba0c83a8696f49c3
-/writing/related:
-  en: 954925ee8b4480ad
-  zh: 5765da625bc0ad09
-/writing/dev-note:
+  en: 48818e8c03f0a679
+  zh: 05e6d61510d2a23a
+/creation:
+  en: 8b8d3142a590fa0c
+  zh: a4cdbf2760696216
+/creation/summary:
+  en: 957ac91ef5a8f5b6
+  zh: d349e33b2954256d
+/creation/table-of-contents:
+  en: a70a837fd0747779
+  zh: 2e2fa7f5ba3939b5
+/creation/source:
+  en: c18b1d3b79e5c8ed
+  zh: 3c72b0519a302909
+/creation/runtime-and-assets:
+  en: 8b9479bf01ea75fe
+  zh: c1b180b85b135721
+/creation/development:
+  en: 2dd84287b8a7c6f6
+  zh: 68acff8a721c9e01
+/creation/dev-note:
   en: b75c8458928b72b9
   zh: 003ba4e17b4b5269

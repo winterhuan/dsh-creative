@@ -4,13 +4,23 @@ import { existsSync, globSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 /**
- * Identify imported research code checked by its own toolchain rather than Creative source-style rules.
- * README checks and workspace install/typecheck/build/test still include this repository.
+ * Identify imported code checked by its own toolchain rather than Creative source-style rules.
+ * Workspace install/typecheck/build/test still include these repositories; README policy is separate.
  * @param file - parent-repository-relative path, using native or POSIX separators.
- * @returns whether the path is inside the Superagent reference checkout.
+ * @returns whether the path is inside a plugin retaining its upstream source checks.
  */
 export function isReferencePluginPath(file: string): boolean {
-  return file.replaceAll('\\', '/').startsWith('plugins/dsh-superagent-prototype/')
+  const path = file.replaceAll('\\', '/')
+  return path.startsWith('plugins/dsh-superagent-prototype/') || isUpstreamManagedPluginPath(path)
+}
+
+/**
+ * Identify the fork retaining upstream documentation and asset checks.
+ * @param file - parent-repository-relative path, using native or POSIX separators.
+ * @returns whether the file is owned by the Oh Story fork's verify command.
+ */
+export function isUpstreamManagedPluginPath(file: string): boolean {
+  return file.replaceAll('\\', '/').startsWith('plugins/oh-story-dsh/')
 }
 
 /**
@@ -19,7 +29,7 @@ export function isReferencePluginPath(file: string): boolean {
  * @returns sorted repository-relative manifests for root src and nested packages.
  */
 export function pluginPackageJsons(root: string): string[] {
-  return globSync(['plugins/*/package.json', 'plugins/*/packages/*/*/package.json'], {
+  return globSync(['plugins/*/package.json', 'plugins/*/packages/*/package.json', 'plugins/*/packages/*/*/package.json'], {
     cwd: root, exclude: ['**/vendor/**', '**/node_modules/**'],
   })
     .map(file => file.replaceAll('\\', '/'))
