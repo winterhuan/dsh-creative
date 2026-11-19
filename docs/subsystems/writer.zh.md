@@ -33,6 +33,8 @@ description: "写作子系统：写作模式预设、互斥的技能挂载，以
 
 `writer_agent` 拥有角色发现与提示词装配，复用当前生效的 `story-setup`，并通过原生工具执行链派发。DSH 拥有子会话身份、模型选择策略、续接与中断；角色共享 Writer Preset，角色名称不产生独立权限配置。
 
+包内角色由共享角色源文生成 DSH 版本。项目技能保留既有模板覆盖；项目读取失败时不会静默替换成包内角色。源文维护与兼容路径见 [Writer 包说明](../../plugins/dsh-writer/packages/winterhuan/writer/README.zh.md#maintain-skill-sources)。
+
 <a id="related"></a>
 ## 相关契约
 

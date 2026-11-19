@@ -33,6 +33,8 @@ The sidebar stores browser recovery drafts by workspace and path; read and save 
 
 `writer_agent` owns role discovery and prompt composition using the effective `story-setup`, and delegates through the native tool pipeline. DSH owns child session identity, model-selection policy, continuation, and interruption. Roles share the Writer Preset; role names do not create independent permission configurations.
 
+Bundled roles are generated for DSH from the shared role sources. Project skills retain their existing template overrides; source selection never silently substitutes a bundled role for a failed project read. Source maintenance and compatibility paths are documented in the [Writer package](../../plugins/dsh-writer/packages/winterhuan/writer/README.md#maintain-skill-sources).
+
 <a id="related"></a>
 ## Related
 
