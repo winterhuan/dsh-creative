@@ -1,6 +1,6 @@
 # dsh-creative 本机环境变更记录
 
-本文件从 [HANDOFF.md](HANDOFF.md) 拆出，按时间记录本机（`/Users/winter/dsh-creative` 所在机器）的全局 DSH 安装、profile 与验证环境的变更。主文档的[第 12 节](HANDOFF.md#12-本机环境变更记录)是索引。
+本文件从 [HANDOFF.md](HANDOFF.md) 拆出，按时间记录 macOS（`/Users/winter/dsh-creative`）与 WSL（`/home/maiscrm/projects/dsh-creative`）的全局 DSH 安装、profile 与验证环境的变更；主机差异在对应记录中说明。主文档的[第 12 节](HANDOFF.md#12-本机环境变更记录)是索引。
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)。
 
@@ -171,3 +171,12 @@
 <a id="media-desk-winter10"></a>
 
 2026-11-19 发布 Media Desk [v2.7.0-winter.10](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.10)，公开市场和本机独立 `media` profile 均已更新。复盘只反映已提交的编辑。在 100 篇稳定作品的回归测试中，单篇进度读取只打开目标正文。207 项插件测试、语法检查、客户端构建和 3 项规范检查通过。3085 服务重启后，浏览器硬刷新加载了五个视图入口，并打开了复盘页。升级前后的 25 篇作品记录、102 个 Notes 文件和 3 个 profile 数据文件逐字节一致。启动恢复清理了一条已有回执的停机日志，该日志不含作品修改。配置、数据备份及验收证据位于 `~/.dsh/backups/media-desk-winter10-20261119-123716-8YzfTJ/`。
+
+<a id="writer-0.2.6"></a>
+
+2026-11-19：Writer [v0.2.6](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.6) 已合并 `main`、发布并更新公开市场。DSH 技能入口使用原生写作角色和当前生效技能目录，其他宿主的部署、Dashboard 与更新说明按需读取；朱雀设置释放订阅并忽略过期凭据响应，保存按本次回读确认；技能状态检查在单次调用中复用目录哈希。
+
+- 类型检查、构建、237 项测试、16 项文档检查和 3 项规范检查通过。隔离 DSH 验证设置保存与重载、书稿编辑保存及 GFM 表格预览；外部模型与朱雀 API 未实测。固定输入的技能状态调用中位耗时从 243.00 ms 降至 125.44 ms；9 个 skill 入口字符数减少 27.3%，不等同于 token 数。
+- 当前 WSL 的既有 `web` profile 从远程标签由 `0.2.2` 升级到 `0.2.6`，3080 服务重启后，浏览器确认两个组件运行、发布来源和写作设置加载正常。隔离与日常远程安装均核对 542 个运行文件和技能文件与发布提交一致；公开 Release 下载校验一致。macOS 的独立 `writer` profile 未在本轮更新。
+- 配置、凭据、附件与会话完整保留，其他直接依赖及用户补丁不变。61 个受保护文件中，60 个逐字节一致，一个空会话的 Zstandard 压缩字节在重启后变化，解压内容逐字节相同。当前 WSL 工作区未发现书稿，日常验收没有创建测试作品。
+- Release 包 SHA-256 为 `d5fa1cad2878c5f2ce46f517a7a71ed44d2d333ec8bec28edbcac0e8a81357a9`。配置、数据备份及验收证据位于 `~/.dsh/backups/writer-release-0.2.6-20261119-044158-9p8ysugv/`。
