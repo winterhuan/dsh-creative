@@ -10,173 +10,28 @@
   },
   "plugins": [
     {
-      "name": "@winterhuan/dsh-writer",
+      "name": "@winterhuan/oh-story-dsh",
       "title": {
-        "en": "Writing",
-        "zh": "写作"
+        "en": "Creative workbenches",
+        "zh": "创作工作台"
       },
       "description": {
-        "en": "Writing sidebar with native Writer conversations, manuscript editing, chapter reviews and oh-story skills.",
-        "zh": "配合原生 Writer 对话的写作侧栏，提供文稿编辑、章节审稿与 oh-story 技能。"
+        "en": "Native novel, short-drama, interactive-game and video-recap workbenches, with pinned skills, roles and official Ego browser access.",
+        "zh": "原生小说、短剧、互动游戏和视频解说工作台，提供固定技能、角色及官方 Ego 浏览器接入。"
       },
       "author": "winterhuan",
-      "homepage": "https://github.com/winterhuan/dsh-writer#readme",
+      "homepage": "https://github.com/winterhuan/oh-story-dsh#readme",
       "repository": {
-        "url": "https://github.com/winterhuan/dsh-writer",
-        "directory": "packages/winterhuan/writer"
+        "url": "https://github.com/winterhuan/oh-story-dsh"
       },
       "versions": [
         {
-          "version": "0.2.8",
-          "publishTimestamp": 1795090454,
+          "version": "0.1.28",
+          "publishTimestamp": 1795102133,
           "source": {
             "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "55b9f4d4f7f5b39a00ece5a4f7d84e82d987b922",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.7",
-          "publishTimestamp": 1795070316,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "48a6ae03d6eeb4b65014c540a979c8ed67b7861f",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.6",
-          "publishTimestamp": 1795063452,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "20b1437a43dee22ca8e1c314c36f5a900928f7e5",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.5",
-          "publishTimestamp": 1795043244,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "1e09b874613832b801955b5059cc949b20272fae",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.4",
-          "publishTimestamp": 1795012123,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "3476d6655e3f090d2b5e7fe60267e08a33d939cb",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.3",
-          "publishTimestamp": 1794923943,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "1a6f14b5b34c79da09cb43c1b03693899e847cd2",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.2",
-          "publishTimestamp": 1794899610,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "cd0f09bea2c84fb8ca7e7e197712d98270b12434",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.1",
-          "publishTimestamp": 1794784151,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "665f36394f33802f0416d87f4ccbe55b90cc33e7",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.2.0",
-          "publishTimestamp": 1794749054,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "97958677a4aca0b7afbd4bd269e795539180cf74",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.1.10",
-          "publishTimestamp": 1794189767,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "b77a928d684c8db325bb54fe8d6f7260a3193550",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.1.9",
-          "publishTimestamp": 1794136088,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "9974d970d5ef39ad6a187c70e0421a3d3bdd7565",
-            "path": "packages/winterhuan/writer"
-          },
-          "engines": {
-            "dsh": "0.2.2-rc.1"
-          }
-        },
-        {
-          "version": "0.1.8",
-          "publishTimestamp": 1794053229,
-          "source": {
-            "type": "git",
-            "url": "https://github.com/winterhuan/dsh-writer",
-            "commit": "83d78c4645fb7e601d3a7e42d7117bda9f7b7eb9",
-            "path": "packages/winterhuan/writer"
+            "url": "https://github.com/winterhuan/oh-story-dsh",
+            "commit": "a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d"
           },
           "engines": {
             "dsh": "0.2.2-rc.1"

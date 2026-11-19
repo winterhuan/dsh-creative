@@ -1,4 +1,4 @@
-https://github.com/winterhuan/dsh-writer
+https://github.com/winterhuan/oh-story-dsh
 https://github.com/winterhuan/dsh-student
 https://github.com/winterhuan/dsh-skills-viewer
 https://github.com/winterhuan/dsh-project-default-mode
