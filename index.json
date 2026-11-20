@@ -57,6 +57,19 @@
       },
       "versions": [
         {
+          "version": "0.2.5",
+          "publishTimestamp": 1795148283,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-student",
+            "commit": "1b8de37f0dd294d093261df35c45129a18db0e8f",
+            "path": "packages/winterhuan/student"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.2.4",
           "publishTimestamp": 1794737164,
           "source": {
@@ -154,6 +167,19 @@
       },
       "versions": [
         {
+          "version": "0.1.9",
+          "publishTimestamp": 1795148275,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-skills-viewer",
+            "commit": "568c97f07729a41f6a7f152889fa002004df8161",
+            "path": "plugin"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.1.8",
           "publishTimestamp": 1794053207,
           "source": {
@@ -231,6 +257,19 @@
       },
       "versions": [
         {
+          "version": "0.1.9",
+          "publishTimestamp": 1795148275,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-client-ui-settings-model-options",
+            "commit": "a600746d8bbc51b469da78c902ad3618adcdf2af",
+            "path": "packages/winterhuan/ui-settings-model-options"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.1.8",
           "publishTimestamp": 1794053218,
           "source": {
@@ -261,6 +300,18 @@
         "url": "https://github.com/winterhuan/dsh-antfarm"
       },
       "versions": [
+        {
+          "version": "0.3.4",
+          "publishTimestamp": 1795148276,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-antfarm",
+            "commit": "d8a23d5d99fcea86a9fb749377d1ae162578130f"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "0.3.3",
           "publishTimestamp": 1794197666,
@@ -306,8 +357,8 @@
         "zh": "自媒体工作台"
       },
       "description": {
-        "en": "Collect ideas, generate scripts and images, schedule content, and reuse writing rules.",
-        "zh": "收集灵感、生成脚本和图片、安排排期并复用写作规则。"
+        "en": "Capture ideas, write scripts or articles with optional images, and maintain Notes works and publishing plans.",
+        "zh": "收集灵感，选择脚本或文章、仅文字或配图成稿，并维护 Notes 作品与发布计划。"
       },
       "author": "winterhuan",
       "homepage": "https://github.com/winterhuan/dsh-media-desk#readme",
@@ -315,6 +366,18 @@
         "url": "https://github.com/winterhuan/dsh-media-desk"
       },
       "versions": [
+        {
+          "version": "2.7.0-winter.11",
+          "publishTimestamp": 1795149274,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-media-desk",
+            "commit": "44973f658cb8ff21c29729a6eb2e4ef88e5d6ea9"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "2.7.0-winter.10",
           "publishTimestamp": 1795063030,
@@ -442,6 +505,36 @@
             "type": "git",
             "url": "https://github.com/winterhuan/dsh-media-desk",
             "commit": "3d6624a489571d755f0458883030d2cc8320155c"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "@winterhuan/dsh-shadow-mind",
+      "title": {
+        "en": "Shadow Mind reviews",
+        "zh": "Shadow Mind 独立审查"
+      },
+      "description": {
+        "en": "Configure read-only background and completion reviews with Markdown responsibilities.",
+        "zh": "通过 Markdown 职责配置后台与完成前的独立只读审查。"
+      },
+      "author": "winterhuan",
+      "homepage": "https://github.com/winterhuan/dsh-shadow-mind#readme",
+      "repository": {
+        "url": "https://github.com/winterhuan/dsh-shadow-mind"
+      },
+      "versions": [
+        {
+          "version": "0.2.1",
+          "publishTimestamp": 1794174790,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-shadow-mind",
+            "commit": "90838221a52038c6553dc327a9d6064236956155"
           },
           "engines": {
             "dsh": "0.2.2-rc.1"
