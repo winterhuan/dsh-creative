@@ -26,6 +26,18 @@
       },
       "versions": [
         {
+          "version": "0.1.29",
+          "publishTimestamp": 1795184317,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/oh-story-dsh",
+            "commit": "252574040a5f46a7ecc4c15cb244352a3a6509f8"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "0.1.28",
           "publishTimestamp": 1795102133,
           "source": {
@@ -528,6 +540,18 @@
         "url": "https://github.com/winterhuan/dsh-shadow-mind"
       },
       "versions": [
+        {
+          "version": "0.2.3",
+          "publishTimestamp": 1795185671,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-shadow-mind",
+            "commit": "17aa2e79f095e5827baea9118185e2653e29f4e6"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "0.2.2",
           "publishTimestamp": 1795184823,
