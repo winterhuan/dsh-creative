@@ -519,8 +519,8 @@
         "zh": "Shadow Mind 独立审查"
       },
       "description": {
-        "en": "Configure read-only background and completion reviews with Markdown responsibilities.",
-        "zh": "通过 Markdown 职责配置后台与完成前的独立只读审查。"
+        "en": "Configure native background and completion reviews with Markdown responsibilities, session activity, and explicit worker grants.",
+        "zh": "通过 Markdown 职责配置原生后台与完成前审查、会话活动和明确的 worker 授权。"
       },
       "author": "winterhuan",
       "homepage": "https://github.com/winterhuan/dsh-shadow-mind#readme",
@@ -528,6 +528,18 @@
         "url": "https://github.com/winterhuan/dsh-shadow-mind"
       },
       "versions": [
+        {
+          "version": "0.2.2",
+          "publishTimestamp": 1795184823,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-shadow-mind",
+            "commit": "27f1d820166ab519358b842b306c4493a8fe21c1"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "0.2.1",
           "publishTimestamp": 1794174790,
