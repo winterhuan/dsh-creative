@@ -1,2 +1,6 @@
 #!/bin/sh
-exec python3 "$HOME/.dsh/bin/dsh-service" writer "$@"
+if [ "$(uname -s)" = "Linux" ]; then
+    exec python3 "$HOME/.dsh/bin/dsh-service" writer "$@"
+fi
+export PATH="$HOME/.local/bin:$HOME/.nvm/versions/node/v24.22.2/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin"
+exec python3 "$HOME/.dsh/installations/dsh-writer/control.py" "$@"

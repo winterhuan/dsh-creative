@@ -2,11 +2,11 @@
 
 English | [中文](README.zh.md)
 
-This directory maintains the local DSH service commands. Linux and WSL use existing systemd user services named `dsh@<profile>.service`; the macOS branches retain the original launchd controllers and `/Users/winter` paths. macOS execution was not verified in this update.
+This directory maintains the same DSH service commands on macOS, Linux and WSL. Linux and WSL use existing systemd user services named `dsh@<profile>.service`; macOS uses the existing controllers under `~/.dsh/installations/`.
 
 - `dsh-sre` installs to `~/.local/bin/dsh-sre` and lists, inspects, starts, stops, and restarts profiles.
 - `dsh-webctl`, `dsh-antfarm`, `dsh-media`, `dsh-student`, and `dsh-superagent` install to `~/.dsh/bin/`. Their Linux branches call `dsh-service` in the same directory (see [HANDOFF independent service profiles](../../HANDOFF.md#independent-service-profiles) for services and ports). `dsh-web` aliases `dsh-webctl`.
-- Linux also installs `dsh-writer` for the independent Writer service on port 3086. On macOS the installer preserves the existing Writer controller; `dsh-sre` uses that controller.
+- Both platforms install `dsh-writer` to manage Oh Story in the `writer` profile on port 3086. `dsh-sre status writer` and `dsh-sre start writer` use this entry point; see [HANDOFF](../../HANDOFF.md#independent-service-profiles) for the installed version and session compatibility.
 
 Install from the repository root with Python 3 and `lsof` available. Linux also requires working systemd user services:
 
@@ -14,6 +14,8 @@ Install from the repository root with Python 3 and `lsof` available. Linux also 
 python3 ops/dsh-sre/install.py
 dsh-sre list
 dsh-sre status
+dsh-sre status writer
+dsh-sre start writer
 dsh-sre restart media
 dsh-sre stop media
 dsh-sre start media

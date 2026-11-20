@@ -4,7 +4,6 @@ from datetime import datetime
 import os
 from pathlib import Path
 import shutil
-import sys
 import tempfile
 
 
@@ -12,10 +11,7 @@ def main():
     source = Path(__file__).resolve().parent
     root = Path.home() / '.dsh'
     local_bin = Path.home() / '.local/bin'
-    controllers = ['dsh-webctl', 'dsh-antfarm', 'dsh-media', 'dsh-student', 'dsh-superagent', 'dsh-service']
-    # Writer's existing macOS launchd controller is maintained by that installation.
-    if sys.platform.startswith('linux'):
-        controllers.append('dsh-writer')
+    controllers = ['dsh-webctl', 'dsh-antfarm', 'dsh-media', 'dsh-student', 'dsh-superagent', 'dsh-writer', 'dsh-service']
     copies = {root / 'bin' / name: source / name for name in controllers}
     copies[local_bin / 'dsh-sre'] = source / 'dsh-sre'
     links = {local_bin / name: root / 'bin' / name for name in controllers}

@@ -9,3 +9,6 @@ packages/**/__pycache__/
 .DS_Store
 .dsh-build/
 .worktrees/
+.env
+# Local migration backup of the former dsh-writer submodule; kept out of git.
+archive/dsh-writer/

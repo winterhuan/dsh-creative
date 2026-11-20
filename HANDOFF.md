@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-19。
+最后更新：2026-11-20。
 
 本仓库统一管理 11 个独立 DSH 插件仓库、开发检查和交接文档，其中 10 个已有发布包，短剧工作台处于界面试验阶段，Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -106,15 +106,15 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 profile 使用 GitHub 远程发布包。Writer 最新发布为 `0.2.8`，使用原生写作对话和右侧写作栏；当前 WSL 主机的独立 `writer` profile 从远程标签 `v0.2.7` 安装，macOS 的独立 `writer` profile 上次记录为 `0.2.5`。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包。macOS 和 Linux／WSL 的独立 `writer` profile 均安装 `@winterhuan/oh-story-dsh@0.1.28`，固定来源为 `github:winterhuan/oh-story-dsh#a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d`；两端均由 `dsh-writer` 在端口 `3086` 启动。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
-Writer、Student、Superagent、Antfarm 与 Media Desk 在 macOS 和 WSL 均分别使用下表中的独立 profile；日常 `web` 不加载这五个插件，`creative` 也不加载 Student。安装、更新和启停均针对所属 profile。WSL 的统一入口为 `dsh-sre`，脚本在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。
+Writer、Student、Superagent、Antfarm 与 Media Desk 在 macOS 和 WSL 均分别使用下表中的独立 profile；日常 `web` 不加载这五个插件，`creative` 也不加载 Student。安装、更新和启停均针对所属 profile。两端的统一入口为 `dsh-sre`，脚本在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
-| Writer | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
+| Oh Story（Writer 服务） | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
 | Media Desk | `media` | `3085` | `~/.dsh/bin/dsh-media` | `~/.dsh/profiles/media/data/` |
 | Student | `student` | `3084` | `~/.dsh/bin/dsh-student` | `~/.dsh/profiles/student/data/` |
 | Superagent | `superagent` | `3082` | `~/.dsh/bin/dsh-superagent` | `~/.dsh/profiles/superagent/data/` |
@@ -122,7 +122,7 @@ Writer、Student、Superagent、Antfarm 与 Media Desk 在 macOS 和 WSL 均分�
 
 五个服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
 
-Writer 的会话、附件与工作区登记位于独立 profile 的 `data/`；macOS 书稿沿用 `~/workspace/novels/`，WSL 保留原会话的工作区路径。最新发布记录见 [Writer 0.2.8](HANDOFF-changelog.md#writer-0.2.8)，WSL 日常安装记录见 [Writer 0.2.7](HANDOFF-changelog.md#writer-0.2.7)；WSL 服务拆分与数据迁移见 [Writer 独立 profile](HANDOFF-changelog.md#writer-profile-wsl)。WSL 的日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
+`writer` 的会话、附件与工作区登记位于独立 profile 的 `data/`；macOS 书稿沿用 `~/workspace/novels/`，WSL 保留原会话的工作区路径。两端新会话默认使用 Standard；profile 中的 `writer` 模式采用 DSH `0.2.2-rc.1` 原生 Standard 配置，供旧会话恢复，更新 DSH 时需同步核对该声明。Oh Story 安装、验证与备份见 [writer profile 迁移记录](HANDOFF-changelog.md#writer-oh-story-profile)。WSL 日常安装记录见 [Writer 0.2.7](HANDOFF-changelog.md#writer-0.2.7)，服务拆分见 [Writer 独立 profile](HANDOFF-changelog.md#writer-profile-wsl)。WSL 的日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
 
 Antfarm `0.3.3` 使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 

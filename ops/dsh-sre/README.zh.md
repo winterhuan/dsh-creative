@@ -2,11 +2,11 @@
 
 [English](README.md) | 中文
 
-本目录维护 DSH 本机服务管理命令。Linux／WSL 使用已有的 systemd 用户服务 `dsh@<profile>.service`；macOS 分支保留原有 launchd 控制器与 `/Users/winter` 路径，本次未验证 macOS 运行。
+本目录为 macOS、Linux 和 WSL 维护相同的 DSH 服务管理命令。Linux／WSL 使用已有的 systemd 用户服务 `dsh@<profile>.service`；macOS 使用 `~/.dsh/installations/` 下已有的控制器。
 
 - `dsh-sre` 安装在 `~/.local/bin/dsh-sre`，用于查看各 profile 状态并统一启停。
 - `dsh-webctl`、`dsh-antfarm`、`dsh-media`、`dsh-student`、`dsh-superagent` 安装在 `~/.dsh/bin/`，Linux 分支调用同目录的 `dsh-service`（服务与端口见 [HANDOFF 独立服务 profile](../../HANDOFF.md#independent-service-profiles)）。`dsh-web` 是 `dsh-webctl` 的别名。
-- Linux 另安装 `dsh-writer`，管理端口 3086 的独立 Writer 服务。macOS 安装时保留已有的 Writer 控制器，`dsh-sre` 调用该控制器。
+- 两端均安装 `dsh-writer`，管理 `writer` profile 中的 Oh Story，端口为 3086。`dsh-sre status writer` 和 `dsh-sre start writer` 调用该入口；安装版本与会话兼容说明见 [HANDOFF](../../HANDOFF.md#independent-service-profiles)。
 
 在仓库根目录安装，需 Python 3、`lsof`，Linux 还需可用的 systemd 用户服务：
 
@@ -14,6 +14,8 @@
 python3 ops/dsh-sre/install.py
 dsh-sre list
 dsh-sre status
+dsh-sre status writer
+dsh-sre start writer
 dsh-sre restart media
 dsh-sre stop media
 dsh-sre start media
