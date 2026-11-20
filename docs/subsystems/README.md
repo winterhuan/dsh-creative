@@ -31,7 +31,7 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Creation](writer.md) | [@winterhuan/oh-story-dsh](../../plugins/oh-story-dsh/packages/dsh-plugin/README.md) | Upstream fork with four creative workbenches |
 | [Antfarm](antfarm.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Released bundle; daily service uses the dedicated `antfarm` profile |
 | [Media Desk](media-desk.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Native creative Sessions, Notes content, independent media and export; maintained fork |
-| [Shadow Mind](../../plugins/dsh-shadow-mind/README.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.md) | Independent bundle with a review runtime, commands, and a read-only review preset |
+| [Shadow Mind](../../plugins/dsh-shadow-mind/README.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.md) | Independent bundle with a native review runtime, session-scoped Remote state, commands, worker policies, and a review preset |
 | [Superagent](../../plugins/dsh-superagent-prototype/README.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.md) | Research prototype bundle; remote release uses the dedicated `superagent` profile |
 
 <a id="related"></a>

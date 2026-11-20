@@ -31,7 +31,7 @@ description: "本仓库所有插件的子系统索引、所属包与组合边界
 | [创作](writer.zh.md) | [@winterhuan/oh-story-dsh](../../plugins/oh-story-dsh/packages/dsh-plugin/README.md) | 上游 fork，四个创作工作台 |
 | [Antfarm](antfarm.zh.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.zh.md) | 已发布组合包；日常服务使用独立 `antfarm` profile |
 | [自媒体工作台](media-desk.zh.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.zh.md) | 原生创作 Session、Notes 内容、独立媒体与导出；维护 fork |
-| [Shadow Mind](../../plugins/dsh-shadow-mind/README.zh.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.zh.md) | 独立组合包，包含审查运行时、命令与只读审查预设 |
+| [Shadow Mind](../../plugins/dsh-shadow-mind/README.zh.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.zh.md) | 独立组合包，包含原生审查运行时、按会话授权的 Remote 状态、命令、Worker 策略与审查预设 |
 | [Superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.zh.md) | 研究原型组合包；远程发布包使用独立 `superagent` profile |
 
 <a id="related"></a>

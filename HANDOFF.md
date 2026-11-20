@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-9 个插件仓库包含 10 个源码包。`dsh-student` 发布版本为 `0.2.5`，`oh-story-dsh` fork 为 `0.1.28`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 为 `0.2.1`，技能查看器与模型设置增强为 `0.1.9`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.4`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+9 个插件仓库包含 10 个源码包。`dsh-student` 发布版本为 `0.2.5`，`oh-story-dsh` fork 为 `0.1.28`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 发布版本为 `0.2.3`，技能查看器与模型设置增强为 `0.1.9`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.4`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -104,7 +104,7 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 profile 使用 GitHub 远程发布包。macOS 和 Linux／WSL 的独立 `writer` profile 均安装 `@winterhuan/oh-story-dsh@0.1.28`，固定来源为 `github:winterhuan/oh-story-dsh#a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d`；两端均由 `dsh-writer` 在端口 `3086` 启动。`@winterhuan/dsh-shadow-mind@0.2.1` 从固定 Git 提交安装到日常 `web` profile，服务已重启，历史文件逐字节保留；现有云端预览保持其独立安装项。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包。macOS 和 Linux／WSL 的独立 `writer` profile 均安装 `@winterhuan/oh-story-dsh@0.1.28`，固定来源为 `github:winterhuan/oh-story-dsh#a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d`；两端均由 `dsh-writer` 在端口 `3086` 启动。日常 `web` 已安装 `@winterhuan/dsh-shadow-mind@0.2.3`，固定来源为 `github:winterhuan/dsh-shadow-mind#17aa2e79f095e5827baea9118185e2653e29f4e6`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
@@ -183,6 +183,8 @@ Antfarm `0.3.4` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版
 | `types/client-build-environment/index.d.ts` | `scripts/types/client-build-environment/index.d.ts` | 仅首行标注 |
 
 Antfarm 仅复制上表中的 `scripts/tsdown.client.ts`、`scripts/modules/src/assets.ts`、`scripts/client-build-environment.ts`、`scripts/bundle-input-isolation.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts`，与 dsh-student 对应文件逐字一致，沿用表内来源和本地差异。它不复制客户端测试辅助文件或环境类型目录。`scripts/generate-remote.ts` 是 Antfarm 自有的单包生成适配：临时建立生成器所需的 workspace，输出包内 Typert 产物，不修改上游源码。
+
+Shadow Mind 同样复制 `scripts/tsdown.client.ts`、`scripts/modules/src/assets.ts`、`scripts/client-build-environment.ts`、`scripts/bundle-input-isolation.ts`、`scripts/experimental-package-policy.ts` 与 `scripts/platform.ts`，配置位于子模块根目录并通过 `clientBundle(import.meta.dirname, [], { hostPhase: true })` 生成 Host/Client 两张构建面。`ShadowMind` 本身继承 `TypertRemoteService` 并提供按 Session 授权的 `shadowMind/snapshot`，Client 通过生成的 `./remote` 描述挂载；bundle 只加载一次 Shadow Mind Host 服务。它额外在 `vitest.config.ts` 内置标准装饰器预转换，以便测试 Typert Remote 源码；`lightningcss`、`react`、`zustand` 和 `immer` 是其 Client 构建所需的开发依赖。隔离 tarball profile 已通过类型检查、29 项测试、包检查、真实 DSH Host 启动和 Chrome 页面加载；发布前不更新日常 `web`。
 
 父仓库保留 `oh-story-dsh` 的上游源码、文档格式和固定知识资产，以其 `pnpm verify` 执行自身检查；本地源码风格、README 模板、双语配对及措辞检查不覆盖该 fork，父仓库的集成说明与指向它的链接照常检查。`scripts/verify-concrete-terms.ts` 排除 `archive/` 与此 fork；`verify-md-wrap.ts`、`verify-md-links.ts` 和三个 README 检查使用同一 fork 范围。
 

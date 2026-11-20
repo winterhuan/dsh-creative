@@ -4,6 +4,11 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+2026-11-20 Shadow Mind `0.2.2`／`0.2.3` 发布与远程安装：
+
+- [v0.2.2](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.2) 先发布原生审查工作台，[v0.2.3](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.3) 随后补齐导出 API JSDoc 并修正随机种子回归测试；市场最新版本固定到 `17aa2e79f095e5827baea9118185e2653e29f4e6`。
+- `web` profile 已从远程提交安装 `0.2.3` 并完成服务重启、配置回读和 45 KB Web HTML 健康检查；类型检查、Host/Client 构建、29 项测试、包检查与父仓库 hygiene 通过。包检查保留一个 Client CJS/ESM 格式提示。
+
 2026-11-08／09 Writer 远程更新：
 
 - [v0.1.9](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.9)、[v0.1.10](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.10) 已发布并更新市场；`web`、`headless` 从固定远程提交安装，Web 重启验证通过。
