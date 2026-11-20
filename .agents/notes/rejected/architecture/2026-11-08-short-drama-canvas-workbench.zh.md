@@ -1,6 +1,6 @@
 # Agent Note: 单集无限画布与原生 AI 对话的短剧工作台
 
-Status: proposed
+Status: rejected — 短剧创作统一使用 Oh Story；界面原型与尚未实现的媒体运行时设想不足以支持独立维护一个插件。
 
 [English](2026-11-08-short-drama-canvas-workbench.md) | 中文
 

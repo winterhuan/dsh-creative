@@ -22,6 +22,8 @@ Oh Story fork 为 DSH 提供小说、短剧、互动游戏和视频解说工作�
 
 [plugins/oh-story-dsh](../../plugins/oh-story-dsh/README.md) 跟踪 [winterhuan/oh-story-dsh](https://github.com/winterhuan/oh-story-dsh)，它是 [zenstory-ai/oh-story-dsh](https://github.com/zenstory-ai/oh-story-dsh) 的 fork。包名为 `@winterhuan/oh-story-dsh`，源码与构建产物位于 `packages/dsh-plugin`。
 
+短剧工作台统一在此 fork 维护，取舍见[独立插件提案的拒绝记录](../../.agents/notes/rejected/architecture/2026-11-08-short-drama-canvas-workbench.zh.md)。
+
 原 `plugins/dsh-writer` 源码在本机归档于 `archive/dsh-writer/`，不参与构建。其[预设](../../.agents/notes/archived/feature/2026-10-31-writer-preset.md)和 [Box/Ego 接入](../../.agents/notes/archived/architecture/2026-11-07-writer-box-ego.md)保留为历史决策。新 fork 沿用上游工作台，不复制旧侧栏、`writer_agent` 和凭据设置。浏览器任务直接使用官方 [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser)，执行 `ego-browser skill` 按需读取当前安装版本的指南。
 
 <a id="runtime"></a>

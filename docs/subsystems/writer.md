@@ -22,6 +22,8 @@ The Oh Story fork provides novel, short-drama, interactive-game and video-recap 
 
 [plugins/oh-story-dsh](../../plugins/oh-story-dsh/README.md) tracks [winterhuan/oh-story-dsh](https://github.com/winterhuan/oh-story-dsh), a fork of [zenstory-ai/oh-story-dsh](https://github.com/zenstory-ai/oh-story-dsh). The package is `@winterhuan/oh-story-dsh`; its source and build output live under `packages/dsh-plugin`.
 
+Short-drama workbench development belongs to this fork. The [rejected independent-plugin proposal](../../.agents/notes/rejected/architecture/2026-11-08-short-drama-canvas-workbench.md) records the alternative.
+
 The former `plugins/dsh-writer` source is archived locally under `archive/dsh-writer/` and excluded from builds. Its [preset](../../.agents/notes/archived/feature/2026-10-31-writer-preset.md) and [Box/Ego integration](../../.agents/notes/archived/architecture/2026-11-07-writer-box-ego.md) are historical decisions. The new fork retains its upstream workbenches; the old sidebar, `writer_agent` and credential settings are not copied into it. Browser tasks use the official [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser) directly, loading its installed-version guide with `ego-browser skill`.
 
 <a id="runtime"></a>

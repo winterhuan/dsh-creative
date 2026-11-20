@@ -8,7 +8,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Find the reference that owns each plugin’s responsibilities and trust boundaries. The package map includes maintained bundles, supporting clients, and the short-drama interface experiment. Archived creative-domain packages and references live under `archive/`; the current short-drama experiment has its own repository under `plugins/`.
+Find the reference that owns each plugin’s responsibilities and trust boundaries. The package map includes maintained bundles and supporting clients. Archived creative-domain packages and references live under `archive/`.
 
 ## Table of Contents
 
@@ -32,8 +32,6 @@ This map assigns every active package to its subsystem. Installation and configu
 | [Antfarm](antfarm.md) | [@winterhuan/dsh-antfarm](../../plugins/dsh-antfarm/README.md) | Released bundle; daily service uses the dedicated `antfarm` profile |
 | [Media Desk](media-desk.md) | [@winterhuan/dsh-media-desk](../../plugins/dsh-media-desk/README.md) | Native creative Sessions, Notes content, independent media and export; maintained fork |
 | [Shadow Mind](../../plugins/dsh-shadow-mind/README.md) | [@winterhuan/dsh-shadow-mind](../../plugins/dsh-shadow-mind/README.md) | Independent bundle with a review runtime, commands, and a read-only review preset |
-| [Short-drama workbench](../../plugins/dsh-short-drama/README.md) | [@winterhuan/dsh-short-drama](../../plugins/dsh-short-drama/README.md) | Private interface experiment; local bundle with a canvas and native conversation |
-| [New API console](../../plugins/dsh-new-api/README.md) | [@winterhuan/dsh-new-api](../../plugins/dsh-new-api/README.md) | Independent bundle; relay-site balances and check-ins |
 | [Superagent](../../plugins/dsh-superagent-prototype/README.md) | [dsh-superagent](../../plugins/dsh-superagent-prototype/README.md) | Research prototype bundle; remote release uses the dedicated `superagent` profile |
 
 <a id="related"></a>

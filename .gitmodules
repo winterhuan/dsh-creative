@@ -22,12 +22,6 @@
 [submodule "plugins/dsh-shadow-mind"]
 	path = plugins/dsh-shadow-mind
 	url = https://github.com/winterhuan/dsh-shadow-mind.git
-[submodule "plugins/dsh-short-drama"]
-	path = plugins/dsh-short-drama
-	url = https://github.com/winterhuan/dsh-short-drama.git
-[submodule "plugins/dsh-new-api"]
-	path = plugins/dsh-new-api
-	url = https://github.com/winterhuan/dsh-new-api.git
 [submodule "plugins/dsh-superagent-prototype"]
 	path = plugins/dsh-superagent-prototype
 	url = https://github.com/winterhuan/dsh-superagent-prototype.git

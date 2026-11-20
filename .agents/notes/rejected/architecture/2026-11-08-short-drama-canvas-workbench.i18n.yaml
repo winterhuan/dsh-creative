@@ -1,10 +1,10 @@
 # Bilingual-pair consistency record for 2026-11-08-short-drama-canvas-workbench.md (docs/i18n/README.md): per heading
 # section, a hash of its English and Chinese blocks outside code blocks and generated regions.
 # After editing either side, bring the other along and re-record with:
-#   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-08-short-drama-canvas-workbench.md
+#   pnpm run verify-translation-pairing --write .agents/notes/rejected/architecture/2026-11-08-short-drama-canvas-workbench.md
 /agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat:
-  en: 0800715e1dbc2215
-  zh: d145e9e83976169c
+  en: 03c98543fe1138f0
+  zh: db631c0d143ffaf2
 /agent-note-short-drama-workbench-with-an-episode-canvas-and-native-ai-chat/problem:
   en: 73d15f1744d9dc52
   zh: 5c8a6972a24be64f

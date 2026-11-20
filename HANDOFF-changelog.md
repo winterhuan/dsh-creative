@@ -2,54 +2,7 @@
 
 本文件从 [HANDOFF.md](HANDOFF.md) 拆出，按时间记录 macOS（`/Users/winter/dsh-creative`）与 WSL（`/home/maiscrm/projects/dsh-creative`）的全局 DSH 安装、profile 与验证环境的变更；主机差异在对应记录中说明。主文档的[第 12 节](HANDOFF.md#12-本机环境变更记录)是索引。
 
-2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)。
-
-2026-11-06 DSH 0.2.2-rc.1 升级：
-
-- 全局 dsh 升到 `0.2.2-rc.1`（`npm install -g @deepseek-ai/dsh@0.2.2-rc.1 --prefix ~/.nvm/versions/node/v22.22.2`），`dsh web` 重启后页面 HTTP 200，5 个 `@winterhuan` 客户端 bundle（writer 113834、student 256989、project-default-mode 18546、skill-viewer 43810、settings-model-options 20353 字节）经 cookie 会话验证均返回 200。
-- 升级前 `dsh` 自更新被中断，`bin/dsh` 指向临时名 `.dsh-We3xC8Eb` 导致命令不可用，已通过上述 npm 安装恢复。
-- Node 版本：nvm 默认 v22.22.2，`/usr/local/bin/node` 软链接曾指向 v22.20.0 覆盖 nvm，已改指向 v24.22.2；全局 dsh 仍装在 v22.22.2 下。
-- 5 个 `@winterhuan` 插件保持 link 到本仓库，未重新 link；`dsh web` 重启即加载 0.2.2-rc.1 构建。
-
-2026-11-07 writer 预设菜单修复：
-
-- 根因：0.2.2-rc.1 上游把 delegation 组的 `tool-subagent-list-agents`/`tool-subagent-list-models` 行收回 `tool-subagent-control` 与 `tool-subagent`（`modelSelectionSettings`→`modelSelection`，新增 `modelDiscovery`），`@deepseek-ai/dsh-tool-subagent-control` 不再导出 `/list-agents`；writer 的 `cordis.patch.yml` 仍带 rc.5 旧行，该行 `never started` 导致 preset-writer 标记 broken，被模式菜单过滤。
-- 修复 `packages/winterhuan/writer/cordis.patch.yml`（链接包运行时直读，无需重编译）并 `dsh-webctl restart`；浏览器验证模式菜单恢复「写作模式」且可选，设置页 Agent 预设不再显示加载失败。本轮 profile 侧仅有此前调试留下的内容一致的备份文件，未改 profile 补丁。
-
-
-2026-11-07 独立插件与市场发布：
-
-- 6 个独立仓库位于 `/Users/winter/dsh-plugins/`，均已推送到 GitHub。writer、student、project-default-mode 发布 `0.1.1`；skill-viewer 与 ui-skill-viewer 发布 `0.1.5-rc.3`；ui-settings-model-options 发布 `0.1.7-rc.3`。每个 Release 附带由对应固定提交打包的编译产物，公开下载后的 SHA-256 与本地包一致。
-- 市场索引为 `https://winterhuan.github.io/dsh-creative/index.json`，由本仓库 `gh-pages` 分支通过 GitHub Pages 提供。HTTP 200、无重定向，DSH 官方格式校验器通过；索引中的包名、版本、DSH 兼容声明、组合包声明与公开 Git 提交的 manifest 一致。5 个组合包均固定 Git 提交与包目录，兼容 DSH `0.2.2-rc.1`；第 6 个仓库是随技能查看器打包的客户端，不单列市场条目。
-- 6 个仓库各自的 typecheck、build 和测试全部通过，共 557 项；12 对根及包 README 的双语结构、记录和本地链接通过。README 提供市场地址与固定提交安装命令，已提交并推送。
-- 隔离 DSH profile 在真实浏览器成功添加索引，显示 5 个组合包及对应已安装版本。项目默认模式经「发现 → 安装 → 立即启用」重新安装后显示 1 个组件运行中；确认框中的仓库、提交和目录与索引一致。未调用真实模型，未修改用户日常使用的 profile。
-- 发布结果、校验值、日志和浏览器截图位于 `/Users/winter/dsh-plugins/market-checks/`，汇总为 `final-publication-results.json`；市场安装证据为 `market-install-confirmation.txt`、`market-install-success.txt` 和 `market-install-enabled.txt`。本轮未提交本仓库先前的目录迁移和写作模式修复改动。
-
-
-2026-11-07 插件版本统一：
-
-- 6 个独立仓库、本仓库的现役插件清单、技能查看器随包客户端统一为 `0.1.8`。技能查看器的 Git 客户端依赖、客户端开发依赖的 Host 发布包及对应锁文件同步；DSH 兼容声明保持 `0.2.2-rc.1`。
-- 6 个仓库均发布 `v0.1.8` 并设为最新 Release。市场的 5 个组合包均推荐 `0.1.8`，README 安装命令指向该版本的固定 Git 提交；旧标签和 Release 保留为历史版本。
-- 6 个独立仓库及本仓库的 typecheck、build、557 项测试通过；12 对 README 结构、记录和链接通过。发布与校验材料在 `/Users/winter/dsh-plugins/version-0.1.8/`。
-- 隔离 profile 的「发现」页显示 5 项均为 `0.1.8`，旧安装均标记「有新版本」。技能查看器从旧版升级后，Host 与随包客户端清单均为 `0.1.8`，浏览器显示 2 个组件运行中；未修改日常使用的 profile。线上索引 HTTP 200、无重定向，6 个最新 Release 的标签和附件校验值全部核对通过。
-
-2026-11-07 本机插件切换为远程安装：
-
-- 用官方 `dsh plugin --profile <name> add <固定 Git 地址>` 替换 `creative`、`headless`、`student`、`web` 中已有的 `@winterhuan/*` 本地链接。4 个 profile 的全部目标包均为 `0.1.8`，安装地址与市场索引一致，解析路径不再指向本仓库；`web` 的技能查看器随包客户端也为 `0.1.8`。
-- 安装前的 profile 配置、锁文件和插件管理记录备份在 `/Users/winter/.dsh/backups/remote-plugins-20261107-202147`（不含 `node_modules`）。`creative`、`headless`、`student` 的配置补丁 SHA-256 保持一致；`web` 的补丁仅追加市场索引配置，原内容逐字节保留。历史备份 profile 保留。`headless` 旧的直接依赖 `@deepseek-ai/dsh-agent-preset-registry@0.2.1-rc.5` 被当前 DSH 拒绝加载，已对齐到 `0.2.2-rc.1`；其他非目标依赖保持原值。
-- `headless` 的首次 pnpm 安装报告完成后进程未退出，终止该进程并重跑官方命令后正常退出。最终 4 个 profile 的配置合成通过；安装日志与验证结果在 `/Users/winter/dsh-plugins/local-remote-install-20261107-202147/`。
-- `dsh-webctl restart` 后，在真实浏览器逐项确认 5 个组合包均显示远程 Git 来源、`v0.1.8` 且全部组件运行中（writer 2、student 2、project-default-mode 1、skill-viewer 2、model-options 1）。日常 `web` 的「发现」页已添加 `https://winterhuan.github.io/dsh-creative/index.json`。安装说明已改为日常使用远程版本、本地链接只用于开发 profile。
-
-2026-11-07 插件市场详情连接修复：
-
-- 浏览器复现「发现」页的「无法连接到详细介绍的来源」；已安装页读取随包 README 正常。市场详情访问 `raw.githubusercontent.com`，本机直连返回 `ECONNRESET`，经已有的 `http://127.0.0.1:10808` 代理读取同一 README 返回 HTTP 200。launchd 的 Web 服务仅设置 PATH 和 HOME，没有继承终端代理。
-- 按 DSH 官方代理指南创建 `~/.dsh/.env`（权限 0600），设置 HTTP_PROXY、HTTPS_PROXY 及本机直连的 NO_PROXY；重启 Web 后，真实浏览器逐项确认写作、学生、技能查看器、项目默认模式、模型设置的市场详情正文均加载成功。插件发布内容与版本 `0.1.8` 保持不变。复现和验证材料位于 `/Users/winter/dsh-plugins/detail-fix-20261107/`。
-
-2026-11-07 技能查看器仓库合并：
-
-- 市场发布与本机安装迁移到合并后的 [dsh-skills-viewer](https://github.com/winterhuan/dsh-skills-viewer)，版本 `0.1.8`，保留原仓库历史及用户配置。
-- 构建、147 项测试、单次远程安装及浏览器验收通过。备份与证据：`/Users/winter/dsh-plugins/merge-skills-viewer-20261107-204726/`。两个旧仓库已删除，GitHub 均返回 404；合并后的仓库保留。
-
+2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
 2026-11-08／09 Writer 远程更新：
 
@@ -213,3 +166,31 @@
 原始会话记录与书稿均保留；两端各一个原有空会话追加模式选择记录并刷新缓存，本机另追加会话初始化结束记录。未发送模型请求；WSL既有模型列表认证失败仍存在。临时代理与验收隧道已关闭。
 
 本机备份及浏览器证据：`~/.dsh/backups/writer-oh-story-20261120-065322-sg1o_12d/`；WSL备份：`~/.dsh/backups/writer-oh-story-20261120-070756-4u23e7vk/`。其中 `evidence/` 保留配置、安装文件和数据差异核验。
+
+<a id="new-api-removal"></a>
+
+2026-11-20：WSL 日常 `web` profile 已卸载 `@winterhuan/dsh-new-api`，服务重新启动并通过 HTTP 就绪检查。浏览器确认已安装列表和设置菜单均无 New API 管理台，原接口返回与不存在的接口相同的响应；其余四个插件保持安装，43 个其他 profile 配置及用户补丁文件的校验值不变。本轮未删除业务数据、GitHub 仓库或历史 Release。
+
+父仓库已移除 `plugins/dsh-new-api` 子模块登记和当前集成文档入口。市场 `gh-pages` 已发布下架改动，公开索引回读为 8 个条目，不含该插件，其余条目不变。
+
+<a id="short-drama-experiment-removal"></a>
+
+2026-11-20：父仓库移除 `plugins/dsh-short-drama` 独立界面试验的子模块登记和当前文档入口，短剧工作台统一由 Oh Story fork 维护。[独立插件提案](.agents/notes/rejected/architecture/2026-11-08-short-drama-canvas-workbench.zh.md)转为拒绝记录，保留原提案及未实现范围，不将媒体运行时设想记为已交付能力。远程仓库与 Git 历史保留。本机日常 profile 和市场均未安装该插件，本轮未修改安装配置或重启服务。
+
+<a id="workbench-provider-wsl"></a>
+
+2026-11-20：WSL 的 `media`、`student`、`superagent`、`antfarm` profile 补入 `me` provider，复用 `web` 已有的 `https://winterhuan-workbench.hf.space/v1`、`ME_API_KEY` 引用与四项文字模型配置。`web`、`writer` 保留已有配置，六个服务均通过实时 provider 注册回读；原默认模型和其他 provider 保留。配置自动加载，无需重启。
+
+Media Desk 的 HTTP 生图设置使用相同网关、`loomy/qwen-image-3.0-pro`、`1024x1024` 与 Base64 返回。直接调用曾返回有效 PNG；插件随后两次调用均收到 Loomy 上游账号暂不支持图片生成的 406，另测 Seedream 路由也是 406，MiniMax 路由返回 502 无图片。已保存配置不代表生图服务稳定可用。备份、图片与验证证据位于 `~/.dsh/backups/workbench-provider-20261120-110804/`。
+
+<a id="plugins-sync-20261120"></a>
+
+2026-11-20 源码、市场与 WSL 本机安装同步：
+
+- 发布 Student `0.2.5`、模型设置增强与技能查看器 `0.1.9`、Antfarm `0.3.4`、Media Desk `2.7.0-winter.11`；各仓库源码、预构建包、新标签与 GitHub Release 已推送，公开附件 SHA-256 校验一致。Media Desk 分页测试显式使用 120 秒内部等待，完整并发测试通过。
+- 市场索引已部署至 GitHub Pages，保留历史版本并补入 Shadow Mind `0.2.1`，共 9 个插件。9 个公开固定提交的包名、版本及组合声明通过校验，公开索引与发布索引完全一致。
+- WSL 的 `web`、`student`、`antfarm`、`media` 从固定远程 Git 提交更新并重启，隔离安装和日常真实浏览器均验证版本、运行组件及无页面错误；隔离 Media Desk 另验证文章、关闭自动生图、中英文与明暗主题。全部 9 个插件的运行文件与发布内容一致。Oh Story 沿用 `0.1.28`，其发布清单核对源码提交与预构建提交；Writer、Superagent 未重启，macOS 与云端未更新。
+- 全仓类型检查与构建通过；Media Desk 的 `typecheck` 仅为 JavaScript 语法检查。各插件及父仓库测试合计 2,349 项通过；Media Desk 首次完整测试超时后，修复内部等待预算并完整重跑 208 项通过。
+- 33 个配置文件字节不变，profile 清单仅变更目标依赖来源。304 个数据文件中 288 个字节不变，5 个会话仅追加且原字节完整保留，其余 11 个为缓存、所有权锁、SQLite 与启动状态；25 篇作品的中英文共 50 份正文及引用快照哈希一致，Antfarm 数据库完整性通过。未调用付费模型，Superagent 待配置仓库和 Shadow Mind 空职责目录保持现状。
+
+发布包、检查日志、浏览器截图与完整性证据位于 `.artifacts/plugin-sync-20261120/`，最终比对见 `installation-verification.json`。

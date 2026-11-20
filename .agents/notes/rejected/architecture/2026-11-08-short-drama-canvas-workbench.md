@@ -1,6 +1,6 @@
 # Agent Note: Short-drama workbench with an episode canvas and native AI chat
 
-Status: proposed
+Status: rejected — Use Oh Story for short-drama work; the interface prototype and unimplemented media-runtime plans do not justify a separate plugin.
 
 English | [中文](2026-11-08-short-drama-canvas-workbench.zh.md)
 
