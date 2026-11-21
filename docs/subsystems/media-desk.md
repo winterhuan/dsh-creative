@@ -27,7 +27,7 @@ The Host accepts creation attempts and validated business operations. Native tur
 <a id="acceptance"></a>
 ## Content and acceptance
 
-Registered Notes files own current work text, collected sources, writing preferences and accepted media. Media Desk owns references, receipts, production metadata and raw metrics. Source material remains distinct from the current work. Session evidence establishes native execution; a durable business receipt establishes acceptance.
+Registered Notes files own current work text, collected sources, writing preferences and accepted media. Media Desk owns references, receipts, production metadata and raw metrics. Source material remains distinct from the current work. Native file tools own ordinary Agent edits; a read-only validator checks their format, and Store reads adopt valid changes. Session evidence establishes native execution; a durable business receipt establishes structured-stage acceptance.
 
 The Host holds cooperative ownership of its local data directory and saved Notes roots. Nonparticipating editors require byte checks and retained conflict versions. File publication and Store acceptance use a recovery journal; they are separate operations. Wiki knowledge maintenance follows the effective skill and workspace instructions, while accepted creative material does not acquire knowledge authority from its location.
 

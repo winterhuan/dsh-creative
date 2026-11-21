@@ -4,6 +4,14 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+<a id="media-desk-direct-files"></a>
+
+2026-11-21：Media Desk [v2.7.0-winter.12](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.12) 已发布并更新公开市场，固定提交为 `837ee85afb4a8827e850e2808989177b5bf5d571`。日常改稿由 Agent 原生文件工具直接写入，`media_desk_validate` 只校验已保存文件的格式和登记身份。直接编辑立即生效，失败轮次不会回滚，也不生成业务撤销条目；结构化成稿与媒体任务沿用原有流程。
+
+macOS 独立 `media` profile 已从远程固定提交安装，3085 重启与浏览器硬刷新验收通过，五个工作台视图入口及原有作品正常显示。隔离远程安装和本机安装均核对了 62 个运行文件与发布提交一致。原有 179 个 Notes 文件逐字节保留，配置未变，会话日志保留原始字节并追加一条 `session/end-seed`。启动恢复清理了一条已有回执的停机日志，并更新生产完成时间与回执。语法检查、客户端构建、210 项插件测试、16 项文档检查与 3 项规范检查通过。
+
+Release 包 SHA-256：`f77a724f4d838066b19861a7b792052056d488d83ff6bae7565e131e0b2fe064`，公开下载校验一致。配置、数据备份与验收证据位于 `~/.dsh/backups/media-desk-winter12-20261121-7_t_q995/`。
+
 2026-11-21：Oh Story fork [v0.1.31](https://github.com/winterhuan/oh-story-dsh/tree/v0.1.31) 改为源码仓库固定 Tag 安装，版本为 `@winterhuan/oh-story-dsh@0.1.31`；主线提交与标签均为 `bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351`，市场固定相同提交的 `packages/dsh-plugin`。隔离 `release-check` profile 远程安装、配置回读、真实 DSH Web 启动和认证后 HTML 返回通过。WSL 日常 `writer` profile 已更新并重启 3086，配置回读、服务就绪和 Web HTML 检查通过；macOS profile 未更新。安装前配置备份位于 `~/.dsh/backups/writer-release-0.1.31-20261121-0928/`。
 
 2026-11-20 Shadow Mind `0.2.2`／`0.2.3` 发布与远程安装：

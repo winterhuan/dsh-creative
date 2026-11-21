@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-11-21-media-desk-direct-file-edits.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-11-21-media-desk-direct-file-edits.md
+/agent-note-media-desk-ordinary-edits-use-native-file-tools:
+  en: cd485eb08887a832
+  zh: cb5f6aee4d48d341
+/agent-note-media-desk-ordinary-edits-use-native-file-tools/problem:
+  en: 84e7dc2b8cfeee6a
+  zh: 01bfb6c412f98fc4
+/agent-note-media-desk-ordinary-edits-use-native-file-tools/decision:
+  en: 16fd0fe743b10db3
+  zh: b59fe1a010aaae63
+/agent-note-media-desk-ordinary-edits-use-native-file-tools/alternatives-considered:
+  en: 5a542f9163248b0d
+  zh: 264016abc56028ec
+/agent-note-media-desk-ordinary-edits-use-native-file-tools/consequences:
+  en: 438938ad683c35c5
+  zh: 2f6cdd21351c4bc2

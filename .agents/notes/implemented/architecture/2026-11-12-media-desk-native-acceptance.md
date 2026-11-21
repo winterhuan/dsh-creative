@@ -6,11 +6,11 @@ English | [中文](2026-11-12-media-desk-native-acceptance.zh.md)
 
 ## Problem
 
-An assistant can submit a plausible candidate before its native turn fails or is stopped. A file can also be published before its metadata receipt is durable. Treating assistant prose, idle status or a copied Markdown file as accepted work would let uncertain results overwrite newer edits and restart external effects after a crash.
+An assistant can submit a plausible candidate before its native turn fails or is stopped. A file can also be published before its metadata receipt is durable. Treating assistant prose, idle status or a copied Markdown file as an accepted structured stage would let uncertain results overwrite newer edits and restart external effects after a crash.
 
 ## Decision
 
-DSH owns work/global Sessions and their native input, tool, approval and question history. Media Desk owns business admission and acceptance. Structured plan, article, style and rule candidates require the actual associated Agent, matched consumed input, successful persisted turn end, original Notes version and a durable acceptance receipt. Candidate storage remains private and does not select current text. Ordinary business edits return their own immediate validated receipts.
+DSH owns work/global Sessions and their native input, tool, approval and question history. Media Desk owns business admission and acceptance. Structured plan, article, style and rule candidates require the actual associated Agent, matched consumed input, successful persisted turn end, original Notes version and a durable acceptance receipt. Candidate storage remains private and does not select current text. Ordinary business edits return their own immediate validated receipts. [Direct file editing](2026-11-21-media-desk-direct-file-edits.md) owns ordinary Agent text changes, which do not require a business receipt or successful turn end.
 
 Notes contains the sole editable work, material and preference text and the single accepted file for each media identity. Fixed AI originals, preference versions, source ideas and recovery snapshots are historical records. Store retains references, language selection, structured plans, operational state and raw metrics. Stable media identities remain resolvable after a redraw; exports use fresh folders and a content/media manifest.
 
