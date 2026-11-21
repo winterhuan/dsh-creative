@@ -4,6 +4,8 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+2026-11-21：Oh Story fork [v0.1.31](https://github.com/winterhuan/oh-story-dsh/tree/v0.1.31) 改为源码仓库固定 Tag 安装，版本为 `@winterhuan/oh-story-dsh@0.1.31`；主线提交与标签均为 `bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351`，市场固定相同提交的 `packages/dsh-plugin`。隔离 `release-check` profile 远程安装、配置回读、真实 DSH Web 启动和认证后 HTML 返回通过。WSL 日常 `writer` profile 已更新并重启 3086，配置回读、服务就绪和 Web HTML 检查通过；macOS profile 未更新。安装前配置备份位于 `~/.dsh/backups/writer-release-0.1.31-20261121-0928/`。
+
 2026-11-20 Shadow Mind `0.2.2`／`0.2.3` 发布与远程安装：
 
 - [v0.2.2](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.2) 先发布原生审查工作台，[v0.2.3](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.3) 随后补齐导出 API JSDoc 并修正随机种子回归测试；市场最新版本固定到 `17aa2e79f095e5827baea9118185e2653e29f4e6`。

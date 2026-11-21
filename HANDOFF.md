@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-20。
+最后更新：2026-11-21。
 
 本仓库统一管理 9 个独立 DSH 插件仓库、开发检查和交接文档，均已有发布包；Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-9 个插件仓库包含 10 个源码包。`dsh-student` 发布版本为 `0.2.5`，`oh-story-dsh` fork 为 `0.1.28`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 发布版本为 `0.2.3`，技能查看器与模型设置增强为 `0.1.9`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.4`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+9 个插件仓库包含 10 个源码包。`dsh-student` 发布版本为 `0.2.5`，`oh-story-dsh` fork 为 `0.1.31`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 发布版本为 `0.2.3`，技能查看器与模型设置增强为 `0.1.9`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.4`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -104,7 +104,7 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 profile 使用 GitHub 远程发布包。macOS 和 Linux／WSL 的独立 `writer` profile 均安装 `@winterhuan/oh-story-dsh@0.1.28`，固定来源为 `github:winterhuan/oh-story-dsh#a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d`；两端均由 `dsh-writer` 在端口 `3086` 启动。日常 `web` 已安装 `@winterhuan/dsh-shadow-mind@0.2.3`，固定来源为 `github:winterhuan/dsh-shadow-mind#17aa2e79f095e5827baea9118185e2653e29f4e6`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包。WSL 的独立 `writer` profile 已安装 `@winterhuan/oh-story-dsh@0.1.31`，固定来源为 `github:winterhuan/oh-story-dsh#bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351&path:/packages/dsh-plugin`；macOS 的 `writer` profile 仍为 `0.1.28`（`a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d`）。两端均由 `dsh-writer` 在端口 `3086` 启动。日常 `web` 已安装 `@winterhuan/dsh-shadow-mind@0.2.3`，固定来源为 `github:winterhuan/dsh-shadow-mind#17aa2e79f095e5827baea9118185e2653e29f4e6`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
@@ -278,3 +278,5 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 2026-11-17：Writer [v0.2.3](https://github.com/winterhuan/dsh-writer/releases/tag/v0.2.3) 已合并 `main`、发布并更新市场，日常 `web` 从 `v0.2.1` 升级到该远程标签（`headless` 仍为 0.2.1），已合并的 `fix/writer-skip-unrecognized` 本地与远程分支删除。扫描写作项目时跳过不可读或缺少长/短篇标记的候选目录。类型检查、构建、242 项测试与 16 项文档检查通过；用户 `gptImageBaseUrl` 补丁与其他依赖保持不变。Release 包 SHA-256：`30d76416423413c77a2640b5f2adf3c3e58e685c396f5b23cd758e00f50aff41`；备份：`~/.dsh/backups/writer-release-0.2.3-20261117-220544/`。重启后浏览器确认工作台与 `novels` 工作区加载正常。
 
 2026-11-19：Oh Story fork [v0.1.28](https://github.com/winterhuan/oh-story-dsh/releases/tag/v0.1.28) 已通过工作流发布，包名为 `@winterhuan/oh-story-dsh`；源码标签固定在已通过四项主线 CI 的提交，市场使用从公开 tarball 提取的 [dsh-v0.1.28](https://github.com/winterhuan/oh-story-dsh/tree/dsh-v0.1.28) 预构建 Git 包，替换旧 Writer 条目。271 项单元测试、类型检查、构建和三条宿主的打包浏览器验收通过；隔离 `DSH_HOME` 完成固定 Git 提交远程安装、真实 DSH 加载、13 个小说技能及客户端模块核验。发布包 SHA-256：`0b16963ac8150186c6838bce92707a19ad67baf97bee1f5bba2aad607483d742`。证据位于 `.artifacts/writer-replacement-m5dPwI/`。
+
+2026-11-21：Oh Story fork [v0.1.31](https://github.com/winterhuan/oh-story-dsh/tree/v0.1.31) 改为源码仓库固定 Tag 安装，版本为 `@winterhuan/oh-story-dsh@0.1.31`；主线提交与标签均为 `bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351`，市场固定相同提交的 `packages/dsh-plugin`。隔离 `release-check` profile 远程安装、配置回读、真实 DSH Web 启动和认证后 HTML 返回通过。WSL 日常 `writer` profile 已更新并重启 3086，配置回读、服务就绪和 Web HTML 检查通过；macOS profile 未更新。安装前配置备份位于 `~/.dsh/backups/writer-release-0.1.31-20261121-0928/`。
