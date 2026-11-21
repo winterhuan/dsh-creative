@@ -22,9 +22,23 @@
       "author": "winterhuan",
       "homepage": "https://github.com/winterhuan/oh-story-dsh#readme",
       "repository": {
-        "url": "https://github.com/winterhuan/oh-story-dsh"
+        "url": "https://github.com/winterhuan/oh-story-dsh",
+        "directory": "packages/dsh-plugin"
       },
       "versions": [
+        {
+          "version": "0.1.31",
+          "publishTimestamp": 1795224445,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/oh-story-dsh",
+            "commit": "bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351",
+            "path": "packages/dsh-plugin"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
         {
           "version": "0.1.29",
           "publishTimestamp": 1795184317,
