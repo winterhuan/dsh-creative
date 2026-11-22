@@ -393,6 +393,18 @@
       },
       "versions": [
         {
+          "version": "2.7.0-winter.14",
+          "publishTimestamp": 1795356100,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-media-desk",
+            "commit": "9d6abde17df431a8844a45098c88635ed2c33a3c"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.1"
+          }
+        },
+        {
           "version": "2.7.0-winter.12",
           "publishTimestamp": 1795260696,
           "source": {
