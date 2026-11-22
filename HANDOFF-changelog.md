@@ -4,6 +4,14 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+<a id="media-desk-skill-release"></a>
+
+2026-11-22：Media Desk [v2.7.0-winter.14](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.14) 已发布并更新公开市场，固定提交为 `9d6abde17df431a8844a45098c88635ed2c33a3c`。共用业务 skill 组织创作与规则学习，Agent 直接修改 Notes；同包 CLI 只读取与校验。生图使用独立全局 skill，配置沿用 `~/.config/image-generation/.env`。有效规则文件由插件登记为待审，用户启用后供下一次制作固定版本并逐条自检。
+
+隔离远程安装验证了真实 DSH Web、86 个运行文件、npm CLI 符号链接、离线提案读取和插件登记启用。macOS 日常 `media` profile 已从远程固定提交安装，3085 重启与浏览器硬刷新通过；两个全局 skill 和 `~/.local/bin/media-desk` 指向该安装包。209 个 Notes 文件逐字节保留，4 件作品、3 条规则、原生请求记录和 profile 用户补丁保持不变。启动恢复清理一条已有受理回执的保存日志，更新三件作品的完成时间，Session 保留原字节并追加恢复数据；旧助手模型设置被移除，原生会话继续使用自己的模型。
+
+229 项完整插件测试、语法检查、构建、16 项文档与 3 项规范检查通过；远程验收发现 `.13` 的 npm 符号链接入口未执行，`.14` 修复后另有 8 项针对性检查通过。`.13` Release 已注明使用修订版，标签未覆盖。公开包 SHA-256 为 `5f343c5fffd7ec641ea50d39483f9f0471faf722f1428f7761a02f1cca3f10d2`，下载校验一致。本轮未执行付费生图。备份与证据：`/Users/winter/.dsh/backups/media-desk-winter14-20261122-8nx0e9wp/`。
+
 <a id="media-desk-direct-files"></a>
 
 2026-11-21：Media Desk [v2.7.0-winter.12](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.12) 已发布并更新公开市场，固定提交为 `837ee85afb4a8827e850e2808989177b5bf5d571`。日常改稿由 Agent 原生文件工具直接写入，`media_desk_validate` 只校验已保存文件的格式和登记身份。直接编辑立即生效，失败轮次不会回滚，也不生成业务撤销条目；结构化成稿与媒体任务沿用原有流程。

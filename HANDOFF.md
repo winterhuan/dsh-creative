@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-21。
+最后更新：2026-11-22。
 
 本仓库统一管理 9 个独立 DSH 插件仓库、开发检查和交接文档，均已有发布包；Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -62,7 +62,7 @@ dsh-creative/
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
 4. Student `0.2.5` 与项目默认模式 `0.1.9` 单独发布；Oh Story fork 保留自身发布流程和版本；其余原有 4 个仓库的 5 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
-Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.12`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
+Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.14`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
 ## 3. 与 DSH 的集成方式
 
@@ -130,7 +130,7 @@ WSL 日常 `student` 从 `v0.2.5` 对应的固定 Git 提交安装 `@winterhuan/
 
 WSL 独立 `media` profile 安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.11`，来源为 `github:winterhuan/dsh-media-desk#44973f658cb8ff21c29729a6eb2e4ef88e5d6ea9`。原生会话和工作区登记保存在 `~/.dsh/profiles/media/data/`，业务数据沿用 `~/.dsh/media-desk/`，作品文件沿用 `~/wiki/notes/`；日常 `web` 不加载 Media Desk。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)；复盘读隔离、单篇刷新和本机升级验收见 [Media Desk 发布记录](HANDOFF-changelog.md#media-desk-winter10)。
 
-macOS 独立 `media` profile 已从 `github:winterhuan/dsh-media-desk#837ee85afb4a8827e850e2808989177b5bf5d571` 安装 `2.7.0-winter.12`，服务使用端口 `3085`。日常改稿由原生 Agent 直接编辑 Notes，专用工具只作格式与身份校验；发布、数据备份与本机验收见 [Media Desk 直接文件编辑](HANDOFF-changelog.md#media-desk-direct-files)。
+macOS 独立 `media` profile 已从 `github:winterhuan/dsh-media-desk#9d6abde17df431a8844a45098c88635ed2c33a3c` 安装 `2.7.0-winter.14`，服务使用端口 `3085`。全局 Media Desk 与生图 skill、只读 CLI 使用同一远程安装包；发布、数据备份与本机验收见 [Media Desk skill 发布](HANDOFF-changelog.md#media-desk-skill-release)。
 
 开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 Oh Story fork 为例：
 
