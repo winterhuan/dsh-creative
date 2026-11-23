@@ -8,7 +8,7 @@ English | [中文](student.zh.md)
 
 ## Summary
 
-Continue a learner's current question, preserve original answers and use verified evidence for targeted practice and review. Parents confirm the school range; learners keep their identity across terms. The workbench keeps Learning and Parent entries beside native DSH tutoring. This page defines ownership and trust boundaries; the package README owns use and configuration.
+Continue a learner's current question, preserve original answers and use verified evidence for targeted practice and review. Parents confirm the learning range; learners keep their identity across terms. The workbench keeps Learning and Parent entries beside native DSH tutoring. This page defines ownership and trust boundaries; the package README owns use and configuration.
 
 ## Table of Contents
 
@@ -38,7 +38,7 @@ The supporting workbench provides Learning and Parent entries, drafts, attachmen
 <a id="evidence"></a>
 ## Materials and learner evidence
 
-A learner retains a stable identity across terms. Learning blocks, classroom instances, questions and responses retain distinct owners. Parents confirm material identities and school scope; a shipped capability does not expand that scope automatically. Compatible earlier evidence is referenced under its original term and response identity, retaining review dates and first mastery; a broader number range, vocabulary set or modality requires new evidence. Original answers are not copied into the next term.
+A learner retains a stable identity across terms. Learning blocks, classroom instances, questions and responses retain distinct owners. Parents confirm the learning range once; foundation learning can proceed without a confirmed textbook, while school learning also follows confirmed school progress. A shipped capability does not expand that scope automatically. Compatible earlier evidence is referenced under its original term and response identity, retaining review dates and first mastery; a broader number range, vocabulary set or modality requires new evidence. Original answers are not copied into the next term.
 
 For grade two, first term, the skill uses bundled Chinese or mathematics pages when no textbook is supplied for that subject; user materials take priority. Defaults supply learning content without creating a school course or parent confirmation. The [package README](../../plugins/dsh-student/packages/winterhuan/student/README.md#use-default-textbooks) owns edition details and reading instructions.
 
@@ -48,7 +48,7 @@ Capabilities and question families separate assessable outcomes from textbook un
 
 The protected Host transport reads authorized OpenMAIC submissions, source snapshots and grading and binds them to the original learner and activity. Access codes alone do not authorize reading submissions. The Host owns credentials, browser sign-in and transport metadata; the agent writes formal academic facts and advances a classroom checkpoint only after read-only validation and independent consumption. Model-written source labels and hashes do not authenticate evidence. Native answers also require an independently captured matching owner; earlier native Sessions require authorization before their history is read.
 
-The workbench and native tutor use one current action. An unfinished question or pending assessment takes priority, followed by current evidence gaps, bounded review and new learning inside the confirmed range. A ready classroom opens from that action only when its learner, term, block, goal, scope and current official question binding match; a local supplement continues locally. Generation and unknown submissions resume their original job. Supplemental checks add at most three new questions, and a review round uses at most two question families before new learning.
+The workbench and native tutor use one current action. An unfinished question or pending assessment takes priority, followed by current evidence gaps, bounded review and new learning inside the confirmed range. A ready classroom opens from that action only when its learner, term, block, goal, scope and current official question binding match; a local supplement continues locally. Generation and unknown submissions resume their original job. Supplemental checks add at most three new questions, and a review round enters at most two question families. Saved round facts retain those limits across errors, pauses, refreshes and restarts; further review requires an explicit request or intervening new-goal learning.
 
 Workspace reads apply the calling Session's filesystem authorization, validate file membership and observed versions, and independently refresh projections after direct edits. Native Remote methods serve these reads and explicit manual saves. The UI sends learner answers into the native conversation and cannot post assessments or stars. Invalid references remain visible as issues; referenced classrooms survive bounded lesson-log retention. The [package README](../../plugins/dsh-student/packages/winterhuan/student/README.md) owns file layout, recovery and source-verification details.
 
