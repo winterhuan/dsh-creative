@@ -1,0 +1,52 @@
+# Bilingual-pair consistency record for 2026-11-22-student-openmaic-learning-loop.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-11-22-student-openmaic-learning-loop.md
+/agent-note-student-learning-follows-official-openmaic:
+  en: 0778149dd1017a08
+  zh: 1ef59ffe79ce5f4a
+/agent-note-student-learning-follows-official-openmaic/problem:
+  en: e8a96b7fb80a061d
+  zh: 71452e3aa3f42c9a
+/agent-note-student-learning-follows-official-openmaic/problem/official-preview-evidence:
+  en: 0da7075f45d1b60b
+  zh: 204f8896d9d86d20
+/agent-note-student-learning-follows-official-openmaic/proposal:
+  en: d618d3abe196bcd1
+  zh: 56262f45881e3718
+/agent-note-student-learning-follows-official-openmaic/proposal/defining-and-selecting-learning-goals:
+  en: 725f0abab4ad780a
+  zh: cc35f7f5b329f3c6
+/agent-note-student-learning-follows-official-openmaic/proposal/simplified-user-design:
+  en: 817b3d29bdecadc0
+  zh: c3065c57f9816eb6
+/agent-note-student-learning-follows-official-openmaic/proposal/source-exercises-and-existing-data:
+  en: 6434902efa683486
+  zh: 7abf409911dd0560
+/agent-note-student-learning-follows-official-openmaic/proposal/learning-loop:
+  en: 4c4a5e16bed46c12
+  zh: f5dad7c96bcbbbd3
+/agent-note-student-learning-follows-official-openmaic/proposal/official-plugin-composition:
+  en: bdf5218349aeb91d
+  zh: 2a738ab4f14d37b7
+/agent-note-student-learning-follows-official-openmaic/proposal/required-bidirectional-learning-feedback:
+  en: eb2a3df750ae741c
+  zh: 383ccf1b56cffa5c
+/agent-note-student-learning-follows-official-openmaic/proposal/minimal-data-and-feedback:
+  en: f7c98bdd1aa5f655
+  zh: 73af678559ea2617
+/agent-note-student-learning-follows-official-openmaic/proposal/cross-term-continuity:
+  en: 71c094150a19d257
+  zh: 4d17c0ea829461f6
+/agent-note-student-learning-follows-official-openmaic/proposal/phased-implementation-checklist:
+  en: 7554898af8c3e739
+  zh: 9abc30b01a0344f9
+/agent-note-student-learning-follows-official-openmaic/alternatives-considered:
+  en: 8928f9dc3d09b546
+  zh: 3df953a92acff553
+/agent-note-student-learning-follows-official-openmaic/acceptance-criteria:
+  en: 354f7d5130795711
+  zh: 4416c6d657f93d85
+/agent-note-student-learning-follows-official-openmaic/risks:
+  en: a0faae56bb46bcdb
+  zh: 531a0b9393aa6a2a

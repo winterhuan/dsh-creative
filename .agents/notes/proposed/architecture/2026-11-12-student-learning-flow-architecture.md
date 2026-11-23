@@ -255,6 +255,8 @@ Keep generation, polling and retry in the tutor shell with the existing cookie j
 
 A classroom URL or ready lesson is not proof that the learner attended or understood it. Post-class questions use the same publication, answer and assessment path. Do not introduce a Host proxy, embedded player or background classroom runtime as part of this proposal.
 
+The [OpenMAIC learning-loop proposal](../feature/2026-11-22-student-openmaic-learning-loop.md) makes the official plugin the classroom core, adding term/lesson associations, recoverable checks and dated objective revisits. Ordinary conversation retains the native file-editing/evidence rules here, with a new machine-import entry for authorized classroom facts to connect bidirectional feedback. It also proposes replacing the primary OpenMAIC shell path with official tools, folds parallel navigation into Learning and Parent entries, and merges old banks into one source exercise per family while retaining actual response history. This proposal continues to own the remaining design.
+
 ### Data migration and archive
 
 Introduce student state format v2 for term identity and stable content/evidence bindings. This is a plugin file-format change, not a DSH Session-format change. Read v1 without modifying it. Before conversion, the agent in chat preserves and verifies an original-byte backup and source versions, then directly authors new official files and runs the CLI. The application validates current files; explicit application saves check versions. Changed sources or incomplete results stop clearly and report recoverable partial outcomes.

@@ -23,6 +23,7 @@ const PATTERNS = [
   '.agents/notes/**/*.md',
   'docs/**/*.md',
   'plugins/*/*.md',
+  'plugins/*/docs/**/*.md',
   'plugins/*/packages/*/*/*.md',
   'snapshots/**/system-prompt.expected.md',
   'packages/**/system-prompt.expected.md',

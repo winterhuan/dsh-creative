@@ -7,6 +7,8 @@ import { packageReadmes, packageReadmeSummaryErrors } from '../scripts/verify-pa
 import { clientUiSourceFiles, findUiI18nViolations } from '../scripts/verify-client-ui-i18n.ts'
 import { collectExportJsdocViolations } from '../scripts/verify-export-jsdoc.ts'
 import { scanDocReferences } from '../scripts/verify-doc-refs.ts'
+import { markdownLinkSourcePaths } from '../scripts/verify-md-links.ts'
+import { isTranslationScopeFile } from '../scripts/translation-pairing.ts'
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), 'dsh-plugin-discovery-'))
@@ -171,4 +173,15 @@ it('resolves submodule-owned documentation without accepting missing references'
     ['plugins/other/src/index.ts', 'docs/deployment.md'],
     ['plugins/root/src/index.ts', 'docs/missing.md'],
   ])
+})
+
+it('checks plugin docs in both languages while excluding upstream and the imported fork', () => {
+  const { root, write } = fixture()
+  const files = ['plugins/local/docs/guide.md', 'plugins/local/docs/guide.zh.md']
+  for (const file of [...files, 'plugins/local/upstream/docs/guide.md', 'plugins/oh-story-dsh/docs/guide.md']) {
+    write(file, '# Guide\n')
+  }
+  expect(markdownLinkSourcePaths(root)).toEqual(files)
+  expect(files.map(isTranslationScopeFile)).toEqual([true, true])
+  expect(isTranslationScopeFile('plugins/local/upstream/docs/guide.md')).toBe(false)
 })

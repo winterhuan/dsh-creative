@@ -19,6 +19,8 @@ SERVICES = {
     'media': ('dsh-media', 3085),
     'writer': ('dsh-writer', 3086),
 }
+if (DSH_HOME / 'profiles/story/package.json').is_file():
+    SERVICES['story'] = ('dsh-story', 3081)
 os.environ['PATH'] = ':'.join([
     str(HOME / '.local/bin'),
     str(DSH_HOME / 'bin'),

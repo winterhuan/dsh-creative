@@ -11,7 +11,7 @@ def main():
     source = Path(__file__).resolve().parent
     root = Path.home() / '.dsh'
     local_bin = Path.home() / '.local/bin'
-    controllers = ['dsh-webctl', 'dsh-antfarm', 'dsh-media', 'dsh-student', 'dsh-superagent', 'dsh-writer', 'dsh-service']
+    controllers = ['dsh-webctl', 'dsh-antfarm', 'dsh-media', 'dsh-student', 'dsh-superagent', 'dsh-writer', 'dsh-story', 'dsh-service']
     copies = {root / 'bin' / name: source / name for name in controllers}
     copies[local_bin / 'dsh-sre'] = source / 'dsh-sre'
     links = {local_bin / name: root / 'bin' / name for name in controllers}

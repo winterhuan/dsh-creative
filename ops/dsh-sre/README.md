@@ -6,7 +6,7 @@ This directory maintains the same DSH service commands on macOS, Linux and WSL. 
 
 - `dsh-sre` installs to `~/.local/bin/dsh-sre` and lists, inspects, starts, stops, and restarts profiles.
 - `dsh-webctl`, `dsh-antfarm`, `dsh-media`, `dsh-student`, and `dsh-superagent` install to `~/.dsh/bin/`. Their Linux branches call `dsh-service` in the same directory (see [HANDOFF independent service profiles](../../HANDOFF.md#independent-service-profiles) for services and ports). `dsh-web` aliases `dsh-webctl`.
-- Both platforms install `dsh-writer` to manage Oh Story in the `writer` profile on port 3086. `dsh-sre status writer` and `dsh-sre start writer` use this entry point; see [HANDOFF](../../HANDOFF.md#independent-service-profiles) for the installed version and session compatibility.
+- `dsh-writer` manages the `writer` profile on port 3086. `dsh-story` manages the `story` profile on port 3081. `dsh-sre` lists Story once its profile is installed. See [HANDOFF](../../HANDOFF.md#independent-service-profiles) for the plugins assigned to each profile.
 
 Install from the repository root with Python 3 and `lsof` available. Linux also requires working systemd user services:
 

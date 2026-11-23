@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-22。
+最后更新：2026-11-23。
 
 本仓库统一管理 9 个独立 DSH 插件仓库、开发检查和交接文档，均已有发布包；Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -104,27 +104,30 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 profile 使用 GitHub 远程发布包。WSL 的独立 `writer` profile 已安装 `@winterhuan/oh-story-dsh@0.1.31`，固定来源为 `github:winterhuan/oh-story-dsh#bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351&path:/packages/dsh-plugin`；macOS 的 `writer` profile 仍为 `0.1.28`（`a01ed4556c0dd85b4c09255e8b9f49c0c37a3a1d`）。两端均由 `dsh-writer` 在端口 `3086` 启动。日常 `web` 已安装 `@winterhuan/dsh-shadow-mind@0.2.3`，固定来源为 `github:winterhuan/dsh-shadow-mind#17aa2e79f095e5827baea9118185e2653e29f4e6`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包。Oh Story `0.1.31` 的固定来源为 `github:winterhuan/oh-story-dsh#bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351&path:/packages/dsh-plugin`。日常 `web` 安装 `@winterhuan/dsh-shadow-mind@0.2.3`，固定来源为 `github:winterhuan/dsh-shadow-mind#17aa2e79f095e5827baea9118185e2653e29f4e6`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
-Writer、Student、Superagent、Antfarm 与 Media Desk 在 macOS 和 WSL 均分别使用下表中的独立 profile；日常 `web` 不加载这五个插件，`creative` 也不加载 Student。安装、更新和启停均针对所属 profile。两端的统一入口为 `dsh-sre`，脚本在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。
+日常服务使用下表中的独立 profile。安装、更新和启停均针对所属 profile。两端的统一入口为 `dsh-sre`，脚本在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
-| Oh Story（Writer 服务） | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
+| Oh Story（macOS） | `story` | `3081` | `~/.dsh/bin/dsh-story` | `~/.dsh/profiles/story/data/` |
+| 旧版 Writer `0.2.8`（macOS）、Oh Story（WSL） | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
 | Media Desk | `media` | `3085` | `~/.dsh/bin/dsh-media` | `~/.dsh/profiles/media/data/` |
 | Student | `student` | `3084` | `~/.dsh/bin/dsh-student` | `~/.dsh/profiles/student/data/` |
 | Superagent | `superagent` | `3082` | `~/.dsh/bin/dsh-superagent` | `~/.dsh/profiles/superagent/data/` |
 | Antfarm | `antfarm` | `3083` | `~/.dsh/bin/dsh-antfarm` | `~/.dsh/profiles/antfarm/data/` |
 
-五个服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
+各服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
 
-`writer` 的会话、附件与工作区登记位于独立 profile 的 `data/`；macOS 书稿沿用 `~/workspace/novels/`，WSL 保留原会话的工作区路径。两端新会话默认使用 Standard；profile 中的 `writer` 模式采用 DSH `0.2.2-rc.1` 原生 Standard 配置，供旧会话恢复，更新 DSH 时需同步核对该声明。Oh Story 安装、验证与备份见 [writer profile 迁移记录](HANDOFF-changelog.md#writer-oh-story-profile)。WSL 日常安装记录见 [Writer 0.2.7](HANDOFF-changelog.md#writer-0.2.7)，服务拆分见 [Writer 独立 profile](HANDOFF-changelog.md#writer-profile-wsl)。WSL 的日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
+macOS 的 `story` 和 `writer` 各自保存会话和工作区登记；既有书稿工作区路径继续使用。`writer` 的新会话默认使用 Writer 模式；Oh Story 的新会话默认使用 Standard，并保留使用 DSH `0.2.2-rc.1` 原生 Standard 配置的 `writer` 模式供旧会话恢复。WSL 保留 [Oh Story 原有安装](HANDOFF-changelog.md#writer-oh-story-profile)和工作区路径，日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
 
 WSL 日常 Antfarm 已更新至 `0.3.4`，使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 
 Superagent `0.1.1` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
+
+macOS 日常 `superagent` profile 已接入 Media Desk 共用 skill，飞书创作工单可以保存成稿和媒体，并返回作品 ID、Notes 路径及接收回执。接入配置见 [Media Desk 技能](plugins/dsh-superagent-prototype/docs/006-deployment.zh.md#media-desk-技能)，本机验证见 [接入记录](HANDOFF-changelog.md#superagent-media-desk-integration)。
 
 WSL 日常 `student` 从 `v0.2.5` 对应的固定 Git 提交安装 `@winterhuan/dsh-student`，以 Web 界面独立启动，默认使用 Student 学习模式。原生对话与工作区登记位于该 profile 的 `data/`；macOS 的琪琪学习档案位于 `/Users/winter/workspace/qiqiStudy/.study/`，本轮未更新 macOS 安装。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。工作台提供四个直接入口，窄窗口可切换学习内容和助手；家长档案底部的「作答记录资料（可选）」默认收起，可集中整理或按题核对，缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)，服务拆分见 [Student 独立 profile](HANDOFF-changelog.md#student-profile-migration)。
 
@@ -229,7 +232,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 
 | 文件 | 本地改动 |
 |---|---|
-| `scripts/verify-md-wrap.ts`、`scripts/verify-md-links.ts` | 扫描子模块根 README 和嵌套包文档；Oh Story 保留自身文档检查，父仓库指向它的链接照常检查 |
+| `scripts/verify-md-wrap.ts`、`scripts/verify-md-links.ts` | 扫描子模块根 README、父仓库 `docs/`、子模块 `plugins/*/docs/` 和嵌套包文档；Oh Story 保留自身文档检查，父仓库指向它的链接照常检查 |
 | `scripts/verify-doc-refs.ts` | 通过统一包发现扫描根 `src` 与嵌套包源码中的父仓库文档引用 |
 | `scripts/verify-package-readme-summaries.ts`、`scripts/verify-package-readme-limitations.ts`、`scripts/verify-package-readme-model-experience.ts` | 包发现覆盖子模块根 `src` 与两层、三层包目录；Oh Story 保留自身 README 检查；Antfarm 采用包含模型可见内容、Token 与 KV Cache 影响的结构化模型体验 |
 | `scripts/verify-client-ui-i18n.ts`、`scripts/verify-export-jsdoc.ts` | 通过统一包发现检查子模块根 `src` 与嵌套包的客户端文案、导出声明 |
@@ -238,7 +241,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 | `scripts/translation-pairing-record.ts` | 在子模块自身的仓库路径下计算双语记录，保持独立检出与父仓库检查一致 |
 | `scripts/translation-pairing-git.ts` | 暂存区检查读取子模块固定提交中的文档，保持父仓库链接与双语记录一致 |
 | `scripts/translation-links.ts` | 结构检查识别插件 README 指向父仓库已存在双语文档的 GitHub 链接，保留语言、分支和锚点语义 |
-| `scripts/translation-pairing.ts` | 排除嵌套 `upstream/`、生成的 `plugin/` 和本地市场检出，纳入子模块 README、DESIGN、PARITY 与 GUIDE 双语对 |
+| `scripts/translation-pairing.ts` | 排除嵌套 `upstream/`、生成的 `plugin/` 和本地市场检出，纳入 `plugins/*/docs/` 全部文档及子模块根 README、DESIGN、PARITY 与 GUIDE 双语对 |
 
 `plugin-workspaces.ts`、`run-plugins.ts` 和 `run-checks.ts` 为本仓库自有脚本；统一包发现包含实际有 `src` 的子模块根清单以及嵌套包，排除 workspace 空根。检查和批量命令在插件子模块未初始化时失败，不能以空扫描通过。
 

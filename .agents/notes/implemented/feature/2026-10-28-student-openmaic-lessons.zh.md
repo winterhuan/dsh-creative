@@ -23,3 +23,5 @@ study 技能的 `references/openmaic.md` 是操作步骤：助手的 shell 发�
 ## Consequences
 
 生成仍然依赖本包不启动的 OpenMAIC 进程。课表不随学期归档导出，一直留到有人删除。对话里的课堂 URL 必须是单独一行裸地址；工作台用文本再加一个打开按钮重复这个地址。这次改动没有真实的 OpenMAIC 调用，也没有真实的 DSH 浏览器验证。
+
+[OpenMAIC 学习闭环提案](../../proposed/feature/2026-11-22-student-openmaic-learning-loop.zh.md)拟用官方插件替换 shell 生成主路径，并增加学习实体关联及被引用课堂的归档保留。这些变化尚未实现；本记录继续描述当前行为，生成日志独立、凭据隔离和浏览器播放的理由仍适用。

@@ -23,3 +23,5 @@ The study skill's `references/openmaic.md` is the procedure: the tutor shell cal
 ## Consequences
 
 Generation still depends on an OpenMAIC process this package does not start. The lesson log is not exported with the term archive and remains until someone deletes it. Chat must show the classroom URL as a bare line; the desk repeats that URL as text plus an open button. No real OpenMAIC call and no real DSH browser pass are part of this change.
+
+The [OpenMAIC learning-loop proposal](../../proposed/feature/2026-11-22-student-openmaic-learning-loop.md) proposes replacing the primary shell generation path with the official plugin, adding learning-owner associations and archive retention for referenced lessons. These changes remain unimplemented; this note continues to describe current behavior, with the rationale for separate generation logs, isolated credentials and browser playback still applicable.

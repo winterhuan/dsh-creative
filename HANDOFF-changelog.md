@@ -4,6 +4,14 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+<a id="superagent-media-desk-integration"></a>
+
+2026-11-23：macOS 日常 `superagent` profile 通过配置层加载已安装 Media Desk `2.7.0-winter.14` 的 `media-desk` 与 `image-generation` skill；团队提示词 revision 2 提供 `dsh-superagent-media-desk` 接入指引。主会话和执行器均能发现这些技能，业务操作明确使用 Media Desk 的包根目录适配器、独立数据 home、Wiki 与服务 URL。日常 Superagent 重启及全部健康检查通过，默认模型保留 `me/group/never-stuck`，两个插件继续使用远程发布包。
+
+独立资料库中的真实模型工单完成了模拟飞书请求、作品创建、成稿接收、测试封面生成与媒体接收，执行器报告 ready，最终模拟飞书回复包含作品 ID、正文绝对路径及两项回执。制作请求为 accepted，成稿受理回执恰好一项，本机模拟图片服务恰好调用一次。日常接口读取现有 4 件作品成功，241 个 Notes 文件逐字节保持不变；本轮未执行付费生图，也未向真实飞书发送验收消息。
+
+Superagent 类型检查、构建和 6 项文档测试通过，双语部署指南及配置示例已补齐。配置、提示词与验收材料位于 `/Users/winter/.dsh/backups/superagent-media-desk-integration-20261123-133833/`，完整工单结果见其中的 `smoke-result.json`。
+
 <a id="media-desk-skill-release"></a>
 
 2026-11-22：Media Desk [v2.7.0-winter.14](https://github.com/winterhuan/dsh-media-desk/releases/tag/v2.7.0-winter.14) 已发布并更新公开市场，固定提交为 `9d6abde17df431a8844a45098c88635ed2c33a3c`。共用业务 skill 组织创作与规则学习，Agent 直接修改 Notes；同包 CLI 只读取与校验。生图使用独立全局 skill，配置沿用 `~/.config/image-generation/.env`。有效规则文件由插件登记为待审，用户启用后供下一次制作固定版本并逐条自检。
@@ -19,6 +27,8 @@
 macOS 独立 `media` profile 已从远程固定提交安装，3085 重启与浏览器硬刷新验收通过，五个工作台视图入口及原有作品正常显示。隔离远程安装和本机安装均核对了 62 个运行文件与发布提交一致。原有 179 个 Notes 文件逐字节保留，配置未变，会话日志保留原始字节并追加一条 `session/end-seed`。启动恢复清理了一条已有回执的停机日志，并更新生产完成时间与回执。语法检查、客户端构建、210 项插件测试、16 项文档检查与 3 项规范检查通过。
 
 Release 包 SHA-256：`f77a724f4d838066b19861a7b792052056d488d83ff6bae7565e131e0b2fe064`，公开下载校验一致。配置、数据备份与验收证据位于 `~/.dsh/backups/media-desk-winter12-20261121-7_t_q995/`。
+
+2026-11-21：macOS 将 Oh Story 与旧版 Writer 分到独立 profile。Oh Story 0.1.31 使用 story profile 和端口 3081，旧版 Writer 0.2.8 使用 writer profile 和端口 3086；两个 profile 各保留一份原有会话与工作区登记，331 个数据文件逐字节复制，工作区表中的原会话登记保持不变。新增 dsh-story 控制器和 LaunchAgent；两个服务均通过真实 DSH 页面确认只加载各自插件。配置与迁移备份位于 ~/.dsh/backups/story-writer-split-20261121-113828/。
 
 2026-11-21：Oh Story fork [v0.1.31](https://github.com/winterhuan/oh-story-dsh/tree/v0.1.31) 改为源码仓库固定 Tag 安装，版本为 `@winterhuan/oh-story-dsh@0.1.31`；主线提交与标签均为 `bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351`，市场固定相同提交的 `packages/dsh-plugin`。隔离 `release-check` profile 远程安装、配置回读、真实 DSH Web 启动和认证后 HTML 返回通过。WSL 日常 `writer` profile 已更新并重启 3086，配置回读、服务就绪和 Web HTML 检查通过；macOS profile 未更新。安装前配置备份位于 `~/.dsh/backups/writer-release-0.1.31-20261121-0928/`。
 

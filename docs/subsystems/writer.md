@@ -33,7 +33,7 @@ The bundle registers `oh-story` in its DSH profile. It supplies four workbenches
 
 The four fixed asset sets live in `packages/knowledge/{oh-story,drama,novel-to-game,video-recap}`. Their manifests record versions and file hashes. Follow the fork's [AGENTS.md](../../plugins/oh-story-dsh/AGENTS.md) and synchronization commands; do not edit vendored knowledge by hand. Role and reference loading follows the fork's own adapters.
 
-On macOS and Linux/WSL, Oh Story uses the independent `writer` profile on port `3086`, managed by `dsh-writer` or `dsh-sre`. New sessions use the native Standard mode. Both profiles retain a `writer` preset declaration with the Standard composition so sessions that recorded that identity can resume. See [HANDOFF.md](../../HANDOFF.md#independent-service-profiles) for the installed version and session and manuscript locations.
+On macOS, Oh Story runs in `story` on port `3081`, and the legacy Writer plugin runs in `writer` on port `3086`. Oh Story uses native Standard mode for new sessions and keeps a Standard-based `writer` preset for older sessions. See [HANDOFF.md](../../HANDOFF.md#independent-service-profiles) for service commands, the WSL installation, and data locations.
 
 <a id="development"></a>
 ## Development
