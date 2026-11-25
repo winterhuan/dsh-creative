@@ -1,0 +1,67 @@
+# Bilingual-pair consistency record for 2026-11-25-student-daily-learning-plan.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-11-25-student-daily-learning-plan.md
+/agent-note-student-daily-learning-plan-and-learner-flow-spec:
+  en: 15c4e1aa26f34647
+  zh: d704512076ca135a
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/problem:
+  en: 95952d9ad37bd240
+  zh: 1b540a3645443320
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/problem/current-evidence:
+  en: 0cf80557b4fc2222
+  zh: b8a72418d0ac7416
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/proposal:
+  en: 5ffdd7b33335a2d8
+  zh: 6fb7b4f7e035986a
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/proposal/scope-and-existing-decisions:
+  en: 4dd7be3c7ab21c94
+  zh: b12bf19452626f45
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/proposal/roles-and-success:
+  en: e9e52fcd48c5d869
+  zh: 739b37ded541fe14
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/first-use-and-scope-confirmation:
+  en: a6a794d03c019fae
+  zh: 6522d3a22dccdfb7
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy:
+  en: e8361020db41c1f2
+  zh: 3059e5ae9a11f3db
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy/default-task-amount:
+  en: 7da20e5fb84f8ceb
+  zh: 1896c2593e26cc56
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy/candidates-and-ordering:
+  en: ba27ba9c49d48b8c
+  zh: aaf3d1f296d629c7
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy/cold-start-and-reasons:
+  en: 704c5bbc39df725e
+  zh: 80d4555ca437fc8f
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/learning-and-completion:
+  en: 00c117c661058e35
+  zh: 6502579d71b14a3f
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/pause-day-changes-and-amendments:
+  en: 7933e7b83c4321a4
+  zh: 1c60b1569894db64
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/student-and-parent-presentation:
+  en: a117f7da0aa1eaf6
+  zh: b635c7964c7c58f6
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/shared-progress-and-persistence:
+  en: d20f3b982f5c3fb2
+  zh: d20f3b982f5c3fb2
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/shared-progress-and-persistence/one-capability-state-for-every-page:
+  en: dc590787af9e20db
+  zh: b32edcbbd9b89deb
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/shared-progress-and-persistence/saved-facts-and-write-ownership:
+  en: a0d162777884757c
+  zh: e887a2ba3123a2f8
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/delivery-sequence:
+  en: 635136b0f5e93bfb
+  zh: b345d07eebd17a5d
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/alternatives-considered:
+  en: 48d30f0019ad67ed
+  zh: 22b372b4f35f3d83
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/acceptance-criteria:
+  en: e3ef85abfca86119
+  zh: 663f563ca91503f3
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/risks:
+  en: 6bda818bd0a2b5b5
+  zh: 0a8d3395cf61b1a0

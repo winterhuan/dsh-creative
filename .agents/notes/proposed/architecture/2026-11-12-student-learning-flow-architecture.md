@@ -78,6 +78,8 @@ The Host owns validated reading, learning context, evidence interpretation and a
 
 The product has one native conversation learning path and three parent information destinations. Panel actions send complete intents to the current agent; manual editing is an explicit supplement. It remains one student package with explicit Host and Client build faces, pinned to DSH 0.2.2-rc.1.
 
+The [daily learning spec](../feature/2026-11-25-student-daily-learning-plan.md) further defines daily selection, plan persistence and primary workbench presentation while preserving native execution, official-file validation and evidence ownership here. It is a subsequent proposal and does not treat this document's historical implementation baseline as a description of the current version.
+
 ### Confirmed design
 
 The user has confirmed that every business operation defaults to direct chat with the agent, direct authoring of official business files, CLI validation and application validation on reading. Explicit manual UI edits are application-owned saves. This includes profile, curriculum, school progress, blocks, content, answers, assessment, mistakes, worksheets, transcription, archives and OpenMAIC logs. The agent submits no candidate files for Host publication; validation establishes correctness rather than granting write permission.
