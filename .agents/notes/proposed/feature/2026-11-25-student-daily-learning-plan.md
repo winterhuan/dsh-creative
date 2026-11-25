@@ -140,7 +140,7 @@ A carried task directly references its original task identity and activity, with
 
 ## Student and parent presentation
 
-Home, Learning and Today’s learning are states in one flow, not parallel navigation destinations. Subject navigation appears only on Home; Learning shows the current subject, goal, question and tutor. Completing the current arrangement or explicitly stopping opens Today’s learning, grouped by subject with actual responses, consolidation needs and unfinished activities. Continue restores the original activity; Learn a little more explicitly adds an activity. Returning Home preserves current progress.
+The workbench has one functional navigation: Today, Knowledge and progress, Practice and marking, Lesson history, and Learning profile. Remove the Student/Parent switch; wrap destinations on narrow screens so all remain visible. Home, Learning and Today’s learning are states within Today, not parallel navigation destinations. Browsing another page or subject preserves the current activity, question and draft; returning to Today restores that flow state. Subject navigation appears only on Home; Learning shows the current subject, goal, question and tutor. Completing the current arrangement or explicitly stopping opens Today’s learning, grouped by subject with actual responses, consolidation needs and unfinished activities. Continue restores the original activity; Learn a little more explicitly adds an activity. Returning Home preserves current progress.
 
 Existing activities without a daily plan enter Learning directly. Home can open Today’s gains when an activity or actual answers exist, even before a plan is saved; reading that page does not end the activity. The first explicit Pause, Stop or native Continue records only the original activity and the actual choice. It does not invent a historical Start, add other recommendations or count historical answers as today’s work. Gains list the actual topics, help, consolidation needs and pending results by subject, with a continuation entry for unfinished work.
 
@@ -177,7 +177,7 @@ flowchart TD
 
 Help me, Change content and Finish for today remain discoverable secondary actions. Child pages omit capability IDs, family allowances, source hashes, remaining check budgets and internal round states; teaching steps use child-facing language. Progress indicators describe today's tasks instead of capability mastery. An ended round cannot still announce one available review family.
 
-The parent page retains Profile and summary, Knowledge and progress, Practice and grading, and Classroom records, with genuine parent action items grouped at the top. Daily controls expose reasons, adjustments or reductions to unstarted content, and scope updates. Specify today's content affects that day only and cannot silently widen long-term scope. Out-of-scope requests first confirm a change, explicitly limited to today or persistent.
+Learning profile retains profile settings, weekly summaries and genuine parent action items. Knowledge and progress, Practice and marking, and Lesson history open directly from the main navigation. Daily controls expose reasons, adjustments or reductions to unstarted content, and scope updates. Specify today's content affects that day only and cannot silently widen long-term scope. Out-of-scope requests first confirm a change, explicitly limited to today or persistent.
 
 ## Shared progress and persistence
 
