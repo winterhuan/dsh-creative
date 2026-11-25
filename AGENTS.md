@@ -12,7 +12,7 @@
 ## 必须遵守
 
 - 不修改根目录或子模块内 `upstream/` 的源码；它们只作参考与客户端测试来源。
-- DSH 依赖使用精确版本；当前依赖与上游标签为 `0.2.2-rc.1`／`dsh-v0.2.2-rc.1`，配套范围见 [依赖策略](HANDOFF.md#6-依赖策略)。升级时同步核对所有插件的依赖、锁文件、补丁与标签。
+- DSH 依赖使用精确版本；当前依赖与上游标签为 `0.2.2-rc.5`／`dsh-v0.2.2-rc.5`，配套范围见 [依赖策略](HANDOFF.md#6-依赖策略)。升级时同步核对所有插件的依赖、锁文件、补丁与标签。
 - 新用到 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入对应包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。
 - 修改首行标记 `Copied from deepseek-harness` 的脚本或类型副本后，更新 HANDOFF 第 8 节的改动表。
 - 客户端行为需在真实 DSH 验证。日常 profile 使用远程发布包；本地调试使用独立 profile，构建后重启开发进程并硬刷新。勿用裸 npm 包名的 `plugin-update` 覆盖 Git 安装。

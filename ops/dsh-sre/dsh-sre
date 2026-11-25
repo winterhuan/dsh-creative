@@ -17,8 +17,9 @@ SERVICES = {
     'superagent': ('dsh-superagent', 3082),
     'antfarm': ('dsh-antfarm', 3083),
     'media': ('dsh-media', 3085),
-    'writer': ('dsh-writer', 3086),
 }
+if (DSH_HOME / 'profiles/writer/package.json').is_file():
+    SERVICES['writer'] = ('dsh-writer', 3086)
 if (DSH_HOME / 'profiles/story/package.json').is_file():
     SERVICES['story'] = ('dsh-story', 3081)
 os.environ['PATH'] = ':'.join([

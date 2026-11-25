@@ -4,6 +4,14 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+<a id="dsh-rc5-all-plugins"></a>
+
+2026-11-25：WSL 全局 DSH 升至 `0.2.2-rc.5`，9 个插件新增固定发布标签并更新市场。`web`、`story`、`superagent`、`antfarm`、`student`、`media` 均从远程固定提交安装、重启并通过浏览器组件检查，profile 补丁与其他依赖保留；macOS 未更新。修复 Antfarm／Shadow Mind 的子会话激活接口、技能查看器声明文件打包与原生测试的多帧日志读取。类型检查、构建、插件测试、父仓库测试、文档与规范检查通过；Oh Story 合并提交通过 Linux、macOS、Windows CI 及三条宿主浏览器检查。Media Desk 完整测试的两个超时用例分别重跑通过。Superagent 仍需选择 GitHub 仓库，未执行真实模型或付费媒体验收。备份与证据：`~/.dsh/backups/all-plugins-rc5-20261125-134131/`。
+
+<a id="story-profile-wsl"></a>
+
+2026-11-25：WSL 将 Oh Story `0.1.31` 整体迁至 `story:3081` 并启用登录启动，旧 `writer:3086` 停用并禁用登录启动。143 个数据文件完整保留，176 个书稿文件不变；历史会话仅更新缓存并追加恢复日志。合成配置、认证页面、四工作台入口、历史会话及四种启停组合验证通过，未调用模型或付费媒体。备份与证据：`~/.dsh/backups/story-profile-wsl-20261125-091457/`。
+
 <a id="superagent-media-desk-integration"></a>
 
 2026-11-23：macOS 日常 `superagent` profile 通过配置层加载已安装 Media Desk `2.7.0-winter.14` 的 `media-desk` 与 `image-generation` skill；团队提示词 revision 2 提供 `dsh-superagent-media-desk` 接入指引。主会话和执行器均能发现这些技能，业务操作明确使用 Media Desk 的包根目录适配器、独立数据 home、Wiki 与服务 URL。日常 Superagent 重启及全部健康检查通过，默认模型保留 `me/group/never-stuck`，两个插件继续使用远程发布包。
@@ -28,29 +36,14 @@ macOS 独立 `media` profile 已从远程固定提交安装，3085 重启与浏�
 
 Release 包 SHA-256：`f77a724f4d838066b19861a7b792052056d488d83ff6bae7565e131e0b2fe064`，公开下载校验一致。配置、数据备份与验收证据位于 `~/.dsh/backups/media-desk-winter12-20261121-7_t_q995/`。
 
-2026-11-21：macOS 将 Oh Story 与旧版 Writer 分到独立 profile。Oh Story 0.1.31 使用 story profile 和端口 3081，旧版 Writer 0.2.8 使用 writer profile 和端口 3086；两个 profile 各保留一份原有会话与工作区登记，331 个数据文件逐字节复制，工作区表中的原会话登记保持不变。新增 dsh-story 控制器和 LaunchAgent；两个服务均通过真实 DSH 页面确认只加载各自插件。配置与迁移备份位于 ~/.dsh/backups/story-writer-split-20261121-113828/。
-
-2026-11-21：Oh Story fork [v0.1.31](https://github.com/winterhuan/oh-story-dsh/tree/v0.1.31) 改为源码仓库固定 Tag 安装，版本为 `@winterhuan/oh-story-dsh@0.1.31`；主线提交与标签均为 `bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351`，市场固定相同提交的 `packages/dsh-plugin`。隔离 `release-check` profile 远程安装、配置回读、真实 DSH Web 启动和认证后 HTML 返回通过。WSL 日常 `writer` profile 已更新并重启 3086，配置回读、服务就绪和 Web HTML 检查通过；macOS profile 未更新。安装前配置备份位于 `~/.dsh/backups/writer-release-0.1.31-20261121-0928/`。
+2026-11-21：macOS 的 Story／Writer 拆分及 Oh Story `0.1.31` 固定 Tag 安装，见[当日迁移与安装记录](archive/docs/HANDOFF-changelog-2026-11-21.md)。
 
 2026-11-20 Shadow Mind `0.2.2`／`0.2.3` 发布与远程安装：
 
 - [v0.2.2](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.2) 先发布原生审查工作台，[v0.2.3](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.3) 随后补齐导出 API JSDoc 并修正随机种子回归测试；市场最新版本固定到 `17aa2e79f095e5827baea9118185e2653e29f4e6`。
 - `web` profile 已从远程提交安装 `0.2.3` 并完成服务重启、配置回读和 45 KB Web HTML 健康检查；类型检查、Host/Client 构建、29 项测试、包检查与父仓库 hygiene 通过。包检查保留一个 Client CJS/ESM 格式提示。
 
-2026-11-08／09 Writer 远程更新：
-
-- [v0.1.9](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.9)、[v0.1.10](https://github.com/winterhuan/dsh-writer/releases/tag/v0.1.10) 已发布并更新市场；`web`、`headless` 从固定远程提交安装，Web 重启验证通过。
-- 配置备份及验收：`~/.dsh/backups/writer-release-20261108-0.1.9/`、`~/.dsh/backups/writer-acceptance-20261108-FJ5aWU/`、`~/.dsh/backups/writer-release-20261109-0.1.10-yda2g0r4/`。
-
-2026-11-08 Shadow Mind 远程安装：
-
-- [v0.2.0](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.0) 已发布，日常 `web` 安装该标签的固定 Git 提交并重启；配置、包检查、17 项测试与三个运行组件均已验证。未配置审查职责，不自动触发模型调用。安装前备份及证据：`~/.dsh/backups/shadow-mind-release-20261108-0.2.0/`。
-
-2026-11-09 插件包名修正：
-
-- [Antfarm](https://github.com/winterhuan/dsh-antfarm/releases/tag/v0.3.1)与[Shadow Mind](https://github.com/winterhuan/dsh-shadow-mind/releases/tag/v0.2.1) 补全 `@winterhuan` 包名；日常 `web` 远程迁移、重启验证完成，历史数据保留。证据：`~/.dsh/backups/scoped-plugins-release-20261109/`。
-
-2026-11-09：Antfarm `0.3.3` 已发布并远程安装到本地，验证与备份见 [HANDOFF](HANDOFF.md#4-开发命令与构建流程)。
+2026-11-08／09：Writer、Shadow Mind 与插件包名修正见[月初发布记录](archive/docs/HANDOFF-changelog-2026-11-08-09.md)。
 
 <a id="new-api-release"></a>
 

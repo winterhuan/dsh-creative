@@ -33,7 +33,7 @@ bundle 在所属 DSH profile 中登记 `oh-story`，提供四个工作台、技�
 
 四套固定资产位于 `packages/knowledge/{oh-story,drama,novel-to-game,video-recap}`，manifest 记录版本与逐文件哈希。遵循 fork 的 [AGENTS.md](../../plugins/oh-story-dsh/AGENTS.md) 及同步命令，不手改知识副本。角色和参考资料的加载沿用 fork 自身适配。
 
-macOS 上的 Oh Story 在端口 `3081` 的 `story` profile 运行，旧版 Writer 插件在端口 `3086` 的 `writer` profile 运行。Oh Story 的新会话使用原生 Standard 模式，并保留采用 Standard 配置的 `writer` 模式供旧会话恢复。服务命令、WSL 安装和数据位置见 [HANDOFF.md](../../HANDOFF.md#independent-service-profiles)。
+Oh Story 在 macOS 和 WSL 均使用端口 `3081` 的 `story` profile。macOS 另在端口 `3086` 的 `writer` profile 运行旧版 Writer 插件；WSL 已停用该服务。Oh Story 的新会话使用原生 Standard 模式，并保留采用 Standard 配置的 `writer` 模式供旧会话恢复。服务命令、安装和数据位置见 [HANDOFF.md](../../HANDOFF.md#independent-service-profiles)。
 
 <a id="development"></a>
 ## 开发

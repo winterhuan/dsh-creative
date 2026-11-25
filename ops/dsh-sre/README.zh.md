@@ -6,7 +6,7 @@
 
 - `dsh-sre` 安装在 `~/.local/bin/dsh-sre`，用于查看各 profile 状态并统一启停。
 - `dsh-webctl`、`dsh-antfarm`、`dsh-media`、`dsh-student`、`dsh-superagent` 安装在 `~/.dsh/bin/`，Linux 分支调用同目录的 `dsh-service`（服务与端口见 [HANDOFF 独立服务 profile](../../HANDOFF.md#independent-service-profiles)）。`dsh-web` 是 `dsh-webctl` 的别名。
-- `dsh-writer` 管理端口 3086 的 `writer` profile，`dsh-story` 管理端口 3081 的 `story` profile。安装 `story` profile 后，`dsh-sre` 会列出它。各 profile 安装的插件见 [HANDOFF](../../HANDOFF.md#independent-service-profiles)。
+- `dsh-writer` 管理端口 3086 的 `writer` profile，`dsh-story` 管理端口 3081 的 `story` profile。`dsh-sre` 仅在对应 profile 已安装时列出这两个服务；`all` 跳过其中未安装的 profile。各 profile 安装的插件见 [HANDOFF](../../HANDOFF.md#independent-service-profiles)。
 
 在仓库根目录安装，需 Python 3、`lsof`，Linux 还需可用的 systemd 用户服务：
 
@@ -14,8 +14,8 @@
 python3 ops/dsh-sre/install.py
 dsh-sre list
 dsh-sre status
-dsh-sre status writer
-dsh-sre start writer
+dsh-sre status story
+dsh-sre start story
 dsh-sre restart media
 dsh-sre stop media
 dsh-sre start media

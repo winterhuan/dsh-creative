@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-23。
+最后更新：2026-11-25。
 
 本仓库统一管理 9 个独立 DSH 插件仓库、开发检查和交接文档，均已有发布包；Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -21,7 +21,7 @@
 
 ## 1. 现状速览
 
-9 个插件仓库包含 10 个源码包。`dsh-student` 发布版本为 `0.2.5`，`oh-story-dsh` fork 为 `0.1.31`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.9`，`dsh-shadow-mind` 发布版本为 `0.2.3`，技能查看器与模型设置增强为 `0.1.9`，兼容 DSH `0.2.2-rc.1`；Superagent 原型使用 `0.1.1` 包和 `0.2.2-rc.1` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.4`，固定 DSH `0.2.2-rc.1`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
+9 个插件仓库包含 10 个源码包。`dsh-student` 发布版本为 `0.2.6`，`oh-story-dsh` fork 为 `0.1.32`（`@winterhuan/oh-story-dsh`），`dsh-project-default-mode` 为 `0.1.10`，`dsh-shadow-mind` 发布版本为 `0.2.4`，技能查看器与模型设置增强为 `0.1.10`，兼容 DSH `0.2.2-rc.5`；Superagent 原型使用 `0.1.2` 包和 `0.2.2-rc.5` 精确依赖，提供预构建 Git 发布包，不纳入发布包版本统一；`@winterhuan/dsh-antfarm` 发布版本为 `0.3.5`，固定 DSH `0.2.2-rc.5`，保留原版三个工作流、persona 身份与 SQLite 业务状态，每次尝试创建共享 standard 组合的全新 DSH Session，包含配置管理与运行界面；取舍见[原版 Agent 与存储决策](.agents/notes/implemented/architecture/2026-11-08-antfarm-original-agents-and-storage.zh.md)。技能查看器的 Host 与 Client 在一个仓库共同维护，随一个组合包安装。安装者使用[插件市场](https://winterhuan.github.io/dsh-creative/index.json)或各子模块 README 中的固定 Git 安装地址；开发者在下面的子模块目录修改源码。
 
 ## 2. 仓库结构
 
@@ -63,9 +63,9 @@ dsh-creative/
 1. 在目标子模块内修改源码、测试和配套文档。开始时核对该仓库的 remote、分支与未提交改动；新克隆的子模块可能处于 detached HEAD，开发前切换到工作分支。
 2. 各插件独立安装依赖、构建和测试；父仓库批量命令依次调用各插件脚本，任何失败都会停止。技能查看器只编辑两个源码包，由构建生成 `plugin/`，不直接修改生成目录。
 3. 先在子模块提交并推送改动，再在父仓库提交该子模块路径的指针更新。父仓库提交不会包含子模块内未提交的文件；其他机器应能从远程获取所记录的提交。不要在存在未保存改动时强制更新或重置子模块。
-4. Student `0.2.5` 与项目默认模式 `0.1.9` 单独发布；Oh Story fork 保留自身发布流程和版本；其余原有 4 个仓库的 5 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
+4. Student `0.2.6` 与项目默认模式 `0.1.10` 单独发布；Oh Story fork 保留自身发布流程和版本；其余原有 4 个仓库的 5 个包在统一升级时保持版本一致，核对包清单、锁文件、预构建安装内容和 Release。Antfarm 按独立版本发布并加入市场。已发布标签不覆盖；市场插件仓库保留 `dsh-plugin` topic。先发布插件，再按[官方市场文档](https://deepseek-harness.github.io/deepseek-harness/guide/plugin-market)更新 `gh-pages` 索引中的版本、固定提交、安装路径和兼容声明；验证远程安装及详情页后更新日常 profile。
 
-Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.14`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
+Media Desk fork 在 `winterhuan/dsh-media-desk` 维护，包名为 `@winterhuan/dsh-media-desk`，发布版本为 `2.7.0-winter.15`。双语使用指南随包提供；固定 Git 包包含浏览器产物，安装不运行构建。包的 `typecheck` 为 JavaScript 语法检查，JSX 由构建解析，不提供静态类型检查；开发和验证边界见[包说明](plugins/dsh-media-desk/README.zh.md)。
 
 ## 3. 与 DSH 的集成方式
 
@@ -107,7 +107,7 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 ## 5. 在 DSH 中安装、调试和移除
 
-日常 profile 使用 GitHub 远程发布包。Oh Story `0.1.31` 的固定来源为 `github:winterhuan/oh-story-dsh#bdbc0406f3e92b6ddfab9c39afd2d236bbc4f351&path:/packages/dsh-plugin`。日常 `web` 安装 `@winterhuan/dsh-shadow-mind@0.2.3`，固定来源为 `github:winterhuan/dsh-shadow-mind#17aa2e79f095e5827baea9118185e2653e29f4e6`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
+日常 profile 使用 GitHub 远程发布包。Oh Story `0.1.32` 的固定来源为 `github:winterhuan/oh-story-dsh#5c3d5823efc8a49a4666b4cb78e215b4e16b126e&path:/packages/dsh-plugin`。日常 `web` 安装 `@winterhuan/dsh-shadow-mind@0.2.4`，固定来源为 `github:winterhuan/dsh-shadow-mind#786c523fa74d9fddc4953b44956f61d6a8dd7793`。父仓库或子模块中的本地改动不会自动更新日常安装。通过「插件 → 发现」的市场索引或插件 README 中的固定 Git 地址更新，再重启服务并硬刷新浏览器。
 
 <a id="independent-service-profiles"></a>
 
@@ -115,8 +115,8 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
-| Oh Story（macOS） | `story` | `3081` | `~/.dsh/bin/dsh-story` | `~/.dsh/profiles/story/data/` |
-| 旧版 Writer `0.2.8`（macOS）、Oh Story（WSL） | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
+| Oh Story（macOS／WSL） | `story` | `3081` | `~/.dsh/bin/dsh-story` | `~/.dsh/profiles/story/data/` |
+| 旧版 Writer `0.2.8`（macOS） | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
 | Media Desk | `media` | `3085` | `~/.dsh/bin/dsh-media` | `~/.dsh/profiles/media/data/` |
 | Student | `student` | `3084` | `~/.dsh/bin/dsh-student` | `~/.dsh/profiles/student/data/` |
 | Superagent | `superagent` | `3082` | `~/.dsh/bin/dsh-superagent` | `~/.dsh/profiles/superagent/data/` |
@@ -124,17 +124,17 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 各服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
 
-macOS 的 `story` 和 `writer` 各自保存会话和工作区登记；既有书稿工作区路径继续使用。`writer` 的新会话默认使用 Writer 模式；Oh Story 的新会话默认使用 Standard，并保留使用 DSH `0.2.2-rc.1` 原生 Standard 配置的 `writer` 模式供旧会话恢复。WSL 保留 [Oh Story 原有安装](HANDOFF-changelog.md#writer-oh-story-profile)和工作区路径，日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
+macOS 的 `story` 和 `writer` 各自保存会话和工作区登记，`writer` 的新会话默认使用 Writer 模式。Oh Story 在 macOS 和 WSL 均使用 `story`，新会话默认使用 Standard，并保留 `writer` 模式供旧会话恢复；WSL 使用 DSH `0.2.2-rc.5` 的原生 Standard 配置，macOS 保持 `0.2.2-rc.1`。WSL 的会话、附件和工作区登记位于 `~/.dsh/profiles/story/data/`，既有书稿工作区路径继续使用；旧 `writer` 服务已停用，备份与验证见 [Story profile 迁移记录](HANDOFF-changelog.md#story-profile-wsl)。日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
 
-WSL 日常 Antfarm 已更新至 `0.3.4`，使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
+WSL 日常 Antfarm 已更新至 `0.3.5`，使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 
-Superagent `0.1.1` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
+Superagent `0.1.2` 使用 `winterhuan/dsh-superagent-prototype` 的预构建固定 Git 发布包，并加入插件市场。业务库与 Ticket 工作目录保留在 `~/.dsh/state/superagent/`。远程安装、源码开发与更新见 [Superagent 安装说明](docs/user/superagent-installation.zh.md)。发布与数据备份见 [Superagent 发布记录](HANDOFF-changelog.md#superagent-git-market-release)。
 
 macOS 日常 `superagent` profile 已接入 Media Desk 共用 skill，飞书创作工单可以保存成稿和媒体，并返回作品 ID、Notes 路径及接收回执。接入配置见 [Media Desk 技能](plugins/dsh-superagent-prototype/docs/006-deployment.zh.md#media-desk-技能)，本机验证见 [接入记录](HANDOFF-changelog.md#superagent-media-desk-integration)。
 
-WSL 日常 `student` 从 `v0.2.5` 对应的固定 Git 提交安装 `@winterhuan/dsh-student`，以 Web 界面独立启动，默认使用 Student 学习模式。原生对话与工作区登记位于该 profile 的 `data/`；macOS 的琪琪学习档案位于 `/Users/winter/workspace/qiqiStudy/.study/`，本轮未更新 macOS 安装。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。工作台提供四个直接入口，窄窗口可切换学习内容和助手；家长档案底部的「作答记录资料（可选）」默认收起，可集中整理或按题核对，缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)，服务拆分见 [Student 独立 profile](HANDOFF-changelog.md#student-profile-migration)。
+WSL 日常 `student` 从 `v0.2.6` 对应的固定 Git 提交安装 `@winterhuan/dsh-student`，以 Web 界面独立启动，默认使用 Student 学习模式。原生对话与工作区登记位于该 profile 的 `data/`；macOS 的琪琪学习档案位于 `/Users/winter/workspace/qiqiStudy/.study/`，本轮未更新 macOS 安装。左侧栏提供学习工作台，学习内容与原生辅导对话并排显示；旧版档案可浏览和预览打印，保存新数据前由家长在对话中确认迁移。`qiqiStudy` 已迁入格式 2，档案编辑与保存通过日常 Web 验证。工作台提供四个直接入口，窄窗口可切换学习内容和助手；家长档案底部的「作答记录资料（可选）」默认收起，可集中整理或按题核对，缺失事实保留未知。发布与备份见 [Student 旧档案显示修复](HANDOFF-changelog.md#student-legacy-display)，数据迁移见 [琪琪学习档案迁移](HANDOFF-changelog.md#student-full-migration)，服务拆分见 [Student 独立 profile](HANDOFF-changelog.md#student-profile-migration)。
 
-WSL 独立 `media` profile 安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.11`，来源为 `github:winterhuan/dsh-media-desk#44973f658cb8ff21c29729a6eb2e4ef88e5d6ea9`。原生会话和工作区登记保存在 `~/.dsh/profiles/media/data/`，业务数据沿用 `~/.dsh/media-desk/`，作品文件沿用 `~/wiki/notes/`；日常 `web` 不加载 Media Desk。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)；复盘读隔离、单篇刷新和本机升级验收见 [Media Desk 发布记录](HANDOFF-changelog.md#media-desk-winter10)。
+WSL 独立 `media` profile 安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.15`，来源为 `github:winterhuan/dsh-media-desk#7bbda83f57f481acee0357f0513d982068c86b73`。原生会话和工作区登记保存在 `~/.dsh/profiles/media/data/`，业务数据沿用 `~/.dsh/media-desk/`，作品文件沿用 `~/wiki/notes/`；日常 `web` 不加载 Media Desk。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)；复盘读隔离、单篇刷新和本机升级验收见 [Media Desk 发布记录](HANDOFF-changelog.md#media-desk-winter10)。
 
 macOS 独立 `media` profile 已从 `github:winterhuan/dsh-media-desk#9d6abde17df431a8844a45098c88635ed2c33a3c` 安装 `2.7.0-winter.14`，服务使用端口 `3085`。全局 Media Desk 与生图 skill、只读 CLI 使用同一远程安装包；发布、数据备份与本机验收见 [Media Desk skill 发布](HANDOFF-changelog.md#media-desk-skill-release)。
 
@@ -151,7 +151,7 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 链接安装使用 `link:`；修改源码后重新构建，停止并重启该开发进程，再硬刷新浏览器。技能查看器需在 `plugins/dsh-skills-viewer` 构建并链接 `plugin/`，Host 与 Client 单次安装。移除使用 `dsh plugin --profile creative-dev remove @winterhuan/oh-story-dsh`。
 
-隔离验证可为每条 DSH 命令指定独立 `DSH_HOME`。首次打开浏览器前，将临时 profile 的 `workspace-controller.config.documentsDirectory` 指向临时目录，避免使用默认 Documents 工作区。UI 行为必须在真实 DSH 中验证，单元测试不能代替浏览器验收。Antfarm 开发使用 Web 的 Agent Preset 组合；DSH `0.2.2-rc.1` 没有 TUI 应用入口，终端验收使用 Headless；默认 headless 缺少原生 Agent Preset 注册器与 parent preset，自定义 headless 必须先补齐两者，不能仅添加 Antfarm bundle。
+隔离验证可为每条 DSH 命令指定独立 `DSH_HOME`。首次打开浏览器前，将临时 profile 的 `workspace-controller.config.documentsDirectory` 指向临时目录，避免使用默认 Documents 工作区。UI 行为必须在真实 DSH 中验证，单元测试不能代替浏览器验收。Antfarm 开发使用 Web 的 Agent Preset 组合；DSH `0.2.2-rc.5` 没有 TUI 应用入口，终端验收使用 Headless；默认 headless 缺少原生 Agent Preset 注册器与 parent preset，自定义 headless 必须先补齐两者，不能仅添加 Antfarm bundle。
 
 现有 Instabox 使用独立 `cloud-preview` profile；环境、登录入口、服务操作及 HTTPS 代理配置见[云端 DSH 预览参考](docs/user/cloud-dsh-preview.zh.md)。
 
@@ -159,13 +159,13 @@ dsh --profile creative-dev --host 127.0.0.1 --port 0 --no-open
 
 ## 6. 依赖策略
 
-本地维护插件的 DSH 依赖固定为 `0.2.2-rc.1`，子模块参考版本为 `dsh-v0.2.2-rc.1`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
+本地维护插件的 DSH 依赖固定为 `0.2.2-rc.5`，子模块参考版本为 `dsh-v0.2.2-rc.5`。配套范围为 `@deepseek-ai/cordis ~4.1.0`、`cordis-plugin-{group,include,loader} ~1.1.0`、`@deepseek-ai/schemastery ~3.19.0`。升级时同步核对所有子模块的依赖、锁文件、补丁与上游标签，不使用 `*` 或 `latest`。
 
-`dsh-superagent-prototype` 是研究参考例外，保留原型的独立工具链，包版本为 `0.1.1`，DSH 开发依赖、对等依赖及宿主版本均固定为 `0.2.2-rc.1`，不加入现役插件的版本统一。预构建发布包安装到独立 profile，本地开发仍可构建和链接；Host、面板与原有执行器的 Bash、文件读取及 transcript 已在 DSH `0.2.2-rc.1` 验证；真实模型执行需单独验证。本机兼容性修复备份与证据在 `~/.dsh/backups/superagent-host-compatibility-20261116-204446/`。
+`dsh-superagent-prototype` 是研究参考例外，保留原型的独立工具链，包版本为 `0.1.2`，DSH 开发依赖、对等依赖及宿主版本均固定为 `0.2.2-rc.5`，不加入现役插件的版本统一。预构建发布包安装到独立 profile，本地开发仍可构建和链接；Host、面板与原有执行器的 Bash、文件读取及 transcript 已在 DSH `0.2.2-rc.1` 验证；真实模型执行需单独验证。本机兼容性修复备份与证据在 `~/.dsh/backups/superagent-host-compatibility-20261116-204446/`。
 
-Antfarm `0.3.4` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
+Antfarm `0.3.5` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.5`。包版本独立管理，Git 发布包包含预构建产物并免于安装时运行构建脚本。职责、宿主前提和验证范围见 [Antfarm 子系统](docs/subsystems/antfarm.zh.md)。
 
-`oh-story-dsh` fork 保留上游的兼容范围和冻结锁文件，开发 DSH 依赖固定为 `0.2.2-rc.1`；不为匹配其他插件改写其 peerDependencies。
+`oh-story-dsh` fork 保留上游的兼容范围和冻结锁文件，开发 DSH 依赖固定为 `0.2.2-rc.5`；不为匹配其他插件改写其 peerDependencies。
 
 新使用 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入该插件的 `devDependencies`，并添加 `import type {} from '<包>/remote'`。外部 Remote 仍需由客户端显式挂载。
 
@@ -176,15 +176,15 @@ Antfarm `0.3.4` 的依赖及生成 Remote 使用精确 DSH `0.2.2-rc.1`。包版
 ## 8. 从上游复制的文件及本地改动
 
 
-构建、客户端测试辅助文件与客户端环境类型仅在各插件子模块维护；下表路径相对子模块根目录，上游版本为 `dsh-v0.2.2-rc.1`。`clientBundle()` 接收包目录，各插件的 tsdown 配置传入包根目录。`scripts/modules/src/assets.ts` 定义包资源媒体类型、导出名、修订号与浏览器引用路径，供客户端构建使用。
+构建、客户端测试辅助文件与客户端环境类型仅在各插件子模块维护；下表路径相对子模块根目录，上游版本为 `dsh-v0.2.2-rc.5`。`clientBundle()` 接收包目录，各插件的 tsdown 配置传入包根目录。`scripts/modules/src/assets.ts` 定义包资源媒体类型、导出名、修订号与浏览器引用路径，供客户端构建使用。
 
 | 子模块内文件 | 上游来源 | 本地改动 |
 |---|---|---|
-| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；新增 `./modules/src/assets.ts` 导入 |
+| `scripts/tsdown.client.ts` | `packages/client/tsdown.client.ts` | 删除 `optionalStringArray` 的导入并在文件末尾内联；`platform`、`client-build-environment`、`experimental-package-policy`、`bundle-input-isolation` 改为同目录相对导入；`REPOSITORY_ROOT` 用 `new URL('..', import.meta.url)`；新增 `./modules/src/assets.ts` 导入；沿用 rc.5 的浏览器压缩与 `postBanner` |
 | `scripts/modules/src/assets.ts` | `packages/client/modules/src/assets.ts` | 无（模块源码，上游无首行标注） |
 | `scripts/client-build-environment.ts` | `scripts/client-build-environment.ts` | `CLIENT_ARTIFACT_PATTERNS` 删掉 `apps/web/dist/**/*`；新增 `packages/*/*/lib/assets/**/*` 模式 |
 | `scripts/bundle-input-isolation.ts` | `scripts/bundle-input-isolation.ts` | 仅首行标注 |
-| `scripts/experimental-package-policy.ts` | `scripts/experimental-package-policy.ts` | 仅首行标注（上游新增 cua-bundle、action-cards、creation-recommendations 等映射） |
+| `scripts/experimental-package-policy.ts` | `scripts/experimental-package-policy.ts` | 仅首行标注 |
 | `scripts/platform.ts` | `packages/client/web/src/platform.ts` | 仅首行标注 |
 | `scripts/vitest-shared.ts` | `vitest.shared.ts` | 仅首行标注 |
 | `scripts/test-dom-environment.ts` | `scripts/test-dom-environment.ts` | 仅首行标注 |
@@ -273,7 +273,7 @@ tmp=$(mktemp -d) && git -C upstream archive dsh-v0.2.2-rc.1 .agents/skills | tar
 
 ## 12. 本机环境变更记录
 
-历次发布、版本统一、远程安装、详情连接修复及技能查看器合并记录见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。记录中的 `~/dsh-plugins` 是历史位置；其发布材料与旧仓库副本已移至 `~/.dsh/backups/submodule-migration-20261107-220104/publication-workspace/`，原 monorepo 源码在同级 `monorepo-working-copy/`，另有源码压缩包和迁移前 Git diff。市场检出现位于 `.worktrees/market-site/`。
+WSL 当前全局 DSH 为 `0.2.2-rc.5`，9 个插件的发布与日常服务验收见[rc.5 升级记录](HANDOFF-changelog.md#dsh-rc5-all-plugins)。历次发布、远程安装与环境变更见 [HANDOFF-changelog.md](HANDOFF-changelog.md)。记录中的 `~/dsh-plugins` 是历史位置；其发布材料与旧仓库副本已移至 `~/.dsh/backups/submodule-migration-20261107-220104/publication-workspace/`，原 monorepo 源码在同级 `monorepo-working-copy/`，另有源码压缩包和迁移前 Git diff。市场检出现位于 `.worktrees/market-site/`。
 
 2026-11-15：Student [v0.2.3](https://github.com/winterhuan/dsh-student/releases/tag/v0.2.3) 已更新市场及日常三个 profile，Web 重启与浏览器验收通过；57 条作答和 83 个学习文件字节保持不变，其他直接依赖与用户补丁保留。类型检查、构建、277 项测试与规范检查通过。备份及证据：`~/.dsh/backups/student-record-notice-20261115-ngRFT8/`。
 
