@@ -11,6 +11,8 @@
 
 ## 必须遵守
 
+- 本机依赖安装、构建和服务运行使用 Windows 原生 PowerShell 与 Node.js，不在 WSL 中执行；安装前先保留未提交工作并同步最新代码。
+- 浏览器操作与真实 DSH 客户端验收使用 `ego-browser`；先运行 `ego-browser skill` 读取当前指南，实际验证后再报告结果。
 - 不修改根目录或子模块内 `upstream/` 的源码；它们只作参考与客户端测试来源。
 - DSH 依赖使用精确版本；当前依赖与上游标签为 `0.2.2-rc.5`／`dsh-v0.2.2-rc.5`，配套范围见 [依赖策略](HANDOFF.md#6-依赖策略)。升级时同步核对所有插件的依赖、锁文件、补丁与标签。
 - 新用到 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入对应包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。

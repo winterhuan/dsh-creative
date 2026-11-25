@@ -45,7 +45,10 @@ if (group === undefined || scripts === undefined) {
 pluginWorkspaces(resolve(import.meta.dirname, '..'))
 const failed: string[] = []
 for (const script of scripts) {
-  const result = spawnSync('pnpm', ['--silent', 'run', script], { stdio: 'inherit' })
+  const args = ['--silent', 'run', script]
+  const pnpm = process.env.npm_execpath
+  const result = spawnSync(pnpm ? process.execPath : 'pnpm', pnpm ? [pnpm, ...args] : args, { stdio: 'inherit' })
+  if (result.error) throw result.error
   if (result.status !== 0) failed.push(script)
 }
 

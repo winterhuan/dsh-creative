@@ -14,7 +14,11 @@ for (const path of paths) {
   console.log(`\n${path}: ${command}`)
   const args = command === 'install' ? ['install', '--frozen-lockfile', ...extra]
     : ['run', ...(command === 'clean' ? ['--if-present'] : []), command, ...extra]
-  const result = spawnSync('pnpm', args, { cwd: resolve(root, path), stdio: 'inherit' })
+  const pnpm = process.env.npm_execpath
+  const result = spawnSync(pnpm ? process.execPath : 'pnpm', pnpm ? [pnpm, ...args] : args, {
+    cwd: resolve(root, path),
+    stdio: 'inherit',
+  })
   if (result.error) throw result.error
   if (result.status !== 0) process.exit(result.status ?? 1)
 }
