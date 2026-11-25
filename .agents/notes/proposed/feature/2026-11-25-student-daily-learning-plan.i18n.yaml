@@ -12,17 +12,17 @@
   en: 9ef0d23b3b5bef33
   zh: 24dc9ea7eee802f4
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/proposal:
-  en: 62bebc23efa5cdaf
-  zh: 03441c7357e4af2c
+  en: efe88511ef33b89b
+  zh: 7a74ac602c53175c
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/proposal/scope-and-existing-decisions:
   en: dddb6de71efa7dcd
   zh: 8ab8fc1855f84f78
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/proposal/roles-and-success:
-  en: 925d7edcb0d8a2b8
-  zh: b3044bdfb4718665
-/agent-note-student-daily-learning-plan-and-learner-flow-spec/first-use-and-scope-confirmation:
-  en: a6a794d03c019fae
-  zh: 6522d3a22dccdfb7
+  en: c10e4214fb59ad52
+  zh: 26b25dfe6ad2ecbf
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/first-use-and-existing-data-migration:
+  en: ab52cf1ca5aadf5c
+  zh: 4cfdf41b1b73729d
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy:
   en: e8361020db41c1f2
   zh: 3059e5ae9a11f3db
@@ -30,8 +30,8 @@
   en: dda852ac6cac3e31
   zh: 143db8ba4f05f7d6
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy/candidates-and-ordering:
-  en: c1d4318ef813e3ed
-  zh: 1682073387d8cd56
+  en: db82cd0fc0776346
+  zh: ae8825bd3fc25b83
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/daily-selection-policy/cold-start-and-reasons:
   en: 704c5bbc39df725e
   zh: 80d4555ca437fc8f
@@ -45,8 +45,8 @@
   en: c282c9b135879f3a
   zh: d786772d07a5fb00
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/student-and-parent-presentation:
-  en: 487f892e9781a6fb
-  zh: 4a8efcbf03b7311e
+  en: c1d4f681fdcccb0c
+  zh: 9d35a361bf85078f
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/shared-progress-and-persistence:
   en: d20f3b982f5c3fb2
   zh: d20f3b982f5c3fb2
@@ -57,23 +57,26 @@
   en: e0c46421609e2073
   zh: 43724c2f3e0216c8
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/delivery-sequence:
-  en: d03325aa17033f61
-  zh: 1bbf4810f4bed5ab
+  en: 261983ff236f0b36
+  zh: feec810dd3d48665
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/alternatives-considered:
   en: f992b85797db7667
   zh: 4c406171e549291b
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/acceptance-criteria:
-  en: 690466dbe5986594
-  zh: 2163838fb2e0cd2f
+  en: e9ec6c85a94d14a4
+  zh: 799520651154bcdd
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/implementation-verification:
-  en: b9fa76802606ead1
-  zh: ca436fe5e93df616
+  en: af68741fe2b408f5
+  zh: 661d7ec6d001b457
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/implementation-verification/automated-checks:
-  en: 2338974ff31826c0
-  zh: b0852a2794a6da30
+  en: 36e8f0ac4a1790e0
+  zh: cb60beb6e5f203be
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/implementation-verification/real-browser-and-model-checks:
-  en: 9a6842d1f8575b08
-  zh: aa04bfaeab8a2031
+  en: 5704f3687d916d3a
+  zh: ee91572ecd5d35f7
+/agent-note-student-daily-learning-plan-and-learner-flow-spec/implementation-verification/existing-data-and-flow-acceptance:
+  en: fce6de874b128a2c
+  zh: 80d476a5d78a8395
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/risks:
   en: 989859f45fd3e550
   zh: 94f984fa5a1ac533

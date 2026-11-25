@@ -23,7 +23,7 @@ The pre-implementation review examined Student `0.2.6` production logic and sour
 
 ## Proposal
 
-Parents confirm scope, Student recommends today's content from the child's actual learning state, and children enter the current activity through Start today's learning. Each task saves its goal, selection reason and completion condition. The system uses actual responses to select subsequent learning, remedial teaching or review without parents choosing each question. Children advance by answering or choosing Continue and can change content, pause or stop; learning added after completion requires an explicit choice.
+Student reuses the learner profile, school progress and actual learning records to recommend today's content. Parents can add constraints when needed; children enter the activity through Start today's learning. Each task saves its goal, selection reason and completion condition. Actual responses guide subsequent learning, teaching and review. Children can continue, change content, pause or stop; learning after completion requires an explicit choice.
 
 ### Scope and existing decisions
 
@@ -37,20 +37,20 @@ Preserve the intent of [removing time limits](../../implemented/feature/2026-10-
 
 | Role | Default responsibility | Observable success |
 | --- | --- | --- |
-| Parent | Confirm learner, scope, school progress and available learning modalities; inspect requests for help. | Ordinary learning days need no further question or goal selection after setup. |
-| Student | Recommend today's content from valid evidence and confirmed scope, adapt subsequent learning and review to feedback, prepare current teaching and save resumption points. | Refreshes, different conversations and later days preserve continuity; all pages agree on the same facts. |
+| Parent | Confirm learner and factual school progress; optionally constrain content and inspect help needs. | Existing information carries forward after upgrades; ordinary learning needs no per-subject unlocking. |
+| Student | Recommend content from existing profile, valid evidence and optional parent constraints; prepare teaching and preserve resumption points. | Refreshes, different conversations and later days preserve continuity; pages agree on the same facts. |
 | Child | Start, answer, ask for help, change content, pause or stop; ask their own questions. | The first screen explains the current task and has one primary action, without requiring knowledge of families or evidence budgets. |
 
-## First-use and scope confirmation
+## First-use and existing-data migration
 
-Setup proceeds through the current native conversation, while the workbench shows a confirmation summary and specific outstanding steps. Existing profiles fill only missing information instead of repeating setup.
+Setup uses the current native conversation. Existing profiles, books, school units and learning records carry forward without repeating confirmation.
 
-1. Confirm learner and term; school materials and the current unit may be added later.
-2. Choose subjects for automatic selection and either Follow school or Build foundations. Parents may describe their intent naturally without entering capability IDs, family IDs or number-range fields.
-3. Suggest a concrete scope, its basis and available modalities from the verified catalog. When school mode lacks a current unit, parents can supply it or explicitly confirm a foundational scope; school progress is never guessed.
-4. Show one summary of included content, excluded content and practice modalities. Save `learningScopes` and related settings after explicit parent confirmation; show Start today's learning only after successful independent reading.
+1. Reuse the existing learner and term identity; only a new profile requires basic setup.
+2. Derive subject candidates from existing school progress and historical learning ranges. Optional parent constraints override defaults for their subject.
+3. Without school progress, suggest a short diagnostic within the grade map. Never infer the current school unit or call missing evidence a weakness.
+4. Parents can adjust content in settings. Save `learningScopes` only for an explicit extra constraint; automatic suggestions never create parent confirmations.
 
-The missing-scope primary button opens the matching step, such as Confirm math scope, with existing information and suggested values. Cancellation or failure retains the draft and missing-field explanation; returning parents resume that step. Missing scope excludes only that subject, while other confirmed subjects can produce a plan. Setup blocks all learning only when no subject has usable scope.
+A missing `learningScopes` field does not block a subject. Migration first verifies exact-byte backups of official files and the complete lesson log, then fills known learner identity and legacy reference indexes. Original questions, responses, grades, assistance, dates and unknown facts remain intact. Validate in a copy, check current versions, write only necessary outputs with settings last, and independently read again. Repeating migration must not duplicate records or award mastery.
 
 Select written, oral, listening, audiovisual and performed capabilities according to available modalities. Without audio input or observation evidence, written practice cannot count as listening or speaking assessment. Tasks needing unavailable equipment or parent observation cannot become impossible default tasks.
 
@@ -66,7 +66,7 @@ The learner home offers Today’s recommendations, Chinese, Math and English. Co
 
 ### Candidates and ordering
 
-One query builds candidates across all confirmed subjects before selecting daily tasks. The subject currently being browsed does not determine the default plan. Goal identity combines capability and applicable scope; families organize instances, and textbook units constrain eligibility.
+One query builds candidates across subjects using existing information before selecting daily tasks. Browsing a subject does not determine the default plan. Goal identity combines capability and applicable scope; families organize instances, and school units constrain eligibility.
 
 | Order | Selection rule | Exclusions and stopping rules |
 | --- | --- | --- |
@@ -142,12 +142,14 @@ A carried task directly references its original task identity and activity, with
 
 Home, Learning and Today’s learning are states in one flow, not parallel navigation destinations. Subject navigation appears only on Home; Learning shows the current subject, goal, question and tutor. Completing the current arrangement or explicitly stopping opens Today’s learning, grouped by subject with actual responses, consolidation needs and unfinished activities. Continue restores the original activity; Learn a little more explicitly adds an activity. Returning Home preserves current progress.
 
+Existing activities without a daily plan enter Learning directly. Home can open Today’s gains when an activity or actual answers exist, even before a plan is saved; reading that page does not end the activity. The first explicit Pause, Stop or native Continue records only the original activity and the actual choice. It does not invent a historical Start, add other recommendations or count historical answers as today’s work. Gains list the actual topics, help, consolidation needs and pending results by subject, with a continuation entry for unfinished work.
+
 Make the learning workbench the visible primary area in Student mode, showing the current learner and daily state when entering an existing learning workspace. Native conversation remains the executor and tutor for the current activity. Narrow-window switching between task and conversation preserves position, drafts and submission status. Missing model or workspace setup produces a specific parent-facing explanation.
 
 ```mermaid
 flowchart TD
-  A[Open Student] --> B{Confirmed usable scope?}
-  B -->|No| C[Parent confirms suggested scope]
+  A[Open Student] --> B{Existing learner profile?}
+  B -->|No| C[Set up learner profile]
   C --> D[Preview today's plan]
   B -->|Yes| E{Saved plan or current activity?}
   E -->|Yes| F[Resume saved state]
@@ -165,7 +167,7 @@ flowchart TD
 
 | Page state | Primary content | Single primary action |
 | --- | --- | --- |
-| Scope missing | Existing profile, specific missing information and suggested scope | Ask a parent to confirm the relevant subject scope |
+| School progress missing | Existing profile and a grade-based diagnostic | Start without per-subject unlocking |
 | Today ready | Today's recommended content, short reasons and the current priority task | Start today's learning |
 | Learning active | Current question or teaching activity, response area and feedback | The action for the current question, without another ambiguous Continue button |
 | Paused | Completed work and the named unfinished task | Continue learning |
@@ -212,7 +214,7 @@ The implementation follows these stages within the Student submodule. The verifi
 | Stage | Work | Delivery condition |
 | --- | --- | --- |
 | 1. Shared capability state | Unify continuation, map, weak points and parent records around capability/scope projections; include weak goals from ended blocks. | One response produces consistent views, and block end preserves remedial needs. |
-| 2. Scope confirmation | Add targeted scope steps, a natural-language summary and return to learning. | A user with a profile can confirm and start without internal IDs. |
+| 2. Reuse existing data | Migrate stable identity and legacy indexes; derive ranges from existing profile and progress. | Existing learners continue without repeated confirmations or lost history. |
 | 3. Daily plan and recovery | Select from actual needs, adapt learning and review to feedback, and save plans and task states with subject coverage, day changes and concurrency recovery. | Restart restores the same plan; subsequent recommendations adapt to valid feedback without duplicate activities or responses or automatic questions after closure. |
 | 4. Learner page | Prioritize current activity, one primary action, daily closure, parent action items and optional activities. | Main paths work in wide/narrow windows and light/dark themes. |
 | 5. Real flow acceptance | Verify native conversation, actual files, classroom feedback and display in an isolated profile. | Meet the table below and record versions, evidence and gaps before considering release. |
@@ -235,9 +237,9 @@ These are implementation acceptance requirements; the record below distinguishes
 
 | ID | Scenario | Required observable result |
 | --- | --- | --- |
-| A01 | New profile without materials or scope | Suggest understandable foundations; confirmation and independent reading allow one Start into today's task. |
-| A02 | Existing profile missing math scope | The primary action opens math confirmation directly; back, cancel, failure and re-entry preserve context. |
-| A03 | Math confirmed, English unconfirmed | Math remains schedulable; English setup does not block all learning. |
+| A01 | New profile without materials or scope | Basic profile enables a short grade-based diagnostic without invented school progress. |
+| A02 | Existing profile without `learningScopes` | Preserve confirmations and use existing school progress; no per-subject blocker. |
+| A03 | Math has an explicit constraint, English has none | Math respects its constraint; English uses existing data or grade defaults. |
 | A04 | No historical evidence | A small diagnostic belongs to the main task, without assuming weakness or requiring a full exam; at most three new checks. |
 | A05 | All three subjects have executable candidates and no required continuation | The least-covered main subject receives priority; browsing or clearing local preferences cannot change a saved plan. |
 | A06 | Incorrect counting, block end, re-entry and next-day Start | Difficulty remains a remedial candidate; `endedAt` cannot restrict selection to untouched goals. |
@@ -261,22 +263,23 @@ These are implementation acceptance requirements; the record below distinguishes
 | A24 | New valid responses or help records after Start | Select a suitable next step without parents choosing questions. Save amendments to unstarted content on Continue, preserve original questions, drafts and responses, and keep ended plans closed. |
 | A25 | Current checks satisfied and next goal eligible, before long-term mastery | Permit recommended progression with future consolidation retained. Recommend review when due, using valid dates, independence and existing intervals; progression cannot count as mastery. |
 | A26 | Choose a subject, start, stop, return and refresh | Subject navigation appears only on Home; every recommendation identifies its subject and matches the selection. Summary creates no completion evidence; continuation restores the same question and draft. The four parent sections remain separate. |
+| A27 | Existing activity has no daily plan; inspect gains, pause and reload | Reading creates no plan; Pause/Stop binds only the original activity with the actual choice. Gains show no fabricated completion or historical answers as today’s work, and Continue restores the same question and draft. |
 
-Implementers record type checking, build, relevant tests and documentation checks. Product review confirms that recommendations fit actual learning needs, alongside selection reasons, scope summaries and child-facing copy. Real acceptance must include Confirm scope → Start → Answer → Help → Complete → Next-day continuation, separately stating whether native classroom generation and feedback were exercised. Synthetic queries from the current audit are regression-scenario inputs only.
+Implementers record type checking, build, relevant tests and documentation checks. Product review checks recommendations, reasons and child-facing copy. Real acceptance includes existing-data migration and Start → Answer → Help → Complete → Next-day continuation, separately reporting native classroom generation and feedback coverage. Synthetic queries supply regression cases only.
 
 ## Implementation verification
 
-The Student `codex/student-daily-learning` worktree uses Node `24.22.2`, pnpm `11.7.0` and DSH `0.2.2-rc.5`. Source, generated Host/Client code, types and native study instructions are synchronized. The package remains `0.2.6`; this is local implementation verification, not a release or an update to a daily profile.
+The Student `codex/student-daily-learning` worktree uses Node `24.22.2`, pnpm `11.7.0` and DSH `0.2.2-rc.5`. Source, generated Host/Client code, types and native study instructions are synchronized. The package remains `0.2.6`; the changes are delivered as a fixed Git package, without an npm release or a new tag.
 
 ### Automated checks
 
 | Check | Result and evidence |
 | --- | --- |
-| Types and builds | Host, Client and script types and both build faces pass. Logs: `/tmp/student-daily-build-final8.log`, `/tmp/student-daily-client-final9.log`, `/tmp/student-daily-script-types-final6.log`. |
-| Regression suite | 43 files and 474 tests pass, including scope filtering, ended weaknesses, midnight closure, completion versus mastery, optional work and pause, draft migration, narrowed scope, interrupted preparation, direct carry ownership and bounded reads. One earlier Chrome test timed out during concurrent runs; its isolated rerun and the full suite with four workers pass. Logs: `/tmp/student-daily-browser-retry.log`, `/tmp/student-daily-tests-final10.log`. |
+| Types and builds | Host, Client and script types and both build faces pass. Logs: `/tmp/student-legacy-flow-build.log`, `/tmp/student-legacy-flow-client-final.log`, `/tmp/student-legacy-flow-script-types.log`. |
+| Regression suite | 43 files and 481 tests pass, including existing scopes, read-only old-activity projection, explicit pause adoption, original drafts, actual-day summaries, completed-plan preservation and pending topic results. Log: `/tmp/student-legacy-flow-tests-final.log`. |
 | Native recovery | Real native tools, read-only CLI and independent reads pass migration interruptions, changed-source rejection, observed backups, restore, archive and old-term rejection. The model and learner data are scripted. Log: `/tmp/student-daily-recovery-final.log`. |
 | Native classroom feedback | Native authoring, protected source reads, CLI validation, independent acceptance, restart and persisted question allowance pass against a synthetic HTTP classroom and scripted model. Log: `/tmp/student-daily-feedback-final2.log`. |
-| Documentation | Paired spec and package READMEs pass structure and hash checks; the parent repository's 16 documentation checks and both repositories' whitespace checks pass. Log: `/tmp/student-daily-doc-sync.log`. |
+| Documentation | Paired spec and package READMEs pass structure and hash checks; the parent repository's 16 documentation checks and both repositories' whitespace checks pass. Log: `/tmp/student-existing-flow-docs.log`. |
 
 ### Real browser and model checks
 
@@ -284,10 +287,10 @@ The isolated `daily-qa` profile on port `3184` uses a fictional learner under `/
 
 | Path | Observed result |
 | --- | --- |
-| Entry and scope | Student automatically opens its workbench. Profile creation produces no premature question or plan. Math confirmation opens the corresponding parent step and saves only math; Chinese/English remain unconfirmed. |
+| Entry and scope | Student opens its workbench. Existing profiles use their books, school progress and grade defaults without per-subject confirmation gates. English recommendations and optional parent range adjustment are verified after migration. |
 | Start and original answer | Start creates one plan and original question. The native agent saves the workbench answer `7` and its assessment; the independent reader displays correct feedback. Method and variation evidence remains missing, without granting mastery. |
 | Midnight and recovery | The plan remains dated `2026-11-25`; the original receipt dates the answer to `2026-11-26`. Restart, refresh and a new conversation retain the same block, question and round. The draft survives refresh and appears in another conversation before saving. |
-| Subject browsing | Home's English selection shows its scope-confirmation path while retaining the original math activity. Browsing creates no new plan, question or response. |
+| Subject browsing | Home’s English selection shows grade-based recommendations while retaining the original math activity. Browsing creates no new plan, question or response. |
 | Pause and summary | After explicit recovery guidance, the native agent saves the plan and task as paused while retaining the original activity and response. CLI validation and independent reads pass. The summary shows one actual independent response, the unfinished task and Continue, with no recommendation list or mastery claim. |
 | Help and completion | Continue retains the original block and round. The next response retains its hint; the third response is independent. Explicit Finish completes the original plan. The summary shows three actual responses, two independent, one helped and one needing consolidation, without granting mastery. |
 | Optional learning | Learn a little more adds a separate optional teaching activity without resetting the exhausted check round. Its additional question remains blocked by that allowance; creation and pause are verified, not a fourth assessed answer. Pausing it preserves the original completed state and completion time. The summary retains the three actual responses and offers Continue for the unfinished optional activity. |
@@ -296,6 +299,14 @@ The isolated `daily-qa` profile on port `3184` uses a fictional learner under `/
 The live run exposed a timing-validation bug: a Start click can precede file creation while the native tutor prepares the task. Validation now preserves that original choice time and rejects a choice after the saved update; a regression test covers delayed creation. Midnight closure also exposed a missing original-plan read: the reader now retains the latest activity closed today, and Home sends Extra after completion. Optional pause returns to the summary while preserving completion. Regression tests cover these fixes. Recovery reuses the original response and receipt without resending the child's answer. The initial model repeatedly revisited old validation and pause rules and required interruption and explicit recovery guidance; this is not an uninterrupted usability pass. Screenshots and isolated native history remain under `/tmp/student-daily-acceptance`, with logs and screenshots copied to the Student worktree's ignored `.artifacts/student-daily-learning/`; these local artifacts are not release artifacts.
 
 Live Help, completion and optional pause pass; the live continuation crosses midnight while retaining its original plan. A fresh later-day plan and task transfer are covered by automated tests, not a separate live later-day Start. Online classroom generation is not covered by this run; the scripted feedback check must not be reported as online acceptance or evidence of teaching quality.
+
+### Existing-data and flow acceptance
+
+On November 26, the daily learner archive was backed up byte-for-byte before the official migration description was applied: 11 blocks, 24 worksheets and 57 responses remain intact, with 10 legacy-reference indexes added. Original questions, answers, assessments, help, dates, learner and term identities are preserved; missing confirmations are not invented. CLI validation and repeat migration checks pass. The protected backup is `/Users/winter/.dsh/backups/student-data-migration-20261126-063111`; no learner data is committed.
+
+A fresh synthetic pre-plan activity in the isolated profile passes Home → gains → original question, Pause → refresh → Continue → answer → Stop. The live tutor creates one plan with only the original activity and `pause`, `continue`, `stop` choices; it retains one original question and one authenticated native answer. The summary lists its actual topic and independent response while retaining unfinished work. CLI and independent reads pass, with no new task, historical Start or completion fabricated. Wide and 430-pixel layouts are inspected without horizontal overflow. Evidence: `/tmp/student-existing-flow-validation-final.json` and `/tmp/student-daily-acceptance/existing-flow-summary.png`.
+
+The fixed remote package is installed in the daily `student` profile and that profile has restarted. All 813 tracked runtime and knowledge files match the built commit. The actual learner’s Home → gains → original English activity path is verified without submitting answers; the archive still has 11 blocks, 24 worksheets and 57 responses. Evidence: `/tmp/student-existing-flow-install.log`, `/tmp/student-existing-data-postfix-validation.json`.
 
 ## Risks
 
