@@ -21,7 +21,7 @@ description: "Student 的职责：学习内容、学生原始证据、原生辅�
 <a id="ownership"></a>
 ## 职责归属
 
-`student` Agent preset 将教学工具与 skill（技能）限定在 Student 对话内。全局 Host 服务独立读取和核验文件、管理受保护的连接，并支持家长的明确编辑。左侧栏工作台在学生工作区内选择未归档的 Student 主会话，挂载期间持有其原生对话，切换或关闭时释放引用。右侧栏入口跟随所选会话的投影。模式选择不迁移历史，也不授予文件系统权限。
+`student` Agent preset 将教学工具与 skill（技能）限定在 Student 对话内。全局 Host 服务独立读取和核验文件、管理受保护的连接，并支持家长的明确编辑。右侧栏工作台跟随当前 Student 会话投影，关闭侧栏或切换会话时保留学习草稿。工作区和对话选择由 DSH 管理。模式选择不迁移历史，也不授予文件系统权限。
 
 独立安装的 [Student 包](../../plugins/dsh-student/packages/winterhuan/student/README.zh.md)划分五部分职责：
 

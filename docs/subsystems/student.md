@@ -21,7 +21,7 @@ Continue a learner's current question, preserve original answers and use verifie
 <a id="ownership"></a>
 ## Ownership
 
-The `student` Agent preset scopes teaching tools and skills to Student conversations. Global Host services independently read and verify files, manage protected connections and support explicit parent edits. The left-sidebar workbench selects an unarchived main Student Session within the learner workspace and retains its native conversation while mounted; switching or closing releases that reference. The right-sidebar entry follows the selected Session projection. Mode selection does not migrate history or grant filesystem permissions.
+The `student` Agent preset scopes teaching tools and skills to Student conversations. Global Host services independently read and verify files, manage protected connections and support explicit parent edits. The right-sidebar workbench follows the current Student Session projection and retains learning drafts across sidebar and Session changes. DSH owns workspace and conversation selection. Mode selection does not migrate history or grant filesystem permissions.
 
 The independently installed [Student package](../../plugins/dsh-student/packages/winterhuan/student/README.md) separates five responsibilities:
 
