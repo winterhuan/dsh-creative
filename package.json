@@ -8,6 +8,9 @@
     "node": "^22.19.0 || >=24.0.0"
   },
   "scripts": {
+    "blog:build": "pnpm --dir sites/personal-blog build",
+    "blog:dev": "pnpm --dir sites/personal-blog dev",
+    "blog:check": "pnpm --dir sites/personal-blog typecheck && pnpm --dir sites/personal-blog test",
     "build": "tsx scripts/run-plugins.ts build",
     "typecheck": "tsc -p tsconfig.scripts.json && tsx scripts/run-plugins.ts typecheck",
     "test": "tsx scripts/run-plugins.ts test && vitest run",

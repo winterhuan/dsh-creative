@@ -1,0 +1,16 @@
+[
+  {
+    "source": "notes/works/让 Wiki 研究进入可编辑的创作闭环.md",
+    "slug": "wiki-to-creative-workflow",
+    "cover": "notes/assets/让 Wiki 研究进入可编辑的创作闭环/cover.jpg",
+    "tags": ["AI 与工具", "知识管理"],
+    "description": "对话负责表达修改意图，作品负责留下当前的稿子。以 Media Desk 2.6.2 的固定快照为例，讨论研究、创作与核验如何接续。"
+  },
+  {
+    "source": "notes/works/建立我的写作操作系统.md",
+    "slug": "my-writing-system",
+    "cover": "notes/assets/建立我的写作操作系统/cover.jpg",
+    "tags": ["写作", "知识管理"],
+    "description": "写作最费劲的，常常不是找不到词，而是每次都像第一次写。从收集、整理、起草到复盘，建立一套能反复使用的流程。"
+  }
+]

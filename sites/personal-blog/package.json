@@ -1,0 +1,31 @@
+{
+  "name": "@winterhuan/personal-blog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "sync": "node src/sync.ts",
+    "build": "node src/build.ts",
+    "deploy": "pnpm build && wrangler pages deploy --branch main --commit-dirty=true",
+    "dev": "pnpm build && vite dist --host 127.0.0.1 --port 4173 --strictPort",
+    "preview": "vite dist --host 127.0.0.1 --port 4173 --strictPort",
+    "typecheck": "tsc --noEmit && node --check public/site.js && node --check public/theme.js",
+    "test": "node --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "js-yaml": "4.3.2",
+    "markdown-it": "15.0.3"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "4.0.9",
+    "@types/markdown-it": "14.2.0",
+    "@types/node": "22.20.4",
+    "typescript": "6.0.3",
+    "vite": "8.3.1",
+    "wrangler": "4.166.0"
+  }
+}

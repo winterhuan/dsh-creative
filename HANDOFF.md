@@ -44,6 +44,7 @@
 ```text
 dsh-creative/
 ├── plugins/              9 个独立 DSH 插件仓库的 Git 子模块
+├── sites/personal-blog/  从 Wiki 明确选稿的独立静态博客
 ├── scripts/              批量命令、文档与代码检查
 ├── tests/                父仓库工具测试
 ├── docs/、.agents/       跨插件文档、协作规范与决策记录
@@ -54,6 +55,8 @@ dsh-creative/
 ```
 
 每个插件子模块有自己的 `package.json`、锁文件和构建配置；其余原有 4 个仓库带只读 `upstream/`，Antfarm 使用父仓库的上游参考。父仓库的 pnpm workspace 不把子模块的包合并安装。Superagent fork 来自 `winterhuan/dsh-superagent-prototype`，保留原型的完整文档、提示词、Host／Client 源码与测试，便于对照其他插件的组合和开发方式；它仍是研究原型，通过市场发布并安装到独立 `superagent` profile。`.worktrees/market-site` 是本机保留的独立 Git 检出，属于 `winterhuan/dsh-creative` 的 `gh-pages` 分支，仅维护 `index.json` 和 `plugins.txt`，不是插件子模块；新克隆不会自动创建它。
+
+[个人博客](sites/personal-blog/README.zh.md)独立于 DSH 插件，使用自己的依赖和锁文件；根目录的 `blog:dev`、`blog:build` 与 `blog:check` 调用其工具链。文章从明确指定的 Wiki 只读导出，网站构建使用已选稿快照。
 
 ### 开发与发布规则
 
