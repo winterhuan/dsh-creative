@@ -27,6 +27,19 @@
       },
       "versions": [
         {
+          "version": "0.1.32",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/oh-story-dsh",
+            "commit": "5c3d5823efc8a49a4666b4cb78e215b4e16b126e",
+            "path": "packages/dsh-plugin"
+          },
+          "engines": {
+            "dsh": ">=0.2.0-rc.2 <0.2.1-0 || >=0.2.1-alpha.1 <0.2.2-0 || >=0.2.2-alpha.2 <0.2.3-0"
+          }
+        },
+        {
           "version": "0.1.31",
           "publishTimestamp": 1795224445,
           "source": {
@@ -82,6 +95,19 @@
         "directory": "packages/winterhuan/student"
       },
       "versions": [
+        {
+          "version": "0.2.6",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-student",
+            "commit": "bd01f562a8ebb3eed6a196762aadd035de795e86",
+            "path": "packages/winterhuan/student"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
         {
           "version": "0.2.5",
           "publishTimestamp": 1795148283,
@@ -193,6 +219,19 @@
       },
       "versions": [
         {
+          "version": "0.1.10",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-skills-viewer",
+            "commit": "dcf4b3450f238e9ce19064daf4bf21ffab9915d5",
+            "path": "plugin"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
+        {
           "version": "0.1.9",
           "publishTimestamp": 1795148275,
           "source": {
@@ -237,6 +276,19 @@
         "directory": "packages/winterhuan/project-default-mode"
       },
       "versions": [
+        {
+          "version": "0.1.10",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-project-default-mode",
+            "commit": "70bcf5aad54045e3051706f6861c43050cb2833d",
+            "path": "packages/winterhuan/project-default-mode"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
         {
           "version": "0.1.9",
           "publishTimestamp": 1794191586,
@@ -283,6 +335,19 @@
       },
       "versions": [
         {
+          "version": "0.1.10",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-client-ui-settings-model-options",
+            "commit": "dae4cf54531237c60d5d5d36164d2ae653bbe96e",
+            "path": "packages/winterhuan/ui-settings-model-options"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
+        {
           "version": "0.1.9",
           "publishTimestamp": 1795148275,
           "source": {
@@ -326,6 +391,18 @@
         "url": "https://github.com/winterhuan/dsh-antfarm"
       },
       "versions": [
+        {
+          "version": "0.3.5",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-antfarm",
+            "commit": "18a000c5d823ea14aeb0b4921903c1eef6259a85"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
         {
           "version": "0.3.4",
           "publishTimestamp": 1795148276,
@@ -392,6 +469,18 @@
         "url": "https://github.com/winterhuan/dsh-media-desk"
       },
       "versions": [
+        {
+          "version": "2.7.0-winter.15",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-media-desk",
+            "commit": "7bbda83f57f481acee0357f0513d982068c86b73"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
         {
           "version": "2.7.0-winter.14",
           "publishTimestamp": 1795356100,
@@ -579,6 +668,18 @@
       },
       "versions": [
         {
+          "version": "0.2.4",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-shadow-mind",
+            "commit": "786c523fa74d9fddc4953b44956f61d6a8dd7793"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
+        {
           "version": "0.2.3",
           "publishTimestamp": 1795185671,
           "source": {
@@ -632,6 +733,18 @@
         "url": "https://github.com/winterhuan/dsh-superagent-prototype"
       },
       "versions": [
+        {
+          "version": "0.1.2",
+          "publishTimestamp": 1795589664,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/winterhuan/dsh-superagent-prototype",
+            "commit": "8d1731036e2fbab85a330e8b3c14d6bf721644df"
+          },
+          "engines": {
+            "dsh": "0.2.2-rc.5"
+          }
+        },
         {
           "version": "0.1.1",
           "publishTimestamp": 1794833131,
