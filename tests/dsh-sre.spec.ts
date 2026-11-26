@@ -35,7 +35,7 @@ calls = []
 def run(args, **kwargs):
     calls.append(args)
     return SimpleNamespace(returncode=0, stdout='{"pids": []}', stderr='')
-with patch('subprocess.run', side_effect=run):
+with patch('sys.platform', 'linux'), patch('subprocess.run', side_effect=run):
     try:
         runpy.run_path(script, run_name='__main__')
     except SystemExit as error:

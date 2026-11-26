@@ -11,6 +11,7 @@ import sys
 
 HOME = Path.home()
 DSH_HOME = HOME / '.dsh'
+WINDOWS = sys.platform == 'win32'
 SERVICES = {
     'web': ('dsh-webctl', 3080),
     'student': ('dsh-student', 3084),
@@ -22,7 +23,15 @@ if (DSH_HOME / 'profiles/writer/package.json').is_file():
     SERVICES['writer'] = ('dsh-writer', 3086)
 if (DSH_HOME / 'profiles/story/package.json').is_file():
     SERVICES['story'] = ('dsh-story', 3081)
-os.environ['PATH'] = ':'.join([
+if WINDOWS:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    sys.path.append(str(DSH_HOME / 'bin'))
+    import windows_service
+    SERVICES = {name: command for name, command in SERVICES.items()
+                if (DSH_HOME / 'profiles' / name / 'package.json').is_file()}
+    if windows_service.blog_available():
+        SERVICES['blog'] = ('dsh-blog', 4173)
+os.environ['PATH'] = os.pathsep.join([
     str(HOME / '.local/bin'),
     str(DSH_HOME / 'bin'),
     str(HOME / '.nvm/versions/node/v24.22.2/bin'),
@@ -35,25 +44,48 @@ def run(*args):
     return subprocess.run(args, capture_output=True, text=True)
 
 
+def controller_command(profile, action):
+    if WINDOWS:
+        return [sys.executable, '-X', 'utf8', str(DSH_HOME / 'bin/dsh-service'), profile, action]
+    return [str(DSH_HOME / 'bin' / SERVICES[profile][0]), action]
+
+
 def profile_names():
     directory = DSH_HOME / 'profiles'
     installed = {p.name for p in directory.iterdir() if p.is_dir() and (p / 'cordis.yml').is_file()} if directory.is_dir() else set()
     return sorted(set(SERVICES) | installed)
 
 
+def location(profile):
+    if WINDOWS and profile == 'blog':
+        return Path(windows_service.configuration()['repository']) / 'sites/personal-blog'
+    return DSH_HOME / 'profiles' / profile
+
+
+def daily_profiles():
+    if not WINDOWS:
+        return None
+    names = windows_service.configuration().get('dailyProfiles')
+    if names is not None and (not isinstance(names, list) or not names
+                              or any(not isinstance(name, str) or name not in SERVICES for name in names)
+                              or len(set(names)) != len(names)):
+        raise ValueError('dailyProfiles must list unique installed managed profiles.')
+    return names
+
+
 def show_status(profile):
     print(f'[{profile}]', flush=True)
-    print(f'  profile: {DSH_HOME / "profiles" / profile}')
+    print(f'  {"project" if WINDOWS and profile == "blog" else "profile"}: {location(profile)}')
     if profile not in SERVICES:
         print('  status: unmanaged (no service controller)')
         return 0
     script, port = SERVICES[profile]
-    controller = DSH_HOME / 'bin' / script
+    controller = DSH_HOME / 'bin' / ('dsh-service' if WINDOWS else script)
     print(f'  controller: {controller}')
     if not controller.is_file():
         print('  status: controller missing')
         return 1
-    result = run(str(controller), 'status')
+    result = run(*controller_command(profile, 'status'))
     try:
         details = json.loads(result.stdout)
         pids = details['pids']
@@ -64,9 +96,11 @@ def show_status(profile):
     print(f'  status: {details.get("state", state)}')
     print(f'  pids: {", ".join(map(str, pids)) or "-"}')
     base_url = f'http://127.0.0.1:{port}'
-    url = None
+    url = details.get('url') if pids else None
+    if WINDOWS and pids and details.get('log'):
+        print(f'  log: {details["log"]}')
     # Read the live process stdout file so a previous launch cannot supply a stale token.
-    for pid in pids:
+    for pid in ([] if WINDOWS else pids):
         files = run('lsof', '-a', '-p', str(pid), '-d', '1', '-Fn')
         for filename in re.findall(r'^n(.+)$', files.stdout, re.M):
             log = Path(filename)
@@ -92,28 +126,38 @@ def show_status(profile):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', nargs='?', default='status', choices=['list', 'status', 'start', 'stop', 'restart'])
+    actions = ['list', 'status', 'start', 'stop', 'restart'] + (['url'] if WINDOWS else [])
+    parser.add_argument('action', nargs='?', default='status', choices=actions)
     parser.add_argument('profile', nargs='?', help='Profile name or all; status defaults to all')
     args = parser.parse_args()
     names = profile_names()
+    daily = daily_profiles()
     if args.action == 'list':
         for name in names:
-            print(f'{name}\t{"managed" if name in SERVICES else "unmanaged"}\t{DSH_HOME / "profiles" / name}')
+            role = f'\t{"daily" if name in daily else "on-demand"}' if daily is not None and name in SERVICES else ''
+            print(f'{name}\t{"managed" if name in SERVICES else "unmanaged"}\t{location(name)}{role}')
         return 0
-    if args.profile is None and args.action != 'status':
+    if args.profile is None and args.action not in {'status', 'url'}:
         parser.error('start, stop and restart require a profile name or all')
     target = args.profile or 'all'
     if target != 'all' and target not in names:
         parser.error(f'unknown profile: {target}')
     if args.action != 'status' and target != 'all' and target not in SERVICES:
         parser.error(f'{target} has no service controller')
-    targets = (names if args.action == 'status' else list(SERVICES)) if target == 'all' else [target]
+    targets = (daily if daily is not None else (names if args.action == 'status' else list(SERVICES))) if target == 'all' else [target]
     failed = False
     for name in targets:
+        if args.action == 'url':
+            result = subprocess.run(controller_command(name, 'url'), capture_output=True, text=True)
+            if result.stdout.strip():
+                print(f'{name} {result.stdout.strip()}')
+            if result.stderr.strip():
+                print(result.stderr.strip(), file=sys.stderr)
+            failed |= result.returncode != 0
+            continue
         if args.action != 'status':
-            controller = DSH_HOME / 'bin' / SERVICES[name][0]
             print(f'[{name}] {args.action}', flush=True)
-            result = subprocess.run([str(controller), args.action])
+            result = subprocess.run(controller_command(name, args.action))
             failed |= result.returncode != 0
         status_code = show_status(name)
         if args.action != 'stop':
@@ -125,6 +169,6 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except (OSError, KeyboardInterrupt) as error:
+    except (OSError, ValueError, KeyboardInterrupt) as error:
         print(str(error), file=sys.stderr)
         sys.exit(1)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Control the local DSH profiles through per-profile systemd user services."""
+"""Control DSH through systemd on Linux or native child processes on Windows."""
 import os
 import http.cookiejar
 import json
@@ -14,6 +14,10 @@ import urllib.request
 ROOT = Path.home() / '.dsh'
 PORTS = {'web': 3080, 'story': 3081, 'superagent': 3082, 'antfarm': 3083, 'student': 3084, 'media': 3085, 'writer': 3086}
 HTTP = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+WINDOWS = sys.platform == 'win32'
+if WINDOWS:
+    import windows_service
+    PORTS['blog'] = 4173
 
 
 def systemctl(*args, check=True):
@@ -32,8 +36,8 @@ def login_url(profile):
     return urls[-1] if urls else None
 
 
-def reachable(profile):
-    url = login_url(profile)
+def reachable(profile, url=None):
+    url = url or login_url(profile)
     if url is None:
         return False
     try:
@@ -44,16 +48,22 @@ def reachable(profile):
 
 
 def health(profile):
-    state = properties('dsh@' + profile + '.service')
     url = f'http://127.0.0.1:{PORTS[profile]}'
-    pid = int(state.get('MainPID', '0'))
-    ready = state.get('ActiveState') == 'active' and reachable(profile)
-    details = {
-        'pids': [pid] if pid else [],
-        'state': 'running' if ready else ('unhealthy' if pid else 'stopped'),
-        'httpReady': ready,
-        'errors': [],
-    }
+    if WINDOWS:
+        details = windows_service.status(profile, PORTS[profile])
+        pid = next(iter(details['pids']), 0)
+        ready = bool(pid and details['url'] and reachable(profile, details['url']))
+        details.update(state='running' if ready else ('unhealthy' if pid else 'stopped'), httpReady=ready)
+    else:
+        state = properties('dsh@' + profile + '.service')
+        pid = int(state.get('MainPID', '0'))
+        ready = state.get('ActiveState') == 'active' and reachable(profile)
+        details = {
+            'pids': [pid] if pid else [],
+            'state': 'running' if ready else ('unhealthy' if pid else 'stopped'),
+            'httpReady': ready,
+            'errors': [],
+        }
     if not ready:
         return details, 1
     if profile == 'media':
@@ -96,6 +106,29 @@ def run(profile, action):
     log = ROOT / 'logs' / (profile + '.log')
     if action == 'status':
         return status(profile)
+    if WINDOWS:
+        if action == 'url':
+            details = windows_service.status(profile, PORTS[profile])
+            if not details['url']:
+                print(f'{profile}: no live login URL; start the service or inspect its log.', file=sys.stderr)
+                return 1
+            print(details['url'])
+            return 0
+        if action == 'stop':
+            windows_service.stop(profile, PORTS[profile])
+            print(f'{profile}: stopped.')
+            return 0
+        windows_service.start(profile, PORTS[profile], restart=action == 'restart')
+        deadline = time.monotonic() + 45
+        while time.monotonic() < deadline:
+            details, code = health(profile)
+            if details['httpReady'] or not details['pids']:
+                print(json.dumps(details, ensure_ascii=False))
+                return code
+            time.sleep(0.5)
+        print(json.dumps(details, ensure_ascii=False))
+        print(f'Inspect {details["log"]} and its .error.log companion.', file=sys.stderr)
+        return 1
     if action == 'url':
         if properties(unit).get('ActiveState') != 'active':
             print(f'{profile} is stopped; run dsh-{profile} start.', file=sys.stderr)
@@ -135,6 +168,9 @@ def main():
     parser.add_argument('action', nargs='?', default='status', choices=['start', 'stop', 'restart', 'status', 'url', 'logs'])
     args = parser.parse_args()
     if args.action == 'logs':
+        if WINDOWS:
+            windows_service.follow_logs(args.profile)
+            return 0
         os.execvp('tail', ['tail', '-n', '80', '-F', str(ROOT / 'logs' / (args.profile + '.log'))])
     return run(args.profile, args.action)
 
@@ -142,7 +178,7 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except (subprocess.CalledProcessError, OSError, KeyboardInterrupt) as error:
+    except (subprocess.CalledProcessError, OSError, ValueError, RuntimeError, KeyboardInterrupt) as error:
         detail = error.stderr if isinstance(error, subprocess.CalledProcessError) else str(error)
         print((detail or str(error)).strip(), file=sys.stderr)
         sys.exit(1)

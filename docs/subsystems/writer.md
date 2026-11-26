@@ -22,6 +22,8 @@ The Oh Story fork provides novel, short-drama, interactive-game and video-recap 
 
 [plugins/oh-story-dsh](../../plugins/oh-story-dsh/README.md) tracks [winterhuan/oh-story-dsh](https://github.com/winterhuan/oh-story-dsh), a fork of [zenstory-ai/oh-story-dsh](https://github.com/zenstory-ai/oh-story-dsh). The package is `@winterhuan/oh-story-dsh`; its source and build output live under `packages/dsh-plugin`.
 
+Workbench and creative behavior follow upstream `v0.1.28`. The fork retains only official Ego skill integration, its package name, and prebuilt fixed Git installation adapters. Empty workspaces use upstream onboarding; creative projects open the workbench automatically. The `openEmptyWorkbench` option is removed. Releases commit `lib/` with source and install from immutable version tags and fixed commits.
+
 Short-drama workbench development belongs to this fork. The [rejected independent-plugin proposal](../../.agents/notes/rejected/architecture/2026-11-08-short-drama-canvas-workbench.md) records the alternative.
 
 The former `plugins/dsh-writer` source is archived locally under `archive/dsh-writer/` and excluded from builds. Its [preset](../../.agents/notes/archived/feature/2026-10-31-writer-preset.md) and [Box/Ego integration](../../.agents/notes/archived/architecture/2026-11-07-writer-box-ego.md) are historical decisions. The new fork retains its upstream workbenches; the old sidebar, `writer_agent` and credential settings are not copied into it. Browser tasks use the official [ego-browser](https://lite.ego.app/document/zh/docs/ego-browser) directly, loading its installed-version guide with `ego-browser skill`.
@@ -33,7 +35,7 @@ The bundle registers `oh-story` in its DSH profile. It supplies four workbenches
 
 The four fixed asset sets live in `packages/knowledge/{oh-story,drama,novel-to-game,video-recap}`. Their manifests record versions and file hashes. Follow the fork's [AGENTS.md](../../plugins/oh-story-dsh/AGENTS.md) and synchronization commands; do not edit vendored knowledge by hand. Role and reference loading follows the fork's own adapters.
 
-Oh Story runs in `story` on port `3081` on macOS and WSL. macOS also runs the legacy Writer plugin in `writer` on port `3086`; WSL has retired that service. Oh Story uses native Standard mode for new sessions and keeps a Standard-based `writer` preset for older sessions. See [HANDOFF.md](../../HANDOFF.md#independent-service-profiles) for service commands, installation details, and data locations.
+Windows runs daily Oh Story with Media Desk and Antfarm in `web:3080`; local source uses a separate development profile. macOS and WSL retain `story:3081`; macOS also has legacy `writer:3086`, while WSL has retired legacy Writer. New sessions use native Standard mode, with a Standard-based `writer` preset retained for older sessions. See [HANDOFF.md](../../HANDOFF.md#independent-service-profiles) for service commands, installation details, and data locations.
 
 <a id="development"></a>
 ## Development

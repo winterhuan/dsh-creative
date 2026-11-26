@@ -1,6 +1,6 @@
 # dsh-creative 开发交接
 
-最后更新：2026-11-25。
+最后更新：2026-11-26。
 
 本仓库统一管理 9 个独立 DSH 插件仓库、开发检查和交接文档，均已有发布包；Superagent 保留研究原型定位。插件源码仅在 `plugins/` 下的 Git 子模块中维护，父仓库记录各子模块的固定提交；本机 DSH 继续安装 GitHub 远程发布包。
 
@@ -95,6 +95,8 @@ pnpm run hygiene
 
 Oh Story 在 `plugins/oh-story-dsh` 跟踪 `winterhuan/oh-story-dsh`，上游为 `zenstory-ai/oh-story-dsh`；包为 `@winterhuan/oh-story-dsh`，源码在 `packages/dsh-plugin`，四套固定技能在 `packages/knowledge`。父仓库发现该两层包目录并调用它的安装、类型检查、构建和测试；`clean` 仅执行插件声明的同名命令。开发与验收按其 `AGENTS.md` 运行 `pnpm verify`，保留自身文档与知识资产规则；本仓库的集成说明见[创作子系统](docs/subsystems/writer.zh.md)。
 
+Story 的工作台和创作行为跟随上游 `v0.1.28`（`eedf5dc9179f5e5a69dffecd19643f890ed5f977`），fork 只维护官方 Ego 技能接入、包名及预构建固定 Git 安装适配。空工作区采用上游欢迎引导，识别到创作项目后展开工作台；`openEmptyWorkbench` 已从开发源码移除。发布仍将 `packages/dsh-plugin/lib` 与源码一起提交，验证和打 Tag 后再更新市场；开发源码变更需先在独立 profile 验证，不会自动更新日常远程安装。
+
 Superagent 使用独立 `pnpm-workspace.yaml` 和冻结锁文件，父仓库批量命令运行它的安装、类型检查、构建与测试。它的 README 按父仓库标准维护双语；作为导入的研究参考，源码保留自身检查，不参与父仓库 UI 文案、unknown 类型断言和导出 JSDoc 检查。源码中的文档引用先核对所属子模块，再核对父仓库。
 
 Antfarm 由 `.gitmodules` 自动加入批量命令，使用自己的冻结锁文件。根检查通过统一包发现覆盖其单包 `src`、README、导出 JSDoc 与 UI 文案；README、DESIGN 和 PARITY 均进入双语配对检查。`0.3.0` 的验证范围见 [Antfarm 功能对照](plugins/dsh-antfarm/PARITY.zh.md)。隔离 Web 的确定性验收完成三个工作流、20 个独立原生子会话与 20 次 Bash 调用；固定 Git 远程安装另完成 feature-dev、7 个独立子会话与 7 次 Bash 调用，并核对发布包、配置和浏览器。工作流证据保存在 `~/.dsh/backups/antfarm-release-20261109-0.3.0/evidence/`；scoped 包名、远程安装与组件加载验证保存在 `~/.dsh/backups/scoped-plugins-release-20261109/`。真实模型、在线 GitHub 交付与 Linux／Windows 尚未验证；CLI 正常退出不代表 Run 已接受完成。
@@ -111,11 +113,15 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 <a id="independent-service-profiles"></a>
 
-日常服务使用下表中的独立 profile。安装、更新和启停均针对所属 profile。两端的统一入口为 `dsh-sre`，脚本在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。
+Windows、macOS、Linux 与 WSL 的统一入口为 `dsh-sre`，安装及原生控制器在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。安装、更新和启停均针对所属 profile。
+
+Windows 本机日常保留两个入口：`web:3080` 集中 Oh Story、Media Desk、Antfarm 和已有通用工具，`student:3084` 保留独立学习模式；`superagent:3082` 按需启动。`~/.dsh/services/windows-config.json` 的 `dailyProfiles` 为 `["web", "student"]`，所以省略目标的状态、`url` 和显式 `all` 只操作这两个日常服务；Superagent 使用 `dsh-superagent start`。博客独立使用 `dsh-blog`。Web 与 Student 使用 Student 页面配置的 `me` provider，凭据通过同一个 DSH home 解析。
+
+Windows 的 Story、Media、Antfarm 会话与工作区登记合并到 `~/.dsh/profiles/web/data/`，原项目文件继续使用原路径；Antfarm 运行库位于其中的 `antfarm/`。旧 profile 已停止并移至 `~/.dsh/archived-profiles/`，不再作为日常入口。其他平台保留下表中的独立 profile：
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
-| Oh Story（macOS／WSL） | `story` | `3081` | `~/.dsh/bin/dsh-story` | `~/.dsh/profiles/story/data/` |
+| Oh Story | `story` | `3081` | `~/.dsh/bin/dsh-story` | `~/.dsh/profiles/story/data/` |
 | 旧版 Writer `0.2.8`（macOS） | `writer` | `3086` | `~/.dsh/bin/dsh-writer` | `~/.dsh/profiles/writer/data/` |
 | Media Desk | `media` | `3085` | `~/.dsh/bin/dsh-media` | `~/.dsh/profiles/media/data/` |
 | Student | `student` | `3084` | `~/.dsh/bin/dsh-student` | `~/.dsh/profiles/student/data/` |
