@@ -115,9 +115,9 @@ Antfarm `0.3.3` 明确区分成功、审核退回与执行失败，传递恢复�
 
 Windows、macOS、Linux 与 WSL 的统一入口为 `dsh-sre`，安装及原生控制器在 [ops/dsh-sre](ops/dsh-sre/README.zh.md) 维护。安装、更新和启停均针对所属 profile。
 
-Windows 本机日常保留两个入口：`web:3080` 集中 Oh Story、Media Desk、Antfarm 和已有通用工具，`student:3084` 保留独立学习模式；`superagent:3082` 按需启动。`~/.dsh/services/windows-config.json` 的 `dailyProfiles` 为 `["web", "student"]`，所以省略目标的状态、`url` 和显式 `all` 只操作这两个日常服务；Superagent 使用 `dsh-superagent start`。博客独立使用 `dsh-blog`。Web 与 Student 使用 Student 页面配置的 `me` provider，凭据通过同一个 DSH home 解析。
+Windows 和 macOS 本机日常保留两个入口：`web:3080` 集中 Oh Story、Media Desk、Antfarm 和已有通用工具，`student:3084` 保留独立学习模式；`superagent:3082` 按需启动。Windows 的 `~/.dsh/services/windows-config.json` 与 macOS 的 `~/.dsh/services/config.json` 均设置 `dailyProfiles: ["web", "student"]`，省略目标的状态和显式 `all` 只操作这两个服务；Windows 的默认 `url` 也使用日常组。Superagent 使用 `dsh-superagent start`；Windows 博客独立使用 `dsh-blog`。Web 与 Student 使用 Student 页面配置的 `me` provider，凭据通过同一个 DSH home 解析。
 
-Windows 的 Story、Media、Antfarm 会话与工作区登记合并到 `~/.dsh/profiles/web/data/`，原项目文件继续使用原路径；Antfarm 运行库位于其中的 `antfarm/`。旧 profile 已停止并移至 `~/.dsh/archived-profiles/`，不再作为日常入口。其他平台保留下表中的独立 profile：
+Windows 的 Story、Media、Antfarm 会话与工作区登记合并到 `~/.dsh/profiles/web/data/`，原项目文件继续使用原路径；Antfarm 运行库位于其中的 `antfarm/`。旧 profile 已停止并移至 `~/.dsh/archived-profiles/`，不再作为日常入口。macOS 的 Web 会话和工作区登记同样保存在 `~/.dsh/profiles/web/data/`，原全局数据、独立 profile 和旧 Writer 数据保留用于恢复；Story、Writer、Media、Antfarm、Superagent 已停止，五个登录启动项保存在 `~/.dsh/services/disabled-launch-agents/`。Linux／WSL 保留独立 profile，端口映射如下（macOS 旧入口仅按需使用）：
 
 | 插件 | 日常 profile | 本机端口 | 服务脚本 | 会话与存储根 |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ Windows 的 Story、Media、Antfarm 会话与工作区登记合并到 `~/.dsh/pr
 
 各服务脚本均支持 `start`、`stop`、`restart` 和 `status`；登录启动尊重手动停止。更新后使用对应服务脚本重启，再硬刷新该端口的浏览器页面。
 
-macOS 的 `story` 和 `writer` 各自保存会话和工作区登记，`writer` 的新会话默认使用 Writer 模式。Oh Story 在 macOS 和 WSL 均使用 `story`，新会话默认使用 Standard，并保留 `writer` 模式供旧会话恢复；WSL 使用 DSH `0.2.2-rc.5` 的原生 Standard 配置，macOS 保持 `0.2.2-rc.1`。WSL 的会话、附件和工作区登记位于 `~/.dsh/profiles/story/data/`，既有书稿工作区路径继续使用；旧 `writer` 服务已停用，备份与验证见 [Story profile 迁移记录](HANDOFF-changelog.md#story-profile-wsl)。日常 `web` 仍使用全局 `~/.dsh/sessions/`、`~/.dsh/attachments/` 与 `~/.dsh/storages/`。
+macOS 的 Web 与 Student 使用 DSH `0.2.2-rc.5`。Web 默认 Standard，保留原 Story 的 `writer` 兼容模式以恢复旧会话；Student 默认学习模式。Web 合并了原全局、Story、Writer、Media、Antfarm 的会话和工作区登记，附件继续使用全局 `~/.dsh/attachments/`，书稿、Wiki 与学习档案沿用原项目路径。迁移备份和文件校验记录位于 `~/.dsh/backups/two-profiles-macos-20261126-225822/`。WSL 的 Story 仍使用独立 profile，配置、存储和备份见 [Story profile 迁移记录](HANDOFF-changelog.md#story-profile-wsl)。
 
 WSL 日常 Antfarm 已更新至 `0.3.5`，使用固定 Git 发布包；运行库、人设工作区和工作流配置位于 `~/.dsh/profiles/antfarm/data/antfarm/`。迁移保留日常项目的原会话，记录见 [Antfarm profile 拆分](HANDOFF-changelog.md#antfarm-profile-migration)。
 
@@ -142,7 +142,7 @@ WSL 日常 `student` 从 `v0.2.6` 对应的固定 Git 提交安装 `@winterhuan/
 
 WSL 独立 `media` profile 安装了 `@winterhuan/dsh-media-desk@2.7.0-winter.15`，来源为 `github:winterhuan/dsh-media-desk#7bbda83f57f481acee0357f0513d982068c86b73`。原生会话和工作区登记保存在 `~/.dsh/profiles/media/data/`，业务数据沿用 `~/.dsh/media-desk/`，作品文件沿用 `~/wiki/notes/`；日常 `web` 不加载 Media Desk。原生创作与 Notes 存储的首次发布见 [Media Desk 原生创作发布记录](HANDOFF-changelog.md#media-desk-native-release)；标题文件名、隐藏历史与本机整理验收见 [Notes 整理记录](HANDOFF-changelog.md#media-desk-readable-files)；保存日志简化见 [单日志记录](HANDOFF-changelog.md#media-desk-single-journal)；聊天回执展示移除见 [聊天简化记录](HANDOFF-changelog.md#media-desk-chat-simplification)；全局复盘空 ID 读取与真实模型验收见 [复盘验收记录](HANDOFF-changelog.md#media-desk-review-empty-id)；复盘读隔离、单篇刷新和本机升级验收见 [Media Desk 发布记录](HANDOFF-changelog.md#media-desk-winter10)。
 
-macOS 独立 `media` profile 已从 `github:winterhuan/dsh-media-desk#9d6abde17df431a8844a45098c88635ed2c33a3c` 安装 `2.7.0-winter.14`，服务使用端口 `3085`。全局 Media Desk 与生图 skill、只读 CLI 使用同一远程安装包；发布、数据备份与本机验收见 [Media Desk skill 发布](HANDOFF-changelog.md#media-desk-skill-release)。
+macOS Web 从固定 Git 提交安装 Oh Story `5d54ddc54e818f7079f18774b0327c9833f650e2`（`packages/dsh-plugin`）、Media Desk `8e8fd08796b27dbdd08f2b937289dab8b73f3a6c` 和 Antfarm `18a000c5d823ea14aeb0b4921903c1eef6259a85`，包含对应提交的预构建产物。Media Desk 业务数据仍位于 `~/.dsh/media-desk/`，作品仍位于 `~/wiki/notes/`；需要 Host 的执行适配须显式指定 `--url http://127.0.0.1:3080 --login-log ~/.dsh/logs/dsh-web.log`。只读 CLI 的离线数据路径保持不变，技能首次发布见 [Media Desk skill 发布](HANDOFF-changelog.md#media-desk-skill-release)。
 
 开发使用独立 profile。先在目标子模块构建，然后安装第 2 节表中的本地目录。以 Oh Story fork 为例：
 

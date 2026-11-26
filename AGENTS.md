@@ -19,7 +19,7 @@
 - 新用到 `ctx.remote.<命名空间>` 时，将提供它的 DSH 包加入对应包的 `devDependencies`，并写 `import type {} from '<包>/remote'`。
 - 修改首行标记 `Copied from deepseek-harness` 的脚本或类型副本后，更新 HANDOFF 第 8 节的改动表。
 - 客户端行为需在真实 DSH 验证。日常 profile 使用远程发布包；本地调试使用独立 profile，构建后重启开发进程并硬刷新。勿用裸 npm 包名的 `plugin-update` 覆盖 Git 安装。
-- Windows 日常只运行 `web`、`student`：Story、Media Desk、Antfarm 与通用工具集中在 `web`，Student 保留学习模式；Superagent 按需启动。其他平台保留既有独立 profile。各平台复用 `dsh-sre` 和所属 profile 命令，安装、更新和启停按 [服务约定](HANDOFF.md#independent-service-profiles)操作。
+- Windows 和 macOS 日常只运行 `web`、`student`：Story、Media Desk、Antfarm 与通用工具集中在 `web`，Student 保留学习模式；Superagent 按需启动。Linux／WSL 保留既有独立 profile。各平台复用 `dsh-sre` 和所属 profile 命令，安装、更新和启停按 [服务约定](HANDOFF.md#independent-service-profiles)操作。
 - 代码风格沿用 `upstream/AGENTS.md` 的 Conventions 与 Type safety；上游 monorepo 的发布流程不适用于这些独立插件。
 - Superagent 研究原型保留自身依赖与源码检查；父仓库仍运行它的安装、类型检查、构建、测试和 README 检查，范围见 [HANDOFF](HANDOFF.md#6-依赖策略)。
 

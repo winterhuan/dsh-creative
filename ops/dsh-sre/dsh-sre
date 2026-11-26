@@ -63,11 +63,16 @@ def location(profile):
 
 
 def daily_profiles():
-    if not WINDOWS:
-        return None
-    names = windows_service.configuration().get('dailyProfiles')
+    if WINDOWS:
+        config = windows_service.configuration()
+    else:
+        path = DSH_HOME / 'services/config.json'
+        config = json.loads(path.read_text(encoding='utf-8-sig')) if path.is_file() else {}
+    names = config.get('dailyProfiles')
     if names is not None and (not isinstance(names, list) or not names
-                              or any(not isinstance(name, str) or name not in SERVICES for name in names)
+                              or any(not isinstance(name, str) or name not in SERVICES
+                                     or (name != 'blog' and not (location(name) / 'package.json').is_file())
+                                     for name in names)
                               or len(set(names)) != len(names)):
         raise ValueError('dailyProfiles must list unique installed managed profiles.')
     return names

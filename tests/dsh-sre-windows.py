@@ -144,7 +144,9 @@ class WindowsServices(unittest.TestCase):
         self.assertEqual(json.loads((self.root / 'services/windows-student.json').read_text())['created'], 'now')
 
     def service(self):
-        with patch('sys.platform', 'win32'):
+        import urllib.request
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with patch('sys.platform', 'win32'), patch('urllib.request.build_opener', return_value=opener):
             return load('service_test', SOURCE / 'dsh-service')
 
     def test_superagent_reports_pending_setup(self):
@@ -217,6 +219,7 @@ class WindowsServices(unittest.TestCase):
         old.parent.mkdir(parents=True)
         old.write_text('old launcher')
         with patch('sys.platform', 'win32'), patch('pathlib.Path.home', return_value=self.home), \
+             patch('shutil.which', return_value=None), \
              patch.object(sys, 'argv', ['install.py', '--node', str(self.node), '--dsh-cli', str(self.cli), '--repository', str(self.repository)]):
             installer.main()
         self.assertFalse(legacy.exists())
@@ -227,6 +230,42 @@ class WindowsServices(unittest.TestCase):
         self.assertIn('-X utf8', old.read_text())
         self.assertTrue((self.root / 'bin/windows_service.py').is_file())
         self.assertEqual(json.loads(self.config_path.read_text())['dailyProfiles'], ['student'])
+
+
+class PosixDailyProfiles(unittest.TestCase):
+    def test_daily_actions_and_explicit_on_demand_start(self):
+        for platform in ('darwin', 'linux'):
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory() as directory:
+                home = Path(directory)
+                root = home / '.dsh'
+                for name in ('web', 'student', 'superagent'):
+                    profile = root / 'profiles' / name
+                    profile.mkdir(parents=True)
+                    (profile / 'package.json').write_text('{}')
+                (root / 'services').mkdir()
+                config = root / 'services/config.json'
+                with patch('sys.platform', platform), patch('pathlib.Path.home', return_value=home):
+                    sre = load('posix_sre_test', SOURCE / 'dsh-sre')
+                self.assertIsNone(sre.daily_profiles())
+                config.write_text(json.dumps({'dailyProfiles': ['web', 'student']}))
+                for action, target, expected in [('start', 'all', ['web', 'student']),
+                                                 ('restart', 'all', ['web', 'student']),
+                                                 ('stop', 'all', ['web', 'student']),
+                                                 ('status', None, ['web', 'student']),
+                                                 ('start', 'superagent', ['superagent'])]:
+                    argv = ['dsh-sre', action] + ([target] if target else [])
+                    with patch.object(sys, 'argv', argv), \
+                         patch.object(sre.subprocess, 'run', return_value=SimpleNamespace(returncode=0)) as run, \
+                         patch.object(sre, 'show_status', return_value=0) as status:
+                        self.assertEqual(sre.main(), 0)
+                        self.assertEqual([call.args[0] for call in status.call_args_list], expected)
+                        self.assertEqual(run.call_count, 0 if action == 'status' else len(expected))
+                        for call, name in zip(run.call_args_list, expected):
+                            self.assertEqual(call.args[0], sre.controller_command(name, action))
+                for invalid in ([], ['web', 'web'], ['media'], ['missing'], 'web', [None]):
+                    config.write_text(json.dumps({'dailyProfiles': invalid}))
+                    with self.assertRaisesRegex(ValueError, 'installed managed profiles'):
+                        sre.daily_profiles()
 
 
 if __name__ == '__main__':

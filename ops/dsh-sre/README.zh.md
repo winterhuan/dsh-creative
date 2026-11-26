@@ -30,6 +30,6 @@ Windows 和 Linux 控制器通过认证页面检查就绪状态，并检查 Medi
 
 Windows 的 `start` 和 `restart` 最多等待 45 秒就绪。较慢的冷启动会返回 1，并保留已启动的进程；重试前先查看 `dsh-sre status` 和对应 profile 的日志。
 
-Windows 仅列出已安装的 profile。可在 `~/.dsh/services/windows-config.json` 中通过可选的 `dailyProfiles` 数组，将默认状态、默认 `url` 和所有显式 `all` 操作限制到日常组，例如 `["web", "student"]`。每个名称必须指向已安装的受管 profile，且不能重复。`list` 仍显示全部已安装服务，并标明日常或按需入口；按需服务可指定名称操作，例如 `dsh-sre start superagent`。重新安装命令会保留日常组。
+可选的 `dailyProfiles` 数组将默认状态和所有显式 `all` 操作限制到日常组，例如 `["web", "student"]`。Windows 读取 `~/.dsh/services/windows-config.json`，默认 `url` 也使用该组；macOS 和 Linux 读取 `~/.dsh/services/config.json`。每个名称必须指向已安装的受管 profile，且不能重复。未设置时保留原有的全部服务范围。`list` 标明受管入口为日常或按需；按需服务可指定名称操作，例如 `dsh-sre start superagent`。重新安装命令会保留日常组。此配置不改变登录自启动，其他 profile 的 launchd 或 systemd 自启动需单独关闭。
 
 Windows 在 `~/.dsh/services/windows-config.json` 记录已安装的 Node 可执行文件、DSH CLI 和仓库检出。安装器默认自动发现这些路径，位置不同时可传入 `--node`、`--dsh-cli` 或 `--repository`；更换 Node 安装后需重新安装命令。运行记录 `windows-<profile>.json` 在状态查询或停止前核对可执行文件、参数和进程创建时间；临时控制器的旧记录仅在可执行文件和参数匹配时接受。重复启动已有受管进程不会另启进程，端口被占用时在替换日志前失败。Windows 停止受管进程树，日志写入 `~/.dsh/logs/` 下的 `windows-<profile>.log` 和 `windows-<profile>.error.log`；已停止的服务不会从旧日志返回登录令牌。服务手动启动，安装器不创建登录任务或 Windows 服务。
