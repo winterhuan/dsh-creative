@@ -11,7 +11,7 @@
 
 ## 必须遵守
 
-- 本机依赖安装、构建和服务运行使用 Windows 原生 PowerShell 与 Node.js，不在 WSL 中执行；安装前先保留未提交工作并同步最新代码。
+- 依赖安装、构建和服务运行使用当前环境的原生工具链：Windows 使用 PowerShell 与 Windows Node.js；macOS 使用本机 Shell 与 Node.js；Linux／WSL 使用所在系统的 Shell 与 Linux Node.js。Windows 原生服务在 Windows 中操作，WSL 服务在 WSL 中操作；各环境分别安装依赖，不共用 `node_modules`。安装前先保留未提交工作并同步最新代码。
 - 浏览器操作与真实 DSH 客户端验收使用 `ego-browser`；先运行 `ego-browser skill` 读取当前指南，实际验证后再报告结果。
 - Story 工作台与创作行为跟随 `zenstory-ai/oh-story-dsh`；fork 仅保留官方 Ego 技能接入和预构建固定 Git 包发布所需的适配，范围见[创作集成](docs/subsystems/writer.zh.md)。
 - 不修改根目录或子模块内 `upstream/` 的源码；它们只作参考与客户端测试来源。
