@@ -39,7 +39,7 @@ A “whole-unit course” means this collection of separately resumable lessons,
 
 Before generating a textbook-specific unit outline, confirm the textbook edition, unit contents, teaching materials, and the school's position within the unit. At minimum, distinguish just started, studying a specified text or topic, and finished. Reuse confirmed information and ask only for missing facts.
 
-A knowledge map supplies candidate goals, not textbook text. When materials are incomplete, show what is missing and allow an outline draft awaiting materials; do not claim a complete textbook-specific unit course exists. The user may explicitly choose a foundational goal lesson within scope, with authored examples and material limitations identified.
+Verified assessable facts in a knowledge map can support a full goal lesson, but cannot be presented as textbook text. Starting learning first reuses supplied materials, bundled textbooks or target facts; goal and default-textbook lessons are not blocked by an unconfirmed school edition and require neither duplicate uploads nor another foundation-mode choice. The start request authorizes that goal lesson; retain its actual wording and source limitations, and narrow broad capabilities to concrete characters or question types. Ask for missing edition, text or within-unit position only for an explicit textbook-unit or school-alignment request. Incomplete materials may support an outline draft, not a claimed complete textbook unit or silent replacement of a specified textbook.
 
 By default, generate only the current lesson within confirmed school progress. The outline may show later lessons but cannot authorize preview learning; extending progress follows parent-confirmation rules. Home learning completion does not advance school progress. Material corrections may revise unstarted outline entries; generated classrooms, original questions, and responses retain their original material versions and associations.
 
@@ -180,7 +180,7 @@ Acceptance checks content, real operations, durable recovery, and performance. S
 | ID | Scenario | Required observation |
 | --- | --- | --- |
 | A1 | First start of a new lesson with materials and confirmed unit progress | Unit outline and full teaching requirement exist; exactly one `openmaic_generate` submission; missing evidence does not turn the action into text-only diagnosis. |
-| A2 | Only a knowledge map exists, or position within the unit is missing | Missing information is explicit; no invented textbook text, school progress, or complete unit course; a foundational goal lesson requires explicit user choice. |
+| A2 | Only a knowledge map exists, or position within the unit is missing | Reuse verified facts or bundled pages for a full goal lesson, asking only for missing concrete learning scope; school alignment separately verifies edition and position. No invented text or school progress, and no repeated foundation-mode choice. |
 | A3 | Start Chinese after pausing old English | Classroom matches the selected Chinese requirement; old work is resumable and plan/activity validation passes. |
 | A4 | Double click, refresh, timeout, or conversation change during generation | Same job identity persists; unknown outcomes do not resubmit; restart recovery works. |
 | A5 | Authentication denial, generation failure, or content-check failure | Reason is visible; only supported recovery actions appear, without false success or automatic downgrade. |
