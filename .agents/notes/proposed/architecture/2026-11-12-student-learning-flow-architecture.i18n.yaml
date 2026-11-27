@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-11-12-student-learning-flow-architecture.md
 /agent-note-student-learning-flow-and-evidence-architecture:
-  en: 838f8739b598621c
-  zh: bf32caf395af3119
+  en: 18af8e7cab409573
+  zh: 7741fc730946f5f8
 /agent-note-student-learning-flow-and-evidence-architecture/problem:
   en: 06ed3fff786c835b
   zh: 77c50a96c865d194

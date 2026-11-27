@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-11-25-student-daily-learning-plan.md
 /agent-note-student-daily-learning-plan-and-learner-flow-spec:
-  en: 15c4e1aa26f34647
-  zh: d704512076ca135a
+  en: e80a1fc85f6d6563
+  zh: 516268939f38f454
 /agent-note-student-daily-learning-plan-and-learner-flow-spec/problem:
   en: c500ef5597e820e5
   zh: 7145a4b291b59280

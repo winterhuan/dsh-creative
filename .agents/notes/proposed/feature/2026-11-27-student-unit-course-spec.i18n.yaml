@@ -1,0 +1,55 @@
+# Bilingual-pair consistency record for 2026-11-27-student-unit-course-spec.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-11-27-student-unit-course-spec.md
+/agent-note-student-unit-courses-and-full-interactive-lessons-first:
+  en: da3035efe018e066
+  zh: 5c476edca8e6784c
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/problem:
+  en: 1d7c728f8dd2fe0a
+  zh: 7ea3e1efcb3b24d4
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal:
+  en: 9e1a77e021427a68
+  zh: 3865448fc543601f
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/scope-and-existing-decisions:
+  en: 3116d01d6f51c5a9
+  zh: 2c6f625032932eab
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/course-levels-and-generation-ownership:
+  en: e4f2f6d6356846bf
+  zh: bc7f4d0b650828dc
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/materials-and-school-progress:
+  en: 2b9c2b0cd845d9d3
+  zh: 6e602d713662e342
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/the-child-s-learning-flow:
+  en: acc4f65e4627cd1e
+  zh: 2985093e95fad6a1
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/creating-and-closing-a-unit-course:
+  en: e891c692c98fa950
+  zh: 1d86a408df1f3d24
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/generation-failures-and-recovery:
+  en: 1dbd2029fccb45b8
+  zh: 58cc2743543036be
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/data-ownership-and-compatibility:
+  en: 1255d3f1f16883b8
+  zh: f3b8da5f4ce8ed56
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/deleting-and-updating-legacy-content:
+  en: 57329ae29a5fef22
+  zh: da533e293fd5b8ea
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/interaction-and-performance-requirements:
+  en: 1474085b4fed4f6a
+  zh: 29b25f1936934b57
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/independent-content-review:
+  en: 7302628f5667169d
+  zh: 7ba9dad5dee26642
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/proposal/implementation-order:
+  en: 6f8e8cdba376daea
+  zh: 7d9bda4c094e3801
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/alternatives-considered:
+  en: e0b4227c99acd24e
+  zh: cb52f72d3d386cfb
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/acceptance-criteria:
+  en: 5bc01c25d6c29287
+  zh: 1f16b11799d86115
+/agent-note-student-unit-courses-and-full-interactive-lessons-first/risks:
+  en: a61d52e8b8bc7b1f
+  zh: cbf93cfe7b90fe9d

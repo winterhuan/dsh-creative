@@ -4,6 +4,8 @@ Status: proposed
 
 English | [中文](2026-11-25-student-daily-learning-plan.zh.md)
 
+The [unit course spec](2026-11-27-student-unit-course-spec.md) further defines full interactive lessons for new learning, mini-lessons for review and explanation, unit outlines, and generation per lesson on demand. It partially refines this proposal's teaching order while retaining native file persistence, real evidence, and bounded assessment; course organization and generation behavior remain to be implemented.
+
 ## Problem
 
 Children entering Student each day need to know what to learn, why those activities were selected, how to continue, and when they can finish. Parents need to confirm learning directions and school progress without choosing subjects, goals or questions every day. The capability catalog, learning records and continuation query provide part of this foundation, but do not organize these decisions into a stable, recoverable daily plan.

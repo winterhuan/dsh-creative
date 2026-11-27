@@ -3,8 +3,8 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-11-22-student-openmaic-learning-loop.md
 /agent-note-student-learning-follows-official-openmaic:
-  en: 0778149dd1017a08
-  zh: 1ef59ffe79ce5f4a
+  en: 9717871c6a9d0eb5
+  zh: 5e8e8da3e5448998
 /agent-note-student-learning-follows-official-openmaic/problem:
   en: e8a96b7fb80a061d
   zh: 71452e3aa3f42c9a

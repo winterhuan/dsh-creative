@@ -4,6 +4,8 @@ Status: proposed
 
 English | [中文](2026-11-22-student-openmaic-learning-loop.zh.md)
 
+The [unit course spec](2026-11-27-student-unit-course-spec.md) further defines full interactive lessons for new learning, mini-lessons for review and explanation, unit outlines, and generation per lesson on demand. It partially refines this proposal's teaching order while retaining native file persistence, real evidence, and bounded assessment; course organization and generation behavior remain to be implemented.
+
 ## Problem
 
 Student already has objectives, responses, assessments, weaknesses and mistake review, but children must choose among practice, classroom generation, recent lessons, consolidation and parent information. Parents also manage service addresses, queries and retries. The user wants a simplified design and phased checklist first: make official `dsh-openmaic` the classroom core so children can keep using it. Existing data must be merged, with one source exercise per question family in the bank.

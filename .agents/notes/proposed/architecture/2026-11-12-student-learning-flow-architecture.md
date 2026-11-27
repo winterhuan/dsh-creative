@@ -4,6 +4,8 @@ Status: proposed
 
 English | [中文](2026-11-12-student-learning-flow-architecture.zh.md)
 
+The [unit course spec](../feature/2026-11-27-student-unit-course-spec.md) further defines full interactive lessons for new learning, mini-lessons for review and explanation, unit outlines, and generation per lesson on demand. It partially refines this proposal's teaching order while retaining native file persistence, real evidence, and bounded assessment; course organization and generation behavior remain to be implemented.
+
 ## Problem
 
 Student needs one recoverable learning path: choose a goal, answer one question, receive feedback, and turn the result into the next useful practice. Parents need to finish setup, photo review and marking without repeatedly switching between chat and several independent forms.
