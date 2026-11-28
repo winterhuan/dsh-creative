@@ -4,6 +4,10 @@
 
 2026 年 9–10 月记录见[历史日志](archive/docs/HANDOFF-changelog-2026-09-10.md)，11 月 6—7 日记录见[月初日志](archive/docs/HANDOFF-changelog-2026-11-06-07.md)。
 
+<a id="student-textbook-import"></a>
+
+2026-11-28：Student [v0.2.12](https://github.com/winterhuan/dsh-student/releases/tag/v0.2.12) 已发布并更新市场。macOS 日常 `student:3082` 从固定远程提交安装，启用局域网课本录入；配置与144个学习文件保留，隔离安装及浏览器验收通过。实体手机与真实教材识别准确性未验证。备份、检查记录及回退说明：`~/.dsh/backups/student-release-0.2.12-20261128-mNIs31/`。
+
 <a id="dsh-rc5-all-plugins"></a>
 
 2026-11-25：WSL 全局 DSH 升至 `0.2.2-rc.5`，9 个插件新增固定发布标签并更新市场。`web`、`story`、`superagent`、`antfarm`、`student`、`media` 均从远程固定提交安装、重启并通过浏览器组件检查，profile 补丁与其他依赖保留；macOS 未更新。修复 Antfarm／Shadow Mind 的子会话激活接口、技能查看器声明文件打包与原生测试的多帧日志读取。类型检查、构建、插件测试、父仓库测试、文档与规范检查通过；Oh Story 合并提交通过 Linux、macOS、Windows CI 及三条宿主浏览器检查。Media Desk 完整测试的两个超时用例分别重跑通过。Superagent 仍需选择 GitHub 仓库，未执行真实模型或付费媒体验收。备份与证据：`~/.dsh/backups/all-plugins-rc5-20261125-134131/`。
